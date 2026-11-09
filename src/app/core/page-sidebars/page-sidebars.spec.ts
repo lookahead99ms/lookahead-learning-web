@@ -1117,6 +1117,17 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('.standalone-signature')).toBeNull();
   });
 
+  it('does not add learner rails to an Admin page without a page outline', () => {
+    main.append(document.createElement('app-author-admin-menu'));
+    fixture.destroy();
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
+    flush();
+    expect(root.querySelector('#page-sidebar-left')).toBeNull();
+    expect(root.querySelector('.standalone-signature')).toBeNull();
+    expect(main.hasAttribute('data-sidebar-columns')).toBe(false);
+  });
+
   it('keeps the outline rail and the taglines off a page with the Admin sub-header', () => {
     const subheader = document.createElement('app-admin-subheader');
     main.before(subheader);

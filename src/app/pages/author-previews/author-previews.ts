@@ -25,10 +25,7 @@ import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
 import {
   embeddedAnchor,
-  embeddedAnchorPosition,
   embeddedChildNavigation,
-  requestEmbeddedAnchor,
-  scrollToEmbeddedAnchor,
 } from '../../core/author-embedded-anchor';
 import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
 import { AuthorReviewPacket } from './author-review-packet';
@@ -56,7 +53,7 @@ import {
   ],
   templateUrl: './author-previews.html',
   styleUrls: ['./author-previews.css', '../../core/author-workspace-nav/reference-footer.css'],
-  host: { '[class.architecture-page]': 'architectureOnly' },
+  host: { class: 'admin-surface', '[class.architecture-page]': 'architectureOnly' },
 })
 export class AuthorPreviewsPage {
   private readonly hostDocument = inject(DOCUMENT);
@@ -158,11 +155,8 @@ export class AuthorPreviewsPage {
 
   protected onEmbeddedSectionSelected(hash: string): void {
     this.pendingArchitectureAnchor = hash;
-    requestEmbeddedAnchor(
-      this.architectureFrame()?.nativeElement,
-      'architecture-reference',
-      embeddedAnchor(this.pendingArchitectureAnchor, this.architectureSections),
-    );
+    const anchor = embeddedAnchor(hash, this.architectureSections);
+    if (anchor) this.architectureFrame()?.nativeElement.contentWindow?.postMessage({type:'lookahead:author-document:tab-request',version:1,documentId:'architecture-reference',anchor}, '*');
   }
 
   @HostListener('window:message', ['$event'])
@@ -192,31 +186,18 @@ export class AuthorPreviewsPage {
       this.pendingArchitectureAnchor = '';
       return;
     }
-    const anchor = embeddedAnchor(this.pendingArchitectureAnchor, this.architectureSections);
-    const position = embeddedAnchorPosition(
-      data,
-      'architecture-reference',
-      anchor,
-      this.architectureFrameHeight() ?? 100_000,
-    );
-    if (position !== null) {
-      const hostWindow = this.hostDocument.defaultView;
-      if (hostWindow) scrollToEmbeddedAnchor(frame, position, hostWindow);
-      this.pendingArchitectureAnchor = '';
-      return;
-    }
     if (
       !data ||
       typeof data !== 'object' ||
       data.type !== 'lookahead:architecture:height' ||
       data.version !== 1 ||
       !Number.isFinite(data.height) ||
-      data.height < 300 ||
+      data.height < 120 ||
       data.height > 100_000
     )
       return;
     this.architectureFrameHeight.set(Math.ceil(data.height));
-    requestEmbeddedAnchor(frame, 'architecture-reference', anchor);
+
   }
 
   protected connectDocument(frame: HTMLIFrameElement) {

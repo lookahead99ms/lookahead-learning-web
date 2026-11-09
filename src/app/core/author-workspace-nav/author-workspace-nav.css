@@ -1,90 +1,76 @@
 :host {
-  position: relative;
-  min-height: 44px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: block;
   color: var(--text-strong);
+  min-width: 0;
 }
-/* The toggle sits beside the Admin label and title, which stay visible when collapsed. */
 .sidebar-header {
   display: flex;
-  align-items: flex-start;
-  gap: 4px;
-}
-app-sidebar-toggle {
-  flex: 0 0 44px;
-  width: 44px;
-  margin-inline-start: -10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .workspace-heading {
   min-width: 0;
-  padding-block-start: 12px;
-}
-.author-sidebar-content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-.author-sidebar-content[hidden] {
-  display: none;
 }
 .eyebrow {
-  font-size: 0.75rem;
-  color: var(--accent-strong);
-  letter-spacing: 0.12em;
+  margin: 0 0 4px;
+  color: var(--text-subtle);
+  font-size: 11px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-weight: 700;
-  margin: 0;
+  font-weight: 500;
 }
 h1,
 h2 {
-  font-size: 1.9rem;
-  line-height: 1.15;
-  margin: 6px 0 0;
+  margin: 0;
+  font:
+    600 24px/1.3 system-ui,
+    sans-serif;
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
-.outline-label {
-  margin: 0 0 8px;
-  color: var(--text-subtle);
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+
+.author-sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .heading-outline {
   display: flex;
-  flex-direction: column;
-  gap: 0;
-  align-items: stretch;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  margin-top: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
 }
 .heading-outline a {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 8px 10px;
-  border-inline-start: 3px solid transparent;
+  min-height: 36px;
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
   color: var(--text-subtle);
-  font-size: 0.88rem;
-  line-height: 1.35;
+  font-size: 13px;
+  line-height: 1.4;
   text-decoration: none;
   overflow-wrap: anywhere;
 }
-.heading-outline a:hover,
-.heading-outline a:focus-visible {
-  border-inline-start-color: var(--accent-strong);
-  background: var(--surface-muted);
-  color: var(--text-strong);
-}
+.heading-outline a:hover { color: var(--accent-strong); }
 .heading-outline a[aria-current='location'] {
-  border-inline-start-color: var(--accent-strong);
-  background: var(--surface-muted);
-  color: var(--text-strong);
-  font-weight: 700;
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent-strong);
+  background: transparent;
 }
 .heading-outline a:focus-visible {
   outline: 3px solid var(--accent-focus);
-  outline-offset: -3px;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .heading-outline a {
+    min-height: 44px;
+  }
 }

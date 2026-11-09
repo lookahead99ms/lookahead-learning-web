@@ -109,6 +109,7 @@ const SAMPLE_RECORDS: readonly AccessRecord[] = [
  * buyer sees. Staff can open it (authors and admins); it changes nothing and loads no data.
  */
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-admin-plans',
   imports: [
     PlatformHeader,

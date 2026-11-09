@@ -6,7 +6,7 @@ import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startDeliveryEditor } from './delivery-editor.mjs';
-import { assertWorkingGatewayProxy, loadLocalBaseProxy } from './local-base-proxy.mjs';
+import { assertWorkingGatewayProxy, loadLocalBaseProxy, withLocalStaffDocuments } from './local-base-proxy.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const contentRoot = resolve(
@@ -97,8 +97,8 @@ if (protectedWorking && !baseProxyConfig) {
     'Protected working frontend on 4301 requires LOOKAHEAD_BASE_PROXY_CONFIG for local Gateway 4350.',
   );
 }
-const proxy = await loadLocalBaseProxy(repositoryRoot, baseProxyConfig);
-if (protectedWorking) assertWorkingGatewayProxy(proxy);
+const baseProxy = await loadLocalBaseProxy(repositoryRoot, baseProxyConfig);
+const proxy = protectedWorking ? withLocalStaffDocuments(assertWorkingGatewayProxy(baseProxy)) : baseProxy;
 await syncPrivateContent();
 
 function authorizeWorkingAuthor(request) {

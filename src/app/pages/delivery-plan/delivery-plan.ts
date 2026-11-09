@@ -59,7 +59,7 @@ type WorkItemDraft = Omit<
   imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, ScrollLock, RouterLink],
   templateUrl: './delivery-plan.html',
   styleUrl: './delivery-plan.css',
-  host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
+  host: { class: 'admin-surface', '(window:beforeunload)': 'onBeforeUnload($event)' },
 })
 export class DeliveryPlanPage implements OnInit {
   protected readonly outline: readonly AuthorOutlineItem[] = [

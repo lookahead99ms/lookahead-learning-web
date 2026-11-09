@@ -3,18 +3,19 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { AdminSubheader } from '../../core/author-workspace-nav/admin-subheader';
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { FeedbackItemView } from './feedback-item';
 
 /**
  * DLV-971 (owner, 2026-11-06): one ticket or feedback item on its own page, /admin/feedback/:id (the ↗ on a backlog
  * row and "Open in new tab" in the dialog), with a breadcrumb back to the backlog. The content is the same two-column
  * view the dialog shows; a key that does not exist says so with a link back. Like the backlog, the page has no side
- * bars: the Admin sub-header carries the admin links and the item takes the whole width.
+ * outline: the shared Admin rail carries the links and the item fills the content area.
  */
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-admin-feedback-item',
-  imports: [PlatformHeader, AdminSubheader, RouterLink, FeedbackItemView],
+  imports: [PlatformHeader, AuthorAdminMenu, RouterLink, FeedbackItemView],
   templateUrl: './admin-feedback-item.html',
   styleUrl: './admin-feedback-item.css',
 })

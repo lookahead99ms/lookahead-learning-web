@@ -1,19 +1,20 @@
 <app-platform-header />
-<main id="main-content" class="preview-page" [class.architecture-layout]="architectureOnly">
+<main id="main-content" class="admin-workspace preview-page" [class.architecture-layout]="architectureOnly">
   @if (architectureOnly) {
-    <aside class="workspace-sidebar">
-      <app-author-workspace-nav
+    <app-author-admin-menu pageId="architecture" />
+  <app-author-admin-menu pageId="architecture" [documentationOnly]="true" />
+  <div class="workspace-content">
+<aside class="workspace-sidebar">
+      <app-author-workspace-nav [tabbed]="true"
         pageTitle="Architecture"
         pageId="architecture"
         [outline]="architectureOutline()"
         [embeddedFrame]="architectureFrame()?.nativeElement"
         embeddedDocumentId="architecture-reference"
         [embeddedHeight]="architectureFrameHeight()"
-        (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
-      />
+        (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"><app-author-doc-hero beforeSections pageId="architecture" /></app-author-workspace-nav>
     </aside>
-    <div class="workspace-content">
-      <app-author-doc-hero pageId="architecture" />
+
       @if (!canView() || accounts.sessionExpired()) {
         <section class="state-panel">
           <h2>Admin access required</h2>
@@ -55,16 +56,16 @@
         <p class="state-panel">The architecture preview is not available in this inventory.</p>
       }
     </div>
-    <app-author-admin-menu pageId="architecture" />
   } @else {
-    <aside class="preview-outline">
-      <app-author-workspace-nav
+    <app-author-admin-menu pageId="previews" />
+    <div class="preview-content">
+<aside class="preview-outline">
+      <app-author-workspace-nav [tabbed]="true"
         pageTitle="Previews"
         pageId="previews"
         [outline]="previewOutline()"
       />
     </aside>
-    <div class="preview-content">
       <header>
         <p class="eyebrow">Private review</p>
         <h2 class="preview-intro-heading">Review the current product.</h2>
@@ -276,7 +277,6 @@
         }
       }
     </div>
-    <app-author-admin-menu pageId="previews" />
   }
 </main>
 @if (architectureDocumentHref(); as documentHref) {

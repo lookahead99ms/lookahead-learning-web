@@ -8,6 +8,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { apiGuidePath } from '../../core/author-api-navigation';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer } from '@angular/platform-browser';
 import { firstValueFrom, timeout } from 'rxjs';
@@ -75,6 +77,7 @@ const downloadSections: ReadonlyArray<{ id: string; title: string; files: readon
 const allowedDownloads = new Set(downloadSections.flatMap((section) => section.files));
 
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-author-api',
   imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, AuthorDocHero],
   templateUrl: './author-api.html',
@@ -82,6 +85,11 @@ const allowedDownloads = new Set(downloadSections.flatMap((section) => section.f
 })
 export class AuthorApiPage {
   private readonly hostDocument = inject(DOCUMENT);
+  private readonly router = inject(Router);
+  protected readonly localGuide = inject(ActivatedRoute).snapshot.data['localApiGuide'] === true;
+  protected readonly pageId = this.localGuide ? 'local-api' : 'api';
+  protected readonly pageTitle = this.localGuide ? 'API client setup' : 'API reference';
+  protected readonly pageRoute = this.localGuide ? '/admin/local-api' : '/admin/api';
   protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private readonly accounts = inject(StudyPlanAccount);
   private readonly http = inject(HttpClient);
@@ -119,6 +127,8 @@ export class AuthorApiPage {
     if (!href) return null;
     const url = new URL(href, 'https://preview.invalid');
     url.searchParams.set('layout', 'shared');
+    // Select the route's initial panel before the sandbox reports tabs-ready.
+    url.hash = this.hostDocument.defaultView?.location.hash || (this.localGuide ? '#start-testing' : '#inventory');
     return `${url.pathname}${url.search}${url.hash}`;
   });
   protected readonly documentUrl = computed(() => {
@@ -129,17 +139,13 @@ export class AuthorApiPage {
   protected readonly outline = computed<AuthorOutlineItem[]>(() => {
     const href = this.documentFrameHref();
     if (!href) return [];
-    const documentSections: AuthorOutlineItem[] = [
-      ['Start testing', 'start-testing'],
-      ['Credentials', 'credentials'],
-      ['Workflow', 'flows'],
-      ['All endpoints', 'inventory'],
-      ['Schemas', 'schemas'],
-      ['Capabilities', 'capabilities'],
-    ].map(([label, anchor]) => ({ label, href: `/admin/api#${anchor}` }));
+    const sections = this.localGuide
+      ? [['Start testing','start-testing'],['Credentials','credentials'],['Workflow','flows']]
+      : [['All endpoints','inventory'],['Schemas','schemas'],['Capabilities','capabilities'],['Access model','access-model']];
+    const documentSections: AuthorOutlineItem[] = sections.map(([label, anchor]) => ({ label, href: `${this.pageRoute}#${anchor}` }));
     return [
       ...documentSections,
-      { label: 'Files and downloads', href: '/admin/api#api-downloads' },
+      { label: 'Files and downloads', href: `${this.pageRoute}#api-downloads` },
     ];
   });
 
@@ -147,10 +153,21 @@ export class AuthorApiPage {
   @HostListener('window:popstate')
   protected onNavigationHashChange(): void {
     this.navigationHash.set(this.hostDocument.defaultView?.location.hash ?? '');
+    const path = apiGuidePath(this.navigationHash());
+    if (this.navigationHash() && this.navigationHash() !== '#api-downloads' && path !== this.pageRoute) {
+      void this.router.navigateByUrl(path + this.navigationHash(), {replaceUrl:true});
+      return;
+    }
     this.onEmbeddedSectionSelected(this.navigationHash());
   }
 
   protected onEmbeddedSectionSelected(hash: string): void {
+    const section = embeddedAnchor(hash, this.embeddedSections);
+    if (section) {
+      this.pendingAnchor = '';
+      this.documentFrame()?.nativeElement.contentWindow?.postMessage({type: 'lookahead:author-document:tab-request', version: 1, documentId: 'api-reference', anchor: section}, '*');
+      return;
+    }
     this.pendingAnchor = hash;
     requestEmbeddedAnchor(this.documentFrame()?.nativeElement, 'api-reference', (apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ?? embeddedAnchor(this.pendingAnchor, this.embeddedSections)));
   }
@@ -177,8 +194,13 @@ export class AuthorApiPage {
       const hostWindow = this.hostDocument.defaultView;
       if (!hostWindow) return;
       const hash = `#${childAnchor}`;
+      const path = apiGuidePath(childAnchor);
+      if (path !== this.pageRoute) {
+        void this.router.navigateByUrl(path + hash);
+        return;
+      }
       if (hostWindow.location.hash !== hash)
-        hostWindow.history.pushState(null, '', `/admin/api${hash}`);
+        hostWindow.history.pushState(null, '', `${this.pageRoute}${hash}`);
       this.navigationHash.set(hash);
       this.onEmbeddedSectionSelected(hash);
       return;
@@ -201,7 +223,7 @@ export class AuthorApiPage {
       data.version !== 1 ||
       data.documentId !== 'api-reference' ||
       !Number.isFinite(data.height) ||
-      data.height < 300 ||
+      data.height < 120 ||
       data.height > 50_000
     )
       return;
@@ -228,6 +250,10 @@ export class AuthorApiPage {
     if (!links.length) return [];
     const directory = apiReferencePreviewUrl(this.base)!.replace(/index\.html$/, '');
     return downloadSections
+      .map(section => ({...section, files: section.files.filter(file => {
+        const localFile = section.id === 'start' || file === 'credentials.md';
+        return this.localGuide ? localFile : !localFile;
+      })}))
       .map((section) => ({
         id: section.id,
         title: section.title,

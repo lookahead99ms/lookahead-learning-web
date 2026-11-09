@@ -1,15 +1,15 @@
 <app-platform-header />
-<main id="main-content" class="delivery-page">
-  <aside class="delivery-outline">
-    <app-author-workspace-nav
+<main id="main-content" class="admin-workspace delivery-page">
+  <app-author-admin-menu pageId="delivery" />
+  <div class="workspace-content">
+<aside class="delivery-outline">
+    <app-author-workspace-nav #sectionNav [tabbed]="true"
       pageTitle="Delivery plan"
       pageId="delivery"
       [headingLevel]="2"
       [outline]="plan() ? outline : []"
     />
   </aside>
-  <app-author-admin-menu pageId="delivery" />
-
   @if (!authorAccess()) {
     <section class="delivery-state" role="status">
       <h1>Admin access required</h1>
@@ -32,7 +32,7 @@
           <span>Current focus</span>
           <strong>{{ stage.order.toString().padStart(2, '0') }} · {{ stage.title }}</strong>
           <p>{{ stage.goal }}</p>
-          <button type="button" (click)="selectStage(stage.id)">View active work</button>
+          <button type="button" (click)="selectStage(stage.id); sectionNav.selectSection('delivery-workspace')">View active work</button>
         </aside>
       }
     </header>
@@ -448,7 +448,7 @@
                       delivered</span
                     >
                     <span><b>Review gate:</b> {{ stage.reviewGate }}</span>
-                    <button type="button" (click)="selectStage(stage.id)">Open stage board</button>
+                    <button type="button" (click)="selectStage(stage.id); sectionNav.selectSection('delivery-workspace')">Open stage board</button>
                   </footer>
                 </article>
               </li>
@@ -884,4 +884,5 @@
   } @else {
     <section class="delivery-state" aria-live="polite"><p>Loading delivery plan...</p></section>
   }
+  </div>
 </main>

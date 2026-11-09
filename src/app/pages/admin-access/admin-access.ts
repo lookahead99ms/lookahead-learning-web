@@ -71,6 +71,7 @@ export interface Change { kind: 'Role' | 'Curriculum' | 'Course'; text: string; 
 type AdmissionAction = 'disable' | 'delete';
 
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-admin-access',
   imports: [TestAccounts, PurchaseRequestsPanel, AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-access.html',

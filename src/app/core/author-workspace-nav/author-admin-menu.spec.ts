@@ -3,10 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { AuthorAdminMenu } from './author-admin-menu';
 import { AuthorWorkspacePageId } from './author-workspace-links';
 
-function render(pageId: AuthorWorkspacePageId | null) {
+function render(pageId: AuthorWorkspacePageId | null, documentationOnly = false) {
   TestBed.inject(StudyPlanAccount).account.set({accountId: 'owner', username: 'owner', displayName: 'Owner', topicGrants: [], authorPreview: true});
   const fixture = TestBed.createComponent(AuthorAdminMenu);
   fixture.componentRef.setInput('pageId', pageId);
+  fixture.componentRef.setInput('documentationOnly', documentationOnly);
   fixture.detectChanges();
   return fixture;
 }
@@ -38,38 +39,41 @@ describe('AuthorAdminMenu', () => {
     },
   );
 
-  it('lists documentation pages by reader group below Admin on a document page', () => {
-    const root = render('screen-names').nativeElement as HTMLElement;
+  it('lists only documentation pages in the separate documentation rail', () => {
+    const root = render('screen-names', true).nativeElement as HTMLElement;
     expect(hrefs(root, '.documentation-links a')).toEqual([
-      '/admin/review-guide',
       '/admin/screen-names',
       '/admin/access-checks',
       '/admin/plans',
-      '/admin/architecture',
-      '/admin/contracts',
-      '/admin/authentication',
-      '/admin/api',
-      '/admin/local-development',
-      '/admin/release-gates',
-      '/admin/aws-deployment',
-      '/admin/operations',
-      '/admin/production-support',
+      '/admin/review-guide',
+
     ]);
     expect(
       [...root.querySelectorAll('.documentation-group-label')].map((label) =>
         label.textContent?.replace(/\s+/g, ' ').trim(),
       ),
-    ).toEqual(['🧭 Start here', '⚙️ How it works', '🚀 Run and release']);
+    ).toEqual(['🧭 Overview']);
     expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/screen-names']);
     // Documentation is the current section, not the current page.
-    expect(hrefs(root, '[aria-current="true"]')).toEqual(['/admin/docs']);
-    const admin = root.querySelector('nav[aria-label="Admin navigation"]')!;
-    const docs = root.querySelector('.documentation-links')!;
-    expect(admin.compareDocumentPosition(docs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(root.querySelector('nav[aria-label="Admin navigation"]')).toBeNull();
+    const left = render('screen-names').nativeElement as HTMLElement;
+    expect(hrefs(left, '[aria-current="true"]')).toEqual(['/admin/docs']);
+    expect(left.querySelector('.documentation-links')).toBeNull();
+  });
+
+  it.each([
+    ['contracts', ['Contracts', 'Release gates', 'AWS deployment']],
+    ['local-api', ['Local setup & development', 'API client setup']],
+    ['api', ['API reference']],
+  ] as const)('limits the %s right rail to its group', (pageId, labels) => {
+    const root = render(pageId, true).nativeElement as HTMLElement;
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('.documentation-links a')];
+    for (const label of labels) expect(links.some(link => link.textContent?.includes(label))).toBe(true);
+    expect(links.some(link => link.href.endsWith('/admin/review-guide'))).toBe(false);
   });
 
   it("nests the open section's sub-pages under their parent and marks the parent as the section", () => {
-    const root = render('aws-dev-budget').nativeElement as HTMLElement;
+    const root = render('aws-dev-budget', true).nativeElement as HTMLElement;
     const parent = root.querySelector<HTMLAnchorElement>('.documentation-links a[href="/admin/aws-deployment"]')!;
     expect(parent.getAttribute('aria-current')).toBe('true');
     const nested = parent.closest('li')!.querySelector('.subpages')!;
@@ -79,6 +83,7 @@ describe('AuthorAdminMenu', () => {
       '/admin/aws-dev-plan',
       '/admin/aws-dev-decisions',
       '/admin/aws-dev-operations',
+      '/admin/aws-dev-certificates',
       '/admin/aws-dev-permissions',
       '/admin/aws-dev-budget',
       '/admin/aws-dev-status',
@@ -97,7 +102,7 @@ describe('AuthorAdminMenu', () => {
   });
 
   it("shows a section's sub-pages on its parent page too", () => {
-    const root = render('production-support').nativeElement as HTMLElement;
+    const root = render('production-support', true).nativeElement as HTMLElement;
     expect(hrefs(root, '.subpages a')).toEqual(['/admin/support-runbooks']);
     expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/production-support']);
   });

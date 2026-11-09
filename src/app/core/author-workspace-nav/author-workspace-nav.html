@@ -1,33 +1,33 @@
+@if (pageId === 'docs' || isDocumentationPage(pageId)) {
+  <app-author-documentation-tabs [pageId]="pageId" />
+}
 <div class="sidebar-header">
-  <app-sidebar-toggle
-    side="left"
-    [open]="sidebarOpen()"
-    [controls]="sidebarContentId"
-    [label]="sidebarOpen() ? 'Close left sidebar' : 'Open left sidebar'"
-    (toggled)="sidebarOpen.set(!sidebarOpen())"
-  />
   <div class="workspace-heading">
-    <p class="eyebrow">Admin</p>
+    <p class="eyebrow">{{ eyebrow }}</p>
     @if (headingLevel === 1) {
       <h1>{{ pageTitle }}</h1>
     } @else {
       <h2>{{ pageTitle }}</h2>
     }
   </div>
+
 </div>
-<div
-  class="author-sidebar-content"
-  [id]="sidebarContentId"
-  [hidden]="!sidebarOpen()"
-  [attr.inert]="sidebarOpen() ? null : ''"
->
+<div class="author-sidebar-content">
   <ng-content select="[description]"></ng-content>
+  <ng-content select="[beforeSections]"></ng-content>
+  @if (embeddedIntroduction()) { <p class="embedded-introduction">{{ embeddedIntroduction() }}</p> }
   @if (outline.length) {
-    <nav class="heading-outline shared-sidebar-outline" [attr.aria-label]="pageTitle + ' outline'">
-      <p class="outline-label">On this page</p>
+    @if (tabbed) { <span class="tab-position" aria-hidden="true"></span> }
+    <nav class="heading-outline shared-sidebar-outline" [attr.role]="tabbed ? 'tablist' : null" [attr.aria-label]="pageTitle + (tabbed ? ' sections' : ' outline')">
       @for (item of outline; track item.href) {
         <a
           [href]="linkHref(item.href)"
+          [id]="tabId(item)"
+          [attr.role]="tabbed ? 'tab' : null"
+          [attr.aria-selected]="tabbed ? sectionIsCurrent(item) : null"
+          [attr.aria-controls]="tabbed ? panelId(item) : null"
+          [attr.tabindex]="tabbed ? (sectionIsCurrent(item) ? 0 : -1) : null"
+          (keydown)="onTabKey($event, item)"
           [attr.aria-current]="sectionIsCurrent(item) ? 'location' : null"
           (click)="followSection($event, item)"
           >{{ item.label }}</a

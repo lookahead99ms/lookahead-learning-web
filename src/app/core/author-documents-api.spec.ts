@@ -10,6 +10,7 @@ import {
 import { AUTHOR_PREVIEWS_BASE_URL } from './author-preview-config';
 import { PROTECTED_CONTENT } from '../content/content-delivery';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
+import { authorDocumentPages } from './author-workspace-nav/author-workspace-links';
 
 const sha = 'a'.repeat(64);
 const root = '/bff/author/previews/preview-directory/author-documents/';
@@ -45,16 +46,46 @@ function manifest() {
 }
 
 describe('Private author-document boundary', () => {
-  it('accepts the 21-section Operations reference while keeping navigation bounded', () => {
+  it('accepts the 35-section procedures-sized reference while keeping navigation bounded', () => {
     const publication = manifest();
-    publication.documents[0].sections = Array.from({ length: 21 }, (_, index) => ({
+    publication.documents[0].sections = Array.from({ length: 35 }, (_, index) => ({
       id: `section-${index}`, title: `Section ${index + 1}`, fragment: `#section-${index}`,
     }));
-    expect(parseAuthorDocument(publication, 'operations-reference').sections).toHaveLength(21);
-    publication.documents[0].sections = Array.from({ length: 33 }, (_, index) => ({
+    expect(parseAuthorDocument(publication, 'operations-reference').sections).toHaveLength(35);
+    publication.documents[0].sections = Array.from({ length: 49 }, (_, index) => ({
       id: `section-${index}`, title: `Section ${index + 1}`, fragment: `#section-${index}`,
     }));
     expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
+  });
+  it('accepts long dated headings and rejects oversized or unsafe fragments', () => {
+    const publication = manifest();
+    const section = publication.documents[0].sections[0];
+    const anchor = 'test-accounts-checkout-and-pages-opened-by-address-fixed-reset-all-waits-for-the-template-pins-dlv-969-november-5-update';
+    section.id = anchor; section.fragment = `#${anchor}`;
+    expect(parseAuthorDocument(publication, 'operations-reference').sections[0].anchor).toBe(anchor);
+    for (const bad of [`#${'a'.repeat(201)}`, '#section/escape', '#section%20escape', '#section<script>']) {
+      section.fragment = bad;
+      expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
+    }
+  });
+  it('accepts numbered steps and dated record anchors without permitting punctuation', () => {
+    const publication = manifest();
+    for (const anchor of ['1-sign-in-and-confirm-the-account', '2026-11-07-stop-receipt']) {
+      publication.documents[0].sections = [{id:anchor, fragment:`#${anchor}`, title:'Dated or numbered heading'}];
+      expect(parseAuthorDocument(publication, 'operations-reference').sections[0].anchor).toBe(anchor);
+    }
+    publication.documents[0].sections[0].fragment = '#-invalid-leading-hyphen';
+    expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
+  });
+  it('accepts every registered documentation route under both protected roots', () => {
+    const template = manifest().documents[0];
+    const ids = [...new Set(['study-plan-review', 'operations-reference', ...Object.values(authorDocumentPages).map(page => page.documentId)])];
+    const publication = {schemaVersion:1, documents:ids.map(id => ({...template, id, content:{...template.content, href:`${root}${id}/${sha}/index.html`}}))};
+    for (const publicationRoot of [root, staffRoot]) {
+      for (const id of ids) {
+        expect(parseAuthorDocument(publication, id, publicationRoot).href).toBe(`${publicationRoot}${id}/${sha}/index.html`);
+      }
+    }
   });
   it('resolves only the immutable protected document path', () => {
     const value = parseAuthorDocument(manifest(), 'operations-reference');
@@ -97,7 +128,7 @@ describe('Private author-document boundary', () => {
     const template = publication.documents[0];
     const ids = ['aws-environment-journey', 'aws-dev-plan', 'aws-dev-decisions', 'aws-dev-operations', 'aws-dev-permissions', 'aws-dev-budget', 'aws-dev-status',
       'aws-dev-setup', 'aws-dev-workflow', 'aws-dev-procedures', 'aws-dev-records', 'aws-candidate-design', 'aws-candidate-files', 'aws-candidate-commands',
-      'aws-candidate-updates', 'authentication-walkthrough', 'support-runbooks'];
+      'aws-candidate-updates', 'authentication-walkthrough', 'support-runbooks', 'sign-in-flows', 'dynamodb-migration', 'aws-dev-certificates'];
     publication.documents = [template, ...ids.map((id) => ({
       ...template, id, content: { ...template.content, href: `${root}${id}/${sha}/index.html` },
     }))];

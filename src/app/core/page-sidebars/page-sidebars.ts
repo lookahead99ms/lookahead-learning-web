@@ -467,7 +467,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       // Admin pages bring their own navigation: the side bars inside main, or the Admin
       // sub-header strip before it (DLV-971). Either way the outline rail and the taglines stay off.
       this.authorNavigation.set(
-        !!main.querySelector('app-author-workspace-nav') ||
+        !!main.querySelector('app-author-workspace-nav, app-author-admin-menu') ||
           !!this.document.querySelector('app-admin-subheader'),
       );
       const sections = collectPageSections(main).filter(

@@ -7,6 +7,7 @@ import { PLATFORM_REVIEW_CLIENT, PlatformReviewViewer, ReviewCategory } from '..
 import { ReviewEditIntent } from '../admin-reviews/review-edit-intent';
 import { SupportRequestForm } from './support-request-form';
 import { ReportTips } from './report-tips';
+import { AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 
 /** One kind card: where it goes (a support ticket or feedback) and what the path needs. */
 export interface SupportKind {
@@ -39,11 +40,16 @@ export const supportKinds: readonly SupportKind[] = [
  */
 @Component({
   selector: 'app-support',
-  imports: [PlatformHeader, FormsModule, SupportRequestForm, AdminReviewsPage, ReportTips],
+  host: { class: 'admin-surface' },
+  imports: [AuthorWorkspaceNav, PlatformHeader, FormsModule, SupportRequestForm, AdminReviewsPage, ReportTips],
   templateUrl: './support.html',
   styleUrl: './support.css',
 })
 export class SupportPage implements OnInit {
+  protected readonly outline = [
+    { label: 'How to report', href: '#support-intro' },
+    { label: 'Your request', href: '#support-request' },
+  ];
   protected readonly accounts = inject(StudyPlanAccount);
   private readonly reviewClient = inject(PLATFORM_REVIEW_CLIENT, { optional: true });
   private readonly editIntent = inject(ReviewEditIntent);

@@ -1,0 +1,485 @@
+/* DLV-926: the Admin workspace owns these tokens. Learner pages and historical
+   iframe previews keep their own palettes. Semantic status/syntax tokens remain intact. */
+.admin-surface {
+  --surface-page: #ffffff;
+  --surface: #ffffff;
+  --surface-muted: #f4f7f7;
+  --surface-accent: #e5f3f1;
+  --text-strong: #20353c;
+  --text-body: #344e57;
+  --text-subtle: #536970;
+  --line: #d7e1e3;
+  --accent-strong: #087879;
+  --accent-on-primary: #ffffff;
+  --accent-link: #245a88;
+  --accent-secondary: var(--accent-strong);
+  --accent-secondary-strong: var(--accent-strong);
+  --accent-focus: #087879;
+  --platform-surface-soft: var(--surface-muted);
+  --platform-surface-tint: var(--surface-accent);
+  --platform-edge: var(--line);
+  --platform-edge-soft: var(--line);
+  --platform-shadow: none;
+  display: block;
+  min-height: 100dvh;
+  background: var(--surface-page);
+  color: var(--text-body);
+}
+:root[data-theme='dark'] .admin-surface {
+  --surface-page: #18242a;
+  --surface: #18242a;
+  --surface-muted: #202f36;
+  --surface-accent: #243d40;
+  --text-strong: #e3edef;
+  --text-body: #c8d8dd;
+  --text-subtle: #abbec5;
+  --line: #3b5059;
+  --accent-strong: #71d2c8;
+  --accent-on-primary: #142e30;
+  --accent-link: #9dc9ff;
+  --accent-focus: #71d2c8;
+}
+/* Shared visual treatment; controls, disclosures and document sandbox are retained.
+   Repeated scope classes intentionally outrank Angular component-scoped legacy skins. */
+.admin-surface.admin-surface.admin-surface
+  :is(.access-hero, .docs-hero, .doc-hero, .delivery-hero) {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: none;
+  background: var(--surface);
+  padding: clamp(20px, 2.5vw, 28px);
+}
+.admin-surface.admin-surface.admin-surface :is(.doc-hero, .docs-hero)::after {
+  content: none;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.hero-mark, .hero-icon, .section-icon, .group-icon, .page-icon, .item-icon) {
+  border-radius: 6px;
+  box-shadow: none;
+  background: var(--surface-muted);
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.intro-heading, .preview-intro-heading, .doc-hero h2) {
+  font-size: clamp(24px, 2.5vw, 32px);
+  line-height: 1.25;
+}
+.admin-surface.admin-surface.admin-surface :is(.lede, .hero-description) {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.admin-surface.admin-surface.admin-surface :is(.hero-group, .documentation-group-label, .reader) {
+  color: var(--text-subtle);
+}
+.admin-surface.admin-surface.admin-surface :is(.hero-facts li, .step-state, .kind-badge) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding-inline: 0;
+  color: var(--text-subtle);
+}
+.admin-surface.admin-surface.admin-surface
+  :is(
+    .panel,
+    .state-panel,
+    .how-card,
+    .assignment,
+    .flow-step,
+    .document-panel,
+    .api-workspace,
+    .architecture-workspace
+  ) {
+  border-radius: 8px;
+  box-shadow: none;
+}
+.admin-surface.admin-surface.admin-surface :is(.page-grid > a, .view-grid > a) {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: none;
+  background: var(--surface);
+}
+.admin-surface.admin-surface.admin-surface .page-grid > a::before {
+  content: none;
+}
+.admin-surface.admin-surface.admin-surface :is(.page-grid > a, .view-grid > a):hover {
+  border-color: var(--accent-strong);
+  background: var(--surface-muted);
+}
+.admin-surface.admin-surface.admin-surface .page-open {
+  color: var(--accent-link);
+}
+.admin-surface.admin-surface.admin-surface :is(.group-heading, .docs-group) {
+  --group-accent: var(--accent-strong);
+}
+.admin-surface.admin-surface.admin-surface :is(button, input, select, textarea) {
+  border-radius: 6px;
+}
+.admin-surface.admin-surface.admin-surface button[role='tab'] {
+  border-radius: 0;
+}
+.admin-surface.admin-surface.admin-surface app-author-admin-menu a[aria-current] {
+  color: var(--accent-strong);
+  border-inline-start-color: var(--accent-strong);
+  background: var(--surface-accent);
+}
+.admin-surface.admin-surface.admin-surface app-author-admin-menu a[aria-current='page'] .item-icon {
+  box-shadow: none;
+  background: transparent;
+}
+.admin-surface.admin-surface.admin-surface .delivery-page {
+  background: var(--surface-page);
+}
+
+/* The approved mockup's typography and single navigation rail. Only the layout
+   moves: every existing form, tab, route, capability and event handler is retained. */
+.admin-surface.admin-surface.admin-surface {
+  font:
+    14px/1.5 system-ui,
+    sans-serif;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(h1, h2, h3, h4, button, input, select, textarea, th, td) {
+  font-family: system-ui, sans-serif;
+}
+.admin-surface.admin-surface.admin-surface :is(h1, h2, h3, h4, strong, button) {
+  font-weight: 600;
+}
+.admin-surface.admin-surface.admin-surface :is(h2, h3) {
+  letter-spacing: -0.015em;
+}
+main.admin-workspace.admin-workspace.admin-workspace {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  min-height: calc(100dvh - var(--platform-header-height, 76px));
+  margin: 0;
+  padding: 0;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font-family: inherit;
+}
+main.admin-workspace.admin-workspace.admin-workspace > app-author-admin-menu {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: start;
+  position: sticky;
+  top: var(--platform-header-height, 76px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px));
+  padding: 20px 12px;
+  border: 0;
+  border-inline-end: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+main.admin-workspace.admin-workspace.admin-workspace
+  > :is(.workspace-sidebar, .preview-outline, .review-outline, .delivery-outline) {
+  grid-column: 2;
+  grid-row: 1;
+  position: static;
+  min-width: 0;
+  max-height: none;
+  padding: 24px 32px 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+}
+main.admin-workspace.admin-workspace.admin-workspace
+  > :is(.workspace-content, .preview-content, .review-content) {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 20px 32px 56px;
+}
+main.admin-workspace.admin-workspace.admin-workspace:not(:has(> aside)) > .workspace-content {
+  grid-row: 1 / span 2;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.access-hero, .docs-hero, .doc-hero, .delivery-hero) {
+  padding: 0 0 16px;
+  margin: 0 0 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 12px;
+}
+/* Redundant title ornaments are non-interactive. The main page heading remains. */
+.admin-surface.admin-surface.admin-surface :is(.hero-mark, .hero-icon, .section-icon, .group-icon) {
+  display: none;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.access-hero .eyebrow, .access-hero .intro-heading, .doc-hero h2) {
+  display: none;
+}
+.admin-surface.admin-surface.admin-surface :is(.lede, .hero-description) {
+  max-width: 90ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-subtle);
+}
+.admin-surface.admin-surface.admin-surface .hero-top > div {
+  max-width: none;
+}
+.admin-surface.admin-surface.admin-surface :is(.intro-heading, .preview-intro-heading) {
+  font-size: 20px;
+  line-height: 1.4;
+}
+.admin-surface.admin-surface.admin-surface .hero-facts {
+  margin-top: 12px;
+  gap: 8px 24px;
+}
+.admin-surface.admin-surface.admin-surface .section-heading {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+.admin-surface.admin-surface.admin-surface .directory {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.section-heading h2, .list-head h2, .directory-heading h2) {
+  font-size: 17px;
+}
+.admin-surface.admin-surface.admin-surface :is(.access-tabs, .waiting-tabs) button {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.access-tabs, .waiting-tabs)
+  button[aria-selected='true'] {
+  font-weight: 600;
+}
+.admin-surface.admin-surface.admin-surface :is(.tab-strip, .access-tabs) {
+  margin-bottom: 18px;
+}
+.admin-surface.admin-surface.admin-surface .group-heading {
+  border: 0;
+  padding-inline-start: 0;
+}
+.admin-surface.admin-surface.admin-surface .group-heading h2 {
+  color: var(--text-strong);
+  font-size: 20px;
+}
+.admin-surface.admin-surface.admin-surface .page-icon {
+  align-self: start;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+}
+.admin-surface.admin-surface.admin-surface .delivery-hero h1 {
+  font-size: 26px;
+}
+.admin-surface.admin-surface.admin-surface
+  :is(.delivery-hero, .delivery-metrics, .delivery-workspace) {
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) {
+  main.admin-workspace.admin-workspace.admin-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+  }
+  main.admin-workspace.admin-workspace.admin-workspace > app-author-admin-menu {
+    grid-column: 1;
+    grid-row: 1;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 8px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  main.admin-workspace.admin-workspace.admin-workspace
+    > :is(.workspace-sidebar, .preview-outline, .review-outline, .delivery-outline) {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 20px 16px 0;
+  }
+  main.admin-workspace.admin-workspace.admin-workspace
+    > :is(.workspace-content, .preview-content, .review-content),
+  main.admin-workspace.admin-workspace.admin-workspace:not(:has(> aside)) > .workspace-content {
+    grid-column: 1;
+    grid-row: 3;
+    padding: 16px 16px 40px;
+  }
+}
+
+@media (min-width: 901px) {
+  main.admin-workspace.admin-workspace.admin-workspace > app-author-admin-menu {
+    min-height: calc(100dvh - var(--platform-header-height, 76px));
+  }
+}
+.admin-surface.admin-surface.admin-surface .access-hero {
+  margin-bottom: 12px;
+  padding-bottom: 0;
+}
+
+.admin-surface.admin-surface.admin-surface .workspace-content > .panel {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.admin-surface.admin-surface.admin-surface .title-row h1 {
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+/* Support uses the same visual shell with contextual links, never Admin capabilities. */
+main.support-workspace.admin-workspace.admin-workspace > .support-navigation {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  position: sticky;
+  top: var(--platform-header-height, 76px);
+  min-height: calc(100dvh - var(--platform-header-height, 76px));
+  padding: 24px 20px;
+  background: var(--surface-muted);
+  border-inline-end: 1px solid var(--line);
+}
+.admin-surface.admin-surface.admin-surface .support-navigation .sidebar-header {
+  align-items: start;
+}
+.admin-surface.admin-surface.admin-surface .support-navigation .heading-outline {
+  flex-direction: column;
+  align-items: stretch;
+  border: 0;
+  gap: 8px;
+}
+.admin-surface.admin-surface.admin-surface .support-navigation .heading-outline a {
+  padding: 8px;
+}
+.admin-surface.admin-surface.admin-surface .support-title {
+  margin: 4px 0 24px;
+  font-size: 24px;
+  line-height: 1.3;
+}
+.admin-surface.admin-surface.admin-surface .support-workspace .intro-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.admin-surface.admin-surface.admin-surface .support-workspace .hero-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.admin-surface.admin-surface.admin-surface .support-workspace .hero-facts li {
+  justify-content: start;
+  white-space: normal;
+}
+.admin-surface.admin-surface.admin-surface .support-workspace :is(.kind-option, .kind-icon) {
+  border-radius: 6px;
+  box-shadow: none;
+}
+.admin-surface.admin-surface.admin-surface
+  .support-workspace
+  :is(#support-intro, #support-request) {
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 20px);
+}
+@media (max-width: 900px) {
+  main.support-workspace.admin-workspace.admin-workspace > .support-navigation {
+    grid-column: 1;
+    grid-row: 1;
+    position: static;
+    min-height: 0;
+    padding: 16px;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  main.support-workspace.admin-workspace.admin-workspace > .workspace-content {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+  }
+  .admin-surface.admin-surface.admin-surface .support-navigation .heading-outline {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* Documentation keeps its own right rail; other Admin pages keep the compact left menu. */
+main.admin-workspace.admin-workspace.admin-workspace:has(> .documentation-rail) {
+  grid-template-columns: 200px minmax(0, 1fr) 240px;
+}
+main.admin-workspace.admin-workspace.admin-workspace > app-author-admin-menu.documentation-rail {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  border-inline-end: 0;
+  border-inline-start: 1px solid var(--line);
+}
+@media (max-width: 1100px) and (min-width: 901px) {
+  main.admin-workspace.admin-workspace.admin-workspace:has(> .documentation-rail) {
+    grid-template-columns: 180px minmax(0, 1fr) 210px;
+  }
+}
+@media (max-width: 900px) {
+  main.admin-workspace.admin-workspace.admin-workspace:has(> .documentation-rail) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  main.admin-workspace.admin-workspace.admin-workspace > app-author-admin-menu.documentation-rail {
+    grid-column: 1;
+    grid-row: 2;
+    border-inline-start: 0;
+  }
+  main.admin-workspace.admin-workspace.admin-workspace:has(> .documentation-rail) > aside {
+    grid-row: 3;
+  }
+  main.admin-workspace.admin-workspace.admin-workspace:has(> .documentation-rail) > .workspace-content {
+    grid-row: 4;
+  }
+}
+
+/* Tab headers share the content's full height, so sticky positioning remains effective. */
+main.admin-workspace.admin-workspace.admin-workspace > :is(.workspace-content, .preview-content, .review-content):has(.section-tabs) {
+  grid-row: 1 / span 2;
+  padding-top: 24px;
+}
+.admin-surface.admin-surface.admin-surface :is(.workspace-sidebar, .preview-outline, .review-outline, .delivery-outline):has(> .section-tabs),
+.admin-surface.admin-surface.admin-surface .section-tabs,
+.admin-surface.admin-surface.admin-surface .section-tabs .author-sidebar-content {
+  display: contents;
+}
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline {
+  position: sticky;
+  top: var(--platform-header-height, 76px);
+  z-index: 15;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  background: var(--surface-page);
+  margin-block: 20px;
+  padding: 8px 2px;
+  gap: 20px;
+  scroll-padding-inline: 8px;
+}
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline a {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.admin-surface.admin-surface.admin-surface [data-workspace-panel][hidden] { display: none !important; }
+.admin-surface.admin-surface.admin-surface [data-workspace-panel] { min-width: 0; }
+@media (max-width: 900px) {
+  main.admin-workspace.admin-workspace.admin-workspace > :is(.workspace-content, .preview-content, .review-content):has(.section-tabs) { grid-row: 3; }
+  main.admin-workspace.admin-workspace.admin-workspace:has(> .documentation-rail) > .workspace-content:has(.section-tabs) { grid-row: 4; }
+}
+
+.admin-surface.admin-surface.admin-surface .tab-position { display: block; height: 0; }
+.admin-surface.admin-surface.admin-surface main:has(.section-tabs) { overflow-anchor: none; }
+
+/* A compact introduction precedes the sticky row; selected content starts immediately below. */
+.admin-surface.admin-surface.admin-surface :is(.workspace-content, .preview-content, .review-content):has(.section-tabs) { display: block; }
+.admin-surface.admin-surface.admin-surface .section-tabs .sidebar-header { margin-bottom: 6px; }
+.admin-surface.admin-surface.admin-surface .section-tabs [description] { margin: 0 0 12px; }
+.admin-surface.admin-surface.admin-surface .section-tabs .embedded-introduction { margin: 12px 0; max-width: 100ch; font-size: 14px; line-height: 1.55; }
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline { margin-block: 12px 16px; }
+.admin-surface.admin-surface.admin-surface .section-tabs :is(.doc-hero, .docs-hero) { margin: 12px 0; padding: 0; }
+.admin-surface.admin-surface.admin-surface .section-tabs .hero-facts { margin: 6px 0 0; }
+.admin-surface.admin-surface.admin-surface .section-tabs .section-pages { margin: 10px 0; }
+.admin-surface.admin-surface.admin-surface :is(.document-panel, .document-panel iframe) { min-height: 0; }
+.admin-surface.admin-surface.admin-surface .document-panel { padding: 0; }
+/* Tab content changes height asynchronously; browser scroll anchoring must not move its heading. */
+html:has(.admin-surface) { overflow-anchor: none; }

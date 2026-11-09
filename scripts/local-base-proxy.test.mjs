@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { assertWorkingGatewayProxy, loadLocalBaseProxy } from './local-base-proxy.mjs';
+import {
+  assertWorkingGatewayProxy,
+  loadLocalBaseProxy,
+  withLocalStaffDocuments,
+} from './local-base-proxy.mjs';
 
 test('selects an isolated JSON proxy without changing API or gateway targets', async (t) => {
   const base = resolve('.angular/local-proxy-tests');
@@ -37,18 +41,30 @@ test('protected working routes stay on Gateway 4350 and retain the author rewrit
   const root = await mkdtemp(`${base}/working-`);
   t.after(() => rm(root, { recursive: true, force: true }));
   const routes = [
-    '/bff/**', '/oauth2/authorization/**', '/login/oauth2/code/**', '/content/**',
-    '/api/**', '/oauth2/**', '/userinfo', '/connect/**', '/.well-known/**',
+    '/bff/**',
+    '/oauth2/authorization/**',
+    '/login/oauth2/code/**',
+    '/content/**',
+    '/api/**',
+    '/oauth2/**',
+    '/userinfo',
+    '/connect/**',
+    '/.well-known/**',
   ];
   const selected = Object.fromEntries(
     routes.map((route) => [route, { target: 'http://127.0.0.1:4350' }]),
   );
   selected['^/bff/author/previews/example(?=\\?|$)'] = {
     target: 'http://127.0.0.1:4350',
-    pathRewrite: { '^/bff/author/previews/example(?=\\?|$)': '/bff/author/previews/immutable/example' },
+    pathRewrite: {
+      '^/bff/author/previews/example(?=\\?|$)': '/bff/author/previews/immutable/example',
+    },
   };
   await writeFile(resolve(root, 'working.json'), JSON.stringify(selected));
-  assert.deepEqual(assertWorkingGatewayProxy(await loadLocalBaseProxy(root, 'working.json')), selected);
+  assert.deepEqual(
+    assertWorkingGatewayProxy(await loadLocalBaseProxy(root, 'working.json')),
+    selected,
+  );
 
   const wrongApi = structuredClone(selected);
   wrongApi['/api/**'].target = 'http://127.0.0.1:4320';
@@ -56,4 +72,40 @@ test('protected working routes stay on Gateway 4350 and retain the author rewrit
   const missingCsrfRoute = structuredClone(selected);
   delete missingCsrfRoute['/api/**'];
   assert.throws(() => assertWorkingGatewayProxy(missingCsrfRoute), /api\/\*\*/);
+});
+
+test('local staff document aliases preserve the immutable snapshot and Gateway authorization', () => {
+  const route = '^/bff/author/previews/preview-directory/author-documents/';
+  const staffRoute = '^/content/staff/author-documents/';
+  const snapshot =
+    '/bff/author/previews/preview-directory/working-author-documents/' + 'a'.repeat(64) + '/';
+  const selected = {
+    [route]: { target: 'http://127.0.0.1:4350', pathRewrite: { [route]: snapshot } },
+    '/content/**': { target: 'http://127.0.0.1:4350' },
+  };
+  const original = structuredClone(selected);
+  const result = withLocalStaffDocuments(selected);
+  assert.deepEqual(selected, original);
+  assert.equal(Object.keys(result)[0], staffRoute);
+  assert.equal(result[staffRoute].target, 'http://127.0.0.1:4350');
+  assert.equal(result[staffRoute].changeOrigin, false);
+  assert.equal(result[staffRoute].pathRewrite[staffRoute], snapshot);
+  assert.deepEqual(result['/content/**'], original['/content/**']);
+  for (const suffix of [
+    'manifest.json',
+    'screen-names/' + 'b'.repeat(64) + '/index.html?theme=light',
+    'downloads/' + 'c'.repeat(64) + '/guide.md',
+  ]) {
+    assert.equal(
+      ('/content/staff/author-documents/' + suffix).replace(new RegExp(staffRoute), snapshot),
+      snapshot + suffix,
+    );
+  }
+  assert.deepEqual(withLocalStaffDocuments({}), {});
+  for (const bad of [
+    { target: 'http://127.0.0.1:4315', pathRewrite: { [route]: snapshot } },
+    { target: 'http://127.0.0.1:4350', pathRewrite: { [route]: '/unprotected/' } },
+    { target: 'http://127.0.0.1:4350' },
+  ])
+    assert.throws(() => withLocalStaffDocuments({ [route]: bad }), /immutable snapshot/);
 });

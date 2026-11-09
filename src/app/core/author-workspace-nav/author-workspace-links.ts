@@ -44,8 +44,8 @@ export interface AuthorDocumentationGroup {
   pages: readonly AuthorDocumentationPage[];
 }
 
-/** Documentation pages grouped by the reader who starts there; every author can open all of them. */
-export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
+/** Page metadata; visibility remains governed by server-provided staff permissions below. */
+const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
   {
     id: 'review',
     label: 'Start here',
@@ -105,6 +105,7 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         href: '/admin/architecture',
         description: 'Repositories, applications, request journeys and the data model.',
         icon: '🏗️',
+        children: [{id: 'dynamodb-migration', label: 'DynamoDB migration design', href: '/admin/dynamodb-migration', description: 'Proposed migration design and local verification boundaries.', icon: '🗄️'}],
       },
       {
         id: 'contracts',
@@ -120,6 +121,7 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         description: 'The OIDC and PKCE sign-in flow: the parts, the sequence and what to keep apart.',
         icon: '🔑',
         children: [
+          {id: 'sign-in-flows', label: 'Sign-in flows', href: '/admin/sign-in-flows', description: 'Authentication journeys and their current implementation boundaries.', icon: '🔑'},
           {
             id: 'authentication-walkthrough',
             label: 'Sign-in walkthrough',
@@ -170,7 +172,7 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
             id: 'aws-environment-journey',
             label: 'Environment journey',
             href: '/admin/aws-environment-journey',
-            description: 'How DEV got here in 36 steps, what is next, and how to do it again for PROD.',
+            description: 'The dated DEV journey, remaining verification and proposed PROD reuse.',
             icon: '🧭',
           },
           {
@@ -191,14 +193,17 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
             id: 'aws-dev-operations',
             label: 'How DEV runs',
             href: '/admin/aws-dev-operations',
-            description: 'Sign-in sessions, release slots, certificates, and starting and stopping DEV.',
+            description: 'DEV runtime ownership, service start and stop, and certificate boundaries.',
             icon: '🔄',
+          },
+          {
+            id: 'aws-dev-certificates', label: 'DEV certificates', href: '/admin/aws-dev-certificates', description: 'Certificate ownership, renewal and verification evidence.', icon: '🔒',
           },
           {
             id: 'aws-dev-permissions',
             label: 'DEV permissions',
             href: '/admin/aws-dev-permissions',
-            description: 'Bootstrap and final policies, what they deny and the manual check before start.',
+            description: 'Installed permission records, policy boundaries and proposed changes.',
             icon: '🛡️',
           },
           {
@@ -240,7 +245,7 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
             id: 'aws-dev-records',
             label: 'DEV execution records',
             href: '/admin/aws-dev-records',
-            description: 'What was created in AWS on 2026-10-17 and 2026-10-18, and what is prepared but not run.',
+            description: 'Dated AWS execution receipts, corrections and prepared work.',
             icon: '🗂️',
           },
           {
@@ -311,6 +316,44 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
   },
 ];
 
+/** One canonical home for each documentation page; existing page addresses are preserved. */
+const documentationPages = documentationPageCatalog.flatMap(group => group.pages);
+const pageById = (id: string): AuthorDocumentationPage => documentationPages.find(page => page.id === id)!;
+const localApiPage: AuthorDocumentationPage = {
+  id: 'local-api', label: 'API client setup', href: '/admin/local-api', icon: '🔌',
+  description: 'Prepare a local HTTP client, credentials and an authenticated request workflow.',
+};
+export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
+  {id:'overview', label:'Overview', reader:'Orientation and product review', icon:'🧭', accent:'var(--accent-strong)',
+    pages:['screen-names','access-checks','plans','reviewer-guide'].map(pageById)},
+  {id:'architecture', label:'Architecture & Design', reader:'System structure and design decisions', icon:'🏗️', accent:'var(--accent-strong)',
+    pages:['architecture','authentication'].map(pageById)},
+  {id:'api', label:'API Reference', reader:'Endpoint and schema contracts', icon:'🔌', accent:'var(--accent-strong)',
+    pages:[{...pageById('api'),description:'Endpoints, request and response schemas, capabilities and contract downloads.'}]},
+  {id:'local', label:'Local Development', reader:'Set up, run and verify locally', icon:'💻', accent:'var(--accent-strong)',
+    pages:[pageById('local-development'),localApiPage]},
+  {id:'release', label:'Build & Release', reader:'Build contracts, validation and deployment', icon:'🚀', accent:'var(--accent-strong)',
+    pages:['contracts','release-gates','aws-deployment'].map(pageById)},
+  {id:'operations', label:'Operations & Support', reader:'Runtime ownership, diagnosis and recovery', icon:'🛠️', accent:'var(--accent-strong)',
+    pages:['operations','production-support'].map(pageById)},
+];
+
+export function authorDocumentationGroup(pageId: string | null | undefined): AuthorDocumentationGroup | undefined {
+  return authorDocumentationGroups.find(group => group.pages.some(page => page.id === pageId || page.children?.some(child => child.id === pageId)));
+}
+
+/** Old Documentation landing hashes remain usable bookmarks. */
+export function documentationGroupHref(id: string): string {
+  return id === 'api' ? '/admin/api' : '/admin/docs?group=' + id;
+}
+
+export function documentationLandingGroup(search: string, hash = ''): string | null {
+  const requested = new URLSearchParams(search).get('group');
+  if (authorDocumentationGroups.some(group => group.id === requested)) return requested!;
+  const legacy: Record<string,string> = {'docs-review':'overview','docs-system':'architecture','docs-admin':'release'};
+  return legacy[hash.replace(/^#/, '')] ?? null;
+}
+
 /** Every documentation page, sub-pages included, in reading order. */
 export const authorDocumentationLinks: readonly AuthorDocumentationPage[] =
   authorDocumentationGroups.flatMap((group) =>
@@ -341,12 +384,38 @@ export type AuthorWorkspacePageId =
   | (typeof authorWorkspaceLinks)[number]['id']
   | 'architecture'
   | 'api'
+  | 'local-api'
   | 'plans'
   | 'sales'
   | AuthorDocumentPageId;
 
 /** Published private documents rendered by the shared document page, keyed by route page id. */
 export const authorDocumentPages = {
+  'dynamodb-migration': {
+    documentId: 'dynamodb-migration',
+    summary: 'Read-only design · Proposed migration and local verification, not a production cutover.',
+    frameTitle: 'DynamoDB migration design and verification boundaries',
+  },
+  'sign-in-flows': {
+    documentId: 'sign-in-flows',
+    summary: 'Read-only reference · Sign-in journeys and implementation boundaries.',
+    frameTitle: 'Sign-in flows and their implementation boundaries',
+  },
+  'aws-dev-certificates': {
+    documentId: 'aws-dev-certificates',
+    summary: 'Read-only reference · DEV certificate procedures and dated verification.',
+    frameTitle: 'DEV certificate ownership, renewal and verification',
+  },
+  'runtime-stores': {
+    documentId: 'runtime-stores',
+    summary: 'Read-only reference · Runtime store ownership, boundaries and recovery.',
+    frameTitle: 'Runtime stores, ownership and recovery',
+  },
+  contracts: {
+    documentId: 'contracts',
+    summary: 'Read-only reference · Contracts between applications and their owners.',
+    frameTitle: 'Application contracts and ownership',
+  },
   'reviewer-guide': {
     documentId: 'reviewer-guide',
     summary: 'Read-only guide · Review scope, known limits and how to report.',
@@ -384,33 +453,33 @@ export const authorDocumentPages = {
   },
   'aws-deployment': {
     documentId: 'aws-deployment',
-    summary: 'Read-only section · DEV built and tested locally; nothing deployed to AWS.',
+    summary: 'Read-only section · DEV deployment evidence and proposed PROD boundaries.',
     frameTitle: 'AWS deployment section overview and current state',
   },
   'aws-environment-journey': {
     documentId: 'aws-environment-journey',
-    summary: 'Read-only reference · Evidence reviewed 2026-10-29; the database is verified, no application is deployed.',
+    summary: 'Read-only reference · Dated DEV milestones and proposed PROD reuse.',
     frameTitle: 'The DEV environment journey, next gates and reuse paths',
   },
   'aws-dev-plan': {
     documentId: 'aws-dev-plan',
-    summary: 'Read-only reference · Accepted and built locally; not deployed.',
+    summary: 'Read-only reference · DEV design, implementation evidence and remaining gaps.',
     frameTitle: 'Accepted DEV plan, network boundary and statement states',
   },
   'aws-dev-decisions': {
     documentId: 'aws-dev-decisions',
-    summary: 'Read-only reference · 36 decisions and later refinements; live checks pending.',
+    summary: 'Read-only reference · Accepted decisions, later refinements and their evidence.',
     frameTitle: 'DEV decision register with alternatives and rationale',
   },
   'aws-dev-operations': {
     documentId: 'aws-dev-operations',
-    summary: 'Read-only reference · Built and tested locally; never run in AWS.',
-    frameTitle: 'DEV sessions, release slots, certificates and shutdown',
+    summary: 'Read-only reference · DEV runtime procedures and dated verification.',
+    frameTitle: 'DEV service operation, certificates and shutdown',
   },
   'aws-dev-permissions': {
     documentId: 'aws-dev-permissions',
-    summary: 'Read-only reference · Review candidates; nothing installed in AWS.',
-    frameTitle: 'DEV permission phases, final policies and pre-start check',
+    summary: 'Read-only reference · Installed permission records and proposed policy changes.',
+    frameTitle: 'DEV permission records, policy boundaries and verification',
   },
   'aws-dev-budget': {
     documentId: 'aws-dev-budget',
@@ -439,7 +508,7 @@ export const authorDocumentPages = {
   },
   'aws-dev-records': {
     documentId: 'aws-dev-records',
-    summary: 'Read-only log · Dated AWS execution records; cleanup not run.',
+    summary: 'Read-only log · Dated AWS execution records, corrections and prepared work.',
     frameTitle: 'DEV AWS execution records and prepared, unrun work',
   },
   'aws-candidate-design': {
@@ -449,17 +518,17 @@ export const authorDocumentPages = {
   },
   'aws-candidate-files': {
     documentId: 'aws-candidate-files',
-    summary: 'Read-only reference · Earlier candidate; nothing deployed.',
+    summary: 'Read-only reference · Historical candidate, not current deployment instructions.',
     frameTitle: 'Earlier candidate files, task settings and IAM roles',
   },
   'aws-candidate-commands': {
     documentId: 'aws-candidate-commands',
-    summary: 'Read-only reference · Earlier candidate procedures; nothing deployed.',
+    summary: 'Read-only reference · Historical procedures, not current deployment instructions.',
     frameTitle: 'Earlier candidate commands, rollback and common issues',
   },
   'aws-candidate-updates': {
     documentId: 'aws-candidate-updates',
-    summary: 'Read-only reference · Dated candidate additions; nothing deployed.',
+    summary: 'Read-only reference · Dated additions to the historical candidate.',
     frameTitle: 'Earlier candidate encryption, endpoints, logging and database jobs',
   },
   'release-gates': {
@@ -469,12 +538,12 @@ export const authorDocumentPages = {
   },
   'production-support': {
     documentId: 'production-support',
-    summary: 'Support guide · Local steps usable now; DEV/PROD steps need an approved deployment.',
+    summary: 'Support guide · Local and DEV procedures; PROD remains a proposed environment.',
     frameTitle: 'Production support rules, severity, triage and health checks',
   },
   'support-runbooks': {
     documentId: 'support-runbooks',
-    summary: 'Runbooks · Local steps usable now; DEV/PROD steps need an approved deployment.',
+    summary: 'Runbooks · Local and DEV procedures; PROD verification remains separate.',
     frameTitle: 'Production support runbooks',
   },
 } as const;

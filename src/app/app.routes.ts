@@ -1,8 +1,10 @@
+import { apiGroupBookmarkRedirect, localApiBookmarkRedirect } from './core/author-api-navigation';
 import { AUTHOR_DOCUMENTS_CLIENT } from './core/author-documents-client';
 import { AuthorDocumentsApi } from './core/author-documents-api';
 import { AUTHOR_REVIEW_CLIENT } from './pages/author-previews/author-review-client';
 import { AuthorReviewApi } from './pages/author-previews/author-review-api';
-import { Routes } from '@angular/router';
+import { Routes, Router } from '@angular/router';
+import { inject } from '@angular/core';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
 import { authorGuard, accessGuard, staffGuard, deliveryGuard, previewsGuard } from './core/author-access';
@@ -35,6 +37,8 @@ export const routes: Routes = [
         (page) => page.AuthorOperationsPage,
       ),
   },
+  // Historical documentation links used the published document id as the route.
+  { path: 'admin/reviewer-guide', pathMatch: 'full', redirectTo: ({queryParams, fragment}) => inject(Router).createUrlTree(['/admin/review-guide'], {queryParams, fragment: fragment ?? undefined}) },
   // DLV-926: each documentation route names one published private document.
   ...(
     [
@@ -45,6 +49,9 @@ export const routes: Routes = [
       ['admin/authentication', 'authentication'],
       ['admin/authentication-walkthrough', 'authentication-walkthrough'],
       ['admin/contracts', 'contracts'],
+      ['admin/sign-in-flows', 'sign-in-flows'],
+      ['admin/dynamodb-migration', 'dynamodb-migration'],
+      ['admin/aws-dev-certificates', 'aws-dev-certificates'],
       ['admin/aws-deployment', 'aws-deployment'],
       ['admin/aws-environment-journey', 'aws-environment-journey'],
       ['admin/aws-dev-plan', 'aws-dev-plan'],
@@ -96,7 +103,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/docs',
-    canActivate: [staffGuard],
+    canActivate: [staffGuard, apiGroupBookmarkRedirect],
+    runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     loadComponent: () =>
       import('./pages/author-docs/author-docs').then((page) => page.AuthorDocsPage),
   },
@@ -128,7 +136,13 @@ export const routes: Routes = [
   },
   {
     path: 'admin/api',
+    canActivate: [staffGuard, localApiBookmarkRedirect],
+    loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
+  },
+  {
+    path: 'admin/local-api',
     canActivate: [staffGuard],
+    data: { localApiGuide: true },
     loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
   },
   // DLV-926: the admin area lives under /admin. DLV-969 (2026-11-04): /admin opens Documentation, which every staff role

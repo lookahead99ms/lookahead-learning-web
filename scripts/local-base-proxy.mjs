@@ -58,3 +58,35 @@ export function assertWorkingGatewayProxy(proxy) {
   }
   return proxy;
 }
+
+/**
+ * The connected workstation keeps its reviewed documents in the protected preview
+ * source. New protected builds use /content/staff; route only those document reads
+ * to the already selected immutable snapshot through the same Gateway. This helper
+ * is used by start-private only, never by a deployed application build.
+ */
+export function withLocalStaffDocuments(proxy) {
+  const localRoute = '^/bff/author/previews/preview-directory/author-documents/';
+  const selected = proxy[localRoute];
+  if (!selected) return proxy;
+  const snapshot = selected.pathRewrite?.[localRoute];
+  if (
+    selected.target !== 'http://127.0.0.1:4350' ||
+    typeof snapshot !== 'string' ||
+    !/^\/bff\/author\/previews\/preview-directory\/working-author-documents\/[a-f0-9]{64}\/$/.test(
+      snapshot,
+    )
+  ) {
+    throw new Error('Local staff documents require an immutable snapshot through Gateway 4350.');
+  }
+  const staffRoute = '^/content/staff/author-documents/';
+  return {
+    [staffRoute]: {
+      target: selected.target,
+      secure: false,
+      changeOrigin: false,
+      pathRewrite: { [staffRoute]: snapshot },
+    },
+    ...Object.fromEntries(Object.entries(proxy).filter(([route]) => route !== staffRoute)),
+  };
+}

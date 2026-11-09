@@ -1,12 +1,14 @@
 <app-platform-header />
-<main id="main-content" class="plans-page">
-  <aside class="workspace-sidebar">
-    <app-author-workspace-nav pageTitle="Plans and purchases" pageId="plans" [outline]="outline">
-      <p description>Reference · The agreed plan catalog and where learners buy. Local mock payments only.</p>
-    </app-author-workspace-nav>
-  </aside>
+<main id="main-content" class="admin-workspace plans-page">
+  <app-author-admin-menu pageId="plans" />
+  <app-author-admin-menu pageId="plans" [documentationOnly]="true" />
   <div class="workspace-content">
-    <app-author-doc-hero pageId="plans" />
+<aside class="workspace-sidebar">
+    <app-author-workspace-nav [tabbed]="true" pageTitle="Plans and purchases" pageId="plans" [outline]="outline">
+      <p description>Reference · The agreed plan catalog and where learners buy. Local mock payments only.</p>
+    <app-author-doc-hero beforeSections pageId="plans" /></app-author-workspace-nav>
+  </aside>
+
 
     <p class="status-note" role="note">
       <strong>Local mock payments.</strong> The server stores purchases and catalog access. No money is charged. Existing course grants remain separate.
@@ -135,5 +137,4 @@
       </ul>
     </section>
   </div>
-  <app-author-admin-menu pageId="plans" />
 </main>

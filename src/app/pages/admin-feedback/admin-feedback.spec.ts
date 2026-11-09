@@ -209,20 +209,20 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     expect(root.textContent).not.toMatch(/importance/i);
   });
 
-  it('has the Admin sub-header under the platform header and one content column, no outline and no Admin menu', async () => {
+  it('places the shared Admin rail before the support content', async () => {
     const harness = await open();
     const root = harness.routeNativeElement!;
-    const subheader = root.querySelector('app-admin-subheader')!;
+    const subheader = root.querySelector('main > app-author-admin-menu')!;
     expect(subheader).not.toBeNull();
-    // Directly under the header, before the page's main content.
-    expect(subheader.compareDocumentPosition(root.querySelector('main')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Navigation precedes the working content in reading and keyboard order.
+    expect(subheader.compareDocumentPosition(root.querySelector('.workspace-content')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(subheader.querySelector('nav')?.getAttribute('aria-label')).toBe('Admin navigation');
     expect(subheader.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/admin/feedback');
     expect(root.querySelector('app-author-workspace-nav')).toBeNull();
-    expect(root.querySelector('app-author-admin-menu')).toBeNull();
+    expect(root.querySelector('app-admin-subheader')).toBeNull();
     expect(root.querySelector('.workspace-sidebar')).toBeNull();
     expect(root.querySelector('main > .workspace-content')).not.toBeNull();
-    expect(root.querySelectorAll('main > *')).toHaveLength(1);
+    expect(root.querySelectorAll('main > *')).toHaveLength(2);
     expect(root.querySelector('.title-row .eyebrow')?.textContent).toBe('Admin');
     expect(text(root.querySelector('.title-row h1'))).toBe('Support tickets and feedback');
   });
