@@ -688,8 +688,11 @@ their `/admin` pages. The Gateway's sign-in return allowlist still accepts only
 matching `/author` address and the redirect brings the person back; adding
 `admin` to that allowlist is a pending Gateway change.
 
-The protected environment sets `authorPreviewsBaseUrl` to `/bff/author/previews/`;
-the default, demo, and public production environments leave it empty. An empty
+The protected environment sets `authorPreviewsBaseUrl` to `/content/staff/previews/`
+(DLV-1000, owner 2026-11-09): the Architecture document and the API reference are read
+from the publication's staff previews, on DEV and on local alike; `start-private` aliases
+that path to the live working snapshots through the local Gateway, so a developer still
+sees fresh previews. The default, demo, and public production environments leave it empty. An empty
 configuration shows an unavailable state and makes no inventory request.
 Use the connected stack's existing `/bff/**` proxy to its OAuth gateway. The
 working development stack uses gateway4331; select its matching proxy JSON when
@@ -1566,7 +1569,7 @@ SAN list that contains the slot's exact name and still rejects any other name; t
 both slots and a non-slot name against one dual-SAN leaf. Infra binds the exact secret ARN/version and
 log permissions. The first compatible image must come from `main` after this batch is merged.
 
-The browser build (`production,protected`) ships `apiBaseUrl=/api`, `authorPreviewsBaseUrl=/bff/author/previews/`,
+The browser build (`production,protected`) ships `apiBaseUrl=/api`, `authorPreviewsBaseUrl=/content/staff/previews/`,
 `accountPlansEnabled=true` and `protectedContent=true` only; no credential, client secret, AWS value,
 hostname or pool identifier is compiled in. Optional build inputs are `LOOKAHEAD_RELEASE_VERSION` and
 `LOOKAHEAD_SOURCE_REVISION` (served as `/release.json`) and `LOOKAHEAD_SITE_ORIGIN` (sitemap only).

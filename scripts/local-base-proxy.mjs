@@ -80,6 +80,25 @@ export function withLocalStaffDocuments(proxy) {
     throw new Error('Local staff documents require an immutable snapshot through Gateway 4350.');
   }
   const staffRoute = '^/content/staff/author-documents/';
+  // DLV-1000: the protected build reads Architecture and the API reference from the publication's staff previews;
+  // locally those paths follow the selected working snapshots (api, architecture) and the live directory for the rest.
+  const previewsRoute = '^/content/staff/previews/preview-directory/';
+  const previewAliases = {};
+  for (const part of ['api', 'architecture']) {
+    const workingRoute = `^/bff/author/previews/preview-directory/${part}/`;
+    const working = proxy[workingRoute];
+    const rewrite = working?.pathRewrite?.[workingRoute];
+    if (working && (working.target !== selected.target || typeof rewrite !== 'string'
+      || !new RegExp(`^/bff/author/previews/preview-directory/working-${part === 'api' ? 'api-reference' : part}/[a-f0-9]{64}/$`).test(rewrite))) {
+      throw new Error(`Local ${part} preview requires an immutable snapshot through Gateway 4350.`);
+    }
+    const route = `${previewsRoute}${part}/`;
+    previewAliases[route] = { target: selected.target, secure: false, changeOrigin: false,
+      pathRewrite: { [route]: rewrite ?? `/bff/author/previews/preview-directory/${part}/` } };
+  }
+  previewAliases[previewsRoute] = { target: selected.target, secure: false, changeOrigin: false,
+    pathRewrite: { [previewsRoute]: '/bff/author/previews/preview-directory/' } };
+  const aliased = new Set([staffRoute, ...Object.keys(previewAliases)]);
   return {
     [staffRoute]: {
       target: selected.target,
@@ -87,6 +106,7 @@ export function withLocalStaffDocuments(proxy) {
       changeOrigin: false,
       pathRewrite: { [staffRoute]: snapshot },
     },
-    ...Object.fromEntries(Object.entries(proxy).filter(([route]) => route !== staffRoute)),
+    ...previewAliases,
+    ...Object.fromEntries(Object.entries(proxy).filter(([route]) => !aliased.has(route))),
   };
 }
