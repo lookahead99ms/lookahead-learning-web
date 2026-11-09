@@ -1,10 +1,14 @@
 <app-platform-header />
-<main id="main-content" class="support-page">
-  <h1 class="visually-hidden">Support and feedback</h1>
+<main id="main-content" class="admin-workspace support-workspace">
+  <aside class="support-navigation">
+    <app-author-workspace-nav eyebrow="Help" pageTitle="Support" [headingLevel]="2" [outline]="outline" />
+  </aside>
+  <div class="workspace-content">
+  <h1 class="support-title">Support and feedback</h1>
   <div class="support-body">
     <!-- DLV-971 (owner, 2026-11-06): no hero, two cards. The intro card: the two headings as plain text (the
          Feedback one for staff), the three facts, the tips. Nothing in it is selectable. -->
-    <section class="panel intro-panel" aria-labelledby="contact-heading">
+    <section id="support-intro" class="panel intro-panel" aria-labelledby="contact-heading">
       <div class="intro-headings" [class.alone]="!reviewRole()">
         <div class="intro-heading-block">
           <p class="eyebrow">Support</p>
@@ -28,7 +32,7 @@
     </section>
 
     <!-- The form card: the kind cards are the only selectable thing; the kind decides the path and its fields. -->
-    <section class="panel form-panel" aria-labelledby="kind-heading">
+    <section id="support-request" class="panel form-panel" aria-labelledby="kind-heading">
       <fieldset class="kind-picker" [disabled]="!!editingCategory()">
         <legend id="kind-heading" class="kind-heading">What is it?</legend>
         <div class="kind-options" [class.five]="kinds().length === 5">
@@ -50,5 +54,6 @@
         <app-support-request-form [compact]="true" [kind]="ticketKind()" />
       }
     </section>
+  </div>
   </div>
 </main>

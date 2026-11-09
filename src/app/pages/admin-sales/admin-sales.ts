@@ -22,6 +22,7 @@ import {
  * change here is stored in this browser and seen only by this staff account on Pricing.
  */
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-admin-sales',
   imports: [
     PlatformHeader,

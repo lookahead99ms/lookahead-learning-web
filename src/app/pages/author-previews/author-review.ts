@@ -6,14 +6,16 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { AuthorReviewPacket } from './author-review-packet';
 
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-author-review',
   imports: [PlatformHeader, RouterLink, AuthorWorkspaceNav, AuthorAdminMenu, AuthorReviewPacket],
   template: `<app-platform-header />
-    <main id="main-content" class="review-page">
-      <aside class="review-outline">
-        <app-author-workspace-nav pageTitle="Study Plan review" [outline]="outline" />
+    <main id="main-content" class="admin-workspace review-page">
+      <app-author-admin-menu pageId="previews" />
+    <div class="review-content">
+<aside class="review-outline">
+        <app-author-workspace-nav [tabbed]="true" pageTitle="Study Plan review" [outline]="outline" />
       </aside>
-      <div class="review-content">
         <a class="action-link" routerLink="/admin/previews">All previews</a>
         <header id="review-overview">
           <p class="eyebrow">Admin review workspace</p>
@@ -27,7 +29,6 @@ import { AuthorReviewPacket } from './author-review-packet';
           <app-author-review-packet [expanded]="true" />
         </section>
       </div>
-      <app-author-admin-menu pageId="previews" />
     </main>`,
   styles: `
     :host {

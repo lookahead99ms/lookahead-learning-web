@@ -34,10 +34,6 @@ import {
   DeliveryWorkflowState,
 } from '../../content/delivery-plan.models';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import {
-  AuthorOutlineItem,
-  AuthorWorkspaceNav,
-} from '../../core/author-workspace-nav/author-workspace-nav';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
@@ -56,17 +52,13 @@ type WorkItemDraft = Omit<
 
 @Component({
   selector: 'app-delivery-plan',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, ScrollLock, RouterLink],
+  imports: [PlatformHeader, AuthorAdminMenu, FormsModule, ScrollLock, RouterLink],
   templateUrl: './delivery-plan.html',
   styleUrl: './delivery-plan.css',
-  host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
+  host: { class: 'admin-surface', '(window:beforeunload)': 'onBeforeUnload($event)' },
 })
 export class DeliveryPlanPage implements OnInit {
-  protected readonly outline: readonly AuthorOutlineItem[] = [
-    { label: 'Plan overview', href: '#delivery-overview' },
-    { label: 'Delivery summary', href: '#delivery-summary' },
-    { label: 'Work and decisions', href: '#delivery-workspace' },
-  ];
+  protected readonly workspace = signal(false);
   private readonly accounts = inject(StudyPlanAccount);
   protected readonly authorAccess = computed(
     () => (this.accounts.account()?.permissions?.deliveryRead ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
@@ -177,6 +169,9 @@ export class DeliveryPlanPage implements OnInit {
   protected readonly completedCount = computed(
     () => this.plan()?.workItems.filter((item) => item.statusId === 'done').length ?? 0,
   );
+  protected readonly reviewCount = computed(
+    () => this.plan()?.workItems.filter((item) => item.statusId === 'review').length ?? 0,
+  );
   protected readonly blockedCount = computed(
     () => this.plan()?.workItems.filter((item) => item.blockedBy.length > 0).length ?? 0,
   );
@@ -191,6 +186,16 @@ export class DeliveryPlanPage implements OnInit {
   ngOnInit(): void {
     if (!this.authorAccess()) return;
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      // Preserve existing filtered/view bookmarks while the plain route becomes the overview.
+      const workspace = this.route.snapshot.routeConfig?.path === 'delivery-plan/work' ||
+        ['view', 'q', 'stage', 'priority', 'type'].some((key) => params.has(key)) ||
+        this.route.snapshot.fragment === 'delivery-workspace';
+      if (this.workspace() && !workspace) {
+        // The route's leave guard has approved this return to the overview, including route reuse.
+        this.closeEditor(true);
+        this.closeWorkItem();
+      }
+      this.workspace.set(workspace);
       const requestedView = params.get('view');
       this.view.set(
         requestedView === 'roadmap' ||
@@ -439,6 +444,7 @@ export class DeliveryPlanPage implements OnInit {
     const requested = this.route.snapshot.fragment;
     if (!requested || this.highlightedId() || !this.plan()?.workItems.some((item) => item.id === requested)) return;
     this.highlightedId.set(requested);
+    this.workspace.set(true);
     this.view.set('all-tickets');
     this.resetView();
     setTimeout(() =>
@@ -1038,7 +1044,9 @@ export class DeliveryPlanPage implements OnInit {
       // Same-page controls update the URL without triggering the app-wide scroll-to-top.
       scroll: 'manual',
       queryParams: {
-        view: this.view() === 'board' ? null : this.view(),
+        // The legacy root needs an explicit board marker so clearing filters does not open the overview.
+        view: this.view() === 'board' && this.route.snapshot.routeConfig?.path === 'delivery-plan/work'
+          ? null : this.view(),
         q: this.query().trim() || null,
         stage: this.stageFilter() === this.defaultStageFilter() ? null : this.stageFilter(),
         priority: this.priorityFilter() === 'all' ? null : this.priorityFilter(),

@@ -161,11 +161,9 @@ describe('DeliveryPlanPage', () => {
       providers: [
         provideHttpClient(),
         provideRouter([
-          {
-            ...routes.find((route) => route.path === 'delivery-plan')!,
-            component: DeliveryPlanPage,
-            loadComponent: undefined,
-          },
+          ...routes.filter((route) => ['delivery-plan', 'delivery-plan/work'].includes(route.path ?? '')).map((route) => ({
+            ...route, component: DeliveryPlanPage, loadComponent: undefined,
+          })),
           { path: 'away', component: OtherPage },
         ]),
         { provide: ContentService, useValue: content },
@@ -186,35 +184,148 @@ describe('DeliveryPlanPage', () => {
     vi.spyOn(accounts, 'initialize').mockResolvedValue();
   });
 
-  it('hides a loaded board and stops refresh after author access is lost', async () => {
+  it('combines the plan overview and ticket summary without rendering the workspace', async () => {
+    const summaryPlan = structuredClone(plan);
+    summaryPlan.workItems[0].statusId = 'done';
+    summaryPlan.workItems[1].statusId = 'review';
+    editor.load.mockReturnValue(of({ plan: summaryPlan, revision: 'summary-1' }));
     const harness = await RouterTestingHarness.create();
     const page = await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
     harness.detectChanges();
-    expect(harness.routeNativeElement?.textContent).toContain('Deliver deliberately');
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('h1')?.textContent).toContain('Delivery plan');
+    expect(root.querySelector('.delivery-hero')).toBeNull();
+    expect(root.querySelector('.delivery-work-link .delivery-current-focus')).not.toBeNull();
+    expect(root.querySelectorAll('.delivery-work-link a')).toHaveLength(1);
+    expect(root.textContent).not.toContain('View active work');
+    expect(root.querySelector('.delivery-metrics')!.compareDocumentPosition(root.querySelector('.delivery-work-link')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(root.querySelector('.delivery-metrics')?.textContent).toContain('Tickets completed');
+    expect(root.querySelector('.delivery-metrics')?.textContent).toContain('50%');
+    expect(page['completionPercent']()).toBe(50);
+    expect(root.querySelector('.delivery-workspace')).toBeNull();
+    expect(root.querySelector('.delivery-outline')).toBeNull();
+    expect(root.querySelector('.view-tabs')).toBeNull();
+    const open = [...root.querySelectorAll<HTMLAnchorElement>('a')].find(a => a.textContent?.includes('Open work & decisions'));
+    expect(open?.getAttribute('href')).toBe('/delivery-plan/work');
+    open!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Work & decisions');
+    expect(harness.routeNativeElement?.querySelector('.delivery-hero')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.delivery-metrics')).toBeNull();
+    expect(harness.routeNativeElement?.querySelectorAll('.view-tabs button')).toHaveLength(5);
+  });
+
+  it('opens the current stage workspace from the overview', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    harness.detectChanges();
+    harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-work-link a')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toContain('/delivery-plan/work');
+    expect(harness.routeNativeElement?.querySelector('.delivery-board')).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.delivery-hero')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector<HTMLSelectElement>('.board-controls select')?.value).toBe('current');
+  });
+
+  it.each(['?view=roadmap', '?q=data-driven', '?stage=foundation', '?priority=P1', '?type=story'])(
+    'preserves the legacy workspace bookmark /delivery-plan%s', async (query) => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/delivery-plan' + query, DeliveryPlanPage);
+      harness.detectChanges();
+      expect(harness.routeNativeElement?.querySelector('.delivery-workspace')).not.toBeNull();
+      expect(harness.routeNativeElement?.querySelector('.delivery-hero')).toBeNull();
+      expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Work & decisions');
+    },
+  );
+
+  it('returns from a legacy workspace URL to the overview when Back is clicked', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan?view=decisions', DeliveryPlanPage);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.delivery-workspace')).not.toBeNull();
+    harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-back')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+    expect(harness.routeNativeElement!.querySelector('.delivery-workspace')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
+  });
+
+  it('keeps the legacy board explicit after clearing its last filter', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan?q=data-driven', DeliveryPlanPage);
+    harness.detectChanges();
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.clear-filters')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=board');
+    expect(harness.routeNativeElement!.querySelector('.delivery-board')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.delivery-hero')).toBeNull();
+  });
+
+  it('protects and discards drafts correctly when returning home through a reused legacy route', async () => {
+    editor.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'revision-1' }));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan?view=decisions', DeliveryPlanPage);
+    harness.detectChanges();
+    await newItem(harness);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const back = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-back')!;
+    back.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=decisions');
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(harness.routeNativeElement!.querySelector<HTMLInputElement>('[name="title"]')?.value).toBe('A new story');
+    expect(editor.save).not.toHaveBeenCalled();
+    confirm.mockReturnValue(true);
+    back.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+    expect(harness.routeNativeElement!.querySelector('.delivery-workspace')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.editor-dialog')?.hasAttribute('open')).not.toBe(true);
+    expect(harness.routeNativeElement!.querySelector('[name="title"]')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
+  });
+
+  it('renders zero ticket completion safely for an empty delivery record', async () => {
+    editor.load.mockReturnValue(of({ plan: { ...plan, workItems: [] }, revision: 'empty-1' }));
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    harness.detectChanges();
+    expect(page['completionPercent']()).toBe(0);
+    expect(harness.routeNativeElement?.querySelector('.delivery-metrics')?.textContent).toContain('0%');
+  });
+
+  it('hides a loaded board and stops refresh after author access is lost', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Render a data-driven board');
     TestBed.inject(StudyPlanAccount).account.set(null);
     harness.detectChanges();
     const reads = editor.load.mock.calls.length;
     page['refreshPlan']();
     expect(editor.load.mock.calls.length).toBe(reads);
     expect(harness.routeNativeElement?.textContent).toContain('Admin access required');
-    expect(harness.routeNativeElement?.textContent).not.toContain('Deliver deliberately');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Render a data-driven board');
     expect(harness.routeNativeElement?.querySelector('.board-column')).toBeNull();
   });
 
   it('renders workflow columns and arbitrary stages from JSON', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     harness.detectChanges();
 
     expect(content.getDeliveryPlan).toHaveBeenCalledOnce();
     expect(publication.load).not.toHaveBeenCalled();
     expect(harness.routeNativeElement?.textContent).toContain('Read-only view');
-    expect(
-      harness.routeNativeElement?.querySelectorAll('.delivery-outline .heading-outline a'),
-    ).toHaveLength(3);
-    expect(
-      harness.routeNativeElement?.querySelector('.delivery-outline a[href$="#delivery-workspace"]'),
-    ).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.delivery-outline')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Work & decisions');
     expect(harness.routeNativeElement?.querySelector('.editor-toolbar .editor-primary')).toBeNull();
     expect(harness.routeNativeElement?.querySelectorAll('.board-column')).toHaveLength(3);
     expect(harness.routeNativeElement?.textContent).toContain('Render a data-driven board');
@@ -226,7 +337,7 @@ describe('DeliveryPlanPage', () => {
 
     expect(harness.routeNativeElement?.textContent).toContain('Future stage from JSON');
     expect(harness.routeNativeElement?.textContent).toContain('A sequence from data');
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=roadmap');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?view=roadmap');
   });
 
   it('opens All tickets, clears the filters and marks the ticket a /delivery-plan#<id> link names (DLV-971)', async () => {
@@ -254,7 +365,7 @@ describe('DeliveryPlanPage', () => {
       throwError(() => new HttpErrorResponse({ status: 404 })),
     );
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.textContent).toContain(
@@ -272,7 +383,7 @@ describe('DeliveryPlanPage', () => {
 
   it('keeps board filters in the URL and filters work items', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     const input = harness.routeNativeElement?.querySelector(
       '.board-search input',
     ) as HTMLInputElement;
@@ -282,7 +393,7 @@ describe('DeliveryPlanPage', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
 
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?q=data-driven');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?q=data-driven');
     expect(harness.routeNativeElement?.textContent).toContain('Showing 1 of 2 work items');
     expect(harness.routeNativeElement?.textContent).not.toContain('Keep another item');
   });
@@ -292,7 +403,7 @@ describe('DeliveryPlanPage', () => {
     editor.load.mockReturnValue(response);
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/delivery-plan?stage=future-stage&priority=P1&type=task',
+      '/delivery-plan/work?stage=future-stage&priority=P1&type=task',
       DeliveryPlanPage,
     );
     response.next({ plan, revision: 'revision-1' });
@@ -310,7 +421,7 @@ describe('DeliveryPlanPage', () => {
       'Keep another item',
     );
 
-    await harness.navigateByUrl('/delivery-plan?stage=foundation&type=story', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work?stage=foundation&type=story', DeliveryPlanPage);
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect([...selects].map((select) => select.value)).toEqual(['foundation', 'all', 'story']);
@@ -318,7 +429,7 @@ describe('DeliveryPlanPage', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect([...selects].map((select) => select.value)).toEqual(['current', 'all', 'all']);
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work');
   });
 
   it('keeps total WIP and limit warnings independent of every board filter', async () => {
@@ -329,7 +440,7 @@ describe('DeliveryPlanPage', () => {
     editor.load.mockReturnValue(of({ plan: overloaded, revision: 'revision-1' }));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/delivery-plan?stage=foundation&priority=P1&type=story&q=Render',
+      '/delivery-plan/work?stage=foundation&priority=P1&type=story&q=Render',
       DeliveryPlanPage,
     );
     harness.detectChanges();
@@ -339,7 +450,7 @@ describe('DeliveryPlanPage', () => {
     expect(column.querySelector('.wip-limit')!.textContent).toContain('all stages');
     expect(column.querySelector('.wip-limit')!.classList.contains('exceeded')).toBe(true);
 
-    await harness.navigateByUrl('/delivery-plan?q=not-a-match', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work?q=not-a-match', DeliveryPlanPage);
     harness.detectChanges();
     expect(column.querySelector('header > span')!.textContent).toBe('0');
     expect(column.querySelector('.wip-limit')!.textContent).toContain('WIP 2/1');
@@ -349,7 +460,7 @@ describe('DeliveryPlanPage', () => {
   async function editableBoard() {
     editor.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'revision-1' }));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     harness.detectChanges();
     return harness;
   }
@@ -405,7 +516,7 @@ describe('DeliveryPlanPage', () => {
     await switchView(harness, 'Roadmap');
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
     harness
-      .routeNativeElement!.querySelector<HTMLButtonElement>('.active-stage-card button')!
+      .routeNativeElement!.querySelector<HTMLButtonElement>('.roadmap-stage-list button')!
       .click();
     await harness.fixture.whenStable();
     expect(navigate).toHaveBeenCalledOnce();
@@ -415,7 +526,7 @@ describe('DeliveryPlanPage', () => {
   it('opens Backlog across all stages and returns to the current-stage board', async () => {
     const harness = await editableBoard();
     await switchView(harness, 'Backlog');
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=backlog');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?view=backlog');
     expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(1);
     expect(harness.routeNativeElement!.querySelector('.ticket-row')!.textContent).toContain(
       'TEST-2',
@@ -425,7 +536,7 @@ describe('DeliveryPlanPage', () => {
       harness.routeNativeElement!.querySelector<HTMLSelectElement>('.board-controls select')!.value,
     ).toBe('all');
     await switchView(harness, 'Board');
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work');
     expect(harness.routeNativeElement!.querySelector('.work-item-card')!.textContent).toContain(
       'TEST-1',
     );
@@ -439,9 +550,9 @@ describe('DeliveryPlanPage', () => {
     snapshot.workItems[0].statusId = 'done';
     editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-1' }));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     await switchView(harness, 'All tickets');
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?view=all-tickets');
     expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(2);
     const row = harness.routeNativeElement!.querySelector<HTMLButtonElement>('.ticket-row')!;
     expect(row.textContent).toContain('Done');
@@ -466,7 +577,7 @@ describe('DeliveryPlanPage', () => {
     async (view) => {
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl(
-        `/delivery-plan?view=${view}&q=another&stage=future-stage&type=task`,
+        `/delivery-plan/work?view=${view}&q=another&stage=future-stage&type=task`,
         DeliveryPlanPage,
       );
       harness.detectChanges();
@@ -483,7 +594,7 @@ describe('DeliveryPlanPage', () => {
       harness.routeNativeElement!.querySelector<HTMLButtonElement>('.clear-filters')!.click();
       await harness.fixture.whenStable();
       harness.detectChanges();
-      expect(TestBed.inject(Router).url).toBe(`/delivery-plan?view=${view}`);
+      expect(TestBed.inject(Router).url).toBe(`/delivery-plan/work?view=${view}`);
       expect(
         harness.routeNativeElement!.querySelector<HTMLSelectElement>('.board-controls select')!
           .value,
@@ -497,11 +608,11 @@ describe('DeliveryPlanPage', () => {
   it('clears hidden board filters when opening All tickets', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/delivery-plan?q=no-match&stage=foundation&type=story',
+      '/delivery-plan/work?q=no-match&stage=foundation&type=story',
       DeliveryPlanPage,
     );
     await switchView(harness, 'All tickets');
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?view=all-tickets');
     expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(2);
   });
 
@@ -523,7 +634,7 @@ describe('DeliveryPlanPage', () => {
       'Board refreshed from the private JSON.',
     );
     expect(harness.routeNativeElement!.textContent).toContain('automatically every 5 seconds');
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=backlog');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?view=backlog');
     expect(editor.save).not.toHaveBeenCalled();
   });
 
@@ -534,7 +645,7 @@ describe('DeliveryPlanPage', () => {
     ];
     editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-1' }));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     harness.detectChanges();
     (harness.routeNativeElement!.querySelector('.work-item-card') as HTMLButtonElement).click();
     await harness.fixture.whenStable();
@@ -559,7 +670,7 @@ describe('DeliveryPlanPage', () => {
     ];
     content.getDeliveryPlan.mockReturnValueOnce(of(snapshot));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
     harness.detectChanges();
     (harness.routeNativeElement!.querySelector('.work-item-card') as HTMLButtonElement).click();
     await harness.fixture.whenStable();
@@ -843,13 +954,35 @@ describe('DeliveryPlanPage', () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
+  it('keeps a dirty draft when Back to delivery plan is cancelled', async () => {
+    const harness = await editableBoard();
+    await newItem(harness);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const back = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-back')!;
+    expect(back.getAttribute('href')).toBe('/delivery-plan');
+    back.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan/work');
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(harness.routeNativeElement!.querySelector<HTMLInputElement>('[name="title"]')?.value).toBe('A new story');
+    expect(editor.save).not.toHaveBeenCalled();
+    confirm.mockReturnValue(true);
+    back.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+    expect(harness.routeNativeElement!.querySelector('.delivery-workspace')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
+  });
+
   it('keeps a dirty draft when navigation is cancelled and leaves only after confirmation', async () => {
     const harness = await editableBoard();
     await newItem(harness);
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const router = TestBed.inject(Router);
     expect(await router.navigateByUrl('/away')).toBe(false);
-    expect(router.url).toBe('/delivery-plan');
+    expect(router.url).toBe('/delivery-plan/work');
     expect(confirm).toHaveBeenCalledOnce();
     expect(
       (harness.routeNativeElement!.querySelector('[name="title"]') as HTMLInputElement).value,
@@ -914,7 +1047,7 @@ describe('DeliveryPlanPage', () => {
     async function publishedBoard(status = 404): Promise<RouterTestingHarness> {
       editor.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status })));
       const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+      await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
       harness.detectChanges();
       return harness;
     }
@@ -926,7 +1059,7 @@ describe('DeliveryPlanPage', () => {
         const root = harness.routeNativeElement!;
         expect(publication.load).toHaveBeenCalledOnce();
         expect(content.getDeliveryPlan).not.toHaveBeenCalled();
-        expect(root.textContent).toContain('Deliver deliberately');
+        expect(root.textContent).toContain('Render a data-driven board');
         expect(root.textContent).toContain(
           'Published copy, read-only; edit on the local workstation.',
         );
@@ -951,7 +1084,7 @@ describe('DeliveryPlanPage', () => {
     it('keeps a reachable local editor editable in a connected protected workstation', async () => {
       editor.load.mockReturnValue(of({ plan, revision: 'revision-1' }));
       const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+      await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
       harness.detectChanges();
       expect(publication.load).not.toHaveBeenCalled();
       expect(harness.routeNativeElement!.textContent).toContain('Local editing enabled');
@@ -1045,13 +1178,13 @@ describe('DeliveryPlanPage', () => {
 
     async function devBoard(): Promise<RouterTestingHarness> {
       const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+      await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
       await harness.fixture.whenStable();
       harness.detectChanges();
       return harness;
     }
     /** The harness allows one instance per test; leaving and returning recreates the page. */
-    async function reopen(harness: RouterTestingHarness, url = '/delivery-plan') {
+    async function reopen(harness: RouterTestingHarness, url = '/delivery-plan/work') {
       await harness.navigateByUrl('/away', OtherPage);
       await harness.navigateByUrl(url, DeliveryPlanPage);
       await settle(harness);
@@ -1269,7 +1402,7 @@ describe('DeliveryPlanPage', () => {
         session.known.set(false);
         publication.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'published-1' }));
         const harness = await RouterTestingHarness.create();
-        await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+        await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
         harness.detectChanges();
         expect(devApi.load).not.toHaveBeenCalled();
         expect(publication.load).not.toHaveBeenCalled();
@@ -1283,7 +1416,7 @@ describe('DeliveryPlanPage', () => {
         session.known.set(false);
         devApi.load.mockClear();
         await harness.navigateByUrl('/away', OtherPage);
-        await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+        await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
         await vi.advanceTimersByTimeAsync(3100);
         harness.detectChanges();
         expect(devApi.load).not.toHaveBeenCalled();

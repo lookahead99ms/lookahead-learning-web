@@ -1,3 +1,4 @@
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -5,10 +6,14 @@ import { ContentRecovery, RecoveryKind } from '../../core/content-recovery/conte
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-author-content-access',
-  imports: [ContentRecovery, PlatformHeader, RouterLink],
+  imports: [AuthorAdminMenu, ContentRecovery, PlatformHeader, RouterLink],
   template: `<app-platform-header />
-    <main id="main-content" class="content-page reader-page">
+    <main id="main-content" class="admin-workspace">
+      <app-author-admin-menu pageId="access-checks" />
+  <app-author-admin-menu pageId="access-checks" [documentationOnly]="true" />
+      <div class="workspace-content">
       <h1>Content access review</h1>
       <p>
         Author preview with synthetic metadata. These controls do not change your access or load a
@@ -35,6 +40,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       <p>{{ retried ? 'Retry requested. In a real lesson, this starts a fresh read.' : '' }}</p>
       <a class="action-link" routerLink="/admin/operations">Open documentation</a>
+      </div>
     </main>`,
   styles: [
     `

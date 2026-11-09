@@ -1,45 +1,26 @@
 <app-platform-header />
-<main id="main-content" class="delivery-page">
-  <aside class="delivery-outline">
-    <app-author-workspace-nav
-      pageTitle="Delivery plan"
-      pageId="delivery"
-      [headingLevel]="2"
-      [outline]="plan() ? outline : []"
-    />
-  </aside>
+<main id="main-content" class="admin-workspace delivery-page">
   <app-author-admin-menu pageId="delivery" />
-
+  <div class="workspace-content">
   @if (!authorAccess()) {
     <section class="delivery-state" role="status">
       <h1>Admin access required</h1>
       <p>Sign in with an account that has admin access to view the delivery plan.</p>
     </section>
   } @else if (plan(); as deliveryPlan) {
-    <header class="delivery-hero" id="delivery-overview">
-      <div class="hero-copy">
-        <span class="hero-kicker">Local delivery control room</span>
-        <h1>{{ deliveryPlan.title }}</h1>
-        <p>{{ deliveryPlan.summary }}</p>
-        <div class="source-line">
-          <span class="live-dot" aria-hidden="true"></span>
-          <strong>{{ deliveryPlan.sourceLabel }}</strong>
-          <span>Updated {{ deliveryPlan.lastUpdated }}</span>
-        </div>
-      </div>
-      @if (activeStage(); as stage) {
-        <aside class="active-stage-card" aria-label="Current delivery stage">
-          <span>Current focus</span>
-          <strong>{{ stage.order.toString().padStart(2, '0') }} · {{ stage.title }}</strong>
-          <p>{{ stage.goal }}</p>
-          <button type="button" (click)="selectStage(stage.id)">View active work</button>
-        </aside>
+    <header class="delivery-page-heading">
+      @if (workspace()) {
+        <a routerLink="/delivery-plan" class="delivery-back">Back to delivery plan</a>
+      } @else {
+        <p>Admin</p>
       }
+      <h1>{{ workspace() ? 'Work & decisions' : 'Delivery plan' }}</h1>
     </header>
-
+    @if (!workspace()) {
     <section class="delivery-metrics" id="delivery-summary" aria-label="Delivery summary">
       <article>
-        <span>Completion</span><strong>{{ completionPercent() }}%</strong>
+        <span>Tickets completed</span><strong>{{ completionPercent() }}%</strong>
+        <small>{{ completedCount() }} of {{ deliveryPlan.workItems.length }} marked Done</small>
         <i><b [style.width.%]="completionPercent()"></b></i>
       </article>
       <article>
@@ -51,11 +32,30 @@
         ><small>Needs intervention</small>
       </article>
       <article>
-        <span>Delivered</span><strong>{{ completedCount() }}</strong
-        ><small>of {{ deliveryPlan.workItems.length }} items</small>
+        <span>In review</span><strong>{{ reviewCount() }}</strong
+        ><small>Not yet marked Done</small>
       </article>
     </section>
+    <p class="completion-context">Across all stages and ticket sizes. Ticket completion does not measure product or release readiness.</p>
+    <section class="delivery-work-link" aria-labelledby="work-link-heading">
+      <div><h2 id="work-link-heading">Work & decisions</h2>
+      @if (activeStage(); as stage) {
+        <div class="delivery-current-focus">
+          <p class="focus-label">Current focus</p>
+          <h3>{{ stage.order.toString().padStart(2, '0') }} · {{ stage.title }}</h3>
+          <p>{{ stage.goal }}</p>
+        </div>
+      }
+      <p class="work-view-labels">Board · Backlog · All tickets · Roadmap · Decisions</p></div>
+      <a routerLink="/delivery-plan/work" class="editor-primary">Open work & decisions</a>
+    </section>
+    <div class="source-line">
+      <strong>{{ deliveryPlan.sourceLabel }}</strong>
+      @if (deliveryPlan.lastUpdated) { <span>Updated {{ deliveryPlan.lastUpdated }}</span> }
+    </div>
+    }
 
+    @if (workspace()) {
     <section class="delivery-workspace" id="delivery-workspace">
       <header class="workspace-toolbar">
         <nav class="view-tabs" aria-label="Delivery views">
@@ -528,6 +528,7 @@
       }
     </section>
 
+    }
     <dialog appScrollLock
       #workItemDialog
       class="work-item-dialog"
@@ -884,4 +885,5 @@
   } @else {
     <section class="delivery-state" aria-live="polite"><p>Loading delivery plan...</p></section>
   }
+  </div>
 </main>

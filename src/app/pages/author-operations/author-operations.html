@@ -1,7 +1,10 @@
 <app-platform-header />
-<main id="main-content" class="operations-page">
-  <aside class="workspace-sidebar">
-    <app-author-workspace-nav
+<main id="main-content" class="admin-workspace operations-page">
+  <app-author-admin-menu [pageId]="pageId" />
+  <app-author-admin-menu [pageId]="pageId" [documentationOnly]="true" />
+  <div class="workspace-content">
+<aside class="workspace-sidebar">
+    <app-author-workspace-nav [tabbed]="true"
       [pageTitle]="pageTitle"
       [pageId]="pageId"
       [outline]="outline()"
@@ -11,9 +14,7 @@
       (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
     >
       <p description>{{ page.summary }}</p>
-    </app-author-workspace-nav>
-  </aside>
-  <div class="workspace-content">
+      <div beforeSections class="document-introduction">
     <app-author-doc-hero [pageId]="pageId" />
     @if (section; as current) {
       <nav class="section-pages" [attr.aria-label]="current.parent.label + ' section pages'">
@@ -31,6 +32,9 @@
         </ol>
       </nav>
     }
+      </div>
+    </app-author-workspace-nav>
+  </aside>
     @if (!authorized() || state() === 'forbidden') {
       <section class="state-panel" role="alert">
         <h2>Admin access required</h2>
@@ -114,6 +118,8 @@
           sandbox="allow-scripts"
         ></iframe>
       </section>
+      @if (referenceLinks().length || document()!.evidence.length) {
+        <section id="reference-links" aria-label="Reference links">
       @if (referenceLinks().length) {
         <section class="resource-section" id="runbooks-links" aria-labelledby="runbooks-heading">
           @if (pageId === 'operations') {
@@ -155,6 +161,8 @@
           </ul>
         </section>
       }
+        </section>
+      }
       @if (previousPage || nextPage) {
         <nav class="section-steps" [attr.aria-label]="section!.parent.label + ' previous and next pages'">
           @if (previousPage; as previous) {
@@ -190,5 +198,4 @@
       </footer>
     }
   </div>
-  <app-author-admin-menu [pageId]="pageId" />
 </main>

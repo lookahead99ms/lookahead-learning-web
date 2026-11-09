@@ -1,5 +1,6 @@
 <app-platform-header />
-<main id="main-content" class="access-page">
+<main id="main-content" class="admin-workspace access-page">
+  <app-author-admin-menu pageId="access" />
   <aside class="workspace-sidebar">
     <app-author-workspace-nav [pageTitle]="pageLabel()" pageId="access" [outline]="outline()" />
   </aside>
@@ -536,5 +537,4 @@
     </div>
 
   </div>
-  <app-author-admin-menu pageId="access" />
 </main>

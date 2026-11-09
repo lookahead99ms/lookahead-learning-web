@@ -1,18 +1,19 @@
 <app-platform-header />
-<main id="main-content" class="api-page">
-  <aside class="workspace-sidebar">
-    <app-author-workspace-nav
-      pageTitle="API reference"
-      pageId="api"
+<main id="main-content" class="admin-workspace api-page">
+  <app-author-admin-menu [pageId]="pageId" />
+  <app-author-admin-menu [pageId]="pageId" [documentationOnly]="true" />
+  <div class="workspace-content">
+<aside class="workspace-sidebar">
+    <app-author-workspace-nav [tabbed]="true"
+      [pageTitle]="pageTitle"
+      [pageId]="pageId"
       [outline]="outline()"
       [embeddedFrame]="documentFrame()?.nativeElement"
       embeddedDocumentId="api-reference"
       [embeddedHeight]="documentHeight()"
-      (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
-    />
+      (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"><app-author-doc-hero beforeSections [pageId]="pageId" /></app-author-workspace-nav>
   </aside>
-  <div class="workspace-content">
-    <app-author-doc-hero pageId="api" />
+
     @if (!authorized()) {
       <section class="state-panel">
         <h2>Admin access required</h2>
@@ -37,7 +38,7 @@
           #documentFrame
           [src]="url"
           [style.height.px]="documentHeight()"
-          title="Backend API reference"
+          [title]="localGuide ? 'Local API client setup' : 'Backend API reference'"
           sandbox="allow-scripts"
         ></iframe>
       </section>
@@ -59,7 +60,7 @@
         </section>
       }
       <footer class="reference-toolbar">
-        <p>Backend contracts and local request workflows</p>
+        <p>{{ localGuide ? 'Local HTTP clients, credentials and request workflows' : 'Backend endpoint and schema contracts' }}</p>
         <a class="open-reference" [href]="documentHref()!" target="_blank" rel="noopener noreferrer"
           ><span class="open-icon" aria-hidden="true">↗</span> Open full-page reference
           <span class="new-tab">(new tab)</span></a
@@ -73,5 +74,4 @@
       </section>
     }
   </div>
-  <app-author-admin-menu pageId="api" />
 </main>

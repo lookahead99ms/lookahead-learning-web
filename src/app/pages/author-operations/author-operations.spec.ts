@@ -84,6 +84,32 @@ describe('Operations author view', () => {
     );
     expect(fixture.nativeElement.querySelectorAll('.workspace-content button')).toHaveLength(0);
   });
+  for (const [id, title] of [['runtime-stores','Runtime stores'],['contracts','Contracts'],['sign-in-flows','Sign-in flows'],['dynamodb-migration','DynamoDB migration design'],['aws-dev-certificates','DEV certificates']]) {
+    it(`loads ${id} instead of falling back to Operations`, async () => {
+      TestBed.overrideProvider(ActivatedRoute, {useValue: {snapshot: {data: {authorDocument: id}}}});
+      load.mockResolvedValue({...reference,id});
+      const fixture = await create();
+      expect(load).toHaveBeenCalledWith(id);
+      expect(fixture.nativeElement.querySelector('h1').textContent).toBe(title);
+    });
+  }
+  it('keeps resource links in their own panel and root selections never request anchor scrolling', async () => {
+    history.replaceState(null,'','/admin/operations');
+    const fixture = await create();
+    const root = fixture.nativeElement as HTMLElement;
+    const frame = root.querySelector('iframe')!;
+    const send = vi.spyOn(frame.contentWindow!, 'postMessage');
+    const tab = [...root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')].find(tab=>tab.textContent==='Reference links')!;
+    tab.click(); fixture.detectChanges();
+    expect(root.querySelector<HTMLElement>('#workspace-panel-reference-links')!.hidden).toBe(false);
+    expect(frame.parentElement!.hidden).toBe(true);
+    root.querySelector<HTMLAnchorElement>('[role="tab"]')!.click(); fixture.detectChanges();
+    expect(root.querySelector<HTMLElement>('#workspace-panel-reference-links')!.hidden).toBe(true);
+    expect(frame.parentElement!.hidden).toBe(false);
+    expect(send.mock.calls.some(([message])=>message.type==='lookahead:author-document:tab-request')).toBe(true);
+    expect(send.mock.calls.some(([message])=>message.type==='lookahead:author-document:anchor-request')).toBe(false);
+    history.replaceState(null,'','/');
+  });
   it('loads the dedicated Local setup document through the same protected reader', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
       useValue: { snapshot: { data: { authorDocument: 'local-development' } } },
@@ -110,10 +136,12 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     const hero = content.querySelector('app-author-doc-hero') as HTMLElement;
-    expect(content.firstElementChild).toBe(hero);
+    expect(content.firstElementChild?.querySelector('[role="tablist"]')).not.toBeNull();
+    const tabs = content.querySelector('[role="tablist"]')!;
+    expect(hero.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(hero.querySelector('h2')!.textContent).toBe('Operations');
-    expect(hero.querySelector('.hero-group')!.textContent).toContain('Run and release');
-    expect(hero.textContent).toContain('For administrators');
+    expect(hero.querySelector('.hero-group')!.textContent).toContain('Operations & Support');
+    expect(hero.textContent).toContain('Runtime ownership, diagnosis and recovery');
     const footer = content.querySelector('footer.reference-toolbar') as HTMLElement;
     expect(footer.textContent).toContain('Version operations/test.1');
     const panel = content.querySelector('.document-panel')!;
@@ -131,7 +159,7 @@ describe('Operations author view', () => {
     expect(content.querySelector('.hero-group')!.textContent).toContain('AWS deployment');
     const section = content.querySelector('nav.section-pages') as HTMLElement;
     expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
-    expect(section.querySelector('.section-label')!.textContent).toContain('page 7 of 16');
+    expect(section.querySelector('.section-label')!.textContent).toContain('page 8 of 17');
     const labels = [...section.querySelectorAll('a')].map((link) => link.textContent!.trim());
     expect(labels[0]).toBe('Overview');
     expect(labels).toContain('DEV budget');
@@ -150,7 +178,7 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-procedures');
-    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 11 of 16');
+    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 12 of 17');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-workflow');
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-records');
@@ -244,7 +272,7 @@ describe('Operations author view', () => {
       history.replaceState(null, '', previousUrl);
     }
   });
-  it('sends an outline selection to the embedded document without opening another window', async () => {
+  it('selects a document tab without an anchor-scroll request or another window', async () => {
     const previousUrl = location.pathname + location.search + location.hash;
     history.replaceState(null, '', '/admin/operations');
     try {
@@ -255,7 +283,7 @@ describe('Operations author view', () => {
       link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       expect(postMessage).toHaveBeenCalledWith(
         {
-          type: 'lookahead:author-document:anchor-request',
+          type: 'lookahead:author-document:tab-request',
           version: 1,
           documentId: 'operations-reference',
           anchor: 'repositories-runbooks',

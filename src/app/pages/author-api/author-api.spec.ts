@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { AuthorApiPage } from './author-api';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PlatformThemeService } from '../../core/platform-theme';
@@ -39,6 +39,7 @@ describe('Author API reference', () => {
   const theme = signal<'light' | 'dark'>('light');
 
   beforeEach(() => {
+    history.replaceState(null, '', '/admin/api');
     account.set({ authorPreview: true });
     sessionExpired.set(false);
     theme.set('light');
@@ -79,14 +80,17 @@ describe('Author API reference', () => {
     const root: HTMLElement = fixture.nativeElement;
     const frame = root.querySelector('iframe')!;
     expect(frame.getAttribute('src')).toBe(
-      `${base}preview-directory/api/index.html?theme=light&layout=shared`,
+      `${base}preview-directory/api/index.html?theme=light&layout=shared#inventory`,
     );
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
     expect(frame.title).toBe('Backend API reference');
     expect(root.querySelector('.workspace-sidebar h1')?.textContent).toBe('API reference');
     expect(root.querySelector('.workspace-sidebar')).not.toBeNull();
-    expect(root.querySelector('a[href="/admin/api#start-testing"]')).not.toBeNull();
-    expect(root.querySelector('a[href="/admin/api#start-testing"]')?.getAttribute('target')).toBeNull();
+    expect([...root.querySelectorAll('[role="tab"]')].map(tab => tab.getAttribute('href'))).toEqual([
+      '/admin/api#inventory', '/admin/api#schemas', '/admin/api#capabilities', '/admin/api#access-model', '/admin/api#api-downloads',
+    ]);
+    expect(root.querySelector('a[href="/admin/api#inventory"]')).not.toBeNull();
+    expect(root.querySelector('a[href="/admin/api#inventory"]')?.getAttribute('target')).toBeNull();
     const fullPage = root.querySelector<HTMLAnchorElement>('a[target="_blank"]')!;
     expect(fullPage.getAttribute('href')).toBe(
       `${base}preview-directory/api/index.html?theme=light`,
@@ -96,7 +100,7 @@ describe('Author API reference', () => {
     theme.set('dark');
     fixture.detectChanges();
     expect(frame.getAttribute('src')).toBe(
-      `${base}preview-directory/api/index.html?theme=dark&layout=shared`,
+      `${base}preview-directory/api/index.html?theme=dark&layout=shared#inventory`,
     );
   });
 
@@ -127,26 +131,21 @@ describe('Author API reference', () => {
     expect(frame.style.height).toBe('37467px');
   });
 
-  it('routes a known in-article link through the parent page', async () => {
+  it('routes setup links to Local Development and keeps endpoint links in the API reference', async () => {
     const fixture = await loaded();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
-    const originalUrl = location.pathname + location.search + location.hash;
     const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
-    try {
-      history.replaceState(null, '', '/admin/api');
-      window.dispatchEvent(new MessageEvent('message', {
-        origin: 'null', source: frame.contentWindow,
-        data: { type: 'lookahead:author-document:navigate', version: 1,
-          documentId: 'api-reference', anchor: 'start-testing' },
-      }));
-      expect(location.pathname + location.hash).toBe('/admin/api#start-testing');
-      expect(postMessage).toHaveBeenCalledWith({
-        type: 'lookahead:author-document:anchor-request', version: 1,
-        documentId: 'api-reference', anchor: 'start-testing',
-      }, '*');
-    } finally {
-      history.replaceState(null, '', originalUrl);
-    }
+    const send = (anchor: string) => window.dispatchEvent(new MessageEvent('message', {
+      origin: 'null', source: frame.contentWindow,
+      data: { type: 'lookahead:author-document:navigate', version: 1, documentId: 'api-reference', anchor },
+    }));
+    send('start-testing');
+    expect(navigate).toHaveBeenCalledWith('/admin/local-api#start-testing');
+    send('inventory');
+    expect(location.pathname + location.hash).toBe('/admin/api#inventory');
+    expect(postMessage).toHaveBeenCalledWith({type: 'lookahead:author-document:tab-request', version: 1,
+      documentId: 'api-reference', anchor: 'inventory'}, '*');
   });
 
   it('keeps downloads in the authenticated parent and within the API directory', async () => {
@@ -165,12 +164,15 @@ describe('Author API reference', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       `${base}preview-directory/api/identity.openapi.json`,
       `${base}preview-directory/api/http/identity.http`,
-      `${base}preview-directory/api/credentials.md`,
     ]);
     expect(fixture.nativeElement.querySelector('#api-downloads')).not.toBeNull();
   });
 
-  it('groups the complete client kit and preserves all existing reference downloads', async () => {
+  it.each([false, true])('partitions the complete client kit without losing downloads (local guide: %s)', async (localGuide) => {
+    if (localGuide) {
+      history.replaceState(null, '', '/admin/local-api');
+      TestBed.overrideProvider(ActivatedRoute, {useValue: {snapshot: {data: {localApiGuide: true}}}});
+    }
     const entry = reference();
     entry.links.push(
       { label: 'Gateway contract', href: 'api/gateway-bff.openapi.json' },
@@ -198,26 +200,34 @@ describe('Author API reference', () => {
     );
     const fixture = await loaded([entry]);
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelectorAll('a[download]')).toHaveLength(16);
+    expect(root.querySelectorAll('a[download]')).toHaveLength(localGuide ? 5 : 11);
     expect(
       [...root.querySelectorAll('.download-groups section')].map((section) => ({
         title: section.querySelector('h3')?.textContent?.trim(),
         count: section.querySelectorAll('a[download]').length,
       })),
-    ).toEqual([
+    ).toEqual(localGuide ? [
       { title: 'Start testing', count: 4 },
+      { title: 'Reference', count: 1 },
+    ] : [
       { title: 'Identity', count: 3 },
       { title: 'Gateway BFF', count: 3 },
       { title: 'Domain API', count: 3 },
-      { title: 'Reference', count: 3 },
+      { title: 'Reference', count: 2 },
     ]);
     const environment = root.querySelector<HTMLAnchorElement>(
       'a[href$="/postman/local.postman_environment.json"]',
     )!;
+    if (localGuide) {
+    expect(root.querySelector('iframe')?.title).toBe('Local API client setup');
+    expect(root.querySelector('iframe')?.getAttribute('src')).toContain('layout=shared#start-testing');
+    expect(root.querySelector('a[href="/admin/local-api#credentials"]')).not.toBeNull();
+    expect(root.querySelector('a[href="/admin/local-api#inventory"]')).toBeNull();
     expect(environment.getAttribute('href')).toBe(
       `${base}preview-directory/api/postman/local.postman_environment.json`,
     );
     expect(environment.hasAttribute('download')).toBe(true);
+    } else expect(environment).toBeNull();
     account.set({ authorPreview: false });
     fixture.detectChanges();
     expect(root.querySelector('.download-groups')).toBeNull();

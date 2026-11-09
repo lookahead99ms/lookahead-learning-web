@@ -148,12 +148,13 @@ describe('People and access layout', () => {
       { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
     ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
   });
-  it('lays out like the other admin pages: outline, content, then the Admin menu', async () => {
+  it('places the Admin rail before the page heading and working content', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
     const main = fixture.nativeElement.querySelector('main') as HTMLElement;
+    expect(fixture.nativeElement.classList.contains('admin-surface')).toBe(true);
     expect([...main.children].map(child => child.tagName.toLowerCase().replace(/^div$/, 'div.' + child.className)))
-      .toEqual(['aside', 'div.workspace-content', 'app-author-admin-menu']);
+      .toEqual(['app-author-admin-menu', 'aside', 'div.workspace-content']);
     expect(main.querySelector('aside app-author-workspace-nav')).not.toBeNull();
     const page = fixture.componentInstance;
     expect(page.outline().map(item => item.href)).toEqual(['#people']);

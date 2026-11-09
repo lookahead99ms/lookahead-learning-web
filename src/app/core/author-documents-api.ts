@@ -27,6 +27,9 @@ const documentIds = new Set([
   'authentication-walkthrough',
   'contracts',
   'aws-deployment',
+  'sign-in-flows',
+  'dynamodb-migration',
+  'aws-dev-certificates',
   'aws-environment-journey',
   'aws-dev-plan',
   'aws-dev-decisions',
@@ -47,8 +50,10 @@ const documentIds = new Set([
   'production-support',
   'support-runbooks',
 ]);
-// Keep navigation bounded while accepting the longest reference (AWS deployment).
-const maxDocumentSections = 32;
+// The published procedures reference has 35 sections; keep an explicit navigation limit.
+const maxDocumentSections = 48;
+// Dated status/record headings produce anchors up to 120 characters.
+const maxSectionAnchorLength = 200;
 type RecordValue = Record<string, unknown>;
 function object(value: unknown): RecordValue {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -149,11 +154,11 @@ export function parseAuthorDocument(
   const href = publishedHref(content['href'], `${id}/${htmlSha256}/index.html`, root);
   const sections = list(entry['sections'], maxDocumentSections).map((value) => {
     const item = object(value),
-      fragment = text(item['fragment'], 101),
+      fragment = text(item['fragment'], maxSectionAnchorLength + 1),
       anchor = fragment.slice(1);
     if (!fragment.startsWith('#')) throw new AuthorDocumentError('invalid');
     text(item['id']);
-    if (!/^[a-z][a-z0-9-]*$/.test(anchor)) throw new AuthorDocumentError('invalid');
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(anchor)) throw new AuthorDocumentError('invalid');
     return { title: text(item['title']), anchor };
   });
   if (new Set(sections.map((section) => section.anchor)).size !== sections.length)

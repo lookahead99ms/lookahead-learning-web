@@ -35,9 +35,7 @@ import { PlatformThemeService } from '../../core/platform-theme';
 import {
   apiEndpointAnchor,
   embeddedAnchor,
-  embeddedAnchorPosition,
-  requestEmbeddedAnchor,
-  scrollToEmbeddedAnchor, embeddedPageRoute } from '../../core/author-embedded-anchor';
+  embeddedPageRoute } from '../../core/author-embedded-anchor';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 // Long operator references wrap beyond 30,000px on narrow screens. Keep a
@@ -45,6 +43,7 @@ import { StudyPlanAccount } from '../study-plan/study-plan-account';
 const maxDocumentHeight = 60_000;
 
 @Component({
+  host: { class: 'admin-surface' },
   selector: 'app-author-operations',
   imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, AuthorDocHero, RouterLink],
   templateUrl: './author-operations.html',
@@ -163,6 +162,9 @@ export class AuthorOperationsPage implements OnDestroy {
         label: section.title,
         href: `${this.pageRoute}#${section.anchor}`,
       })),
+      ...(this.referenceLinks().length || document.evidence.length
+        ? [{label: 'Reference links', href: `${this.pageRoute}#reference-links`}]
+        : []),
     ];
   });
 
@@ -223,22 +225,6 @@ export class AuthorOperationsPage implements OnDestroy {
       void this.router.navigateByUrl(route);
       return;
     }
-    const anchor = embeddedAnchor(
-      this.pendingAnchor,
-      this.document()?.sections.map((section) => section.anchor) ?? [],
-    );
-    const position = embeddedAnchorPosition(
-      data,
-      this.documentId,
-      anchor,
-      this.documentHeight() ?? maxDocumentHeight,
-    );
-    if (position !== null) {
-      const hostWindow = this.hostDocument.defaultView;
-      if (hostWindow) scrollToEmbeddedAnchor(frame, position, hostWindow);
-      this.pendingAnchor = '';
-      return;
-    }
     if (
       !data ||
       typeof data !== 'object' ||
@@ -246,12 +232,12 @@ export class AuthorOperationsPage implements OnDestroy {
       data.version !== 1 ||
       data.documentId !== this.documentId ||
       !Number.isFinite(data.height) ||
-      data.height < 300 ||
+      data.height < 120 ||
       data.height > maxDocumentHeight
     )
       return;
     this.documentHeight.set(Math.ceil(data.height));
-    requestEmbeddedAnchor(frame, this.documentId, anchor);
+
   }
 
   @HostListener('window:hashchange')
@@ -263,14 +249,8 @@ export class AuthorOperationsPage implements OnDestroy {
 
   protected onEmbeddedSectionSelected(hash: string): void {
     this.pendingAnchor = hash;
-    requestEmbeddedAnchor(
-      this.documentFrame()?.nativeElement,
-      this.documentId,
-      embeddedAnchor(
-        this.pendingAnchor,
-        this.document()?.sections.map((section) => section.anchor) ?? [],
-      ),
-    );
+    const anchor = embeddedAnchor(hash, this.document()?.sections.map(section => section.anchor) ?? []);
+    if (anchor) this.documentFrame()?.nativeElement.contentWindow?.postMessage({type:'lookahead:author-document:tab-request',version:1,documentId:this.documentId,anchor}, '*');
   }
 
   ngOnDestroy(): void {

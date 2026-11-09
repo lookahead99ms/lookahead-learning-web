@@ -8,6 +8,41 @@ content contracts, shared learning components, tests, and deliberately synthetic
 demo content. Proprietary curriculum, rankings, complete ready-made schedules,
 delivery evidence, credentials, and learner data are kept outside this Git history.
 
+## Admin presentation
+
+All Admin route components, Delivery Plan and Support use the scoped `admin-surface` theme
+in `src/admin-workspace.css`: white/slate surfaces, teal controls, blue links and
+quieter borders in light and dark modes. A compact left Admin menu and a separate
+right Documentation rail surround the content. Sticky section tabs display one panel
+at a time, retain form drafts, support arrow/Home/End keys, and preserve URL selection.
+The “On this page” disclosure is removed. System-ui typography matches the approved design. Existing page content, controls, capability-filtered navigation,
+authorization and API behavior are retained. Learner pages
+and sandboxed reference/preview documents retain their own palettes; the theme
+does not recolor historical design previews. Protected documents need the matching
+Content section-tab renderer; the scripts-only iframe sandbox remains intact, and
+standalone full-reference links still show the entire document. Page introductions appear
+before the tabs; supporting resource lists have a separate Reference links panel.
+Frame selection messages never request section scrolling. The host keeps a selected
+heading below the sticky row while asynchronous frame/diagram heights settle, and
+stops adjusting as soon as the reader scrolls or interacts elsewhere. Runtime stores
+and Contracts each resolve their own published document instead of the Operations fallback.
+
+Run `node --test scripts/admin-workspace-style.test.mjs` for palette contrast and
+style-boundary checks, then `npm run test:coverage` and `npm run build:protected`.
+Review the integrated application on the configured working frontend (4301),
+including both themes and a phone viewport. Support uses contextual help navigation;
+its learner/staff request kinds and submission behavior are unchanged.
+
+The protected local `start-private.mjs` service on 4301 bridges
+`/content/staff/author-documents/` to the existing immutable author-document snapshot
+selected in `LOOKAHEAD_BASE_PROXY_CONFIG`. Both paths go through Gateway 4350;
+server authorization and the protected preview source are still required. This
+local routing compatibility is not included in production application builds.
+If references are unavailable, check the managed private preview service and the
+configured snapshot as well as the Gateway; a content sync alone does not start
+that service or publish missing documents. Do not serve private files publicly or
+change cloud content routes to recover a local preview.
+
 ## Page sidebars
 
 The shared page shell builds an outline from visible sections and exposes already-loaded
@@ -621,13 +656,24 @@ portion of the account menu lists, in this order, **Documentation** (`/admin/doc
 (`/admin/access`). Each link appears only when the server-provided permissions allow it
 (`previewDocuments`, `deliveryRead`, `manageAccess`; co-authors and feedback triagers
 also see People and access). Platform reviews are a
-tab of **Support and feedback** (`/support?view=reviews`); see below. The Documentation home lists twelve protected pages in three
-reader groups: Start here (Reviewer guide, Pages & screen names, Content access
-checks, Plans and purchases with its Sales and prices sub-page), How it works (Architecture, Sign-in & authentication, API reference) and
-Run and release (Local setup & development, Release gates, AWS deployment,
-Operations, Production support). Each documentation page lists the same groups in the
-right-hand admin menu, below the Admin links; other admin pages show the Admin
-links only. Every admin destination retains its author guard.
+tab of **Support and feedback** (`/support?view=reviews`); see below.
+Documentation has six groups: **Overview**, **Architecture & Design**, **API Reference**,
+**Local Development**, **Build & Release**, and **Operations & Support**. Group links appear
+inside each group and documentation page. `/admin/docs` is a compact six-choice home without
+a second tab bar. Groups open `/admin/docs?group=<group-id>`, except API Reference which opens
+`/admin/api` directly; older `?group=api` bookmarks redirect there. Overview orders screen names,
+access checks, plans/purchases and then the reviewer guide. The right rail lists
+only the current group's pages; nested references remain under their owning page. Contracts
+belongs to Build & Release. Other Admin destinations retain the compact left Admin menu.
+Server-provided permissions still determine which pages appear and which routes can open.
+
+API Reference (`/admin/api`) contains endpoint inventory, schemas, capabilities, the access model and contract
+files. Local API client setup (`/admin/local-api`) contains Start testing, Credentials,
+Workflow and local client setup downloads. Both render selected sections of the same protected
+API publication; they do not duplicate its source. Existing `/admin/api#start-testing`,
+`#credentials` and `#flows` bookmarks redirect to the corresponding Local Development page.
+Both routes retain the staff guard and scripts-only iframe sandbox. No endpoint, credential,
+account or service behavior changes with this navigation split.
 
 DLV-926 moved these pages from `/author/...` to `/admin/...` on 2026-10-11 and
 removed the former `/author` landing page. Old `/author` addresses redirect to
@@ -700,10 +746,11 @@ for implementation and keyboard/pointer verification.
 
 The platform header is sticky at its component boundary so the logo, navigation,
 Search, Study Plan, theme and account controls remain at the top while reading.
-Author documentation's **On this page** outline highlights the current section
-as the document scrolls, separately from the current Author workspace page.
-Tracking does not rewrite the URL or move keyboard focus. Embedded references
-report visible heading offsets through a bounded, source-checked message exchange.
+Author documentation uses sticky section tabs that display one section at a time.
+The route-level group links are a separate navigation row above the document title and
+introduction. Section tabs support arrow keys, Home and End; the URL fragment preserves
+bookmarks and browser history. Embedded references exchange bounded, source-checked messages
+with the host, which selects the matching panel without native fragment scrolling.
 
 ## Search engines and link previews (DLV-941, phase 1)
 
@@ -886,26 +933,16 @@ Record ids may be UUIDs or the runtime-store numbers (`REV-000001`, `SUP-000001`
 
 The admin documentation routes (`/admin/review-guide`, `/admin/screen-names`, `/admin/access-checks`, `/admin/authentication`, `/admin/local-development`, `/admin/operations`, `/admin/aws-deployment`, `/admin/release-gates` and `/admin/production-support`) read protected, immutable author-documents through the Gateway with one shared page component. Operations covers Local environments, deployment order, rollback and repositories; the cloud candidate, release gates, authentication walkthrough and production support runbooks each have their own page. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
 
-Previews, Documentation, Delivery Plan and every documentation page use three columns,
-including while the Delivery Plan is loading or unavailable. The left sidebar holds the
-page title and “On this page”, the headings in the current view. The right sidebar is the
-Admin menu (Documentation, Previews, Delivery Plan, People and access, each shown only when
-permitted); on a documentation page it also lists the twelve reference pages in their three
-reader groups. The Delivery Plan hero sits in the
-centre column so both sidebars start beside it. Narrow viewports stack the Admin menu,
-then the outline, above the content. The desktop sidebars stay beside the article as the
-page scrolls. It scrolls independently only when its links are
-taller than the available viewport; narrow viewports stack it in the page flow with a bounded height.
-Document outline links retain the protected Author URL and scroll the parent
-page to the chosen embedded section; the raw reference remains available only
-through its explicit full-page link.
-Operations shows the published reference version above the document. Its
-Repository and runbook links and Supporting references are regular sections in
-the main reading flow with matching links in the heading outline.
-Each documentation page (including API reference and Architecture) opens with a hero in its
-reader group's colour (`AuthorDocHero`) and ends with the published version and the
-full-reference link. Links the guide mentions are listed under **Links in this guide** (on
-Operations, **Source repositories and runbooks**).
+Admin pages use a compact left menu and a central workspace. Documentation additionally keeps
+a right rail containing the current group's pages. The document title and introduction precede
+the sticky section tabs; only the selected section is visible, including sections rendered by a
+protected iframe. The former **On this page** outline is removed. Tabs retain protected Admin
+URLs; the raw reference is available through its explicit full-page link.
+
+The right rail scrolls independently when its links exceed the available viewport. On narrow
+screens it starts collapsed in normal page flow. Each documentation page ends with its
+published version and full-reference link. Links mentioned by a guide appear under **Links in
+this guide** (on Operations, **Source repositories and runbooks**).
 Every code block in a documentation page or the API reference has a **Copy** button. The
 document's scripts-only sandbox has no clipboard access, so it posts
 `lookahead:author-document:copy` to the admin page, which validates the sender and copies on the
@@ -916,9 +953,16 @@ manifest entry); the sandboxed document cannot offer downloads itself. On narrow
 collapsed so the page content comes first.
 The shared Operations, Local setup, API and Architecture documents report their content heights to the
 parent, so their references flow with the page rather than inside a fixed-height
-viewer. The Author pages use a continuous three-column reading layout; the
-document frame keeps its script-only sandbox without adding a second visual page.
-The working `/delivery-plan` requires an active author session. Signed-out
+viewer. The document frame keeps its scripts-only sandbox while the host controls section visibility.
+`/delivery-plan` puts delivery numbers first, followed by one Work & decisions card
+containing the current focus. Its single **Open work & decisions**
+link opens `/delivery-plan/work`, with Board, Backlog, All tickets, Roadmap and Decisions.
+The summary labels its percentage **Tickets completed**: Done tickets divided by all tickets,
+rounded to a whole percentage. Review is separate; this count is not product or release readiness.
+Existing view/filter query links and ticket-fragment links on `/delivery-plan` still open the
+workspace. Both routes retain the same access and unsaved-draft guards and delivery APIs.
+
+The working `/delivery-plan` and `/delivery-plan/work` require an active author session. Signed-out
 visitors go to sign-in and return to the plan afterward; its public JSON fallback
 is intentionally unavailable on the protected working origin.
 
@@ -1659,3 +1703,5 @@ restricts these sessions to ECR publication operations; the workflow retains its
 additional repository-scoped session policy, existing approval and scan gates.
 Infra owns the reviewed policy update and registry provisioning. These local
 workflow changes do not install IAM policies or publish an image.
+
+The protected documentation viewer also exposes the published Sign-in flows, DEV certificates, and proposed DynamoDB migration design documents under their canonical `/admin` paths. Historical `/admin/reviewer-guide` bookmarks redirect to `/admin/review-guide` while preserving query parameters and the selected section.

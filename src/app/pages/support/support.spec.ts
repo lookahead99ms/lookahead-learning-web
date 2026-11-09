@@ -85,6 +85,23 @@ async function pick(harness: RouterTestingHarness, label: string) {
 }
 
 describe('Support and feedback page (one card, owner 2026-11-06)', () => {
+  it('uses the shared theme and contextual outline without exposing Admin navigation', async () => {
+    const harness = await open('/support', reviewer);
+    const root = harness.routeNativeElement!;
+    expect(root.classList.contains('admin-surface')).toBe(true);
+    expect(root.querySelector('main')?.classList.contains('admin-workspace')).toBe(true);
+    expect(root.querySelector('h1.support-title')?.textContent).toBe('Support and feedback');
+    expect(root.querySelector('app-author-admin-menu')).toBeNull();
+    expect(root.querySelector('.support-navigation .eyebrow')?.textContent).toBe('Help');
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('.heading-outline a')];
+    expect(links.map(link => link.hash)).toEqual(['#support-intro', '#support-request']);
+    const request = root.querySelector<HTMLElement>('#support-request')!;
+    request.scrollIntoView = vi.fn();
+    links[1].click();
+    expect(request.scrollIntoView).toHaveBeenCalled();
+    expect(kindLabels(root)).toHaveLength(5);
+  });
+
   it('maps the five kinds to the two paths without touching the API values', () => {
     expect(supportKinds.map((kind) => [kind.id, kind.path, kind.value])).toEqual([
       ['problem', 'ticket', 'problem'],

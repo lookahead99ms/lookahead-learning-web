@@ -120,15 +120,15 @@ describe('The item page /admin/feedback/:id (DLV-971)', () => {
     const root = harness.routeNativeElement!;
     expect(text(root.querySelector('.crumbs'))).toBe('Support tickets and feedback › SUP-000014');
     expect(root.querySelector('.crumbs a')?.getAttribute('href')).toBe('/admin/feedback');
-    // The Admin sub-header instead of the side bars; one content column (owner, 2026-11-06).
-    const subheader = root.querySelector('app-admin-subheader')!;
+    // The approved shared rail retains the support route and current-page state.
+    const subheader = root.querySelector('main > app-author-admin-menu')!;
     expect(subheader.querySelector('nav')?.getAttribute('aria-label')).toBe('Admin navigation');
     expect(subheader.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/admin/feedback');
-    expect(subheader.compareDocumentPosition(root.querySelector('main')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(subheader.compareDocumentPosition(root.querySelector('.workspace-content')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(root.querySelector('app-author-workspace-nav')).toBeNull();
-    expect(root.querySelector('app-author-admin-menu')).toBeNull();
+    expect(root.querySelector('app-admin-subheader')).toBeNull();
     expect(root.querySelector('.workspace-sidebar')).toBeNull();
-    expect(root.querySelectorAll('main > *')).toHaveLength(1);
+    expect(root.querySelectorAll('main > *')).toHaveLength(2);
     expect(root.querySelector('main > .workspace-content > .crumbs')).not.toBeNull();
     expect(text(root.querySelector('.item-bar .kind-badge'))).toBe('Ticket');
     expect(root.querySelector('.item-bar .kind-badge')?.classList.contains('ticket')).toBe(true);

@@ -1,12 +1,13 @@
 <app-sidebar-toggle
-  side="right"
-  heading="Admin"
+  [side]="documentationOnly() ? 'right' : 'left'"
+  [heading]="documentationOnly() ? 'Documentation' : 'Admin'"
   [open]="open()"
   [controls]="contentId"
-  [label]="open() ? 'Close admin menu' : 'Open admin menu'"
+  [label]="(open() ? 'Close ' : 'Open ') + (documentationOnly() ? 'documentation menu' : 'admin menu')"
   (toggled)="open.set(!open())"
 />
 <div class="admin-menu-content" [id]="contentId" [hidden]="!open()" [attr.inert]="open() ? null : ''">
+  @if (!documentationOnly()) {
   <nav class="admin-links" aria-label="Admin navigation">
     @for (page of workspaceLinks(); track page.id) {
       <a [href]="page.href" [attr.aria-current]="currentState(page.id)"
@@ -15,7 +16,8 @@
       >
     }
   </nav>
-  @if (onDocumentationPage()) {
+  }
+  @if (documentationOnly() && (onDocumentationPage() || pageId() === 'docs')) {
     <nav class="documentation-links" [attr.aria-labelledby]="contentId + '-docs'">
       <p class="menu-label" [id]="contentId + '-docs'">Documentation pages</p>
       @for (group of documentationGroups(); track group.id) {
