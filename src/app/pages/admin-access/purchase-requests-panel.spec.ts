@@ -38,8 +38,8 @@ const usable = [
   { accountId: 'acc-12', username: 'learner12@lookahead.dev', displayName: 'Learner12', roles: [], scenario: 'Learn · active' },
 ];
 
-/** DLV-969 (owner, DEV test 2026-11-04): purchase requests live on Waiting for access → Purchase requests. */
-describe('Purchase requests on Waiting for access', () => {
+/** DLV-969 (owner, DEV test 2026-11-04): purchase requests live on Review requests → Purchase requests. */
+describe('Purchase requests on Review requests', () => {
   let rows: TestAccountRow[];
   let request: ReturnType<typeof vi.fn>;
   let decisionFailure: unknown;

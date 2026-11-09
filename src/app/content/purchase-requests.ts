@@ -209,7 +209,7 @@ export function decidePurchase(
 
 /**
  * DLV-969 (owner, 2026-11-04): Go to People and access on the DEV checkout screen ends the test session and lands here, on the
- * request in People and access → Waiting for access → Purchase requests (owner update after DEV testing, same day; the
+ * request in People and access → Review requests → Purchase requests (owner update after DEV testing, same day; the
  * older `tab=test&request=` address still opens it there). The address is the only place these values travel; the page
  * reads them once and removes them.
  */

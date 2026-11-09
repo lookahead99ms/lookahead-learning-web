@@ -1,5 +1,4 @@
-import { Component, computed, effect, inject, input, OnInit, output, signal, untracked } from '@angular/core';
-import { REMOVAL_TEXT } from './removal-text';
+import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -87,15 +86,26 @@ export class TestAccounts implements OnInit {
   readonly assignments = input<readonly DirectoryAssignment[]>([]);
   /** Which tab this list fills. */
   readonly view = input<'test' | 'people'>('people');
-  /** DLV-969: select this account once the list has it (Saved assignments → "Disable or delete"). */
-  readonly focusAccount = input<string | null>(null);
-  private readonly focusing = effect(() => {
-    const id = this.focusAccount();
-    const row = id ? this.inView().find(item => item.accountId === id) : undefined;
-    if (row) untracked(() => this.selectedKey.set(row.key));
-  });
-  /** The owner asked to change this person's roles or course grants. */
+  /** Manage access on a row (owner, 2026-11-08): the parent opens that person's panel. */
   readonly giveAccess = output<DirectoryRow>();
+  /** Add by email on People: the address the owner typed; the parent opens the panel for prepared access. */
+  readonly prepareAccess = output<string>();
+  /** The Add by email form under the People heading. */
+  readonly addingEmail = signal(false);
+  newEmail = '';
+  openAddByEmail() {
+    if (!this.canGive() || this.busy()) return;
+    this.closeConfirmations();
+    this.addingEmail.set(true);
+  }
+  cancelAddByEmail() { this.addingEmail.set(false); this.newEmail = ''; }
+  /** Continue hands the address to the parent; an empty one is refused here. */
+  submitAddByEmail() {
+    const email = this.newEmail.trim();
+    if (!email) { this.panelError.set('Enter the email address they will sign in with.'); return; }
+    this.prepareAccess.emit(email);
+    this.cancelAddByEmail();
+  }
   readonly canGive = computed(
     () => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true,
   );
@@ -108,7 +118,7 @@ export class TestAccounts implements OnInit {
   readonly isOwner = computed(() => viewerRole(this.accounts.account()) === 'owner');
   /**
    * DLV-969 (owner, 2026-11-04): the owner and admins see which test accounts have a purchase request waiting (the
-   * requests themselves are on Waiting for access → Purchase requests); co-authors and everyone else see nothing of them.
+   * requests themselves are on Review requests → Purchase requests); co-authors and everyone else see nothing of them.
    */
   readonly canDecide = computed(() => canDecidePurchases(this.accounts.account()));
   readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(viewerRole(this.accounts.account())));
@@ -164,16 +174,8 @@ export class TestAccounts implements OnInit {
   readonly creating = signal(false);
   readonly createKey = signal<string|null>(null);
   readonly deleting = signal<TestAccountRow|null>(null);
-  readonly downgradingReal = signal<DirectoryRow | null>(null);
-  readonly deletingReal = signal<DirectoryRow | null>(null);
-  /** DLV-969: the owner's Disable or Delete for a DEV sign-in account, waiting for its typed confirmation. */
-  readonly removing = signal<{ row: DirectoryRow; action: 'disable' | 'remove' } | null>(null);
-  /** Shown beside each button and as its hover text (user, 2026-11-03). Disable is the strongest. */
-  readonly removalText = REMOVAL_TEXT;
-  removalConfirmation = '';
   createPassword = '';
   deleteConfirmation = '';
-  realConfirmation = '';
   readonly rows = signal<TestAccountRow[]>([]);
   readonly directoryAccounts = signal<DirectoryAccount[]>([]);
   readonly notice = signal('');
@@ -210,8 +212,11 @@ export class TestAccounts implements OnInit {
       : null;
     return directoryRows(self, this.assignments(), this.rows(), this.titles(), this.directoryAccounts());
   });
-  /** Test accounts on the Test accounts tab; everyone else on People. */
-  readonly inView = computed(() => this.people().filter((row) => row.isTest === (this.view() === 'test')));
+  /**
+   * Test accounts on the Test accounts tab; everyone else on People. Owner, 2026-11-08: the owner's prepared access
+   * (an email, no account yet) is listed under Review requests, not among People.
+   */
+  readonly inView = computed(() => this.people().filter((row) => row.isTest === (this.view() === 'test') && !(this.canGive() && row.pending)));
   /** Only the roles somebody in this list has (People's Role menu). */
   readonly roleFilters = computed(() =>
     ROLE_FILTERS.filter((name) => this.inView().some((row) => row.roles.includes(name))),
@@ -269,16 +274,6 @@ export class TestAccounts implements OnInit {
     this.deleting.set(row);
   }
 
-  startDowngrade(row: DirectoryRow) {
-    this.closeConfirmations();
-    this.downgradingReal.set(row);
-  }
-
-  startRealDelete(row: DirectoryRow) {
-    this.closeConfirmations();
-    this.deletingReal.set(row);
-  }
-
   choose(row: DirectoryRow) {
     if (this.busy() || this.pending()) return;
     this.selectedKey.set(this.selectedKey() === row.key ? null : row.key);
@@ -297,18 +292,15 @@ export class TestAccounts implements OnInit {
   closeConfirmations() {
     this.panelError.set('');
     this.creating.set(false);
+    this.addingEmail.set(false);
+    this.newEmail = '';
     this.selected.set(null);
     this.deleting.set(null);
-    this.downgradingReal.set(null);
-    this.deletingReal.set(null);
-    this.removing.set(null);
     if (!this.rosterReset()?.done) this.rosterReset.set(null);
     this.rosterRestore.set(null);
     this.rosterRestoreConfirmation = '';
     this.confirmation = '';
     this.deleteConfirmation = '';
-    this.realConfirmation = '';
-    this.removalConfirmation = '';
   }
 
   cancel() {
@@ -500,60 +492,6 @@ export class TestAccounts implements OnInit {
       this.notice.set(`${row.username} deleted. Its login and test data are gone; the creator's lifetime count remains.`);
     } catch (failure) {this.panelError.set(reason(failure)+'Deletion was not confirmed. Retry the same account.');}
     finally {this.busy.set(false);}
-  }
-
-  async downgradeReal() {
-    const row=this.downgradingReal();
-    if(!row?.accountId||row.isTest||row.isSelf||row.canDowngrade!==true||this.realConfirmation!=='DOWNGRADE'||this.busy())return;
-    this.busy.set(true);this.panelError.set('');
-    try {
-      await this.api.request(`/admin/accounts/${row.accountId}/downgrade`,{confirmation:'DOWNGRADE'});
-      this.downgradingReal.set(null);this.realConfirmation='';this.busy.set(false);await this.load();
-      this.notice.set(`${row.name} now has free learner access. Purchase history remains.`);
-    } catch (failure) {this.panelError.set(reason(failure)+'Downgrade was not confirmed. Refresh and retry.');}
-    finally {this.busy.set(false);}
-  }
-
-  async deleteReal() {
-    const row=this.deletingReal();
-    if(!row?.accountId||row.isTest||row.isSelf||row.canDelete!==true||this.realConfirmation!=='DELETE'||this.busy())return;
-    this.busy.set(true);this.panelError.set('');
-    try {
-      await this.api.request(`/admin/accounts/${row.accountId}/delete`,{confirmation:'DELETE'});
-      this.deletingReal.set(null);this.realConfirmation='';this.busy.set(false);await this.load();
-      this.notice.set(`${row.name} deleted. Sign-in and learner plans are gone; purchase audit remains.`);
-    } catch (failure) {this.panelError.set(reason(failure)+'Deletion was not confirmed. Refresh and retry the same account.');}
-    finally {this.busy.set(false);}
-  }
-
-  startRemoval(row: DirectoryRow, action: 'disable' | 'remove') {
-    this.closeConfirmations(); this.removing.set({ row, action }); this.notice.set('');
-  }
-  /** Disable needs DISABLE typed, Delete needs DELETE; Enable is one click because it only gives back what was there. */
-  async confirmRemoval() {
-    const pending = this.removing(), word = pending?.action === 'disable' ? 'DISABLE' : 'DELETE';
-    if (!pending?.row.accountId || pending.row.isSelf || this.removalConfirmation !== word || this.busy()) return;
-    const { row, action } = pending;
-    if (action === 'disable' ? !row.canDisable : !row.canRemove) return;
-    this.busy.set(true);this.panelError.set('');
-    try {
-      await this.api.request(`/admin/accounts/${row.accountId}/${action}`, { confirmation: word });
-      this.removing.set(null); this.removalConfirmation = ''; this.busy.set(false); await this.load();
-      this.notice.set(action === 'disable'
-        ? `${row.name} is disabled. Every sign-in is blocked and their open session closes within 5 minutes.`
-        : `${row.name} is deleted. If they sign in again, they appear in Waiting for access as a new person.`);
-    } catch (failure) { this.panelError.set(reason(failure) + (action === 'disable' ? 'Disable was not confirmed. Refresh and retry.' : 'Deletion was not confirmed. Refresh and retry the same account.')); }
-    finally { this.busy.set(false); }
-  }
-  async enable(row: DirectoryRow) {
-    if (!row.accountId || !row.canEnable || this.busy()) return;
-    this.busy.set(true);
-    try {
-      await this.api.request(`/admin/accounts/${row.accountId}/enable`, {});
-      this.busy.set(false); await this.load();
-      this.notice.set(`${row.name} can sign in again.`);
-    } catch { this.notice.set('Enable was not confirmed. Refresh and retry.'); }
-    finally { this.busy.set(false); }
   }
 
   /** DLV-969 (owner, 2026-11-05): the row whose GitHub address was just copied, for a short "Copied" on its button. */
