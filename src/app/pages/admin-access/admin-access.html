@@ -37,17 +37,17 @@
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">🧑‍💼</span>
           <h3>Staff roles</h3>
-          <p>Co-authors read the author tools. Admins manage test admins and test learners. Both get the entire curriculum.</p>
+          <p>One role per person: Learner, Co-author, Admin, Reviewer or Tester. Co-author, Admin and Tester include every course.</p>
         </li>
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">📚</span>
           <h3>Course access grants</h3>
-          <p>Open chosen courses, or the entire curriculum, for one person. A grant is not a purchase and costs nothing.</p>
+          <p>For a Learner or Reviewer: open chosen courses, or the entire curriculum. A grant is not a purchase and costs nothing.</p>
         </li>
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">🏷️</span>
           <h3>Plans and purchases</h3>
-          <p>Local purchases use mock payments, so no real money is charged.</p>
+          <p>Bought by the person, never assigned here. Local purchases use mock payments, so no real money is charged.</p>
           <a class="how-link" routerLink="/admin/plans">See plans and purchases</a>
         </li>
       </ul>
@@ -77,7 +77,9 @@
         </div>
 
         <!-- Owner, 2026-11-08: the person's access as tabs, so each part uses the whole column: DEV admission (not for a
-             test account), Roles, Course access, Plans and purchases, then Review & confirm, where Save access lives. -->
+             test account), Roles, Course access, then Review & confirm, where Save access lives. Plans and purchases left
+             the panel on 2026-11-09 (DLV-999): what a person bought shows on Course access, and the free staff upgrade is
+             gone because a grant or a role already opens the courses. -->
         @let personView = personTab();
         <div class="waiting-tabs person-tabs" role="tablist" aria-label="Manage access" (keydown)="onPersonKey($event)">
           @for (item of personTabs(); track item.id) {
@@ -115,6 +117,7 @@
                 @case ('prepared') { No account yet: this is an invite. The first time this email signs in on DEV, the person is admitted at once with the roles and course access on the other tabs. It waits 14 days, and saving again renews the window. No email is sent, so tell the person yourself. }
                 @case ('test') { Test accounts never pass the DEV gate: staff use them from Switch to a test account in the account menu. Reset and Delete stay on the Test accounts tab. }
                 @case ('disabled') { Disabled: every sign-in is blocked. Manage DEV admission offers Enable, which reopens the gate with the same account, roles and progress, or Delete. }
+                @case ('waiting') { Signed in on DEV, not admitted yet. Choose the role on Roles and, for a Learner or Reviewer, the courses on Course access; Admit and save access on Review & confirm lets them in with exactly that. A request nobody admits is removed after 48 hours; Reject stays on the Review requests list. }
                 @case ('admitted') { Admitted through the DEV gate. Admission is separate from the other tabs: a learner can be admitted with no role at all. Manage DEV admission offers Disable or Delete, each confirmed by typing its word. }
                 @default { This build does not report the sign-in state for this account. }
               }
@@ -132,22 +135,31 @@
             }
             @case ('roles') {
           <fieldset class="panel" [disabled]="busy() || !canManage()">
-            <legend class="visually-hidden">Roles</legend>
-            <div class="role-grid">
-              @for (role of roleOptions; track role.id) {
+            <legend class="visually-hidden">Role</legend>
+            <!-- DLV-999 (owner, 2026-11-09): one role per person, Learner among the choices. -->
+            @let chosenRole = selectedRole(draftRow);
+            <div class="role-grid" role="radiogroup" aria-label="Role">
+              @for (role of roleChoices; track role.id) {
                 <label class="role-option">
                   <input
-                    type="checkbox"
-                    [checked]="draftRow.roles.includes(role.id)"
-                    (change)="toggle('roles', role.id, $any($event.target).checked)"
+                    type="radio"
+                    name="person-role"
+                    [value]="role.id"
+                    [checked]="chosenRole === role.id"
+                    (change)="setRole(role.id)"
                   />
                   <span class="role-text"><strong>{{ role.label }}</strong><span>{{ role.description }}</span></span>
                 </label>
               }
             </div>
+            @if (extraRoles().length) {
+              <p class="context-note role-extra">
+                Today this person also has {{ roleNames(extraRoles()) }}. Saving keeps only the role chosen here.
+              </p>
+            }
             <p class="context-note">
-              The owner role cannot be assigned here. Multiple selected roles combine their permissions.
-              Choosing Admin also selects the entire curriculum; you can clear it before saving.
+              One role per person. Co-author, Admin and Tester include every course; choose Learner or Reviewer to grant
+              courses one by one on Course access. The owner role cannot be assigned here.
             </p>
           </fieldset>
 
@@ -155,25 +167,39 @@
             @case ('courses') {
           <fieldset class="panel" [disabled]="busy() || !canManage()">
             <legend class="visually-hidden">Course access</legend>
-            <label class="full-curriculum">
-              <input type="checkbox" [ngModel]="draftRow.fullCurriculum" (ngModelChange)="setFullCurriculum($event)" /> Entire curriculum, including future courses
-            </label>
-            @if (draftRow.roles.includes('tester')) {
-              <p class="context-note">Tester access includes the entire curriculum.</p>
+            @let included = roleIncludesCurriculum(draftRow);
+            @if (included) {
+              <!-- DLV-999: the role already opens every course; there is nothing to grant here. -->
+              <p class="included-note" id="curriculum-included">
+                <strong>Every course is included by the {{ curriculumRoleLabel(draftRow) }} role.</strong>
+                To grant courses one by one, choose Learner or Reviewer on Roles first.
+              </p>
             }
-            <div class="courses" role="group" aria-label="Courses">
+            <label class="full-curriculum" [class.locked]="included">
+              <input type="checkbox" [ngModel]="draftRow.fullCurriculum" [disabled]="included" (ngModelChange)="setFullCurriculum($event)" /> Entire curriculum, including future courses
+            </label>
+            <div class="courses" role="group" aria-label="Courses" [class.locked]="included">
               @for (topic of topics(); track topic) {
                 <label>
                   <input
                     type="checkbox"
                     [checked]="draftRow.topicGrants.includes(topic)"
-                    [disabled]="draftRow.fullCurriculum || draftRow.roles.includes('tester')"
+                    [disabled]="included || draftRow.fullCurriculum"
                     (change)="toggle('topicGrants', topic, $any($event.target).checked)"
                   />
                   {{ topicLabel(topic) }}
                 </label>
               }
             </div>
+            @if (who.accountId && (planLabel() || gate.canDowngrade)) {
+              <!-- DLV-999: what the person bought is read here, not on a tab of its own; Downgrade to free stays the one plan action. -->
+              <div class="plan-row">
+                @if (planLabel()) { <p class="plan-line">Bought plan: <strong>{{ planLabel() }}</strong>. Purchases are the person's own; a grant above costs nothing.</p> }
+                @if (gate.canDowngrade) {
+                  <button type="button" class="caution-button" [disabled]="busy()" [attr.aria-expanded]="downgrading()" aria-controls="downgrade-dialog" (click)="startDowngrade()">Downgrade to free</button>
+                }
+              </div>
+            }
             <p class="context-note">
               Private previews require access to the entire curriculum because they can contain course
               material. A grant is not a purchase. Grants saved elsewhere remain in effect.
@@ -185,7 +211,8 @@
           <div class="panel review-panel" id="review-access">
             <h3>Review &amp; confirm</h3>
             <p class="context-note">
-              @if (who.accountId) { This is what changes for {{ who.name }}. Nothing is saved until you press Save access below. }
+              @if (who.waiting) { {{ who.name }} will be admitted with this access on their next sign-in. Nothing is saved until you press Admit and save access below. }
+              @else if (who.accountId) { This is what changes for {{ who.name }}. Nothing is saved until you press Save access below. }
               @else { {{ who.name }} will be admitted with this access at their first sign-in. Nothing is saved until you press Save access below. }
             </p>
             @if (changes().length) {
@@ -198,25 +225,9 @@
                 }
               </ul>
             } @else {
-              <p class="empty">No changes yet. Tick or clear roles and courses on the other tabs; they are listed here before you save.</p>
+              <p class="empty">@if (who.waiting) { No access beyond Learner yet: Admit and save access lets {{ who.name }} in as a Learner with no granted courses. } @else { No changes yet. Tick or clear roles and courses on the other tabs; they are listed here before you save. }</p>
             }
           </div>
-            }
-            @default {
-          <div class="panel membership-panel">
-            @if (who.accountId) {
-              <app-admin-memberships [accountId]="who.accountId" [readOnly]="!canManage()" />
-              @if (gate.canDowngrade) {
-                <div class="card-actions">
-                  <button type="button" class="caution-button" [disabled]="busy()" [attr.aria-expanded]="downgrading()" aria-controls="downgrade-dialog" (click)="startDowngrade()">Downgrade to free</button>
-                </div>
-              }
-            } @else {
-              <p class="empty">Nothing yet. Plans appear once the account exists.</p>
-            }
-            <p class="context-note">Read only here apart from the staff upgrade: a plan or a pass is bought by the person. Course access above is a grant, not a purchase.</p>
-          </div>
-
             }
           }
           <!-- Review & confirm is the last tab (owner, 2026-11-08): it lists the changes, and only its Save access writes. -->
@@ -226,7 +237,7 @@
             <p class="save-message">
               @if (pendingChanges.length) { {{ pendingChanges.length === 1 ? '1 change' : pendingChanges.length + ' changes' }} to review. }
               @else { No changes yet. }
-              Roles and Course access save together as one assignment.
+              Role and Course access save together as one assignment.
             </p>
             <div class="save-actions">
               <button type="button" class="secondary-action" [disabled]="busy()" (click)="selectTab(fromTab())">Discard</button>
@@ -235,6 +246,8 @@
               }
               @if (nextPersonTab(); as next) {
                 <button type="button" class="primary-action" [disabled]="busy()" (click)="continuePerson()">Continue to {{ next.label }}</button>
+              } @else if (who.waiting) {
+                <button type="button" class="primary-action" [disabled]="busy() || !canManage()" (click)="admitAndSave()">Admit and save access</button>
               } @else {
                 <button type="button" class="primary-action" [disabled]="busy() || !canManage() || !pendingChanges.length" (click)="save()">Save access</button>
               }
@@ -415,7 +428,7 @@
                 <th scope="col">Email</th>
                 <th scope="col">Requested</th>
                 <th scope="col">Expires</th>
-                <th scope="col">Admit as</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -432,20 +445,10 @@
                   <td data-label="Email">{{ row.email || 'No verified email' }}@if (labels.length) {<span class="sign-in-labels"><span class="visually-hidden">Sign-in methods: </span>@for (label of labels; track label) {<span class="method-label">{{ label }}</span>}</span>}@if (sameEmail(row); as flag) {<span class="same-email-flag"><span aria-hidden="true">⚠</span> {{ flag }}</span>}</td>
                   <td data-label="Requested">{{ timeText(row.requestedAt) }}</td>
                   <td data-label="Expires">{{ expiresText(row) }}</td>
-                  <td data-label="Admit as">
+                  <td data-label="Actions">
                     <div class="admit-cell">
-                      <label>
-                        <span class="visually-hidden">Role for {{ row.displayName }}</span>
-                        <select [ngModel]="admitRole[row.accountId] ?? ''" (ngModelChange)="admitRole[row.accountId] = $event" [disabled]="busy()">
-                          <option value="">Learner</option>
-                          @for (role of admitRoleOptions; track role.id) {
-                            <option [value]="role.id">{{ role.label }}</option>
-                          }
-                        </select>
-                      </label>
-                      <!-- Owner, 2026-11-08: Admit and Reject both confirm in a dialog before anything is written. -->
-                      <button class="primary-action" type="button" (click)="startAdmit(row)" [disabled]="busy()"
-                        [attr.aria-expanded]="admitting()?.accountId === row.accountId" aria-controls="admit-dialog">Admit</button>
+                      <!-- DLV-999 (owner, 2026-11-09): the role and the courses are chosen in the person panel, then Admit and save access. -->
+                      <button class="primary-action" type="button" (click)="manageWaiting(row)" [disabled]="busy()">Manage access</button>
                       <!-- DLV-971 (owner, 2026-11-06): the same two choices as Manage DEV admission on a person, Disable or Delete, for a request. -->
                       <button class="secondary-action" type="button" (click)="startReject(row)" [disabled]="busy()"
                         [attr.aria-expanded]="rejecting()?.row?.accountId === row.accountId" aria-controls="reject-panel">Reject</button>
@@ -455,21 +458,6 @@
               }
             </tbody>
           </table>
-          @if (admitting(); as row) {
-            <div class="dialog-scrim" (click)="$event.target === $event.currentTarget && cancelAdmit()">
-              <div class="dialog" id="admit-dialog" role="dialog" aria-modal="true" aria-labelledby="admit-heading">
-                <h2 id="admit-heading">Admit {{ row.displayName }} as {{ admitLabel(admitRole[row.accountId] ?? '') }}</h2>
-                <p class="section-note">
-                  They pass the DEV gate on their next sign-in{{ row.email ? ' with ' + row.email : '' }}. Roles and course access can be
-                  changed later from People → Manage access.
-                </p>
-                <div class="actions">
-                  <button type="button" class="primary-action" [disabled]="busy()" (click)="confirmAdmit()">Confirm admit</button>
-                  <button type="button" class="action-link" [disabled]="busy()" (click)="cancelAdmit()">Cancel</button>
-                </div>
-              </div>
-            </div>
-          }
           @if (rejecting(); as pending) {
             <div class="dialog-scrim" (click)="$event.target === $event.currentTarget && cancelReject()">
             <div class="dialog removal reject" id="reject-panel" role="dialog" aria-modal="true" [attr.aria-label]="'Reject ' + pending.row.displayName">

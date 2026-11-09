@@ -76,8 +76,9 @@ describe('People and access', () => {
     expect(page.changes()).toEqual([]);
     expect(page.personTabs().at(-1)).toEqual({ id: 'review', label: 'Review & confirm' });
     page.toggle('roles', 'tester', true);
-    expect(page.changes()).toEqual([{ kind: 'Role', text: 'Tester', added: true }]);
-    expect(page.personTabs().at(-1)).toEqual({ id: 'review', label: 'Review & confirm · 1' });
+    // DLV-999: a role that includes the curriculum is saved with the explicit grant, so two lines change.
+    expect(page.changes()).toEqual([{ kind: 'Role', text: 'Tester', added: true }, { kind: 'Curriculum', text: 'Entire curriculum', added: true }]);
+    expect(page.personTabs().at(-1)).toEqual({ id: 'review', label: 'Review & confirm · 2' });
     page.selectPersonTab('review');
     await page.save();
     const write = requests.find(row => row.path.endsWith('/admin/access') && row.init?.method === 'POST')!;
@@ -89,31 +90,44 @@ describe('People and access', () => {
     expect(page.assignments()[0]).toMatchObject({ accountId: 'existing-id', revision: 1 });
     expect(page.notice()).toBe('Access saved for Learner. It applies to their next request.');
   });
-  it('gives a new admin the entire curriculum by default, lets the owner clear it, and lists every change', async () => {
+  it('gives one role per person: Learner clears the staff roles, Admin includes the curriculum, Reviewer keeps grants editable (DLV-999)', async () => {
     await page.giveAccessTo(row('existing-id', 'Learner'));
-    expect(page.draft?.fullCurriculum).toBe(false);
-    page.toggle('roles', 'reviewer', true);
-    expect(page.draft?.fullCurriculum).toBe(false);
-    page.toggle('roles', 'admin', true);
-    expect(page.draft?.fullCurriculum).toBe(true);
+    expect(page.roleChoices.map(choice => choice.id)).toEqual(['learner', 'co-author', 'admin', 'reviewer', 'tester']);
+    expect(page.selectedRole(page.draft!)).toBe('learner');
+    expect(page.roleIncludesCurriculum(page.draft!)).toBe(false);
     page.toggle('topicGrants', 'learn:core-java', true);
+    page.setRole('reviewer');
+    expect(page.draft).toMatchObject({ roles: ['reviewer'], fullCurriculum: false, topicGrants: ['learn:core-java'] });
+    expect(page.roleIncludesCurriculum(page.draft!)).toBe(false);
+    page.setRole('admin');
+    expect(page.draft).toMatchObject({ roles: ['admin'], fullCurriculum: true, topicGrants: [] });
+    expect(page.selectedRole(page.draft!)).toBe('admin');
+    expect(page.roleIncludesCurriculum(page.draft!)).toBe(true);
+    expect(page.curriculumRoleLabel(page.draft!)).toBe('Admin');
+    expect(page.courseText(page.draft!)).toBe('Entire curriculum');
     expect(page.changes()).toEqual([
-      { kind: 'Role', text: 'Reviewer', added: true }, { kind: 'Role', text: 'Admin', added: true },
-      { kind: 'Curriculum', text: 'Entire curriculum', added: true }, { kind: 'Course', text: 'Learn · Core Java', added: true },
+      { kind: 'Role', text: 'Admin', added: true }, { kind: 'Curriculum', text: 'Entire curriculum', added: true },
     ]);
-    page.setFullCurriculum(false); page.toggle('roles', 'reviewer', false); page.toggle('topicGrants', 'learn:core-java', false);
-    expect(page.changes()).toEqual([{ kind: 'Role', text: 'Admin', added: true }]);
+    page.setRole('learner');
+    expect(page.draft).toMatchObject({ roles: [], fullCurriculum: true, topicGrants: [] });
+    page.setFullCurriculum(false);
+    expect(page.changes()).toEqual([]);
+    page.setRole('co-author');
     await page.save();
     const write = requests.find(row => row.path.endsWith('/admin/access') && row.init?.method === 'POST')!;
-    expect(JSON.parse(write.init?.body as string)).toMatchObject({ roles: ['admin'], fullCurriculum: false });
+    expect(JSON.parse(write.init?.body as string)).toMatchObject({ roles: ['co-author'], fullCurriculum: true, topicGrants: [] });
     expect(page.roleNames(['admin', 'reviewer'])).toBe('Admin, Reviewer');
-    expect(page.roleNames([])).toBe('No staff role');
-    // Removed lines show what goes away.
-    page.edit({ id: 'x', accountId: 'a', pendingEmail: null, roles: ['tester'], topicGrants: ['grow:b'], fullCurriculum: true, revision: 3 });
-    page.toggle('roles', 'tester', false); page.toggle('topicGrants', 'grow:b', false); page.setFullCurriculum(false);
+    expect(page.roleNames([])).toBe('Learner');
+    // An older assignment with two roles shows the first of them; the save keeps only the chosen one and the panel says so.
+    page.edit({ id: 'x', accountId: 'a', pendingEmail: null, roles: ['tester', 'admin'], topicGrants: ['grow:b'], fullCurriculum: true, revision: 3 });
+    expect(page.selectedRole(page.draft!)).toBe('admin');
+    expect(page.extraRoles()).toEqual(['tester']);
+    page.setRole('learner'); page.toggle('topicGrants', 'grow:b', false); page.setFullCurriculum(false);
     expect(page.changes()).toEqual([
-      { kind: 'Role', text: 'Tester', added: false }, { kind: 'Curriculum', text: 'Entire curriculum', added: false }, { kind: 'Course', text: 'Grow · B', added: false },
+      { kind: 'Role', text: 'Admin', added: false }, { kind: 'Role', text: 'Tester', added: false },
+      { kind: 'Curriculum', text: 'Entire curriculum', added: false }, { kind: 'Course', text: 'Grow · B', added: false },
     ]);
+    expect(page.courseText(page.draft!)).toBe('No course access');
   });
   it('prepares access for an email, keeps the draft open on a concurrent-save conflict, and refuses an empty address', async () => {
     page.invite('Invited@Example.invalid'); page.toggle('roles', 'reviewer', true);
@@ -268,17 +282,33 @@ describe('People and access layout', () => {
     // No section headings: the person, then four tabs with one card at a time, then the save bar (owner, 2026-11-08).
     expect(panel.querySelector('.section-heading')).toBeNull();
     const personTabs = () => [...panel.querySelectorAll<HTMLButtonElement>('.person-tabs [role="tab"]')];
-    expect(personTabs().map(tab => [text(tab), tab.getAttribute('aria-selected')])).toEqual([['DEV admission', 'true'], ['Roles', 'false'], ['Course access', 'false'], ['Plans and purchases', 'false'], ['Review & confirm', 'false']]);
+    expect(personTabs().map(tab => [text(tab), tab.getAttribute('aria-selected')])).toEqual([['DEV admission', 'true'], ['Roles', 'false'], ['Course access', 'false'], ['Review & confirm', 'false']]);
     expect(panel.querySelectorAll('#person-tabpanel > .panel')).toHaveLength(1);
     expect(panel.querySelector('#person-tabpanel > .save-bar')).not.toBeNull();
     expect(text(panel.querySelector('#dev-admission .context-note'))).toContain('No account yet: this is an invite. The first time this email signs in on DEV');
     expect([...panel.querySelectorAll('#dev-admission .card-actions button')].map(text)).toEqual(['Withdraw invite']);
-    personTabs()[3].click(); fixture.detectChanges();
+    personTabs()[2].click(); fixture.detectChanges();
     expect(panel.querySelector('#dev-admission')).toBeNull();
-    expect(text(panel.querySelector('.membership-panel .empty'))).toBe('Nothing yet. Plans appear once the account exists.');
-    expect(panel.querySelector('app-admin-memberships')).toBeNull();
+    // DLV-999: no Plans and purchases tab; an invite has nothing bought, so Course access shows no plan row.
+    expect(panel.querySelector('.plan-row')).toBeNull();
+    expect(panel.querySelector('.included-note')).toBeNull();
     personTabs()[1].click(); fixture.detectChanges();
-    expect(panel.querySelectorAll('.role-option')).toHaveLength(4);
+    const roleCards = [...panel.querySelectorAll('.role-option')];
+    expect(roleCards.map(card => text(card.querySelector('strong')))).toEqual(['Learner', 'Co-author', 'Admin', 'Reviewer', 'Tester']);
+    expect(roleCards.map(card => card.querySelector('input')!.type)).toEqual(['radio', 'radio', 'radio', 'radio', 'radio']);
+    expect(roleCards.map(card => card.querySelector('input')!.checked)).toEqual([true, false, false, false, false]);
+    roleCards[2].querySelector('input')!.click(); fixture.detectChanges();
+    expect(fixture.componentInstance.draft).toMatchObject({ roles: ['admin'], fullCurriculum: true });
+    personTabs()[2].click(); fixture.detectChanges();
+    expect(text(panel.querySelector('.included-note strong'))).toBe('Every course is included by the Admin role.');
+    await fixture.whenStable(); fixture.detectChanges(); // ngModel applies the value and the disabled state after a tick
+    expect(panel.querySelector<HTMLInputElement>('.full-curriculum input')!.disabled).toBe(true);
+    expect(panel.querySelector<HTMLInputElement>('.full-curriculum input')!.checked).toBe(true);
+    expect(fixture.componentInstance.draft?.fullCurriculum).toBe(true);
+    expect([...panel.querySelectorAll<HTMLInputElement>('.courses input')].every(box => box.disabled)).toBe(true);
+    personTabs()[1].click(); fixture.detectChanges();
+    [...panel.querySelectorAll('.role-option')][0].querySelector('input')!.click(); fixture.detectChanges();
+    expect(fixture.componentInstance.draft).toMatchObject({ roles: [] });
     const page = fixture.componentInstance;
     page.onPersonKey(new KeyboardEvent('keydown', { key: 'ArrowRight' })); expect(page.personTab()).toBe('courses');
     page.onPersonKey(new KeyboardEvent('keydown', { key: 'End' })); expect(page.personTab()).toBe('review');
@@ -286,7 +316,7 @@ describe('People and access layout', () => {
     page.onPersonKey(new KeyboardEvent('keydown', { key: 'ArrowLeft' })); expect(page.personTab()).toBe('review');
     page.onPersonKey(new KeyboardEvent('keydown', { key: 'Home' })); expect(page.personTab()).toBe('admission');
     page.onPersonKey(new KeyboardEvent('keydown', { key: 'x' })); expect(page.personTab()).toBe('admission');
-    expect(text(panel.querySelector('.save-message'))).toBe('No changes yet. Roles and Course access save together as one assignment.');
+    expect(text(panel.querySelector('.save-message'))).toBe('1 change to review. Role and Course access save together as one assignment.');
     fixture.detectChanges();
     expect([...panel.querySelectorAll('.save-actions button')].map(text)).toEqual(['Discard', 'Continue to Roles']);
     expect(text(panel.querySelector('.back-link'))).toBe('← Back to People');
@@ -361,10 +391,10 @@ describe('People and access tabs', () => {
     expect(page.person()).toMatchObject({ accountId: 'saved-id', name: 'reviewer01', isTest: true, email: null });
     expect(page.admission()).toMatchObject({ state: 'test', label: 'Test account', canDisable: false, deletePath: null });
     // A test account never passes the gate, so its panel has no DEV admission tab and opens on Roles.
-    expect(page.personTabs().map(tab => tab.id)).toEqual(['roles', 'courses', 'plans', 'review']);
+    expect(page.personTabs().map(tab => tab.id)).toEqual(['roles', 'courses', 'review']);
     expect(page.personTab()).toBe('roles');
-    page.selectPersonTab('plans');
-    expect(page.personTab()).toBe('plans');
+    page.selectPersonTab('courses');
+    expect(page.personTab()).toBe('courses');
     expect(paths.some(path => path.includes('/lookup'))).toBe(false);
 
     // A row shows the display name, which a lookup would not match: the account id on the row is enough. The owner's
@@ -377,7 +407,7 @@ describe('People and access tabs', () => {
     expect(page.person()).toMatchObject({ accountId: 'new-id', name: 'Olivia Bennett', email: 'olivia@example.test', username: 'olivia' });
     expect(page.admission()).toMatchObject({ state: 'admitted', label: 'Admitted', canDisable: true, canEnable: false, deletePath: 'remove' });
     // Opening another person starts on the first tab again, DEV admission for a real account.
-    expect(page.personTabs().map(tab => tab.id)).toEqual(['admission', 'roles', 'courses', 'plans', 'review']);
+    expect(page.personTabs().map(tab => tab.id)).toEqual(['admission', 'roles', 'courses', 'review']);
     expect(page.personTab()).toBe('admission');
     expect(page.notice()).toBe('');
     expect(page.outline().map(item => item.label)).toEqual(['Manage access']);
@@ -597,6 +627,7 @@ describe('Review requests', () => {
   let waiting: unknown;
   let waitingStatus: number;
   let admitStatus: number;
+  let saveStatus: number;
   let rejectStatus: number;
   /** The review client that carries Clean up admissions (owner, 2026-11-07); the route provides it. */
   const reviewClient = { runSweeps: vi.fn<(job: string) => Promise<SweepRunResult>>() };
@@ -615,6 +646,9 @@ describe('Review requests', () => {
         if (path === '/admin/access/admit') return admitStatus === 200
           ? Response.json({ data: { ...JSON.parse(init!.body as string), admittedAt: '2026-11-02T15:00:00Z' } })
           : new Response('', { status: admitStatus });
+        if (path === '/admin/access' && init?.method === 'POST') return saveStatus === 200
+          ? Response.json({ data: { ...JSON.parse(init.body as string), revision: 1 } })
+          : new Response('', { status: saveStatus });
         if (path === '/admin/access') return Response.json({ data: [{ id: 's1', accountId: 'saved-id', pendingEmail: null, roles: ['reviewer'], topicGrants: [], fullCurriculum: false, revision: 1 }] });
         if (/^\/admin\/accounts\/[^/]+\/(disable|remove)$/.test(path)) return rejectStatus === 200
           ? Response.json({ data: { accountId: path.split('/')[3], state: path.endsWith('disable') ? 'disabled' : 'removed' } })
@@ -624,7 +658,7 @@ describe('Review requests', () => {
     ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
   };
   const admitCalls = () => requests.filter(row => row.path === '/admin/access/admit');
-  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; rejectStatus = 200; reviewClient.runSweeps.mockReset(); });
+  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; saveStatus = 200; rejectStatus = 200; reviewClient.runSweeps.mockReset(); });
 
   describe('Clean up admissions (owner, 2026-11-07)', () => {
     const ranAt = '2026-11-07T10:05:00Z';
@@ -785,29 +819,39 @@ describe('Review requests', () => {
     expect(page.notice()).toBe('Access service is unavailable. Retry shortly.');
   });
 
-  it('admits with the chosen role through a CSRF-protected write, removes the row and reloads the assignments', async () => {
+  it('opens a waiting person in the panel and admits them with the chosen role and courses in one go (DLV-999)', async () => {
     setup('owner');
     const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await page.reload();
     expect(page.tab()).toBe('waiting');
-    const listLoads = () => requests.filter(row => row.path === '/admin/access').length;
+    const listLoads = () => requests.filter(row => row.path === '/admin/access' && row.init?.method !== 'POST').length;
+    const saves = () => requests.filter(row => row.path === '/admin/access' && row.init?.method === 'POST');
     const before = listLoads();
-    page.admitRole['alex-id'] = 'reviewer';
-    await page.admit(alex);
+    page.manageWaiting(alex);
+    expect(page.person()).toMatchObject({ accountId: 'alex-id', name: 'Alex Example', email: 'alex@example.test', username: 'alex.example', waiting: alex });
+    expect(page.admission()).toMatchObject({ state: 'waiting', label: 'Waiting for admission', canDisable: false, canDowngrade: false, deletePath: null });
+    expect(page.personTabs().map(tab => tab.id)).toEqual(['admission', 'roles', 'courses', 'review']);
+    expect(page.fromTab()).toBe('waiting');
+    expect(page.selectedRole(page.draft!)).toBe('learner');
+    page.setRole('reviewer'); page.toggle('topicGrants', 'learn:a', true);
+    await page.admitAndSave();
     const write = admitCalls()[0];
     expect(write.init?.method).toBe('POST');
     expect(write.init?.headers).toMatchObject({ 'X-CSRF-TOKEN': 'synthetic-csrf' });
     expect(JSON.parse(write.init?.body as string)).toEqual({ accountId: 'alex-id', roles: ['reviewer'] });
-    expect(page.notice()).toBe('Alex Example admitted as Reviewer. It applies to their next sign-in.');
-    expect(listLoads()).toBe(before + 1);
-    expect(page.admitRole['alex-id']).toBeUndefined();
+    expect(JSON.parse(saves()[0].init?.body as string)).toMatchObject({ accountId: 'alex-id', roles: ['reviewer'], topicGrants: ['learn:a'], fullCurriculum: false, revision: 0 });
+    expect(page.notice()).toBe('Alex Example admitted as Reviewer with 1 selected course. It applies to their next sign-in.');
+    expect(page.person()).toBeNull();
+    expect(page.tab()).toBe('waiting');
+    expect(listLoads()).toBe(before + 1); // the saved assignment is kept, then the reload makes the server list the truth
     // The server list is the truth after a reload; here it still names both, so the second admit works on it.
     waiting = { waiting: [sam] };
     await page.loadWaiting();
     expect(page.waiting().map(row => row.accountId)).toEqual(['sam-id']);
-    await page.admit(sam);
+    page.manageWaiting(sam);
+    await page.admitAndSave();
     expect(JSON.parse(admitCalls()[1].init?.body as string)).toEqual({ accountId: 'sam-id', roles: [] });
-    expect(page.notice()).toBe('sam.k admitted as Learner. It applies to their next sign-in.');
+    expect(page.notice()).toBe('sam.k admitted as Learner with no course access. It applies to their next sign-in.');
     waiting = { waiting: [] };
     await page.loadWaiting();
     expect(page.tabs()[1].label).toBe('Review requests');
@@ -815,7 +859,7 @@ describe('Review requests', () => {
     expect(page.busy()).toBe(false);
   });
 
-  it('names what each refusal means and leaves the row in place', async () => {
+  it('names what each refusal means and keeps the panel open; a save that fails after the admit says the person is in', async () => {
     setup('owner');
     const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await page.reload();
@@ -826,33 +870,30 @@ describe('Review requests', () => {
       [403, 'Only the owner can admit people.'],
       [500, 'Access service is unavailable. Retry shortly.'],
     ];
+    page.manageWaiting(alex);
     for (const [status, message] of expected) {
       admitStatus = status;
-      await page.admit(alex);
+      await page.admitAndSave();
       expect(page.notice()).toBe(message);
+      expect(page.person()?.accountId).toBe('alex-id');
       expect(page.waiting()).toHaveLength(2);
+      expect(page.busy()).toBe(false);
     }
     expect(admitCalls()).toHaveLength(expected.length);
-    // A refused admit keeps the confirmation dialog open with the notice; a cancelled one sends nothing.
-    admitStatus = 409;
-    page.startAdmit(alex);
-    expect(page.admitting()).toEqual(alex);
-    await page.confirmAdmit();
-    expect(page.admitting()).toEqual(alex);
-    expect(page.notice()).toBe('Alex Example is already admitted.');
-    page.cancelAdmit();
-    expect(page.admitting()).toBeNull();
-    await page.confirmAdmit();
-    expect(admitCalls()).toHaveLength(expected.length + 1);
-    // Opening Reject closes an Admit dialog and the other way round.
-    page.startAdmit(alex); page.startReject(sam);
-    expect(page.admitting()).toBeNull();
-    page.startAdmit(alex);
-    expect(page.rejecting()).toBeNull();
+    // Admitted, but the access did not save: the person is in, the row leaves, the notice says what to do.
+    admitStatus = 200; saveStatus = 500; waiting = { waiting: [sam] };
+    await page.admitAndSave();
+    expect(page.notice()).toBe('Alex Example is admitted, but the access did not save: Access service is unavailable. Retry shortly. Open them from People and save again.');
+    expect(page.person()).toBeNull();
+    expect(page.waiting().map(row => row.accountId)).toEqual(['sam-id']);
+    // Busy, or nobody waiting on the open person: nothing is sent.
+    page.manageWaiting(sam);
     page.busy.set(true);
-    await page.admit(alex);
-    page.startAdmit(sam);
-    expect(page.admitting()).toEqual(alex);
+    await page.admitAndSave();
+    expect(admitCalls()).toHaveLength(expected.length + 1);
+    page.busy.set(false);
+    page.closePerson();
+    await page.admitAndSave();
     expect(admitCalls()).toHaveLength(expected.length + 1);
   });
 
@@ -867,9 +908,8 @@ describe('Review requests', () => {
     expect(page.expiresText({ expiresAt: '2026-11-03T07:00:00Z' }, now)).toBe('Due for removal');
     expect(page.expiresText({ expiresAt: '2026-11-10T07:05:00Z' }, now)).toBe('10 Nov 2026, 07:05 UTC');
     expect(page.expiresText({ expiresAt: '' }, now)).toBe('—');
-    expect(page.admitLabel('')).toBe('Learner');
-    expect(page.admitLabel('co-author')).toBe('Co-author');
-    expect(page.admitRoleOptions.map(option => option.label)).toEqual(['Co-author', 'Admin', 'Reviewer', 'Tester']);
+    expect(page.roleNames([])).toBe('Learner');
+    expect(page.roleNames(['co-author'])).toBe('Co-author');
   });
 
   it('rejects a waiting request with Disable or Delete through the same confirmed writes as Revoke (DLV-971)', async () => {
@@ -937,7 +977,7 @@ describe('Review requests', () => {
     const root = fixture.nativeElement as HTMLElement;
     const row = root.querySelector<HTMLTableRowElement>('#waiting-for-access tbody tr')!;
     const buttons = [...row.querySelectorAll<HTMLButtonElement>('button')].map(button => button.textContent?.trim());
-    expect(buttons).toEqual(['Admit', 'Reject']);
+    expect(buttons).toEqual(['Manage access', 'Reject']);
     expect(root.querySelector('#reject-panel')).toBeNull();
     row.querySelectorAll<HTMLButtonElement>('button')[1].click(); fixture.detectChanges();
     const panel = root.querySelector('#reject-panel')!;
@@ -990,29 +1030,32 @@ describe('Review requests', () => {
     expect(rows[0].querySelector('[data-label="Email"]')?.textContent).toBe('alex@example.test');
     expect(rows[1].querySelector('[data-label="Email"]')?.textContent).toBe('No verified email');
     expect(rows[0].querySelector('[data-label="Requested"]')?.textContent).toBe('2 Nov 2026, 14:05 UTC');
-    const select = rows[0].querySelector<HTMLSelectElement>('select')!;
-    expect([...select.options].map(option => [option.value, option.textContent])).toEqual([
-      ['', 'Learner'], ['co-author', 'Co-author'], ['admin', 'Admin'], ['reviewer', 'Reviewer'], ['tester', 'Tester'],
-    ]);
-    select.value = 'admin'; select.dispatchEvent(new Event('change')); fixture.detectChanges();
-    expect(fixture.componentInstance.admitRole['alex-id']).toBe('admin');
+    // DLV-999 (owner, 2026-11-09): no role menu on the row; Manage access opens the person, Review & confirm admits.
+    expect(rows[0].querySelector('select')).toBeNull();
     waiting = { waiting: [sam] };
-    // Owner, 2026-11-08: Admit confirms in a dialog that names the person and the role before anything is written.
     rows[0].querySelector<HTMLButtonElement>('button')!.click(); fixture.detectChanges();
     expect(admitCalls()).toHaveLength(0);
-    const dialog = root.querySelector('#admit-dialog')!;
-    expect(dialog.getAttribute('role')).toBe('dialog');
-    expect(text(dialog.querySelector('h2'))).toBe('Admit Alex Example as Admin');
-    expect(text(dialog.querySelector('.section-note'))).toContain('with alex@example.test');
-    dialog.querySelector<HTMLButtonElement>('.actions .action-link')!.click(); fixture.detectChanges();
-    expect(root.querySelector('#admit-dialog')).toBeNull();
-    expect(admitCalls()).toHaveLength(0);
-    rows[0].querySelector<HTMLButtonElement>('button')!.click(); fixture.detectChanges();
-    root.querySelector<HTMLButtonElement>('#admit-dialog .primary-action')!.click();
+    const panel = root.querySelector('#person-panel')!;
+    expect(text(panel.querySelector('#person-heading'))).toBe('Alex Example');
+    expect(text(panel.querySelector('.person-id .state-pill'))).toBe('Waiting for admission');
+    expect(text(panel.querySelector('.back-link'))).toBe('← Back to Review requests');
+    expect(text(panel.querySelector('#dev-admission .context-note'))).toContain('Signed in on DEV, not admitted yet.');
+    expect(panel.querySelectorAll('#dev-admission .card-actions button')).toHaveLength(0);
+    const page = fixture.componentInstance;
+    page.selectPersonTab('roles'); fixture.detectChanges();
+    panel.querySelector<HTMLInputElement>('.role-option input[value="admin"]')!.click(); fixture.detectChanges();
+    page.selectPersonTab('review'); fixture.detectChanges();
+    expect(text(panel.querySelector('#review-access .context-note'))).toBe('Alex Example will be admitted with this access on their next sign-in. Nothing is saved until you press Admit and save access below.');
+    const primary = panel.querySelector<HTMLButtonElement>('.save-actions .primary-action')!;
+    expect(text(primary)).toBe('Admit and save access');
+    expect(primary.disabled).toBe(false);
+    primary.click();
     await fixture.whenStable(); fixture.detectChanges();
-    expect(root.querySelector('#admit-dialog')).toBeNull();
+    expect(root.querySelector('#person-panel')).toBeNull();
     expect(JSON.parse(admitCalls()[0].init?.body as string)).toEqual({ accountId: 'alex-id', roles: ['admin'] });
-    expect(root.querySelector('.notice')?.textContent).toBe('Alex Example admitted as Admin. It applies to their next sign-in.');
+    const save = requests.find(request => request.path === '/admin/access' && request.init?.method === 'POST')!;
+    expect(JSON.parse(save.init?.body as string)).toMatchObject({ accountId: 'alex-id', roles: ['admin'], fullCurriculum: true, topicGrants: [] });
+    expect(root.querySelector('.notice')?.textContent).toBe('Alex Example admitted as Admin with entire curriculum. It applies to their next sign-in.');
     expect([...root.querySelectorAll('#waiting-for-access tbody tr')].map(row => row.getAttribute('data-account'))).toEqual(['sam.k']);
     expect(root.querySelectorAll('.access-tabs [role="tab"]')[1]?.textContent?.trim()).toBe('Review requests · 1');
   });
@@ -1345,18 +1388,18 @@ describe('Person panel: Manage DEV admission', () => {
     expect(writes()).toHaveLength(5);
   });
 
-  it('deletes a Local learner through the delete route, and Downgrade to free asks DOWNGRADE from the Plans and purchases card', async () => {
+  it('deletes a Local learner through the delete route, and Downgrade to free asks DOWNGRADE from the Course access plan row (DLV-999)', async () => {
     directory = [account({ accountId: 'real-id', username: 'real-user', displayName: 'Real User', email: null, roles: ['admin'], fullCurriculum: true, canDowngrade: true, canDelete: true })];
     assignments = [{ id: 'a1', accountId: 'real-id', pendingEmail: null, roles: ['admin'], topicGrants: [], fullCurriculum: true, revision: 1 }];
     setup();
     const { fixture, page, root } = await open('Real User', 'real-id');
     expect(page.admission()).toMatchObject({ state: 'admitted', canDisable: false, deletePath: 'delete', canDowngrade: true });
     expect(actions(root)).toEqual(['Manage DEV admission']);
-    page.selectPersonTab('plans'); fixture.detectChanges();
+    page.selectPersonTab('courses'); fixture.detectChanges();
     expect(root.querySelector('#dev-admission')).toBeNull();
-    expect(root.querySelector('.membership-panel app-admin-memberships')).not.toBeNull();
-    expect([...root.querySelectorAll('.membership-panel .card-actions button')].map(text)).toEqual(['Downgrade to free']);
-    root.querySelector<HTMLButtonElement>('.membership-panel .card-actions button')!.click(); fixture.detectChanges();
+    expect(text(root.querySelector('.included-note strong'))).toBe('Every course is included by the Admin role.');
+    expect([...root.querySelectorAll('.plan-row button')].map(text)).toEqual(['Downgrade to free']);
+    root.querySelector<HTMLButtonElement>('.plan-row button')!.click(); fixture.detectChanges();
     const dialog = root.querySelector('#downgrade-dialog')!;
     expect(text(dialog.querySelector('h2'))).toBe('Downgrade Real User to a free learner');
     const confirm = dialog.querySelector<HTMLButtonElement>('.actions button')!;
@@ -1414,15 +1457,12 @@ describe('Person panel: Manage DEV admission', () => {
     const personTabs = () => [...root.querySelectorAll<HTMLButtonElement>('.person-tabs [role="tab"]')];
     // The same flow as the study plan builder: Continue walks the tabs in order, Back returns one, Save access last.
     expect(buttons()).toEqual(['Discard', 'Continue to Roles']);
-    expect(text(root.querySelector('.save-message'))).toBe('No changes yet. Roles and Course access save together as one assignment.');
+    expect(text(root.querySelector('.save-message'))).toBe('No changes yet. Role and Course access save together as one assignment.');
     primary().click(); fixture.detectChanges();
     expect(page.personTab()).toBe('roles');
     expect(buttons()).toEqual(['Discard', 'Back', 'Continue to Course access']);
     primary().click(); fixture.detectChanges();
     expect(page.personTab()).toBe('courses');
-    expect(buttons()).toEqual(['Discard', 'Back', 'Continue to Plans and purchases']);
-    primary().click(); fixture.detectChanges();
-    expect(page.personTab()).toBe('plans');
     expect(buttons()).toEqual(['Discard', 'Back', 'Continue to Review & confirm']);
     // With nothing changed the last tab says so and Save access stays off.
     primary().click(); fixture.detectChanges();
@@ -1431,7 +1471,7 @@ describe('Person panel: Manage DEV admission', () => {
     page.continuePerson();
     expect(page.personTab()).toBe('review');
     [...root.querySelectorAll<HTMLButtonElement>('.save-actions button')][1].click(); fixture.detectChanges();
-    expect(page.personTab()).toBe('plans');
+    expect(page.personTab()).toBe('courses');
     page.selectPersonTab('review'); fixture.detectChanges();
     expect(text(root.querySelector('#review-access h3'))).toBe('Review & confirm');
     expect(text(root.querySelector('#review-access .empty'))).toContain('No changes yet.');
@@ -1439,9 +1479,9 @@ describe('Person panel: Manage DEV admission', () => {
     expect(primary().disabled).toBe(true);
     page.selectPersonTab('roles'); fixture.detectChanges();
     page.toggle('roles', 'admin', true); page.toggle('topicGrants', 'learn:a', false); fixture.detectChanges();
-    expect(text(root.querySelector('.save-message'))).toBe('3 changes to review. Roles and Course access save together as one assignment.');
+    expect(text(root.querySelector('.save-message'))).toBe('3 changes to review. Role and Course access save together as one assignment.');
     expect(text(personTabs().at(-1))).toBe('Review & confirm · 3');
-    page.selectPersonTab('plans'); fixture.detectChanges();
+    page.selectPersonTab('courses'); fixture.detectChanges();
     primary().click(); fixture.detectChanges();
     expect(page.personTab()).toBe('review');
     const panel = root.querySelector('#review-access')!;
