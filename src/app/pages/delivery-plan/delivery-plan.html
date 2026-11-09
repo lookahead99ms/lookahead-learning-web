@@ -9,45 +9,101 @@
     </section>
   } @else if (plan(); as deliveryPlan) {
     <header class="delivery-page-heading">
-      @if (workspace()) {
-        <a routerLink="/delivery-plan" class="delivery-back">Back to delivery plan</a>
-      } @else {
-        <p>Admin</p>
+      <div>
+        @if (workspace()) {
+          <a routerLink="/delivery-plan" class="delivery-back">Back to delivery plan</a>
+        }
+        <h1>{{ workspace() ? 'Work & decisions' : 'Delivery plan' }}</h1>
+      </div>
+      @if (!workspace()) {
+        <!-- DLV-995: the one action of the overview sits beside the title; the stage cards carry the current focus. -->
+        <a routerLink="/delivery-plan/work" class="editor-primary delivery-work-link">Open work & decisions</a>
       }
-      <h1>{{ workspace() ? 'Work & decisions' : 'Delivery plan' }}</h1>
     </header>
     @if (!workspace()) {
-    <section class="delivery-metrics" id="delivery-summary" aria-label="Delivery summary">
-      <article>
-        <span>Tickets completed</span><strong>{{ completionPercent() }}%</strong>
-        <small>{{ completedCount() }} of {{ deliveryPlan.workItems.length }} marked Done</small>
-        <i><b [style.width.%]="completionPercent()"></b></i>
-      </article>
-      <article>
-        <span>In progress</span><strong>{{ activeCount() }}</strong
-        ><small>WIP now</small>
-      </article>
-      <article [class.metric-alert]="blockedCount()">
-        <span>Blocked</span><strong>{{ blockedCount() }}</strong
-        ><small>Needs intervention</small>
-      </article>
-      <article>
-        <span>In review</span><strong>{{ reviewCount() }}</strong
-        ><small>Not yet marked Done</small>
-      </article>
-    </section>
-    <p class="completion-context">Across all stages and ticket sizes. Ticket completion does not measure product or release readiness.</p>
-    <section class="delivery-work-link" aria-labelledby="work-link-heading">
-      <div><h2 id="work-link-heading">Work & decisions</h2>
-      @if (activeStage(); as stage) {
-        <div class="delivery-current-focus">
-          <p class="focus-label">Current focus</p>
-          <h3>{{ stage.order.toString().padStart(2, '0') }} · {{ stage.title }}</h3>
-          <p>{{ stage.goal }}</p>
+    <!-- DLV-995: no completion percentage. Stage by stage, work in flight, what is next, what finished. -->
+    <section class="delivery-metrics delivery-glance" id="delivery-summary" aria-label="Delivery summary">
+      <div class="glance-card glance-stages">
+        <div class="glance-heading">
+          <h2>Where the plan stands</h2>
+          <p>Nine stages, each ending at a review gate. Open a stage to see its board.</p>
         </div>
-      }
-      <p class="work-view-labels">Board · Backlog · All tickets · Roadmap · Decisions</p></div>
-      <a routerLink="/delivery-plan/work" class="editor-primary">Open work & decisions</a>
+        <div class="stage-grid">
+          <div class="flow-cell glance-flow" [style.grid-column]="'span ' + flowSpan()">
+            <div class="glance-heading">
+              <h3>Work in flight</h3>
+              <p>Every ticket by column. Counts, not a score.</p>
+            </div>
+            <div class="flow-bar" role="img" [attr.aria-label]="flowLabel()">
+              @for (entry of flow(); track entry.status.id) {
+                @if (entry.count) {
+                  <i [style.flex-grow]="entry.count" [style.background]="entry.status.color" [title]="entry.status.label + ': ' + entry.count"></i>
+                }
+              }
+            </div>
+            <ul class="flow-legend">
+              @for (entry of flow(); track entry.status.id) {
+                <li><i aria-hidden="true" [style.background]="entry.status.color"></i><strong>{{ entry.count }}</strong><span>{{ entry.status.label }}</span></li>
+              }
+              @if (blockedCount()) {
+                <li class="flow-alert"><strong>{{ blockedCount() }}</strong><span>Blocked</span></li>
+              }
+            </ul>
+          </div>
+          <ol class="stage-strip">
+            @for (entry of stageSummaries(); track entry.stage.id) {
+              <li [attr.data-state]="entry.stage.state" [class.current]="entry.stage.id === deliveryPlan.currentStageId">
+                <a routerLink="/delivery-plan/work" [queryParams]="{ stage: entry.stage.id }">
+                  <span class="stage-number">{{ entry.stage.order.toString().padStart(2, '0') }}</span>
+                  <strong>{{ entry.stage.title }}</strong>
+                  <small>
+                    {{ entry.done }} of {{ entry.total }} delivered
+                    @if (entry.stage.id === deliveryPlan.currentStageId) { <em>Active</em> }
+                  </small>
+                  <i aria-hidden="true"><b [style.width.%]="entry.percent"></b></i>
+                </a>
+              </li>
+            }
+          </ol>
+        </div>
+      </div>
+      <div class="glance-card glance-next">
+        <div class="glance-heading">
+          <h2>Up next</h2>
+          <p>Highest priority first, from In progress, Review and Ready.</p>
+        </div>
+        <ul class="glance-list">
+          @for (item of nextUp(); track item.id) {
+            <li>
+              <a routerLink="/delivery-plan/work" [fragment]="item.id">
+                <em class="glance-priority" [attr.data-priority]="item.priorityId">{{ item.priorityId }}</em>
+                <span><b>{{ item.id }}</b> {{ item.title }}</span>
+                <small [style.--status-color]="workflowFor(item)?.color"><i aria-hidden="true"></i>{{ workflowFor(item)?.label }}</small>
+              </a>
+            </li>
+          } @empty {
+            <li class="glance-empty">Nothing is queued. Pull the next ticket from Backlog on the board.</li>
+          }
+        </ul>
+      </div>
+      <div class="glance-card glance-recent">
+        <div class="glance-heading">
+          <h2>Finished recently</h2>
+          <p>The last tickets marked Done.</p>
+        </div>
+        <ul class="glance-list">
+          @for (item of recentlyDone(); track item.id) {
+            <li>
+              <a routerLink="/delivery-plan/work" [fragment]="item.id">
+                <span><b>{{ item.id }}</b> {{ item.title }}</span>
+                <small>{{ shortDate(item.updatedAt) }}</small>
+              </a>
+            </li>
+          } @empty {
+            <li class="glance-empty">No ticket has been marked Done yet.</li>
+          }
+        </ul>
+      </div>
     </section>
     <div class="source-line">
       <strong>{{ deliveryPlan.sourceLabel }}</strong>

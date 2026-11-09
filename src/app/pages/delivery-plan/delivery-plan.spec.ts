@@ -195,13 +195,32 @@ describe('DeliveryPlanPage', () => {
     const root = harness.routeNativeElement!;
     expect(root.querySelector('h1')?.textContent).toContain('Delivery plan');
     expect(root.querySelector('.delivery-hero')).toBeNull();
-    expect(root.querySelector('.delivery-work-link .delivery-current-focus')).not.toBeNull();
-    expect(root.querySelectorAll('.delivery-work-link a')).toHaveLength(1);
+    // DLV-995: the stage cards carry the current focus; the only action sits in the heading, right of the title.
+    expect(root.querySelector('.delivery-current-focus')).toBeNull();
+    expect(root.querySelectorAll('a.delivery-work-link')).toHaveLength(1);
+    expect(root.querySelector('.delivery-page-heading a.delivery-work-link')).not.toBeNull();
     expect(root.textContent).not.toContain('View active work');
-    expect(root.querySelector('.delivery-metrics')!.compareDocumentPosition(root.querySelector('.delivery-work-link')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(root.querySelector('.delivery-metrics')?.textContent).toContain('Tickets completed');
-    expect(root.querySelector('.delivery-metrics')?.textContent).toContain('50%');
-    expect(page['completionPercent']()).toBe(50);
+    expect(root.querySelector('.stage-strip li.current')?.textContent).toContain('Active');
+    // DLV-995: no completion percentage; stages, work in flight, up next and finished recently instead.
+    const summary = root.querySelector('.delivery-metrics')!;
+    expect(summary.textContent).not.toMatch(/\d+%/);
+    expect(summary.textContent).not.toContain('Tickets completed');
+    const stages = [...summary.querySelectorAll('.stage-strip li')].map((li) => li.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+    expect(stages).toHaveLength(2);
+    expect(stages[0]).toContain('Foundation');
+    expect(stages[0]).toContain('1 of 1 delivered');
+    expect(stages[0]).toContain('Active');
+    expect(stages[1]).toContain('Future stage from JSON');
+    expect(stages[1]).toContain('0 of 1 delivered');
+    expect(stages[1]).not.toContain('Active');
+    expect(summary.querySelector('.stage-strip li.current a')?.getAttribute('href')).toBe('/delivery-plan/work?stage=foundation');
+    expect(summary.querySelector('.flow-bar')?.getAttribute('aria-label')).toBe('Done 1, In progress 0, Backlog 0');
+    expect([...summary.querySelectorAll('.flow-legend li')].map((li) => li.textContent?.replace(/\s+/g, ''))).toEqual(['1Done', '0Inprogress', '0Backlog']);
+    expect(summary.querySelector('.glance-next')?.textContent).toContain('TEST-2');
+    expect(summary.querySelector('.glance-next a')?.getAttribute('href')).toBe('/delivery-plan/work#TEST-2');
+    expect(summary.querySelector('.glance-next')?.textContent).not.toContain('TEST-1');
+    expect(summary.querySelector('.glance-recent')?.textContent).toContain('TEST-1');
+    expect(page['stageSummaries']().map((entry) => entry.done)).toEqual([1, 0]);
     expect(root.querySelector('.delivery-workspace')).toBeNull();
     expect(root.querySelector('.delivery-outline')).toBeNull();
     expect(root.querySelector('.view-tabs')).toBeNull();
@@ -221,7 +240,7 @@ describe('DeliveryPlanPage', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
     harness.detectChanges();
-    harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-work-link a')!.click();
+    harness.routeNativeElement!.querySelector<HTMLAnchorElement>('a.delivery-work-link')!.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toContain('/delivery-plan/work');
@@ -292,13 +311,17 @@ describe('DeliveryPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
   });
 
-  it('renders zero ticket completion safely for an empty delivery record', async () => {
+  it('renders the summary safely for an empty delivery record', async () => {
     editor.load.mockReturnValue(of({ plan: { ...plan, workItems: [] }, revision: 'empty-1' }));
     const harness = await RouterTestingHarness.create();
     const page = await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
     harness.detectChanges();
-    expect(page['completionPercent']()).toBe(0);
-    expect(harness.routeNativeElement?.querySelector('.delivery-metrics')?.textContent).toContain('0%');
+    const summary = harness.routeNativeElement!.querySelector('.delivery-metrics')!;
+    expect(page['stageSummaries']().map((entry) => entry.percent)).toEqual([0, 0]);
+    expect(summary.textContent).not.toContain('NaN');
+    expect(summary.querySelectorAll('.flow-bar i')).toHaveLength(0);
+    expect(summary.querySelector('.glance-next .glance-empty')?.textContent).toContain('Nothing is queued');
+    expect(summary.querySelector('.glance-recent .glance-empty')?.textContent).toContain('No ticket has been marked Done');
   });
 
   it('hides a loaded board and stops refresh after author access is lost', async () => {

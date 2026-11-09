@@ -1,7 +1,6 @@
 <app-platform-header />
 <main id="main-content" class="admin-workspace api-page">
   <app-author-admin-menu [pageId]="pageId" />
-  <app-author-admin-menu [pageId]="pageId" [documentationOnly]="true" />
   <div class="workspace-content">
 <aside class="workspace-sidebar">
     <app-author-workspace-nav [tabbed]="true"
@@ -11,7 +10,7 @@
       [embeddedFrame]="documentFrame()?.nativeElement"
       embeddedDocumentId="api-reference"
       [embeddedHeight]="documentHeight()"
-      (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"><app-author-doc-hero beforeSections [pageId]="pageId" /></app-author-workspace-nav>
+      (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"></app-author-workspace-nav>
   </aside>
 
     @if (!authorized()) {

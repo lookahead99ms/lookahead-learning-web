@@ -1,7 +1,7 @@
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TestBed } from '@angular/core/testing';
 import { AuthorAdminMenu } from './author-admin-menu';
-import { AuthorWorkspacePageId } from './author-workspace-links';
+import { AuthorWorkspacePageId, visibleDocumentationGroups } from './author-workspace-links';
 
 function render(pageId: AuthorWorkspacePageId | null, documentationOnly = false) {
   TestBed.inject(StudyPlanAccount).account.set({accountId: 'owner', username: 'owner', displayName: 'Owner', topicGrants: [], authorPreview: true});
@@ -107,19 +107,17 @@ describe('AuthorAdminMenu', () => {
     expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/production-support']);
   });
 
-  it('keeps icons decorative and collapses behind its Admin toggle', () => {
+  it('keeps icons decorative and never collapses: an Admin heading, no toggle, on the left rail (owner, 2026-11-09)', () => {
     const fixture = render('operations');
     const root = fixture.nativeElement as HTMLElement;
     for (const icon of root.querySelectorAll('.item-icon'))
       expect(icon.getAttribute('aria-hidden')).toBe('true');
-    const toggle = root.querySelector('app-sidebar-toggle button') as HTMLButtonElement;
-    expect(toggle.textContent).toContain('Admin');
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    const content = root.querySelector(`#${toggle.getAttribute('aria-controls')}`) as HTMLElement;
-    toggle.click();
-    fixture.detectChanges();
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(content.hidden).toBe(true);
+    expect(root.querySelector('app-sidebar-toggle')).toBeNull();
+    expect(root.querySelector('.rail-heading')?.textContent).toBe('Admin');
+    expect(root.querySelector('nav.admin-links')?.getAttribute('aria-label')).toBe('Admin navigation');
+    const content = root.querySelector('.admin-menu-content') as HTMLElement;
+    expect(content.hidden).toBe(false);
+    expect(content.hasAttribute('inert')).toBe(false);
     expect(render('operations').nativeElement.querySelector('.admin-menu-content').id).not.toBe(
       content.id,
     );
@@ -127,17 +125,43 @@ describe('AuthorAdminMenu', () => {
 });
 
 describe('AuthorAdminMenu on a narrow screen', () => {
-  it('starts collapsed so the page content comes first', () => {
+  it('stays open on the left rail; only the documentation rail starts folded', () => {
     const matchMedia = vi.fn(() => ({ matches: true }) as MediaQueryList);
     vi.stubGlobal('matchMedia', matchMedia);
     try {
       const root = render('screen-names').nativeElement as HTMLElement;
-      const toggle = root.querySelector('app-sidebar-toggle button') as HTMLButtonElement;
+      expect(root.querySelector('app-sidebar-toggle')).toBeNull();
+      expect((root.querySelector('.admin-menu-content') as HTMLElement).hidden).toBe(false);
+      const docs = render('screen-names', true).nativeElement as HTMLElement;
+      const toggle = docs.querySelector('app-sidebar-toggle button') as HTMLButtonElement;
       expect(toggle.getAttribute('aria-expanded')).toBe('false');
-      expect((root.querySelector('.admin-menu-content') as HTMLElement).hidden).toBe(true);
+      expect((docs.querySelector('.admin-menu-content') as HTMLElement).hidden).toBe(true);
       expect(matchMedia).toHaveBeenCalledWith('(max-width: 900px)');
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe('visibleDocumentationGroups (owner, 2026-11-09)', () => {
+  const ids = (permissions: Record<string, unknown>) =>
+    visibleDocumentationGroups({ accountId: 'x', username: 'x', displayName: 'x', topicGrants: [], permissions } as never).map((group) => group.id);
+  it('gives each role only the groups written for it', () => {
+    expect(ids({ manageAccess: true, previewDocuments: true, feedbackRole: 'owner' })).toEqual(['overview', 'architecture', 'api', 'local', 'release', 'operations']);
+    expect(ids({ previewDocuments: true, feedbackRole: 'co-author' })).toEqual(['overview', 'architecture', 'api', 'local']);
+    expect(ids({ previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' })).toEqual(['overview', 'local']);
+    expect(ids({ previewDocuments: true, feedbackRole: 'reviewer' })).toEqual(['overview']);
+    expect(ids({ previewDocuments: true, feedbackRole: 'tester' })).toEqual(['overview']);
+  });
+  it('shows an admin the Documentation menu without owner-only groups', () => {
+    TestBed.inject(StudyPlanAccount).account.set({ accountId: 'a', username: 'a', displayName: 'A', topicGrants: [], permissions: { previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' } } as never);
+    const fixture = TestBed.createComponent(AuthorAdminMenu);
+    fixture.componentRef.setInput('pageId', 'screen-names');
+    fixture.componentRef.setInput('documentationOnly', true);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.textContent).not.toContain('Build & Release');
+    expect(root.textContent).not.toContain('Operations & Support');
+    expect(root.textContent).toContain('Overview');
   });
 });

@@ -1,9 +1,11 @@
 @if (pageId === 'docs' || isDocumentationPage(pageId)) {
   <app-author-documentation-tabs [pageId]="pageId" />
 }
-<div class="sidebar-header">
+<!-- Owner, 2026-11-09: when the documentation strip already names the open page, the heading stays for assistive
+     technology only; nothing on screen repeats the tab. -->
+<div class="sidebar-header" [class.visually-hidden]="docTabs()?.namesCurrentPage()">
   <div class="workspace-heading">
-    <p class="eyebrow">{{ eyebrow }}</p>
+    @if (eyebrow) { <p class="eyebrow">{{ eyebrow }}</p> }
     @if (headingLevel === 1) {
       <h1>{{ pageTitle }}</h1>
     } @else {

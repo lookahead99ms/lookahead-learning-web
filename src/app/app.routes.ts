@@ -7,7 +7,7 @@ import { Routes, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
-import { authorGuard, accessGuard, staffGuard, deliveryGuard, previewsGuard } from './core/author-access';
+import { authorGuard, accessGuard, staffGuard, deliveryGuard, previewsGuard, documentationGuard } from './core/author-access';
 import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
 import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
@@ -30,7 +30,7 @@ export const routes: Routes = [
   { path: 'admin/content-access', canActivate: [staffGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
   {
     path: 'admin/operations',
-    canActivate: [staffGuard],
+    canActivate: [staffGuard, documentationGuard],
     providers: [{ provide: AUTHOR_DOCUMENTS_CLIENT, useExisting: AuthorDocumentsApi }],
     loadComponent: () =>
       import('./pages/author-operations/author-operations').then(
@@ -75,7 +75,7 @@ export const routes: Routes = [
     ] as const
   ).map(([path, authorDocument]) => ({
     path,
-    canActivate: [staffGuard],
+    canActivate: [staffGuard, documentationGuard],
     data: { authorDocument },
     providers: [{ provide: AUTHOR_DOCUMENTS_CLIENT, useExisting: AuthorDocumentsApi }],
     loadComponent: () =>
@@ -136,12 +136,12 @@ export const routes: Routes = [
   },
   {
     path: 'admin/api',
-    canActivate: [staffGuard, localApiBookmarkRedirect],
+    canActivate: [staffGuard, documentationGuard, localApiBookmarkRedirect],
     loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
   },
   {
     path: 'admin/local-api',
-    canActivate: [staffGuard],
+    canActivate: [staffGuard, documentationGuard],
     data: { localApiGuide: true },
     loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
   },

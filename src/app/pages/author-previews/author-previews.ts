@@ -18,7 +18,6 @@ import {
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
-import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { canSeePreviews } from '../../core/author-workspace-nav/author-workspace-links';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
@@ -46,7 +45,6 @@ import {
     PlatformHeader,
     AuthorWorkspaceNav,
     AuthorAdminMenu,
-    AuthorDocHero,
     ArchitectureDiagramViewer,
     AuthorReviewPacket,
     RouterLink,

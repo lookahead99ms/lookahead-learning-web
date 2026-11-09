@@ -25,13 +25,18 @@ describe('staff navigation', () => {
   it('keeps tester curriculum access out of every admin menu', () => {
     expect(visibleAdminLinks({ ...account, permissions: permissions({ fullCurriculum: true, feedbackRole: 'tester' }) })).toEqual([]);
   });
-  it('lists Architecture only for the owner and co-authors, and drops nothing else', () => {
+  it('lists each role only the documentation groups written for it (owner, 2026-11-09)', () => {
     const pages = (value: object) => visibleDocumentationGroups(value as never).flatMap(group => group.pages.map(page => page.id));
     const all = pages({ ...account, authorPreview: true });
     expect(all).toContain('architecture');
-    expect(pages({ ...account, permissions: permissions({ previewDocuments: true, feedbackRole: 'co-author' }) })).toEqual(all);
-    const admin = pages({ ...account, permissions: permissions({ previewDocuments: true, feedbackRole: 'admin' }) });
-    expect(admin).toEqual(all.filter(id => id !== 'architecture'));
+    expect(all).toContain('aws-deployment');
+    // Co-authors: Overview, Architecture & Design, API Reference, Local Development; never Build & Release or Operations.
+    const coauthor = pages({ ...account, permissions: permissions({ previewDocuments: true, feedbackRole: 'co-author' }) });
+    expect(coauthor).toEqual(['screen-names', 'access-checks', 'plans', 'reviewer-guide', 'architecture', 'authentication', 'api', 'local-development', 'local-api']);
+    // Admins: Overview and Local Development, without Architecture.
+    const admin = pages({ ...account, permissions: permissions({ previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' }) });
+    expect(admin).toEqual(['screen-names', 'access-checks', 'plans', 'reviewer-guide', 'local-development', 'local-api']);
+    expect(pages({ ...account, permissions: permissions({ previewDocuments: true, feedbackRole: 'reviewer' }) })).toEqual(['screen-names', 'access-checks', 'plans', 'reviewer-guide']);
     expect(canSeePreviews(null)).toBe(false);
   });
   it('keeps assignment controls owner-only even for admins and reviewers', () => {
@@ -169,7 +174,9 @@ describe('People and access layout', () => {
   it('puts the tasks first: How access works is folded in the hero until opened (user, 2026-11-03)', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
-    const details = (fixture.nativeElement as HTMLElement).querySelector<HTMLDetailsElement>('.access-hero details.how-access')!;
+    expect((fixture.nativeElement as HTMLElement).querySelector('.access-hero')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.workspace-sidebar .heading-outline')).toBeNull();
+    const details = (fixture.nativeElement as HTMLElement).querySelector<HTMLDetailsElement>('details.how-access')!;
     expect(details.open).toBe(false);
     expect(details.querySelector('summary')?.textContent?.trim()).toBe('How access works');
     expect(details.querySelectorAll('.how-grid .how-card')).toHaveLength(3);
@@ -245,9 +252,9 @@ describe('People and access layout', () => {
     expect(root.querySelector('.how-link')?.getAttribute('href')).toBe('/admin/plans');
     expect(root.textContent).toContain('Local purchases use mock payments');
     expect(root.querySelector('#configured-plans, .plan-table')).toBeNull();
-    expect(root.querySelectorAll('.access-hero .how-card')).toHaveLength(3);
+    expect(root.querySelectorAll('.how-card')).toHaveLength(3);
     expect(root.querySelector('.hero-facts')).toBeNull();
-    expect(root.querySelector('.access-hero .lede')?.textContent).toContain('Only the owner changes roles and course access');
+    expect(root.querySelector('.access-hero')).toBeNull();
     // People opens with the list; the person panel replaces it once someone is opened.
     expect(root.querySelector('#access-panel > app-test-accounts')).not.toBeNull();
     expect(root.querySelector('#person-panel')).toBeNull();
@@ -438,7 +445,7 @@ describe('Assignment names and prepared access', () => {
     expect(coauthor.nameOf(saved[3])).toBe('Account real-id');
     expect(coauthor.nameOf(saved[0])).toBe('learner03');
     expect(coauthor.prepared()).toEqual([]);
-    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['test', 'people']);
+    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['test']);
     coauthor.reviewPrepared(saved[2]);
     expect(coauthor.person()).toBeNull();
   });
@@ -518,7 +525,7 @@ describe('People and access links', () => {
     expect(setup('saved').page.tab()).toBe('people');
   });
   it('opens Review requests on the request a Review request names, once, and takes it out of the address (DLV-969)', () => {
-    for (const role of ['owner', 'admin']) {
+    for (const role of ['owner']) {
       TestBed.resetTestingModule();
       const { page, replaceState } = setup('waiting', role, { view: 'purchases', request: 'pur-9', return: '/grow/java/streams?unit=2', account: 'acc-06' }, true);
       expect(page.tab()).toBe('waiting');
@@ -527,13 +534,11 @@ describe('People and access links', () => {
       // The address keeps only the tab and section, so a reload does not open the review again.
       expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=waiting&view=purchases');
     }
-    // The older Test accounts form (owner, before 2026-11-04 DEV testing) lands in the same place.
+    // An admin has no Review requests any more (owner, 2026-11-09): the same link leaves them on Test accounts.
     TestBed.resetTestingModule();
     const old = setup('test', 'admin', { request: 'pur-9', return: '/grow/java', account: 'acc-06' }, true);
-    expect(old.page.tab()).toBe('waiting');
-    expect(old.page.waitingView()).toBe('purchases');
-    expect(old.page.requestReview()).toEqual({ purchaseId: 'pur-9', returnTo: '/grow/java', accountId: 'acc-06' });
-    expect(old.replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=waiting&view=purchases');
+    expect(old.page.tabs().map(tab => tab.id)).toEqual(['test']);
+    expect(old.page.tab()).toBe('test');
     // A review opens it even without the tab, and an unsafe return path is dropped.
     TestBed.resetTestingModule();
     const { page, replaceState } = setup(null, 'owner', { request: 'pur-9', return: '//elsewhere.example' }, true);
@@ -762,8 +767,8 @@ describe('Review requests', () => {
     setup('co-author', null);
     const coauthor = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await coauthor.reload();
-    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['test', 'people']);
-    expect(coauthor.tab()).toBe('test'); // co-authors open on Test accounts (owner, 2026-11-06)
+    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['test']); // everyone but the owner: Test accounts only (owner, 2026-11-09)
+    expect(coauthor.tab()).toBe('test');
     expect(requests.some(row => row.path === '/admin/access/waiting')).toBe(false);
     expect(coauthor.assignments()).toHaveLength(1);
     expect(coauthor.reviewCount()).toBe(0);
@@ -1114,24 +1119,22 @@ describe('Review requests sub-tabs', () => {
     expect(quiet.waitingView()).toBe('purchases');
   });
 
-  it('shows an admin Review requests with Purchase requests alone, and never asks for the waiting people', async () => {
+  it('shows an admin Test accounts only, and never asks for the waiting people (owner, 2026-11-09)', async () => {
     setup('admin');
     const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await page.ngOnInit();
     expect(requests).not.toContain('/admin/access/waiting');
     expect(requests).toContain('/admin/test-accounts');
-    expect(page.tabs().map(tab => tab.label)).toEqual(['Test accounts', 'Review requests · 2']);
-    expect(page.waitingViews()).toEqual([{ id: 'purchases', label: 'Purchase requests', count: 2 }]);
-    expect(page.waitingView()).toBe('purchases');
-    // ?view=access or ?view=invites is not theirs: it stays on Purchase requests.
+    expect(page.tabs().map(tab => tab.label)).toEqual(['Test accounts']);
+    expect(page.tab()).toBe('test');
+    // ?tab=waiting or ?view=invites is not theirs: it stays on Test accounts.
     TestBed.resetTestingModule();
     testAccounts = [testRow('learner03', null)];
     setup('admin', { tab: 'waiting', view: 'invites' });
     const none = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await none.ngOnInit();
-    expect(none.tabs().map(tab => tab.label)).toEqual(['Test accounts', 'Review requests']);
-    expect(none.tab()).toBe('waiting');
-    expect(none.waitingView()).toBe('purchases');
+    expect(none.tabs().map(tab => tab.label)).toEqual(['Test accounts']);
+    expect(none.tab()).toBe('test');
     // Even asked directly, the page does not call the owner-only list for an admin.
     await none.loadWaiting();
     expect(requests).not.toContain('/admin/access/waiting');
@@ -1139,33 +1142,16 @@ describe('Review requests sub-tabs', () => {
     expect(none.prepared()).toEqual([]);
   });
 
-  it('renders the admin’s sub-tab and the requests, and loads them again after a decision', async () => {
+  it('renders an admin no Review requests section even when the address asks for it (owner, 2026-11-09)', async () => {
     setup('admin', { tab: 'waiting' });
     const fixture = TestBed.createComponent(AdminAccessPage);
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
-    await fixture.componentInstance.loadPurchases(); fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    const section = root.querySelector('#waiting-for-access')!;
-    expect(text(section.querySelector('h2'))).toBe('Review requests');
-    expect(text(section.querySelector('.section-note'))).toContain('In DEV only test accounts can buy.');
-    expect([...section.querySelectorAll('.waiting-tabs [role="tab"]')].map(text)).toEqual(['Purchase requests 2']);
-    expect(section.querySelector('#waiting-panel')?.getAttribute('aria-labelledby')).toBe('waiting-tab-purchases');
-    expect(section.querySelector('.waiting-table')).toBeNull();
-    expect(section.querySelector('#invites-sent')).toBeNull();
-    expect(text(section.querySelector('app-purchase-requests .request-count'))).toBe('2 purchase requests waiting');
-    expect(section.querySelectorAll('app-purchase-requests .request-item')).toHaveLength(2);
-    const loads = () => requests.filter(path => path === '/admin/test-accounts').length;
-    const before = loads();
-    section.querySelector<HTMLButtonElement>('.section-heading.with-action button')!.click();
-    await fixture.whenStable();
-    expect(loads()).toBe(before + 1);
-    // A failed load is said inside the panel.
-    testStatus = 500;
-    await fixture.componentInstance.loadPurchases(); fixture.detectChanges();
-    expect(text(section.querySelector('app-purchase-requests [role="alert"]'))).toBe('Purchase requests could not be loaded. Refresh to retry.');
-    testStatus = 200;
-    await fixture.componentInstance.loadPurchases(); fixture.detectChanges();
-    expect(section.querySelector('app-purchase-requests [role="alert"]')).toBeNull();
+    expect([...root.querySelectorAll('.access-tabs [role="tab"]')].map(text)).toEqual(['Test accounts']);
+    expect(root.querySelector('#waiting-for-access')).toBeNull();
+    expect(root.querySelector('app-purchase-requests')).toBeNull();
+    expect(root.querySelector('#access-panel > app-test-accounts')).not.toBeNull();
+    expect(requests).not.toContain('/admin/access/waiting');
   });
 
   it('switches the owner between DEV admissions, Purchase requests and Invites sent', async () => {
@@ -1201,7 +1187,7 @@ describe('Review requests sub-tabs', () => {
     expect(page.canDecide()).toBe(false);
     expect(page.purchaseCount()).toBe(0);
     expect(page.waitingViews()).toEqual([]);
-    expect(page.tabs().map(tab => tab.id)).toEqual(['test', 'people']);
+    expect(page.tabs().map(tab => tab.id)).toEqual(['test']);
     expect(requests).not.toContain('/admin/access/waiting');
     await page.loadPurchases();
     expect(page.purchaseRows()).toEqual([]);

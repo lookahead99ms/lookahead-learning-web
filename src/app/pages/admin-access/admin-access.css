@@ -116,7 +116,10 @@ h3 {
 .lede {
   font-size: 16px;
 }
-/* How access works: folded under the lede; open, it shows the three explainer cards. */
+/* How access works: folded under the tab bar; open, it shows the three explainer cards. */
+.how-access {
+  margin: 12px 0 4px;
+}
 .how-access summary {
   display: inline-flex;
   align-items: center;

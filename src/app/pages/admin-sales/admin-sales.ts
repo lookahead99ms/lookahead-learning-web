@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
-import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
@@ -29,7 +28,6 @@ import {
     FormsModule,
     RouterLink,
     AuthorAdminMenu,
-    AuthorDocHero,
     AuthorWorkspaceNav,
   ],
   templateUrl: './admin-sales.html',

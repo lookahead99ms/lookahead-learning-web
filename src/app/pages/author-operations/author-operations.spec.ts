@@ -132,22 +132,25 @@ describe('Operations author view', () => {
       ),
     ).not.toBeNull();
   });
-  it('opens with a hero and keeps the published version in a footer below the document', async () => {
+  it('opens with the page heading, the group tabs and page row, and keeps the published version in a footer below the document', async () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
-    const hero = content.querySelector('app-author-doc-hero') as HTMLElement;
+    // Owner, 2026-11-09: no hero and no right rail; the heading row, the group tabs and the page row say where the page is.
+    expect(content.querySelector('app-author-doc-hero')).toBeNull();
+    expect(content.querySelector('app-author-admin-menu.documentation-rail')).toBeNull();
+    expect(content.querySelector('h1')?.textContent).toBe('Operations');
+    expect(content.querySelector('nav[aria-label="Documentation groups"] [aria-current="page"]')?.textContent).toBe('Operations & Support');
+    expect(content.querySelector('.documentation-pages a[aria-current="page"]')?.textContent).toContain('Operations');
+    // The strip names the page, so the heading is kept for assistive technology only.
+    expect(content.querySelector('.sidebar-header')?.classList.contains('visually-hidden')).toBe(true);
     expect(content.firstElementChild?.querySelector('[role="tablist"]')).not.toBeNull();
-    const tabs = content.querySelector('[role="tablist"]')!;
-    expect(hero.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(hero.querySelector('h2')!.textContent).toBe('Operations');
-    expect(hero.querySelector('.hero-group')!.textContent).toContain('Operations & Support');
-    expect(hero.textContent).toContain('Runtime ownership, diagnosis and recovery');
     const footer = content.querySelector('footer.reference-toolbar') as HTMLElement;
     expect(footer.textContent).toContain('Version operations/test.1');
     const panel = content.querySelector('.document-panel')!;
     expect(panel.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(content.lastElementChild).toBe(footer);
   });
+
   it('moves through a split reference with a section row and previous and next links', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
       useValue: { snapshot: { data: { authorDocument: 'aws-dev-budget' } } },
@@ -156,14 +159,18 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-budget');
-    expect(content.querySelector('.hero-group')!.textContent).toContain('AWS deployment');
-    const section = content.querySelector('nav.section-pages') as HTMLElement;
+    expect(content.querySelector('.documentation-pages a[aria-current="page"]')?.textContent).toContain('AWS deployment');
+    // Owner, 2026-11-09: the sub-pages are a third header row, not "page 8 of 17" copy.
+    const section = content.querySelector('nav.documentation-subpages') as HTMLElement;
     expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
-    expect(section.querySelector('.section-label')!.textContent).toContain('page 8 of 17');
+    expect(content.querySelector('.section-label, nav.section-pages')).toBeNull();
+    expect(content.textContent).not.toMatch(/page \d+ of \d+/i);
     const labels = [...section.querySelectorAll('a')].map((link) => link.textContent!.trim());
+    expect(labels).toHaveLength(17);
     expect(labels[0]).toBe('Overview');
     expect(labels).toContain('DEV budget');
     expect(section.querySelector('a[aria-current="page"]')!.getAttribute('href')).toBe('/admin/aws-dev-budget');
+    expect(section.querySelectorAll('a[aria-current="page"]')).toHaveLength(1);
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-permissions');
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-status');
@@ -178,7 +185,7 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-procedures');
-    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 12 of 17');
+    expect(content.querySelector('nav.documentation-subpages a[aria-current="page"]')!.getAttribute('href')).toBe('/admin/aws-dev-procedures');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-workflow');
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-records');
@@ -189,7 +196,8 @@ describe('Operations author view', () => {
   it('shows the Runtime stores sub-page as the section under Operations', async () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
-    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 1 of 2');
+    expect([...content.querySelectorAll('nav.documentation-subpages a')].map((link) => link.textContent!.trim())).toEqual(['Overview', 'Runtime stores']);
+    expect(content.querySelector('nav.documentation-subpages a[aria-current="page"]')!.textContent!.trim()).toBe('Overview');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')).toBeNull();
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/runtime-stores');
@@ -201,7 +209,7 @@ describe('Operations author view', () => {
       useValue: { snapshot: { data: { authorDocument: 'release-gates' } } },
     });
     const fixture = await create();
-    expect(fixture.nativeElement.querySelector('nav.section-pages')).toBeNull();
+    expect(fixture.nativeElement.querySelector('nav.documentation-subpages')).toBeNull();
     expect(fixture.nativeElement.querySelector('nav.section-steps')).toBeNull();
   });
 

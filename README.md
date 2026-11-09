@@ -12,8 +12,9 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 
 All Admin route components, Delivery Plan and Support use the scoped `admin-surface` theme
 in `src/admin-workspace.css`: white/slate surfaces, teal controls, blue links and
-quieter borders in light and dark modes. A compact left Admin menu and a separate
-right Documentation rail surround the content. Sticky section tabs display one panel
+quieter borders in light and dark modes. A compact left Admin menu, always open and without
+the collapse control (owner, 2026-11-09), sits beside the content; Documentation pages carry their
+group tabs, a page band and, for split pages, a sub-page row drawn as connected tabs instead of a right rail. Sticky section tabs display one panel
 at a time, retain form drafts, support arrow/Home/End keys, and preserve URL selection.
 The “On this page” disclosure is removed. System-ui typography matches the approved design. Existing page content, controls, capability-filtered navigation,
 authorization and API behavior are retained. Learner pages
@@ -662,8 +663,13 @@ Documentation has six groups: **Overview**, **Architecture & Design**, **API Ref
 inside each group and documentation page. `/admin/docs` is a compact six-choice home without
 a second tab bar. Groups open `/admin/docs?group=<group-id>`, except API Reference which opens
 `/admin/api` directly; older `?group=api` bookmarks redirect there. Overview orders screen names,
-access checks, plans/purchases and then the reviewer guide. The right rail lists
-only the current group's pages; nested references remain under their owning page. Contracts
+access checks, plans/purchases and then the reviewer guide. A bordered band under the group
+tabs lists only the current group's pages (the open page marked as a tab that opens into the page);
+nested references hang a third row of sub-pages from their owning page's tab, Overview first, with no
+"page N of M" label. Each role sees only the groups written for it:
+the owner all six; co-authors Overview, Architecture & Design, API Reference and Local Development;
+admins Overview and Local Development; reviewers and testers Overview; a page outside the role's
+groups redirects to `/admin/docs`. Contracts
 belongs to Build & Release. Other Admin destinations retain the compact left Admin menu.
 Server-provided permissions still determine which pages appear and which routes can open.
 
@@ -933,15 +939,14 @@ Record ids may be UUIDs or the runtime-store numbers (`REV-000001`, `SUP-000001`
 
 The admin documentation routes (`/admin/review-guide`, `/admin/screen-names`, `/admin/access-checks`, `/admin/authentication`, `/admin/local-development`, `/admin/operations`, `/admin/aws-deployment`, `/admin/release-gates` and `/admin/production-support`) read protected, immutable author-documents through the Gateway with one shared page component. Operations covers Local environments, deployment order, rollback and repositories; the cloud candidate, release gates, authentication walkthrough and production support runbooks each have their own page. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
 
-Admin pages use a compact left menu and a central workspace. Documentation additionally keeps
-a right rail containing the current group's pages. The document title and introduction precede
-the sticky section tabs; only the selected section is visible, including sections rendered by a
-protected iframe. The former **On this page** outline is removed. Tabs retain protected Admin
-URLs; the raw reference is available through its explicit full-page link.
+Admin pages use a compact left menu and a central workspace. Documentation pages open with the
+group tabs, the page band for the selected group, a sub-page row for split pages and the one-line
+description (the former page hero, right rail and section row were removed on 2026-11-09). The introduction
+precedes the sticky section tabs; only the selected section is visible, including sections
+rendered by a protected iframe. The former **On this page** outline is removed. Tabs retain
+protected Admin URLs; the raw reference is available through its explicit full-page link.
 
-The right rail scrolls independently when its links exceed the available viewport. On narrow
-screens it starts collapsed in normal page flow. Each documentation page ends with its
-published version and full-reference link. Links mentioned by a guide appear under **Links in
+Each documentation page ends with its published version and full-reference link. Links mentioned by a guide appear under **Links in
 this guide** (on Operations, **Source repositories and runbooks**).
 Every code block in a documentation page or the API reference has a **Copy** button. The
 document's scripts-only sandbox has no clipboard access, so it posts
@@ -954,13 +959,15 @@ collapsed so the page content comes first.
 The shared Operations, Local setup, API and Architecture documents report their content heights to the
 parent, so their references flow with the page rather than inside a fixed-height
 viewer. The document frame keeps its scripts-only sandbox while the host controls section visibility.
-`/delivery-plan` puts delivery numbers first, followed by one Work & decisions card
-containing the current focus. Its single **Open work & decisions**
-link opens `/delivery-plan/work`, with Board, Backlog, All tickets, Roadmap and Decisions.
-The summary labels its percentage **Tickets completed**: Done tickets divided by all tickets,
-rounded to a whole percentage. Review is separate; this count is not product or release readiness.
-Existing view/filter query links and ticket-fragment links on `/delivery-plan` still open the
-workspace. Both routes retain the same access and unsaved-draft guards and delivery APIs.
+`/delivery-plan` is the overview: the title row carries its one action, **Open work & decisions**,
+which opens `/delivery-plan/work` with Board, Backlog, All tickets, Roadmap and Decisions. Below it,
+**Where the plan stands** shows the **Work in flight** bar (Done on the left through Backlog on the
+right, counts per column, no percentage) and every stage with delivered ÷ total, the active stage
+marked; each stage opens the workspace filtered to it. **Up next** lists the six highest-priority
+tickets in progress, in review or ready and **Finished recently** the last five marked Done; each
+entry opens the ticket. Existing view/filter query links and ticket-fragment links on
+`/delivery-plan` still open the workspace. Both routes retain the same access and unsaved-draft
+guards and delivery APIs.
 
 The working `/delivery-plan` and `/delivery-plan/work` require an active author session. Signed-out
 visitors go to sign-in and return to the plan afterward; its public JSON fallback

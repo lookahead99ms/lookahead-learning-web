@@ -1,7 +1,6 @@
 <app-platform-header />
-<main id="main-content" class="admin-workspace operations-page">
+<main id="main-content" class="admin-workspace operations-page" [attr.data-document]="pageId">
   <app-author-admin-menu [pageId]="pageId" />
-  <app-author-admin-menu [pageId]="pageId" [documentationOnly]="true" />
   <div class="workspace-content">
 <aside class="workspace-sidebar">
     <app-author-workspace-nav [tabbed]="true"
@@ -14,25 +13,6 @@
       (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
     >
       <p description>{{ page.summary }}</p>
-      <div beforeSections class="document-introduction">
-    <app-author-doc-hero [pageId]="pageId" />
-    @if (section; as current) {
-      <nav class="section-pages" [attr.aria-label]="current.parent.label + ' section pages'">
-        <p class="section-label">
-          {{ current.parent.label }} section · page {{ sectionIndex + 1 }} of {{ current.pages.length }}
-        </p>
-        <ol>
-          @for (item of current.pages; track item.id) {
-            <li>
-              <a [routerLink]="item.href" [attr.aria-current]="item.id === pageId ? 'page' : null">{{
-                item.id === current.parent.id ? 'Overview' : item.label
-              }}</a>
-            </li>
-          }
-        </ol>
-      </nav>
-    }
-      </div>
     </app-author-workspace-nav>
   </aside>
     @if (!authorized() || state() === 'forbidden') {

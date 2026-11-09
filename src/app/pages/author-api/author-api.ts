@@ -21,7 +21,6 @@ import {
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
-import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   AUTHOR_PREVIEWS_BASE_URL,
   apiReferencePreviewUrl,
@@ -79,7 +78,7 @@ const allowedDownloads = new Set(downloadSections.flatMap((section) => section.f
 @Component({
   host: { class: 'admin-surface' },
   selector: 'app-author-api',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, AuthorDocHero],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu],
   templateUrl: './author-api.html',
   styleUrls: ['./author-api.css', '../../core/author-workspace-nav/reference-footer.css'],
 })

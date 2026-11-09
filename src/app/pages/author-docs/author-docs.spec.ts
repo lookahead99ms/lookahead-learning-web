@@ -34,13 +34,14 @@ describe('Documentation group landing', () => {
     ['local',['/admin/local-development','/admin/local-api']],
     ['release',['/admin/contracts','/admin/release-gates','/admin/aws-deployment']],
     ['operations',['/admin/operations','/admin/production-support']],
-  ])('shows only %s pages in both the landing and right rail', (group, paths) => {
+  ])('shows only %s pages in both the landing and the page row', (group, paths) => {
     history.replaceState(null,'','/admin/docs?group=' + group);
     const fixture=TestBed.createComponent(AuthorDocsPage); fixture.detectChanges();
     const root=fixture.nativeElement as HTMLElement;
     const hrefs=(selector:string)=>[...root.querySelectorAll(selector)].map(link=>link.getAttribute('href'));
     expect(hrefs('.page-grid a')).toEqual(paths);
-    expect(hrefs('.documentation-links a')).toEqual(paths);
+    expect(root.querySelector('.documentation-pages')).toBeNull(); // no page row on the landing: the cards are the list (owner, 2026-11-09)
+    expect(root.querySelector('.documentation-rail')).toBeNull();
     expect(root.querySelectorAll('nav[aria-label="Documentation groups"] a')).toHaveLength(6);
     expect(root.querySelector('[role="tablist"]')).toBeNull();
     expect(root.querySelectorAll('h1')).toHaveLength(1);

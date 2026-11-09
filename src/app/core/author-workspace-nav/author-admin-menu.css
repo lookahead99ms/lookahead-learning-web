@@ -13,11 +13,17 @@
   border-inline-start: 1px solid var(--line);
   color: var(--text-strong);
 }
-app-sidebar-toggle {
+app-sidebar-toggle,
+.rail-heading {
   color: var(--text-subtle);
   font-size: 0.72rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
+}
+.rail-heading {
+  margin: 0;
+  padding-inline: 10px;
+  font-weight: 750;
 }
 .admin-menu-content {
   display: flex;

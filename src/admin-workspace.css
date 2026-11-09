@@ -42,14 +42,14 @@
 /* Shared visual treatment; controls, disclosures and document sandbox are retained.
    Repeated scope classes intentionally outrank Angular component-scoped legacy skins. */
 .admin-surface.admin-surface.admin-surface
-  :is(.access-hero, .docs-hero, .doc-hero, .delivery-hero) {
+  :is(.access-hero, .docs-hero, .delivery-hero) {
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: none;
   background: var(--surface);
   padding: clamp(20px, 2.5vw, 28px);
 }
-.admin-surface.admin-surface.admin-surface :is(.doc-hero, .docs-hero)::after {
+.admin-surface.admin-surface.admin-surface :is(.docs-hero)::after {
   content: none;
 }
 .admin-surface.admin-surface.admin-surface
@@ -59,7 +59,7 @@
   background: var(--surface-muted);
 }
 .admin-surface.admin-surface.admin-surface
-  :is(.intro-heading, .preview-intro-heading, .doc-hero h2) {
+  :is(.intro-heading, .preview-intro-heading) {
   font-size: clamp(24px, 2.5vw, 32px);
   line-height: 1.25;
 }
@@ -199,7 +199,7 @@ main.admin-workspace.admin-workspace.admin-workspace:not(:has(> aside)) > .works
   grid-row: 1 / span 2;
 }
 .admin-surface.admin-surface.admin-surface
-  :is(.access-hero, .docs-hero, .doc-hero, .delivery-hero) {
+  :is(.access-hero, .docs-hero, .delivery-hero) {
   padding: 0 0 16px;
   margin: 0 0 20px;
   border: 0;
@@ -212,7 +212,7 @@ main.admin-workspace.admin-workspace.admin-workspace:not(:has(> aside)) > .works
   display: none;
 }
 .admin-surface.admin-surface.admin-surface
-  :is(.access-hero .eyebrow, .access-hero .intro-heading, .doc-hero h2) {
+  :is(.access-hero .eyebrow, .access-hero .intro-heading) {
   display: none;
 }
 .admin-surface.admin-surface.admin-surface :is(.lede, .hero-description) {
@@ -460,6 +460,24 @@ main.admin-workspace.admin-workspace.admin-workspace > :is(.workspace-content, .
   flex-shrink: 0;
   white-space: nowrap;
 }
+/* Owner, 2026-11-09: the document's sections read as pills under the group and page tab rows. */
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline { gap: 8px; border-bottom: 0; }
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline a {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-body);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline a:hover { border-color: var(--accent-strong); color: var(--accent-strong); }
+.admin-surface.admin-surface.admin-surface .section-tabs .heading-outline a[aria-current='location'] {
+  border-color: var(--accent-strong);
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
+}
 .admin-surface.admin-surface.admin-surface [data-workspace-panel][hidden] { display: none !important; }
 .admin-surface.admin-surface.admin-surface [data-workspace-panel] { min-width: 0; }
 @media (max-width: 900px) {
@@ -476,10 +494,20 @@ main.admin-workspace.admin-workspace.admin-workspace > :is(.workspace-content, .
 .admin-surface.admin-surface.admin-surface .section-tabs [description] { margin: 0 0 12px; }
 .admin-surface.admin-surface.admin-surface .section-tabs .embedded-introduction { margin: 12px 0; max-width: 100ch; font-size: 14px; line-height: 1.55; }
 .admin-surface.admin-surface.admin-surface .section-tabs .heading-outline { margin-block: 12px 16px; }
-.admin-surface.admin-surface.admin-surface .section-tabs :is(.doc-hero, .docs-hero) { margin: 12px 0; padding: 0; }
+.admin-surface.admin-surface.admin-surface .section-tabs :is(.docs-hero) { margin: 12px 0; padding: 0; }
 .admin-surface.admin-surface.admin-surface .section-tabs .hero-facts { margin: 6px 0 0; }
-.admin-surface.admin-surface.admin-surface .section-tabs .section-pages { margin: 10px 0; }
 .admin-surface.admin-surface.admin-surface :is(.document-panel, .document-panel iframe) { min-height: 0; }
 .admin-surface.admin-surface.admin-surface .document-panel { padding: 0; }
 /* Tab content changes height asynchronously; browser scroll anchoring must not move its heading. */
 html:has(.admin-surface) { overflow-anchor: none; }
+
+/* DLV-996 (owner, 2026-11-09): one blended header on Pages & screen names first, then page by page.
+   Group tabs, page pills, the title line and the section tabs share one type scale, one underline
+   and tight spacing, so the four rows read as a single header instead of four separate bars. */
+main.admin-workspace.operations-page[data-document='screen-names'] app-author-documentation-tabs { margin: 0 0 6px; }
+main.admin-workspace.operations-page[data-document='screen-names'] .section-tabs .sidebar-header { margin: 10px 0 0; }
+main.admin-workspace.operations-page[data-document='screen-names'] .section-tabs .sidebar-header h1 { font-size: 22px; line-height: 1.25; }
+main.admin-workspace.operations-page[data-document='screen-names'] .section-tabs [description] { margin: 2px 0 0; color: var(--text-subtle); font-size: 13px; }
+main.admin-workspace.operations-page[data-document='screen-names'] .section-tabs .embedded-introduction { margin: 8px 0 0; max-width: 90ch; font-size: 14px; line-height: 1.5; }
+main.admin-workspace.operations-page[data-document='screen-names'] .section-tabs .heading-outline { margin-block: 10px 14px; padding: 0 2px; }
+

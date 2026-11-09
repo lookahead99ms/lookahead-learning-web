@@ -18,7 +18,7 @@ import { AuthorReviewPacket } from './author-review-packet';
       </aside>
         <a class="action-link" routerLink="/admin/previews">All previews</a>
         <header id="review-overview">
-          <p class="eyebrow">Admin review workspace</p>
+          <p class="eyebrow">Review workspace</p>
           <h2>Study Plan experience</h2>
           <p class="lede">
             Review the learner-facing schedule first, then inspect its evidence and record a

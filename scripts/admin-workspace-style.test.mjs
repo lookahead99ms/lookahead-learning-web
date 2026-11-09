@@ -70,9 +70,10 @@ test('Delivery overview uses theme-aware text instead of dark code-panel ink', (
     delivery.indexOf('.delivery-page-heading {'),
     delivery.indexOf('.delivery-workspace { min-width:'),
   );
-  assert.ok(overview.includes('.delivery-current-focus'), 'combined focus card is covered');
+  // DLV-995: the heading carries the one action; the glance cards below use the shared surface tokens.
   assert.doesNotMatch(overview, /--code-ink|--code-panel/);
-  assert.match(overview, /\.delivery-work-link p \{[^}]*color: var\(--text-body\)/);
-  assert.match(overview, /\.delivery-work-link \{[^}]*background: var\(--surface\)/);
-  assert.match(overview, /\.focus-label \{[^}]*color: var\(--text-subtle\)/);
+  assert.match(overview, /\.delivery-page-heading \.delivery-work-link \{[^}]*background: var\(--accent-strong\)/);
+  assert.match(delivery, /\.glance-card \{[^}]*background: var\(--surface\)/);
+  assert.match(delivery, /\.glance-heading p \{[^}]*color: var\(--text-subtle\)/);
+  assert.doesNotMatch(delivery, /\.delivery-current-focus|\.completion-context/);
 });

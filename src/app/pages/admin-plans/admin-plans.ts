@@ -2,7 +2,6 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
-import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
@@ -115,7 +114,6 @@ const SAMPLE_RECORDS: readonly AccessRecord[] = [
     PlatformHeader,
     RouterLink,
     AuthorAdminMenu,
-    AuthorDocHero,
     AuthorWorkspaceNav,
     AccountAccessRecords,
   ],

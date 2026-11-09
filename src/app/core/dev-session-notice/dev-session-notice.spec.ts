@@ -99,6 +99,17 @@ describe('DEV session polling contract', () => {
       TestBed.resetTestingModule();
     }
   });
+  it('treats a local dev server answering /dev/session with its HTML page as ordinary delivery: no gate, no DEV mark (owner, 2026-11-09)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 200, ok: true, headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }), json: async () => ({}) }));
+    const { fixture, component, poll } = notice();
+    const session = TestBed.inject(DevSession);
+    session.gated.set(false);
+    await poll();
+    expect(session.gated()).toBe(false);
+    expect(session.known()).toBe(true);
+    expect(component.status()).toBeNull();
+    fixture.destroy();
+  });
   it('marks the page root data-dev while the DEV gate answers, so prices blur until hovered (user, 2026-11-03)', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404 }));
     const fixture = TestBed.createComponent(DevSessionNotice);

@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, linkedSignal } from '@angular/core';
 import {
   authorWorkspaceLinks,
   visibleAdminLinks,
@@ -29,10 +29,12 @@ let menuInstance = 0;
 export class AuthorAdminMenu {
   readonly documentationOnly = input(false);
   readonly pageId = input<AuthorWorkspacePageId | null>(null);
-  /** Narrow screens stack the menu above the page, so it starts collapsed to its Admin row. */
-  protected readonly open = signal(
-    !inject(DOCUMENT).defaultView?.matchMedia?.('(max-width: 900px)').matches,
-  );
+  /**
+   * The left Admin rail is always open (owner, 2026-11-09). Only the documentation-only rail on the right folds, and on a
+   * narrow screen it starts folded so the page content comes first.
+   */
+  private readonly narrow = !!inject(DOCUMENT).defaultView?.matchMedia?.('(max-width: 900px)').matches;
+  protected readonly open = linkedSignal(() => !this.documentationOnly() || !this.narrow);
   protected readonly instance = ++menuInstance;
   protected readonly contentId = `author-admin-menu-${this.instance}`;
   private readonly document = inject(DOCUMENT);
