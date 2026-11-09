@@ -14,7 +14,6 @@ import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
 import { AccountSignInMethod } from '../account/account-settings-client';
 import { isProviderUsername } from '../study-plan/study-plan-account';
-import { AdminMemberships } from './admin-memberships';
 import { RequestReview, REVIEW_PARAMS, REVIEW_PATH, REVIEW_TAB, REVIEW_VIEW, REVIEW_VIEW_PARAM, pendingPurchaseOf, requestReviewOf } from '../../content/purchase-requests';
 import { PLATFORM_REVIEW_CLIENT, PlatformReviewError } from '../admin-reviews/platform-review.model';
 import { jobsRanLine } from '../admin-feedback/feedback-backlog';
@@ -51,10 +50,12 @@ const timeFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'sh
 /** The person open in the panel: an account from a row, or an email with prepared access and no account yet. */
 export interface Person {
   accountId: string | null; pendingEmail: string | null; name: string; email: string | null; username: string | null; isTest: boolean;
+  /** DLV-999: the waiting request this person came from (Review requests → DEV admissions), admitted from Review & confirm. */
+  waiting?: WaitingRow | null;
 }
 /** What the Manage DEV admission card says and offers; built from the owner's directory row for the account. */
 export interface Admission {
-  state: 'admitted' | 'disabled' | 'prepared' | 'test' | 'unknown';
+  state: 'admitted' | 'disabled' | 'prepared' | 'test' | 'waiting' | 'unknown';
   label: string; methods: string[]; sameEmail: string;
   canDisable: boolean; canEnable: boolean; canDowngrade: boolean;
   /** The Domain route Delete uses: `remove` for a DEV sign-in account, `delete` for a Local learner; null when neither is allowed. */
@@ -64,8 +65,8 @@ export interface Admission {
  * Owner, 2026-11-08: the person panel is four tabs so each part can use the whole column; a test account never passes
  * the DEV gate, so it has three.
  */
-export type PersonTab = 'admission' | 'roles' | 'courses' | 'plans' | 'review';
-const PERSON_LABELS: Record<PersonTab, string> = { admission: 'DEV admission', roles: 'Roles', courses: 'Course access', plans: 'Plans and purchases', review: 'Review & confirm' };
+export type PersonTab = 'admission' | 'roles' | 'courses' | 'review';
+const PERSON_LABELS: Record<PersonTab, string> = { admission: 'DEV admission', roles: 'Roles', courses: 'Course access', review: 'Review & confirm' };
 /** One line of Review & confirm: what the save adds or takes away. */
 export interface Change { kind: 'Role' | 'Curriculum' | 'Course'; text: string; added: boolean; }
 type AdmissionAction = 'disable' | 'delete';
@@ -73,7 +74,7 @@ type AdmissionAction = 'disable' | 'delete';
 @Component({
   host: { class: 'admin-surface' },
   selector: 'app-admin-access',
-  imports: [TestAccounts, PurchaseRequestsPanel, AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
+  imports: [TestAccounts, PurchaseRequestsPanel, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-access.html',
   styleUrl: './admin-access.css',
 })
@@ -147,10 +148,55 @@ export class AdminAccessPage implements OnInit {
   }
   readonly roleOptions = [
     { id: 'co-author', label: 'Co-author', description: 'Read all curriculum, admin documents, previews, Delivery Plan and the test accounts. Cannot publish, change roles or reset accounts.' },
+    { id: 'admin', label: 'Admin', description: 'Triage feedback, read admin documents, create stories and move them to Review. Every course is included.' },
+    { id: 'reviewer', label: 'Reviewer', description: 'Admin documents and previews; read the Delivery Plan and mark reviewed stories Done. Courses are granted separately.' },
     { id: 'tester', label: 'Tester', description: 'All courses and feedback submission. No admin pages or Delivery Plan.' },
-    { id: 'reviewer', label: 'Reviewer', description: 'Admin documents and previews; read the Delivery Plan and mark reviewed stories Done.' },
-    { id: 'admin', label: 'Admin', description: 'Triage feedback, read admin documents, create stories and move them to Review.' },
   ];
+  /**
+   * DLV-999 (owner, 2026-11-09): a person has one role. Learner is a choice like the others, not an absence: it is the
+   * person with no staff role, whose courses are the ones they bought or were granted on Course access. The owner picks
+   * Learner, Co-author, Admin, Reviewer or Tester; the Domain still stores a set, so an older assignment with two roles
+   * shows the first of them here and keeps only the chosen one when saved.
+   */
+  readonly learnerOption = { id: 'learner', label: 'Learner', description: 'The courses they bought, or the ones granted on Course access. No admin pages, no Delivery Plan.' };
+  readonly roleChoices = [this.learnerOption, ...this.roleOptions];
+  /** The roles the Domain gives the entire curriculum to, whatever the grants say (StaffPermissions.forRoles). */
+  static readonly CURRICULUM_ROLES: readonly string[] = ['co-author', 'admin', 'tester'];
+  /** The one role the panel shows for a draft: `learner` for none, else the first staff role in this page's order. */
+  selectedRole(row: Pick<Assignment, 'roles'>): string {
+    return this.roleOptions.find(option => row.roles.includes(option.id))?.id ?? 'learner';
+  }
+  /** Roles of the saved assignment beyond the one shown, so the owner knows what a save removes. */
+  extraRoles(): string[] {
+    const was = this.original;
+    if (!was || was.roles.length < 2) return [];
+    const shown = this.selectedRole(was);
+    return was.roles.filter(role => role !== shown);
+  }
+  /** True when the draft's role already opens every course, so Course access is read-only and nothing is left to grant. */
+  roleIncludesCurriculum(row: Pick<Assignment, 'roles'>): boolean {
+    return row.roles.some(role => AdminAccessPage.CURRICULUM_ROLES.includes(role));
+  }
+  /** The label of the role that includes the curriculum, for the Course access note. */
+  curriculumRoleLabel(row: Pick<Assignment, 'roles'>): string {
+    return this.roleOptions.find(option => row.roles.includes(option.id) && AdminAccessPage.CURRICULUM_ROLES.includes(option.id))?.label ?? '';
+  }
+  /**
+   * Choose the person's role. A role that includes the curriculum sets the entire-curriculum grant and clears the course
+   * grants, so what is saved matches what the Domain gives; Learner and Reviewer leave the grants for the owner to set.
+   */
+  setRole(id: string) {
+    const draft = this.draft;
+    if (!draft) return;
+    const roles = id === 'learner' ? [] : [id];
+    const includes = AdminAccessPage.CURRICULUM_ROLES.includes(id);
+    this.draft = includes ? { ...draft, roles, fullCurriculum: true, topicGrants: [] } : { ...draft, roles };
+  }
+  /** What the person bought, from the owner's directory: "Free", "Complete"...; empty when unknown. */
+  planLabel(): string {
+    const id = this.person()?.accountId;
+    return id ? this.people().get(id)?.access?.label ?? '' : '';
+  }
   /**
    * DLV-969 (2026-11-02): accounts waiting for admission, owner only. Learner (no staff role) is the
    * default at admission; the staff roles are the ones this page already knows, in the Admit menu's order.
@@ -158,9 +204,6 @@ export class AdminAccessPage implements OnInit {
   readonly waiting = signal<WaitingRow[]>([]);
   /** How long a request waits before the server removes it; the server's value replaces the default. */
   readonly expiryHours = signal(48);
-  readonly admitRoleOptions = ['co-author', 'admin', 'reviewer', 'tester'].map(id => this.roleOptions.find(option => option.id === id)!);
-  /** The role chosen in each waiting row's Admit menu, by account ID ('' = Learner). */
-  admitRole: Record<string, string> = {};
   /**
    * DLV-971 (owner, 2026-11-06): Reject on a waiting row offers the same two choices as Manage admission on a person, Disable or
    * Delete, with the same typed confirmation; the Domain treats a request the way an expired one is treated on Delete.
@@ -170,7 +213,6 @@ export class AdminAccessPage implements OnInit {
   rejectConfirmation = '';
   startReject(row: WaitingRow) {
     if (!this.canManage()) return;
-    this.admitting.set(null);
     this.rejecting.set({ row, action: null }); this.rejectConfirmation = ''; this.notice.set('');
   }
   chooseReject(action: 'disable' | 'remove') {
@@ -193,7 +235,6 @@ export class AdminAccessPage implements OnInit {
       });
       this.chosenTab.set('waiting');
       this.waiting.update(rows => rows.filter(item => item.accountId !== row.accountId));
-      delete this.admitRole[row.accountId];
       this.rejecting.set(null); this.rejectConfirmation = '';
       this.notice.set(action === 'disable'
         ? `${row.displayName} is disabled. They cannot sign in or ask for access again until you enable them on People.`
@@ -328,7 +369,7 @@ export class AdminAccessPage implements OnInit {
    * last, carrying the count of changes, where Save access lives (owner, 2026-11-08).
    */
   readonly personTabs = computed(() => {
-    const ids: PersonTab[] = this.person()?.isTest ? ['roles', 'courses', 'plans', 'review'] : ['admission', 'roles', 'courses', 'plans', 'review'];
+    const ids: PersonTab[] = this.person()?.isTest ? ['roles', 'courses', 'review'] : ['admission', 'roles', 'courses', 'review'];
     const pending = this.changes().length;
     return ids.map(id => ({ id, label: id === 'review' && pending ? `${PERSON_LABELS[id]} · ${pending}` : PERSON_LABELS[id] }));
   });
@@ -417,6 +458,7 @@ export class AdminAccessPage implements OnInit {
     const none: Admission = { state: 'unknown', label: 'Account', methods: [], sameEmail: '', canDisable: false, canEnable: false, canDowngrade: false, deletePath: null };
     if (!person) return none;
     if (person.isTest) return { ...none, state: 'test', label: 'Test account' };
+    if (person.waiting) return { ...none, state: 'waiting', label: 'Waiting for admission', methods: this.methodLabels(person.waiting), sameEmail: this.sameEmail(person.waiting) };
     if (!person.accountId) return { ...none, state: 'prepared', label: 'Prepared' };
     if (!account) return none;
     const disabled = account.signIn === 'disabled';
@@ -626,43 +668,46 @@ export class AdminAccessPage implements OnInit {
     } catch (error) { this.notice.set(this.message(error)); }
   }
   /** Owner, 2026-11-08: Admit asks for confirmation in a dialog first, naming the person and the role. */
-  readonly admitting = signal<WaitingRow | null>(null);
-  startAdmit(row: WaitingRow) {
-    if (!this.canManage() || this.busy()) return;
-    this.rejecting.set(null); this.rejectConfirmation = '';
-    this.admitting.set(row); this.notice.set('');
+  /**
+   * DLV-999 (owner, 2026-11-09): Manage access on a waiting row opens the same person panel as People, so the owner
+   * chooses the role and the courses before letting anyone in; Review & confirm then offers Admit and save access.
+   */
+  manageWaiting(row: WaitingRow) {
+    if (!this.canManage()) return;
+    this.openPerson({ accountId: row.accountId, pendingEmail: null, name: row.displayName, email: row.email, username: row.username, isTest: false, waiting: row },
+      this.assignments().find(item => item.accountId === row.accountId) ?? this.fresh(row.accountId, null));
   }
-  cancelAdmit() { this.admitting.set(null); }
-  async confirmAdmit() {
-    const row = this.admitting();
-    if (!row) return;
-    await this.admit(row);
-    if (this.notice().endsWith('It applies to their next sign-in.')) this.admitting.set(null);
-  }
-  /** Admits one waiting account with the chosen role (none = Learner); the row leaves the list and the assignments reload. */
-  async admit(row: WaitingRow) {
-    if (!this.canManage() || this.busy()) return;
-    const role = this.admitRole[row.accountId] ?? '';
+  /**
+   * Admits the waiting person with the role on the draft, then saves the draft as their assignment (roles and course
+   * grants); the row leaves the list, the assignments reload and the list shows again with one notice. Two writes: a
+   * refused admit leaves the panel open with the reason; a refused save after an admit says so, the person is in.
+   */
+  async admitAndSave() {
+    const person = this.person(), row = person?.waiting, draft = this.draft;
+    if (!this.canManage() || !row || !draft || this.busy()) return;
     this.busy.set(true); this.notice.set('');
     try {
-      await this.request('/admin/access/admit', { accountId: row.accountId, roles: role ? [role] : [] }, {
+      await this.request('/admin/access/admit', { accountId: row.accountId, roles: draft.roles }, {
         404: 'This request was already removed. Refresh the list.',
         409: `${row.displayName} is already admitted.`,
         422: 'Choose a known role.',
         403: 'Only the owner can admit people.',
       });
-      // Stay on this tab even when the list empties.
-      this.chosenTab.set('waiting');
-      this.waiting.update(rows => rows.filter(item => item.accountId !== row.accountId));
-      delete this.admitRole[row.accountId];
-      this.busy.set(false);
-      await this.reload();
-      this.notice.set(`${row.displayName} admitted as ${this.admitLabel(role)}. It applies to their next sign-in.`);
-    } catch (error) { this.notice.set(this.message(error)); }
-    finally { this.busy.set(false); }
+    } catch (error) { this.notice.set(this.message(error)); this.busy.set(false); return; }
+    let saved = false;
+    try {
+      const assignment = await this.request<Assignment>('/admin/access', draft);
+      this.assignments.update(rows => [assignment, ...rows.filter(item => item.id !== assignment.id)]);
+      saved = true;
+    } catch (error) { this.notice.set(`${row.displayName} is admitted, but the access did not save: ${this.message(error)} Open them from People and save again.`); }
+    this.waiting.update(rows => rows.filter(item => item.accountId !== row.accountId));
+    this.closePerson();
+    this.chosenTab.set('waiting');
+    this.busy.set(false);
+    await this.reload();
+    if (saved) this.notice.set(`${row.displayName} admitted as ${this.roleNames(draft.roles)} with ${this.courseText(draft).toLowerCase()}. It applies to their next sign-in.`);
+    this.busy.set(false);
   }
-  /** "Learner" for no staff role, else the role's label. */
-  admitLabel(role: string): string { return role ? this.roleNames([role]) : 'Learner'; }
   /** "2 Nov 2026, 14:05 UTC", or a dash when the server sent no usable time. */
   timeText(iso: string): string {
     const time = Date.parse(iso);
@@ -681,21 +726,20 @@ export class AdminAccessPage implements OnInit {
     const draft = this.draft;
     if (!draft) return;
     const next = { ...draft, [field]: checked ? [...new Set([...draft[field], value])] : draft[field].filter(item => item !== value) };
-    // Admins get the entire curriculum by default (user, 2026-10-15). It is saved as an explicit
-    // grant through the existing contract and can be cleared before saving.
-    if (field === 'roles' && value === 'admin' && checked) next.fullCurriculum = true;
+    // A role that includes the curriculum is saved with the explicit grant, as setRole does (DLV-999).
+    if (field === 'roles' && checked && AdminAccessPage.CURRICULUM_ROLES.includes(value)) { next.fullCurriculum = true; next.topicGrants = []; }
     this.draft = next;
   }
   setFullCurriculum(value: boolean) {
     if (this.draft) this.draft = { ...this.draft, fullCurriculum: value };
   }
-  /** "Admin, Reviewer", or "No staff role". */
+  /** "Admin, Reviewer", or "Learner" for no staff role (DLV-999). */
   roleNames(roles: readonly string[]): string {
-    return roles.map(role => this.roleOptions.find(option => option.id === role)?.label ?? role).join(', ') || 'No staff role';
+    return roles.map(role => this.roleOptions.find(option => option.id === role)?.label ?? role).join(', ') || 'Learner';
   }
   /** "Entire curriculum", "1 selected course", "3 selected courses" or "No course access". */
   courseText(row: Pick<Assignment, 'fullCurriculum' | 'roles' | 'topicGrants'>): string {
-    if (row.fullCurriculum || row.roles.includes('tester')) return 'Entire curriculum';
+    if (row.fullCurriculum || this.roleIncludesCurriculum(row)) return 'Entire curriculum';
     const count = row.topicGrants.length;
     return count ? `${count} selected course${count === 1 ? '' : 's'}` : 'No course access';
   }

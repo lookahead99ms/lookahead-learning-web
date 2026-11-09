@@ -381,6 +381,54 @@ button:disabled {
 .role-text strong {
   font-size: 15px;
 }
+.role-option input[type='radio'] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 2px 12px 0 0;
+  accent-color: var(--accent-strong);
+}
+.role-extra {
+  color: var(--warning);
+  font-weight: 650;
+}
+/* Course access when the role already includes every course (DLV-999): the explanation first, the controls muted. */
+.included-note {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent-strong);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  color: var(--text-strong);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.included-note strong {
+  display: block;
+  margin-bottom: 2px;
+}
+.full-curriculum.locked,
+.courses.locked {
+  opacity: 0.55;
+}
+.plan-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.plan-line {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.plan-line strong {
+  color: var(--text-strong);
+}
 
 /* Courses */
 .full-curriculum {
@@ -838,10 +886,11 @@ button:disabled {
   font-size: 13px;
   font-weight: 700;
 }
+/* A menu beside its button (owner, 2026-11-09): a fixed 12px between them, the same height, centred. */
 .admit-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 .admit-cell label {
   display: inline-flex;
@@ -861,7 +910,8 @@ button:disabled {
   outline-offset: 2px;
 }
 .admit-cell button {
-  padding-inline: 14px;
+  min-height: 44px;
+  padding-inline: 16px;
 }
 /* Narrow columns (phones, and laptops with both side columns): each waiting person is a card on a
    grid (user, 2026-11-03). The person on top; Email, Requested and Expires as one labelled row;
@@ -1145,6 +1195,10 @@ button:disabled {
   border-color: color-mix(in srgb, var(--danger) 35%, transparent);
   background: color-mix(in srgb, var(--danger) 10%, var(--surface));
   color: var(--danger);
+}
+.state-pill[data-state='waiting'] {
+  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+  color: var(--warning);
 }
 .state-pill[data-state='prepared'] {
   border-color: color-mix(in srgb, var(--accent-link) 35%, transparent);

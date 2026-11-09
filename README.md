@@ -1655,7 +1655,13 @@ Validation: `npm run test:coverage` enforces 85% line coverage; connected plan,
 role and reset changes also require the owning API and Local integration checks.
 
 People and access merges the owner-only paginated `/bff/api/v1/admin/accounts` directory with managed test-account metadata and existing assignments. Non-owner operators keep their existing server-permitted sources. Failed owner enumeration is disclosed as a partial list; current access and role remain separate.
-On the People tab, the Local/DEV owner may select a real account and confirm
+Manage access on a People or Test accounts row opens the person as tabs: DEV admission,
+Roles, Course access and Review & confirm (owner, 2026-11-09, DLV-999: a person has one
+role, chosen from Learner, Co-author, Admin, Reviewer or Tester; Co-author, Admin and Tester
+include every course, so Course access is locked for them and the entire-curriculum grant is
+saved explicitly; Learner and Reviewer get courses one by one or the entire curriculum; the
+Plans and purchases tab and the free staff upgrade are gone, the plan a person bought shows on
+Course access). There the Local/DEV owner may confirm
 **Downgrade to free**, which revokes staff roles, grants and current or scheduled
 paid access while preserving the account, plans and purchase history. A
 separate **Delete learner** action appears for a free Local real account;
