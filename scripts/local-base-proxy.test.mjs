@@ -101,6 +101,19 @@ test('local staff document aliases preserve the immutable snapshot and Gateway a
       snapshot + suffix,
     );
   }
+  // DLV-1000: the publication previews path follows the working api and architecture snapshots, the rest the live directory.
+  const apiRoute = '^/bff/author/previews/preview-directory/api/';
+  const apiSnapshot = '/bff/author/previews/preview-directory/working-api-reference/' + 'd'.repeat(64) + '/';
+  const withApi = withLocalStaffDocuments({ ...selected, [apiRoute]: { target: 'http://127.0.0.1:4350', pathRewrite: { [apiRoute]: apiSnapshot } } });
+  const previewsRoute = '^/content/staff/previews/preview-directory/';
+  assert.equal(withApi[previewsRoute + 'api/'].pathRewrite[previewsRoute + 'api/'], apiSnapshot);
+  assert.equal(withApi[previewsRoute + 'architecture/'].pathRewrite[previewsRoute + 'architecture/'], '/bff/author/previews/preview-directory/architecture/');
+  assert.equal(withApi[previewsRoute].pathRewrite[previewsRoute], '/bff/author/previews/preview-directory/');
+  assert.equal(withApi[previewsRoute].target, 'http://127.0.0.1:4350');
+  assert.ok(Object.keys(withApi).indexOf(previewsRoute + 'api/') < Object.keys(withApi).indexOf(previewsRoute), 'specific aliases come first');
+  assert.ok(Object.keys(withApi).indexOf(previewsRoute) < Object.keys(withApi).indexOf('/content/**'), 'aliases precede the catch-all');
+  assert.equal(('/content/staff/previews/preview-directory/manifest.json').replace(new RegExp(previewsRoute), '/bff/author/previews/preview-directory/'), '/bff/author/previews/preview-directory/manifest.json');
+  assert.throws(() => withLocalStaffDocuments({ ...selected, [apiRoute]: { target: 'http://127.0.0.1:4350', pathRewrite: { [apiRoute]: '/unprotected/' } } }), /immutable snapshot/);
   assert.deepEqual(withLocalStaffDocuments({}), {});
   for (const bad of [
     { target: 'http://127.0.0.1:4315', pathRewrite: { [route]: snapshot } },
