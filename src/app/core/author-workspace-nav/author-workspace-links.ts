@@ -581,11 +581,41 @@ export function canSeePreviews(account: StudyAccount | null): boolean {
 const previewOnlyPages: ReadonlySet<string> = new Set(['architecture']);
 
 /** The documentation groups this account may open; a page it cannot open is not listed at all. */
+/**
+ * Owner, 2026-11-09: each role sees only the documentation about what it can use. The owner reads everything; a
+ * co-author (who reviews the platform and sees Previews and Architecture) reads Overview, Architecture & Design, API
+ * Reference and Local Development; an admin (test accounts, tickets) reads Overview and Local Development; reviewers
+ * and testers read Overview. Build & Release and Operations & Support describe owner-run work and stay with the owner.
+ */
+export function documentationGroupIdsFor(account: StudyAccount | null): ReadonlySet<string> {
+  const permissions = account?.permissions;
+  if (!permissions) return new Set(account?.authorPreview ? authorDocumentationGroups.map((group) => group.id) : []);
+  if (permissions.manageAccess) return new Set(authorDocumentationGroups.map((group) => group.id));
+  if (permissions.feedbackRole === 'co-author') return new Set(['overview', 'architecture', 'api', 'local']);
+  if (permissions.triageFeedback) return new Set(['overview', 'local']);
+  return new Set(['overview']);
+}
+
 export function visibleDocumentationGroups(account: StudyAccount | null): readonly AuthorDocumentationGroup[] {
-  if (canSeePreviews(account)) return authorDocumentationGroups;
-  return authorDocumentationGroups
+  const ids = documentationGroupIdsFor(account);
+  const groups = authorDocumentationGroups.filter((group) => ids.has(group.id));
+  if (canSeePreviews(account)) return groups;
+  return groups
     .map((group) => ({ ...group, pages: group.pages.filter((page) => !previewOnlyPages.has(page.id)) }))
     .filter((group) => group.pages.length > 0);
+}
+
+/** Whether this account may open the documentation page at this path; a sub-page counts with its parent's group. */
+export function canOpenDocumentationPath(account: StudyAccount | null, path: string): boolean {
+  const clean = path.split(/[?#]/, 1)[0].replace(/\/$/, '');
+  if (clean === authorDocumentationHome) return true;
+  for (const group of authorDocumentationGroups) {
+    const page = group.pages.find((candidate) => candidate.href === clean || candidate.children?.some((child) => child.href === clean));
+    if (!page) continue;
+    if (previewOnlyPages.has(page.id) && !canSeePreviews(account)) return false;
+    return documentationGroupIdsFor(account).has(group.id);
+  }
+  return true; // not a documentation page: the route's other guards decide
 }
 
 export function visibleAdminLinks(account: StudyAccount | null): readonly AuthorWorkspaceLink[] {

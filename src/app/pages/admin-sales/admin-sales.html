@@ -1,14 +1,12 @@
 <app-platform-header />
 <main id="main-content" class="admin-workspace sales-page">
   <app-author-admin-menu pageId="sales" />
-  <app-author-admin-menu pageId="sales" [documentationOnly]="true" />
   <div class="workspace-content">
 <aside class="workspace-sidebar">
     <app-author-workspace-nav [tabbed]="true" pageTitle="Sales and prices" pageId="sales" [outline]="outline">
       <p description>Manage local sales and prices. Payments are simulated.</p>
     </app-author-workspace-nav>
   </aside>
-    <app-author-doc-hero pageId="sales" />
 
     <p class="status-note" role="note">Sales and prices are stored on the local server. Only the owner can change them. Payment simulation charges nothing.</p>
     <p class="notice" role="status" aria-live="polite">{{ notice() }}</p>

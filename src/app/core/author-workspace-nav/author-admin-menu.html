@@ -1,11 +1,17 @@
-<app-sidebar-toggle
-  [side]="documentationOnly() ? 'right' : 'left'"
-  [heading]="documentationOnly() ? 'Documentation' : 'Admin'"
-  [open]="open()"
-  [controls]="contentId"
-  [label]="(open() ? 'Close ' : 'Open ') + (documentationOnly() ? 'documentation menu' : 'admin menu')"
-  (toggled)="open.set(!open())"
-/>
+@if (documentationOnly()) {
+  <app-sidebar-toggle
+    side="right"
+    heading="Documentation"
+    [open]="open()"
+    [controls]="contentId"
+    [label]="(open() ? 'Close ' : 'Open ') + 'documentation menu'"
+    (toggled)="open.set(!open())"
+  />
+}
+<!-- Owner, 2026-11-09: the Admin rail keeps its heading but never collapses. -->
+@if (!documentationOnly()) {
+  <p class="rail-heading" aria-hidden="true">Admin</p>
+}
 <div class="admin-menu-content" [id]="contentId" [hidden]="!open()" [attr.inert]="open() ? null : ''">
   @if (!documentationOnly()) {
   <nav class="admin-links" aria-label="Admin navigation">

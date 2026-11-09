@@ -25,11 +25,11 @@ const labels = (root: HTMLElement) => [...root.querySelectorAll('nav a')].map((l
 const hrefs = (root: HTMLElement) => [...root.querySelectorAll('nav a')].map((link) => link.getAttribute('href'));
 
 describe('AdminSubheader (DLV-971)', () => {
-  it('is one strip with the Admin eyebrow and the owner’s admin pages as pills, the open page marked', () => {
+  it('is one strip of the owner’s admin pages as pills, the open page marked, with no Admin eyebrow (owner, 2026-11-09)', () => {
     const root = render(owner);
     const nav = root.querySelector('nav.admin-subheader')!;
     expect(nav.getAttribute('aria-label')).toBe('Admin navigation');
-    expect(nav.querySelector('.eyebrow')?.textContent).toBe('Admin');
+    expect(nav.querySelector('.eyebrow')).toBeNull();
     expect(labels(root)).toEqual(['Documentation', 'Delivery Plan', 'Tickets & feedback', 'People & Access', 'Previews']);
     expect(hrefs(root)).toEqual(['/admin/docs', '/delivery-plan', '/admin/feedback', '/admin/access', '/admin/previews']);
     expect([...root.querySelectorAll('[aria-current="page"]')].map((link) => link.getAttribute('href'))).toEqual(['/admin/feedback']);

@@ -213,14 +213,9 @@ export class AdminAccessPage implements OnInit {
   }
   /** The decisions waiting on Review requests: people at the DEV gate and purchase requests. Prepared access waits on nobody. */
   readonly reviewCount = computed(() => (this.canManage() ? this.waiting().length : 0) + (this.showPurchases() ? this.purchaseCount() : 0));
-  /**
-   * The owner: People, Review requests, Test accounts. A co-author: Test accounts, then People read-only. An admin: Test
-   * accounts, and Review requests for the purchase requests when there are any to decide (DEV, or one waiting).
-   */
+  /** The owner: People, Review requests, Test accounts. Everyone else: Test accounts only (owner, 2026-11-09). */
   readonly tabs = computed(() => {
-    const ids: AccessTab[] = this.canManage() ? ['people', 'waiting', 'test']
-      : this.canReadAssignments() ? ['test', 'people']
-      : this.showPurchases() ? ['test', 'waiting'] : ['test'];
+    const ids: AccessTab[] = this.canManage() ? ['people', 'waiting', 'test'] : ['test'];
     const count = this.reviewCount();
     return ids.map(id => ({ id, label: id === 'waiting' && count ? `${TAB_LABELS[id]} · ${count}` : TAB_LABELS[id] }));
   });

@@ -75,15 +75,7 @@ const summaryOf = (full: PlatformReviewItem): PlatformReviewSummary => ({
 });
 
 /** What the Domain answers for each job (DLV-971): only that job's counts are filled. */
-const ran = (job: SweepJob): SweepRunResult => ({
-  job,
-  ranAt: '2026-11-06T18:30:00Z',
-  supportRequestsClosed: job === 'support-requests' || job === 'all' ? 2 : null,
-  inboxMerged: job === 'delivery-inbox' || job === 'all' ? true : null,
-  inboxResult: job === 'delivery-inbox' || job === 'all' ? '12' : null,
-  admissionsRemoved: job === 'admissions' || job === 'all' ? 1 : null,
-});
-const ranTime = new Date('2026-11-06T18:30:00Z').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
 
 describe('Support tickets and feedback backlog (DLV-971)', () => {
   let viewer: PlatformReviewViewer;
@@ -128,7 +120,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
         stored = stored.map((entry) => (entry.id === id ? promoted : entry));
         return { ticketId: 'DLV-0042', item: promoted };
       }),
-      runSweeps: vi.fn(async (job: SweepJob) => ran(job)),
+      runSweeps: vi.fn(async (job: SweepJob): Promise<SweepRunResult> => ({ ranAt: '2026-11-06T18:30:00Z', results: [{ job, ok: true, count: 0 }] } as unknown as SweepRunResult)),
       attachmentUrl: async () => 'blob:test',
       releaseAttachmentUrl: () => {},
     };
@@ -223,7 +215,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     expect(root.querySelector('.workspace-sidebar')).toBeNull();
     expect(root.querySelector('main > .workspace-content')).not.toBeNull();
     expect(root.querySelectorAll('main > *')).toHaveLength(2);
-    expect(root.querySelector('.title-row .eyebrow')?.textContent).toBe('Admin');
+    expect(root.querySelector('.title-row .eyebrow')).toBeNull(); // no Admin eyebrow (owner, 2026-11-09)
     expect(text(root.querySelector('.title-row h1'))).toBe('Support tickets and feedback');
   });
 
@@ -507,129 +499,14 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     expect(text(dialog(root).querySelector('.item-key'))).toBe('REV-000001');
   });
 
-  const jobButtons = (root: HTMLElement) => [...root.querySelectorAll<HTMLButtonElement>('.title-row .jobs button.run-job')];
-  const jobButton = (root: HTMLElement, job: SweepJob) => root.querySelector<HTMLButtonElement>(`button.run-job[data-job="${job}"]`)!;
-
-  it('gives the owner one Jobs button at the right of the title: Close idle tickets (owner, 2026-11-07)', async () => {
+  it('has no Jobs strip for anyone: the sweeps run on their schedule (owner, 2026-11-09)', async () => {
     const harness = await open();
     const root = harness.routeNativeElement!;
     expect(root.querySelector('.title-row h1')).not.toBeNull();
-    expect(root.querySelector('.title-row .jobs')?.getAttribute('aria-label')).toBe('Jobs');
-    expect(jobButtons(root).map(text)).toEqual(['Close idle tickets']);
-    expect(jobButtons(root).map((button) => button.getAttribute('data-job'))).toEqual(['support-requests']);
-    expect(jobButton(root, 'support-requests').title).toBe('Closes tickets with no update for 7 days');
-    expect(jobButton(root, 'support-requests').disabled).toBe(false);
-    // Sync plan inbox moved to the Delivery Plan, Clean up admissions to People & Access; Run all went with them.
-    for (const job of ['delivery-inbox', 'admissions', 'all'] as const) expect(root.querySelector(`button.run-job[data-job="${job}"]`)).toBeNull();
-    expect(root.textContent).not.toContain('Sync plan inbox');
-    expect(root.textContent).not.toContain('Clean up admissions');
-    expect(root.textContent).not.toContain('Run all');
+    expect(root.querySelector('.jobs')).toBeNull();
     expect(root.querySelector('.jobs-line')).toBeNull();
-  });
-
-  it('keeps the Jobs strip off PROD: a production build without a DEV session has none, the DEV build shows it (owner, 2026-11-07)', async () => {
-    const production = environment.production;
-    environment.production = true;
-    try {
-      const harness = await open();
-      const root = harness.routeNativeElement!;
-      expect(root.querySelector('.jobs')).toBeNull();
-      expect(root.textContent).not.toContain('Close idle tickets');
-      // The protected DEV build is a production build too; its DEV gate tells it apart from PROD.
-      TestBed.inject(DevSession).gated.set(true);
-      await settle(harness);
-      expect(jobButtons(root).map(text)).toEqual(['Close idle tickets']);
-      TestBed.inject(DevSession).gated.set(false);
-      TestBed.inject(DevSession).status.set({ ok: true } as never);
-      await settle(harness);
-      expect(jobButtons(root).map(text)).toEqual(['Close idle tickets']);
-    } finally {
-      environment.production = production;
-      TestBed.inject(DevSession).gated.set(false);
-      TestBed.inject(DevSession).status.set(null);
-    }
-  });
-
-  it('shows an admin no Jobs strip', async () => {
-    viewer = { role: 'admin', reviewerId: 'a2', displayName: 'Admin 2' };
-    const harness = await open();
-    expect(harness.routeNativeElement!.querySelector('.jobs')).toBeNull();
-    expect(harness.routeNativeElement!.querySelectorAll('.view-tabs button')).toHaveLength(4);
-  });
-
-  it('shows a reviewer no Jobs strip', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'r1', displayName: 'Priya Raman' };
-    const harness = await open();
-    expect(harness.routeNativeElement!.querySelector('.jobs')).toBeNull();
-  });
-
-  it('Close idle tickets: disables itself while it runs, says how many tickets closed and why, and reloads the list', async () => {
-    let finish!: (result: SweepRunResult) => void;
-    client.runSweeps.mockImplementationOnce(() => new Promise<SweepRunResult>((resolve) => (finish = resolve)));
-    const harness = await open();
-    const root = harness.routeNativeElement!;
-    const loadsBefore = listCalls;
-    jobButton(root, 'support-requests').click();
-    await settle(harness);
-    expect(jobButton(root, 'support-requests').disabled).toBe(true);
-    expect(jobButton(root, 'support-requests').getAttribute('aria-busy')).toBe('true');
-    expect(client.runSweeps).toHaveBeenCalledWith('support-requests');
-    // A second click while it runs sends nothing.
-    jobButton(root, 'support-requests').click();
-    expect(client.runSweeps).toHaveBeenCalledTimes(1);
-    finish(ran('support-requests'));
-    await settle(harness);
-    const line = root.querySelector('.jobs-line')!;
-    expect(text(line)).toBe(`Close idle tickets ran at ${ranTime}: 2 tickets closed (a ticket closes after 7 days without an update)`);
-    expect(line.getAttribute('role')).toBe('status');
-    expect(line.classList.contains('failed')).toBe(false);
-    expect(listCalls).toBe(loadsBefore + 1);
-    expect(jobButton(root, 'support-requests').disabled).toBe(false);
-    expect(keys(root)).toHaveLength(5);
-  });
-
-  it('says a job is not available on this environment when the Domain answers conflict (a local Domain has no admission cleanup)', async () => {
-    const harness = await open();
-    const root = harness.routeNativeElement!;
-    const loadsBefore = listCalls;
-    client.runSweeps.mockImplementationOnce(async () => {
-      throw new PlatformReviewError('conflict', 'The admission cleanup runs only in cloud mode; this Domain has none.');
-    });
-    const page = harness.routeDebugElement!.componentInstance as AdminFeedbackPage;
-    await page['runJob']('admissions');
-    await settle(harness);
-    const line = root.querySelector('.jobs-line')!;
-    expect(text(line)).toBe('Clean up admissions: not available on this environment.');
-    expect(line.getAttribute('role')).toBe('status');
-    expect(line.classList.contains('failed')).toBe(false);
-    expect(listCalls).toBe(loadsBefore);
-    // A job that closes nothing says so without reloading twice.
-    client.runSweeps.mockImplementationOnce(async () => ({ ...ran('delivery-inbox'), inboxMerged: false, inboxResult: 'no inbox file' }));
-    await page['runJob']('delivery-inbox');
-    await settle(harness);
-    expect(text(root.querySelector('.jobs-line'))).toBe(`Sync plan inbox ran at ${ranTime}: inbox: no inbox file`);
-    expect(listCalls).toBe(loadsBefore);
-  });
-
-  it('says the job could not be run when the Domain fails, leaves the list as it was, and the next click runs again', async () => {
-    client.runSweeps.mockImplementationOnce(async () => {
-      throw new PlatformReviewError('unavailable');
-    });
-    const harness = await open();
-    const root = harness.routeNativeElement!;
-    const loadsBefore = listCalls;
-    jobButton(root, 'support-requests').click();
-    await settle(harness);
-    const line = root.querySelector('.jobs-line')!;
-    expect(text(line)).toBe('Close idle tickets could not be run. Nothing changed; try again.');
-    expect(line.getAttribute('role')).toBe('alert');
-    expect(line.classList.contains('failed')).toBe(true);
-    expect(listCalls).toBe(loadsBefore);
-    expect(jobButton(root, 'support-requests').disabled).toBe(false);
-    jobButton(root, 'support-requests').click();
-    await settle(harness);
-    expect(text(root.querySelector('.jobs-line'))).toMatch(/^Close idle tickets ran at /);
-    expect(client.runSweeps).toHaveBeenCalledTimes(2);
+    expect(root.textContent).not.toContain('Close idle tickets');
+    expect(client.runSweeps).not.toHaveBeenCalled();
   });
 
   it('is the target of the former /admin/reviews address and has the item route', () => {

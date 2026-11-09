@@ -368,53 +368,10 @@ a.setup-download small {
   }
 }
 
-/* Long references are split into a section of sub-pages; this row moves between them. */
-.section-pages {
-  display: block;
-  margin-block: 16px 4px;
-}
-.section-label {
-  margin: 0 0 8px;
-  color: var(--text-subtle);
-  font-size: 0.74rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.section-pages ol {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.section-pages a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 4px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--accent-link);
-  font-size: 0.84rem;
-  font-weight: 650;
-  text-decoration: none;
-}
-.section-pages a:hover {
-  border-color: var(--accent-strong);
-  background: var(--surface-muted);
-}
-.section-pages a:focus-visible,
+/* Long references are split into a section of sub-pages; the header lists them and this row moves between them. */
 .section-steps a:focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 2px;
-}
-.section-pages a[aria-current='page'] {
-  border-color: var(--accent-strong);
-  background: var(--accent-strong);
-  color: var(--accent-on-primary);
 }
 .section-steps {
   display: grid;

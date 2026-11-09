@@ -178,10 +178,71 @@ export class DeliveryPlanPage implements OnInit {
   protected readonly activeCount = computed(
     () => this.plan()?.workItems.filter((item) => item.statusId === 'in-progress').length ?? 0,
   );
-  protected readonly completionPercent = computed(() => {
-    const total = this.plan()?.workItems.length ?? 0;
-    return total ? Math.round((this.completedCount() / total) * 100) : 0;
+  /**
+   * DLV-995 (owner, 2026-11-09): the overview no longer shows a completion percentage. Done ÷ every ticket ever
+   * written mixed September ideas with merged epics and misled; the summary now says where each stage stands,
+   * what is in flight, what is up next and what finished recently.
+   */
+  protected readonly stageSummaries = computed(() => {
+    const plan = this.plan();
+    if (!plan) return [];
+    return plan.stages.map((stage) => {
+      const items = plan.workItems.filter((item) => item.stageId === stage.id);
+      const done = items.filter((item) => item.statusId === 'done').length;
+      return { stage, total: items.length, done, percent: items.length ? (done / items.length) * 100 : 0 };
+    });
   });
+  /** The work-in-flight cell fills the rest of the last stage row in the four-column grid (a full row when it is full). */
+  protected readonly flowSpan = computed(() => {
+    const remainder = (this.plan()?.stages.length ?? 0) % 4;
+    return remainder ? 4 - remainder : 4;
+  });
+  /** Tickets per workflow column for the work-in-flight bar, Done first so the bar grows from the left (owner, 2026-11-09). */
+  protected readonly flow = computed(() => {
+    const plan = this.plan();
+    return [...(plan?.workflow ?? [])].reverse().map((status) => ({
+      status,
+      count: plan!.workItems.filter((item) => item.statusId === status.id).length,
+    }));
+  });
+  protected readonly flowLabel = computed(() =>
+    this.flow().map((entry) => `${entry.status.label} ${entry.count}`).join(', '),
+  );
+  /** The six highest-priority tickets that are in progress, in review or ready; P0 first, then column order. */
+  protected readonly nextUp = computed(() => {
+    const plan = this.plan();
+    if (!plan) return [];
+    const columns = ['in-progress', 'review', 'ready'];
+    const rank = (item: DeliveryWorkItem) => {
+      const index = plan.priorities.findIndex((priority) => priority.id === item.priorityId);
+      return index < 0 ? plan.priorities.length : index;
+    };
+    return plan.workItems
+      .filter((item) => columns.includes(item.statusId))
+      .sort(
+        (a, b) =>
+          rank(a) - rank(b) ||
+          columns.indexOf(a.statusId) - columns.indexOf(b.statusId) ||
+          (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''),
+      )
+      .slice(0, 6);
+  });
+  /** The five tickets most recently marked Done. */
+  protected readonly recentlyDone = computed(() => {
+    const plan = this.plan();
+    if (!plan) return [];
+    return plan.workItems
+      .filter((item) => item.statusId === 'done')
+      .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''))
+      .slice(0, 5);
+  });
+  /** "8 Nov" from an ISO date; the text itself when it is not one. */
+  protected shortDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? value
+      : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
 
   ngOnInit(): void {
     if (!this.authorAccess()) return;

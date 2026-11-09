@@ -3,11 +3,14 @@ import { TestBed } from '@angular/core/testing';
 import { AuthorWorkspaceNav } from './author-workspace-nav';
 
 describe('AuthorWorkspaceNav', () => {
-  it('renders the eyebrow and title', () => {
+  it('renders the title without an eyebrow by default, and an eyebrow only when one is given', () => {
     const fixture = TestBed.createComponent(AuthorWorkspaceNav);
     fixture.componentRef.setInput('pageTitle', 'Operations');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.eyebrow').textContent).toBe('Admin');
+    expect(fixture.nativeElement.querySelector('.eyebrow')).toBeNull();
+    fixture.componentRef.setInput('eyebrow', 'Help');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.eyebrow').textContent).toBe('Help');
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Operations');
     expect(fixture.nativeElement.querySelector('app-platform-signature')).toBeNull();
   });

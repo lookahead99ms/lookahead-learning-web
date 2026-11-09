@@ -23,7 +23,6 @@ import {
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
-import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   authorDocumentPages,
   authorDocumentationSection,
@@ -45,7 +44,7 @@ const maxDocumentHeight = 60_000;
 @Component({
   host: { class: 'admin-surface' },
   selector: 'app-author-operations',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, AuthorDocHero, RouterLink],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, RouterLink],
   templateUrl: './author-operations.html',
   styleUrls: ['./author-operations.css', '../../core/author-workspace-nav/reference-footer.css'],
 })

@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
-import { canSeePreviews } from './author-workspace-nav/author-workspace-links';
+import { canSeePreviews, canOpenDocumentationPath } from './author-workspace-nav/author-workspace-links';
 
 /**
  * DLV-969 (owner, 2026-11-04): a page your account cannot open shows a plain "not open to your account" notice with
@@ -57,6 +57,16 @@ export const previewsGuard: CanActivateFn = async (_route, state) => {
     return router.createUrlTree(['/sign-in'], { queryParams: { returnTo: state.url } });
   if (canSeePreviews(account)) return true;
   return noAccessPage(router);
+};
+
+/** Owner, 2026-11-09: a documentation page opens only for the roles its group is written for; others go to Documentation. */
+export const documentationGuard: CanActivateFn = async (_route, state) => {
+  const accounts = inject(StudyPlanAccount), router = inject(Router);
+  await accounts.initialize();
+  const account = accounts.account();
+  if (!account || accounts.sessionExpired())
+    return router.createUrlTree(['/sign-in'], { queryParams: { returnTo: state.url } });
+  return canOpenDocumentationPath(account, state.url) || router.createUrlTree(['/admin/docs']);
 };
 
 export const accessGuard: CanActivateFn = async (_route, state) => {

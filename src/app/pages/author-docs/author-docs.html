@@ -1,9 +1,6 @@
 <app-platform-header />
 <main id="main-content" class="admin-workspace docs-page">
   <app-author-admin-menu pageId="docs" />
-  @if (selectedGroup()) {
-    <app-author-admin-menu pageId="docs" [documentationOnly]="true" />
-  }
   <div class="workspace-content">
     @if (selectedGroup(); as group) {
       <app-author-workspace-nav [tabbed]="true" [pageTitle]="group.label" pageId="docs">

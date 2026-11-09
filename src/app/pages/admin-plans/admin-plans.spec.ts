@@ -27,7 +27,7 @@ describe('Plans and purchases (admin documentation, DLV-209)', () => {
   it('says nothing is sold and lays out like the other admin pages', () => {
     expect(root.classList.contains('admin-surface')).toBe(true);
     const main = root.querySelector('main')!;
-    expect([...main.children].map((child) => child.tagName.toLowerCase())).toEqual(['app-author-admin-menu', 'app-author-admin-menu', 'div']);
+    expect([...main.children].map((child) => child.tagName.toLowerCase())).toEqual(['app-author-admin-menu', 'div']); // no right rail since 2026-11-09
     expect(text(root.querySelector('.status-note'))).toContain('No money is charged');
     expect([...root.querySelectorAll('.doc-section h2')].map(text)).toEqual([
       'How to review', 'How a learner buys', 'What a buyer sees in Manage account', 'Configured plans', 'Changing and renewing', 'Not built yet',

@@ -13,6 +13,7 @@ import {
   SimpleChanges,
   AfterViewInit,
   OnDestroy,
+  viewChild,
 } from '@angular/core';
 import { AuthorDocumentationTabs } from './author-documentation-tabs';
 import { isAuthorDocumentationPage, AuthorWorkspacePageId } from './author-workspace-links';
@@ -35,11 +36,14 @@ export type { AuthorWorkspacePageId };
   styleUrl: './author-workspace-nav.css',
 })
 export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
+  /** The documentation strip, when this page has one; it says whether it already names the open page. */
+  protected readonly docTabs = viewChild(AuthorDocumentationTabs);
   private readonly document = inject(DOCUMENT);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   @Input() tabbed = false;
   @Input() pageTitle = '';
-  @Input() eyebrow = 'Admin';
+  /** Empty by default (owner, 2026-11-09): the admin pages carry no Admin eyebrow; Support passes Help. */
+  @Input() eyebrow = '';
   @Input() pageId: AuthorWorkspacePageId | null = null;
   protected readonly isDocumentationPage = isAuthorDocumentationPage;
   @Input() headingLevel: 1 | 2 = 1;
