@@ -289,9 +289,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/study-plan/study-plan').then((page) => page.StudyPlanPage),
   },
   {
+    path: 'delivery-plan/work',
+    canActivate: [deliveryGuard],
+    canDeactivate: [(page: DeliveryPlanPage) => page.canDeactivate()],
+    loadComponent: () =>
+      import('./pages/delivery-plan/delivery-plan').then((page) => page.DeliveryPlanPage),
+  },
+  {
     path: 'delivery-plan',
     canActivate: [deliveryGuard],
     canDeactivate: [(page: DeliveryPlanPage) => page.canDeactivate()],
+    // Legacy workspace query URLs share this route with the overview. Guard a return home too.
+    runGuardsAndResolvers: (_from, to) => to.queryParamMap.keys.length === 0 && !to.fragment,
     loadComponent: () =>
       import('./pages/delivery-plan/delivery-plan').then((page) => page.DeliveryPlanPage),
   },

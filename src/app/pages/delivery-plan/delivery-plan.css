@@ -53,16 +53,7 @@
   scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
 }
 
-.delivery-outline {
-  grid-column: 1;
-  grid-row: 1 / span 3;
-  align-self: start;
-  position: sticky;
-  top: calc(var(--platform-header-height, 76px) + 12px);
-  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
+
 
 .delivery-metrics,
 .delivery-workspace {
@@ -85,7 +76,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .delivery-outline,
   .delivery-hero,
   .delivery-state,
   .delivery-metrics,
@@ -103,19 +93,13 @@
     border-bottom: 1px solid var(--line);
   }
 
-  .delivery-outline {
-    grid-row: auto;
-    position: static;
-    max-height: min(55dvh, 520px);
-    overflow-y: auto;
-    margin-block: 16px;
-  }
+
 }
 
 .delivery-hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(20px, 3vw, 40px);
   overflow: hidden;
   padding: clamp(22px, 3vw, 36px);
@@ -148,13 +132,32 @@
   color: var(--accent-strong);
 }
 
-.delivery-hero h1 {
+.delivery-hero h2 {
   max-width: 850px;
   margin: 10px 0 12px;
-  font-size: clamp(1.8rem, 3vw, 2.9rem);
+  font-size: 1.25rem;
   line-height: 1.04;
   letter-spacing: -0.045em;
   text-wrap: balance;
+}
+
+.delivery-page-heading { margin-bottom: 24px; }
+.delivery-page-heading > p { margin: 0 0 8px; color: var(--text-subtle); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.delivery-page-heading h1 { margin: 8px 0 0; font-size: 1.75rem; line-height: 1.2; }
+.delivery-back { color: var(--link); font-size: 0.875rem; }
+.completion-context { margin: -8px 0 24px; color: var(--text-subtle); font-size: 0.875rem; }
+.delivery-work-link { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.delivery-work-link h2 { margin: 0 0 8px; font-size: 1.25rem; }
+.delivery-work-link p { margin: 0; color: var(--text-body); }
+.delivery-work-link .work-view-labels { margin-top: 12px; color: var(--text-subtle); font-size: 0.875rem; }
+.delivery-work-link a { flex-shrink: 0; text-align: center; text-decoration: none; }
+.delivery-current-focus { margin-top: 16px; }
+.delivery-current-focus .focus-label { color: var(--text-subtle); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.delivery-current-focus h3 { margin: 4px 0 8px; font-size: 1.0625rem; }
+.delivery-workspace { min-width: 0; }
+@media (max-width: 760px) {
+  .delivery-work-link { flex-direction: column; align-items: stretch; padding: 18px; }
+  .delivery-page-heading { margin-bottom: 18px; }
 }
 
 .hero-copy > p {
@@ -185,49 +188,6 @@
   border-radius: 50%;
   background: var(--success);
   box-shadow: 0 0 0 5px var(--shadow);
-}
-
-.active-stage-card {
-  position: relative;
-  z-index: 1;
-  align-self: end;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface-muted);
-}
-
-.active-stage-card > span {
-  color: var(--text-body);
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.active-stage-card > strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 1.1rem;
-}
-
-.active-stage-card p {
-  margin: 9px 0 16px;
-  color: var(--text-body);
-  font-size: 0.86rem;
-  line-height: 1.5;
-}
-
-.active-stage-card button {
-  padding: 9px 13px;
-  border: 1px solid var(--accent-strong);
-  border-radius: 8px;
-  color: var(--text-body);
-  background: var(--surface);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.76rem;
-  font-weight: 800;
 }
 
 .delivery-metrics {
@@ -1656,9 +1616,6 @@
     grid-template-columns: 1fr;
   }
 
-  .active-stage-card {
-    max-width: 620px;
-  }
 }
 
 @media (max-width: 1080px) {
@@ -1666,9 +1623,6 @@
     grid-template-columns: 1fr;
   }
 
-  .active-stage-card {
-    max-width: 620px;
-  }
 
   .board-controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -66,11 +66,13 @@ test('Delivery overview uses theme-aware text instead of dark code-panel ink', (
     new URL('../src/app/pages/delivery-plan/delivery-plan.css', import.meta.url),
     'utf8',
   );
-  const hero = delivery.slice(
-    delivery.indexOf('.delivery-hero {'),
-    delivery.indexOf('.delivery-metrics {'),
+  const overview = delivery.slice(
+    delivery.indexOf('.delivery-page-heading {'),
+    delivery.indexOf('.delivery-workspace { min-width:'),
   );
-  assert.doesNotMatch(hero, /--code-ink|--code-panel/);
-  assert.match(hero, /color: var\(--text-body\)/);
-  assert.match(hero, /background: var\(--surface-muted\)/);
+  assert.ok(overview.includes('.delivery-current-focus'), 'combined focus card is covered');
+  assert.doesNotMatch(overview, /--code-ink|--code-panel/);
+  assert.match(overview, /\.delivery-work-link p \{[^}]*color: var\(--text-body\)/);
+  assert.match(overview, /\.delivery-work-link \{[^}]*background: var\(--surface\)/);
+  assert.match(overview, /\.focus-label \{[^}]*color: var\(--text-subtle\)/);
 });

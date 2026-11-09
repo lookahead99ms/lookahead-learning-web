@@ -954,7 +954,15 @@ collapsed so the page content comes first.
 The shared Operations, Local setup, API and Architecture documents report their content heights to the
 parent, so their references flow with the page rather than inside a fixed-height
 viewer. The document frame keeps its scripts-only sandbox while the host controls section visibility.
-The working `/delivery-plan` requires an active author session. Signed-out
+`/delivery-plan` puts delivery numbers first, followed by one Work & decisions card
+containing the current focus. Its single **Open work & decisions**
+link opens `/delivery-plan/work`, with Board, Backlog, All tickets, Roadmap and Decisions.
+The summary labels its percentage **Tickets completed**: Done tickets divided by all tickets,
+rounded to a whole percentage. Review is separate; this count is not product or release readiness.
+Existing view/filter query links and ticket-fragment links on `/delivery-plan` still open the
+workspace. Both routes retain the same access and unsaved-draft guards and delivery APIs.
+
+The working `/delivery-plan` and `/delivery-plan/work` require an active author session. Signed-out
 visitors go to sign-in and return to the plan afterward; its public JSON fallback
 is intentionally unavailable on the protected working origin.
 
