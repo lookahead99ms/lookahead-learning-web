@@ -13,10 +13,10 @@ publication; this configuration does not change those settings.
 
 | Control | Blocking result | Coverage |
 | --- | --- | --- |
-| npm audit | High or critical; malformed output, tool failure or incomplete inventory | Exact lockfile locations, including direct/transitive, development, production, optional and peer dependencies |
+| npm audit | High or critical except the temporary exception below; malformed output, tool failure or incomplete inventory | Exact lockfile locations, including direct/transitive, development, production, optional and peer dependencies |
 | CycloneDX SBOM | A lockfile package or dependency edge is missing | npm lockfile SBOM plus a location-level inventory; identical name/version locations may share one SBOM component |
 | CodeQL | Security severity >= 7, an error-level nonsecurity result, missing report or execution/coverage warning | JS/TS under `src`, `scripts` and the Vitest configuration, using the linked bundle and `security-extended` queries |
-| Trivy | HIGH/CRITICAL/UNKNOWN vulnerabilities or misconfiguration, any secret, scanner errors or missing Dockerfile/OS package coverage | Dockerfile and current source, pinned Node builder and NGINX runtime bases, immutable local built image |
+| Trivy | HIGH/CRITICAL/UNKNOWN vulnerabilities or misconfiguration (see temporary exception below), any secret, scanner errors or missing Dockerfile/OS package coverage | Dockerfile and current source, pinned Node builder and NGINX runtime bases, immutable local built image |
 | Gitleaks | Any detected secret; scanner/report failure or shallow history | Public candidate files, full reachable Git history and the base-to-merge commit range on PRs |
 
 Low and moderate dependency findings remain in the local report even when they
@@ -27,6 +27,34 @@ unknown vulnerabilities or audit a package missing from registry advisory data.
 `npm ci` still validates manifest/lockfile agreement and the actual installation.
 Platform-specific optional packages remain covered by the lockfile audit even
 when npm does not install them on the runner.
+
+### Temporary build-tool exception (approved November 17, 2026)
+
+Until **November 30, 2026 ends in America/New_York** (exclusive expiry
+`2026-12-01T05:00:00Z`), the npm gate accepts only
+[GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) for
+`picomatch` **4.0.7** in development-only locations, plus high findings whose entire
+provenance chain leads exclusively to that advisory. Every matching package location
+must be development-only and every picomatch location must have that exact version.
+Production locations, other advisories, critical findings, mixed provenance,
+missing links, cycles without the approved advisory and incomplete reports remain
+blocking. The exception stops applying automatically at expiry; no CI environment variable can extend it.
+
+This is temporary risk acceptance for an unpatched regular-expression denial of
+service vulnerability, not a fix or a clean audit. Raw findings and severity totals
+remain in `npm-audit.json` and the receipt; `passedWithoutExceptions`,
+`exceptedFindings`, `blockingFindings` and the exception deadline make the outcome
+explicit. npm's original exit status is checked against the raw findings. The same
+advisory (`CVE-2026-112366`) and deadline apply to Trivy findings for exact
+`picomatch@4.0.7` package paths in the toolchain and builder images:
+`opt/npm/node_modules/picomatch/package.json` and (builder only)
+`build/node_modules/picomatch/package.json`. The scanned package inventory must
+confirm the exact version and path. Runtime images, base images, other paths and
+other findings receive no exception. Raw Trivy reports and counts remain intact;
+logs identify accepted findings as unresolved. SBOM, CodeQL, secret scanning,
+image identity and inventory coverage checks are unchanged. DLV-918 owns replacing the
+dependency with a verified fix and removing this exception. It covers the build/test
+graph; the NGINX runtime contains compiled assets rather than Node dependencies.
 
 CodeQL is static analysis. It does not certify Angular template/runtime behavior,
 generated code, deployment headers/configuration, server authorization, CSRF,
@@ -70,7 +98,7 @@ source revision, timestamps, package locations, versions, direct/transitive
 relationship and SHA-256 digests of the lockfile, audit and SBOM. Secret receipts
 contain only rule, relative file, line and commit identity; raw matches, secrets,
 author/email and scanner output are discarded. A new failed scan replaces any
-previous successful receipt with incomplete coverage. The container scanner deletes stale JSON before each run and checks the executable against the retained publisher archive hash. Trivy diagnostics and raw reports stay locally ignored; its summary prints only counts. Image reports must use schema 2, include an image configuration ID, and describe Linux AMD64. Remote bases must match the requested digest in `RepoDigests`; local image reports must match the SHA-256 of the configuration exported by `docker image save` for the exact immutable build ID. The bounded temporary archive handles Docker Desktop index/config identity differences, rejects ambiguous or unsafe metadata, and is removed after validation. Public logs contain counts
+previous successful receipt with incomplete coverage. The container scanner deletes stale JSON before each run and checks the executable against the retained publisher archive hash. Trivy diagnostics and raw reports stay locally ignored; its summary prints counts and reviewed exception identifiers/paths. Image reports must use schema 2, include an image configuration ID, and describe Linux AMD64. Remote bases must match the requested digest in `RepoDigests`; local image reports must match the SHA-256 of the configuration exported by `docker image save` for the exact immutable build ID. The bounded temporary archive handles Docker Desktop index/config identity differences, rejects ambiguous or unsafe metadata, and is removed after validation. Public logs contain counts
 and generic failures, not report payloads.
 
 CI checks out only this public repository, without persisted credentials, and

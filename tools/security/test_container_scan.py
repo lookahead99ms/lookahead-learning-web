@@ -32,6 +32,59 @@ def exception(**changes):
 
 
 class ContainerGateTests(unittest.TestCase):
+    def test_node_toolchain_uses_the_available_reviewed_patch(self):
+        dockerfile = (scan.ROOT / 'Dockerfile').read_text()
+        self.assertIn('RUN apk add --no-cache nodejs=24.22.3-r0', dockerfile)
+        self.assertNotIn('nodejs=24.22.1-r1', dockerfile)
+
+    def test_build_exception_is_exact_expiring_and_preserves_raw_findings(self):
+        import copy, datetime
+        now = datetime.datetime(2026, 12, 1, 4, 59, 59, tzinfo=datetime.timezone.utc)
+        path = 'opt/npm/node_modules/picomatch/package.json'
+        report = image_report()
+        item = {'Class': 'lang-pkgs', 'Type': 'node-pkg',
+                'Packages': [{'Name': 'picomatch', 'Version': '4.0.7', 'FilePath': path}],
+                'Vulnerabilities': [{'Severity': 'HIGH', 'VulnerabilityID': 'CVE-2026-112366',
+                                     'VendorIDs': ['GHSA-fc5q-39xc-vjpf'], 'PkgName': 'picomatch',
+                                     'InstalledVersion': '4.0.7', 'PkgPath': path}]}
+        report['Results'].append(item)
+        original = copy.deepcopy(report)
+        counts = scan.report_gate(report, 'image', 'toolchainImage', now)
+        self.assertEqual(1, counts['high'])
+        self.assertEqual(1, counts['exceptedHigh'])
+        self.assertEqual(original, report)
+        for stage in ('applicationImage', 'builderBase', 'runtimeBase', None):
+            with self.subTest(stage=stage), self.assertRaises(ValueError):
+                scan.report_gate(report, 'image', stage, now)
+        for date in (scan.PICOMATCH_EXPIRY, scan.PICOMATCH_EXPIRY + datetime.timedelta(days=1)):
+            with self.subTest(date=date), self.assertRaises(ValueError):
+                scan.report_gate(report, 'image', 'toolchainImage', date)
+        for key, value in [('VulnerabilityID', 'CVE-2026-999'), ('VendorIDs', []),
+                           ('VendorIDs', ['GHSA-fc5q-39xc-vjpf', 'other']), ('PkgName', 'other'),
+                           ('InstalledVersion', '4.0.6'), ('Severity', 'CRITICAL'),
+                           ('PkgPath', 'build/node_modules/picomatch/package.json'),
+                           ('PkgPath', 'opt/npm/node_modules/other/package.json')]:
+            changed = copy.deepcopy(report)
+            changed['Results'][-1]['Vulnerabilities'][0][key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                scan.report_gate(changed, 'image', 'toolchainImage', now)
+        for key, value in [('Class', 'os-pkgs'), ('Type', 'other'), ('Packages', [])]:
+            changed = copy.deepcopy(report); changed['Results'][-1][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                scan.report_gate(changed, 'image', 'toolchainImage', now)
+        for field, finding in [('Vulnerabilities', {'Severity': 'HIGH'}), ('Secrets', {'Severity': 'LOW'}),
+                               ('Misconfigurations', {'Severity': 'HIGH'})]:
+            changed = copy.deepcopy(report)
+            changed['Results'][0][field] = [finding]
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                scan.report_gate(changed, 'image', 'toolchainImage', now)
+        item['Vulnerabilities'][0]['PkgPath'] = 'build/node_modules/picomatch/package.json'
+        item['Packages'][0]['FilePath'] = 'build/node_modules/picomatch/package.json'
+        self.assertEqual(1, scan.report_gate(report, 'image', 'builderImage', now)['exceptedHigh'])
+        # The two scanners must never silently diverge on the approved deadline.
+        js = (scan.ROOT / 'scripts/security/dependency-exception.mjs').read_text()
+        self.assertIn(scan.PICOMATCH_EXPIRY.isoformat(timespec='milliseconds').replace('+00:00', 'Z'), js)
+
     def test_runtime_configuration_copies_are_in_build_context(self):
         dockerfile = (scan.ROOT / 'Dockerfile').read_text()
         allowlist = (scan.ROOT / '.dockerignore').read_text().splitlines()

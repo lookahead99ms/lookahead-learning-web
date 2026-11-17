@@ -1364,7 +1364,7 @@ not deployed Cognito or RDS connectivity.
 ### Protected Web container
 
 The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
-3.23 base, exact Node24 package `nodejs=24.22.1-r1` and npm11.17.0 CLI source verified
+3.23 base, exact Node24 package `nodejs=24.22.3-r0` and npm11.17.0 CLI source verified
 against its SHA256 archive checksum. The CLI production dependencies are rebuilt
 from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
 fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
