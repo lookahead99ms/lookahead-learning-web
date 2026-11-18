@@ -15,21 +15,23 @@ function response(status, body, headers = {}) {
     stderr: `Connecting to127.0.0.1\n  HTTP/1.1 ${status} Response\n` + Object.entries(headers).map(([k, v]) => `  ${k}: ${v}\n`).join('') };
 }
 
-function accessRecord(changes = {}) {
-  return { event: 'http_access', time: '2026-10-09T00:00:00Z', level: 'INFO', service: 'web', requestId: 'a'.repeat(32),
-    method: 'GET', path: '/api/privacy-probe', status: '404', bytes: '9', durationSeconds: '0.001', ...changes };
+/** One plain access line as nginx writes it: the bracket carries the first 8 characters of the request id. */
+function accessLine(changes = {}) {
+  const record = { time: '2026-10-09T00:00:00+00:00', level: 'INFO ', requestId: 'a'.repeat(32), method: 'GET', path: '/api/privacy-probe',
+    status: '404', bytes: '9', seconds: '0.001', upstream: '', ...changes };
+  return `${record.time} ${record.level} ${record.method} ${record.path} ${record.status} ${record.bytes} B ${record.seconds} s${record.upstream}  [request ${record.requestId.slice(0, 8)}]`;
 }
 
 function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { '/tmp': {}, [credentialMount]: {} }, echoGatewayId = true } = {}) {
   const calls = [];
-  const logs = [accessRecord()];
+  const logs = ['Web TLS validation succeeded', accessLine()];
   const docker = args => {
     calls.push(args);
     const ok = stdout => ({ status: 0, stdout, stderr: '' });
     if (args[0] === 'context') return ok(JSON.stringify([{ Endpoints: { docker: { Host: 'unix:///var/run/docker.sock' } } }]));
     if (args[0] === 'image') return ok(JSON.stringify([{ Id: resolvedDockerId, Config: { User: '10001:10001', Volumes: volumes, Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] } } }]));
     if (args[0] === 'create') return ok(id + '\n');
-    if (args[0] === 'logs') return ok(logs.map(record => JSON.stringify(record)).join('\n') + '\n');
+    if (args[0] === 'logs') return ok(logs.join('\n') + '\n');
     if (args[0] === 'start' || args[0] === 'rm') return ok('');
     if (args[0] === 'container') return ok(JSON.stringify([{ Image: resolvedDockerId, State: { Running: true, Health: { Status: unhealthy ? 'unhealthy' : 'healthy' } },
       HostConfig: { NetworkMode: 'none', ReadonlyRootfs: true, CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges:true'], Tmpfs: { '/tmp': 'rw', [credentialMount]: 'rw' } } }]));
@@ -47,7 +49,7 @@ function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes
     const path = new URL(args.at(-1)).pathname;
     const supplied = args.find(arg => arg.startsWith('X-Request-Id: '))?.slice('X-Request-Id: '.length);
     if (supplied && echoGatewayId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(supplied)) {
-      logs.push(accessRecord({ requestId: supplied, path, status: path === '/health' ? '200' : '404', bytes: '16' }));
+      logs.push(accessLine({ requestId: supplied, path, status: path === '/health' ? '200' : '404', bytes: '16' }));
     }
     if (path === '/health') return response(200, '{"status":"UP"}\n');
     if (['/', '/index.html', '/learn/deep', fallbackPath].includes(path)) return response(200, index, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' });
@@ -130,39 +132,45 @@ for (const [name, options, failure] of [
   });
 }
 
-test('operational logs reject private content and unexpected fields', () => {
-  const record = accessRecord();
-  const line = changes => JSON.stringify({ ...record, ...changes });
-  assert.equal(assertOperationalLogs(JSON.stringify(record), 'synthetic-secret'), 1);
-  assert.throws(() => assertOperationalLogs(line({ uri: '/private' }), 'synthetic-secret'), /Unexpected/);
-  assert.throws(() => assertOperationalLogs(JSON.stringify(record) + '\nsynthetic-secret', 'synthetic-secret'), /leaked/);
+test('operational logs reject private content, JSON records and unexpected line shapes', () => {
+  assert.equal(assertOperationalLogs(accessLine(), 'synthetic-secret'), 1);
+  assert.throws(() => assertOperationalLogs(accessLine() + ' uri=/private', 'synthetic-secret'), /Unexpected/);
+  assert.throws(() => assertOperationalLogs(accessLine() + '\nsynthetic-secret', 'synthetic-secret'), /leaked/);
   assert.throws(() => assertOperationalLogs('', 'synthetic-secret'), /emit/);
-  // Field order is part of the contract that CloudWatch queries and the other services share.
-  const { level, ...withoutLevel } = record;
-  assert.throws(() => assertOperationalLogs(JSON.stringify({ ...withoutLevel, level }), 'synthetic-secret'), /Unexpected/);
+  // Plain logs: a JSON record is a regression, not an access line to parse.
+  assert.throws(() => assertOperationalLogs('{"event":"http_access","status":"404"}', 'synthetic-secret'), /plain lines/);
+  // Column order is the contract shared with the Java services: a line without its level column is malformed.
+  assert.throws(() => assertOperationalLogs(accessLine().replace('INFO  ', ''), 'synthetic-secret'), /Unexpected/);
+  // Lines that do not open with a time (start-tls.sh sentences, nginx error_log) are not access lines but are scanned for the marker.
+  assert.equal(assertOperationalLogs('Web TLS validation succeeded\n2026/10/09 00:00:00 [warn] 1#1: a warning\n' + accessLine(), 'synthetic-secret'), 1);
+  assert.throws(() => assertOperationalLogs('2026/10/09 00:00:00 [error] 1#1: synthetic-secret\n' + accessLine(), 'synthetic-secret'), /leaked/);
 });
 
 test('operational logs keep the path without its query string', () => {
-  assert.equal(assertOperationalLogs(JSON.stringify(accessRecord({ path: '/assets/main-ABCDEFGH.js' })), 'synthetic-secret'), 1);
-  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ path: '/api/x?code=1' })), 'synthetic-secret'), /query string/);
-  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ path: 'GET /api HTTP/1.1' })), 'synthetic-secret'), /query string/);
+  assert.equal(assertOperationalLogs(accessLine({ path: '/assets/main-ABCDEFGH.js' }), 'synthetic-secret'), 1);
+  assert.throws(() => assertOperationalLogs(accessLine({ path: '/api/x?code=1' }), 'synthetic-secret'), /query string/);
+  assert.throws(() => assertOperationalLogs(accessLine({ path: 'GET /api HTTP/1.1' }), 'synthetic-secret'), /Unexpected/);
 });
 
-test('operational logs carry the web service name and a status-derived level', () => {
-  const lines = [accessRecord(), accessRecord({ status: '503', level: 'WARN' })].map(record => JSON.stringify(record)).join('\n');
-  assert.equal(assertOperationalLogs(lines, 'synthetic-secret'), 2);
-  assert.throws(() => assertOperationalLogs([accessRecord(), accessRecord({ status: '503' })].map(record => JSON.stringify(record)).join('\n'), 'synthetic-secret'), /level/);
-  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ level: 'WARN' })), 'synthetic-secret'), /level/);
-  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ service: 'gateway' })), 'synthetic-secret'));
+test('operational logs carry a status-derived level padded to five characters and the upstream detail on 5xx', () => {
+  const lines = [accessLine(), accessLine({ status: '503', level: 'ERROR', bytes: '0' }),
+    accessLine({ status: '502', level: 'ERROR', path: '/bff/api/v1/plans', upstream: ' upstream 10.0.1.9:8443 status 502' })].join('\n');
+  assert.equal(assertOperationalLogs(lines, 'synthetic-secret'), 3);
+  assert.throws(() => assertOperationalLogs([accessLine(), accessLine({ status: '503' })].join('\n'), 'synthetic-secret'), /level/);
+  assert.throws(() => assertOperationalLogs(accessLine({ level: 'ERROR' }), 'synthetic-secret'), /level/);
+  assert.throws(() => assertOperationalLogs([accessLine(), accessLine({ status: '503', level: 'WARN ' })].join('\n'), 'synthetic-secret'), /level/);
+  assert.throws(() => assertOperationalLogs(accessLine({ bytes: '31 kB' }), 'synthetic-secret'), /Unexpected/);
+  assert.throws(() => assertOperationalLogs(accessLine({ method: 'TRACE' }), 'synthetic-secret'), /Unbounded/);
 });
 
-test("operational logs reuse Gateway's canonical request ID and reject other shapes", () => {
+test("operational logs reuse the first 8 characters of Gateway's canonical request ID and reject other shapes", () => {
   const gatewayId = '3f2b8c1e-1d2a-4b7e-9c1a-5e6f7a8b9c0d';
-  const lines = [accessRecord(), accessRecord({ requestId: gatewayId, path: '/health', status: '200' })].map(record => JSON.stringify(record)).join('\n');
+  const lines = [accessLine(), accessLine({ requestId: gatewayId, path: '/health', status: '200' })].join('\n');
   assert.equal(assertOperationalLogs(lines, 'synthetic-secret', { gatewayId }), 2);
-  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord()), 'synthetic-secret', { gatewayId }), /not reused/);
-  for (const requestId of ['3F2B8C1E-1D2A-4B7E-9C1A-5E6F7A8B9C0D', 'not-a-request-id', '']) {
-    assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ requestId })), 'synthetic-secret'), /request ID/);
+  assert(lines.includes('[request 3f2b8c1e]'), 'The bracket carries only the first 8 characters');
+  assert.throws(() => assertOperationalLogs(accessLine(), 'synthetic-secret', { gatewayId }), /not reused/);
+  for (const requestId of ['3F2B8C1E-1D2A-4B7E-9C1A-5E6F7A8B9C0D', 'not-a-request-id', '', 'abc']) {
+    assert.throws(() => assertOperationalLogs(accessLine({ requestId }), 'synthetic-secret'), /request ID/);
   }
 });
 

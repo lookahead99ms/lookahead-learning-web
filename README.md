@@ -1364,7 +1364,7 @@ not deployed Cognito or RDS connectivity.
 ### Protected Web container
 
 The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
-3.23 base, exact Node24 package `nodejs=24.22.1-r1` and npm11.17.0 CLI source verified
+3.23 base, exact Node24 package `nodejs=24.22.3-r0` and npm11.17.0 CLI source verified
 against its SHA256 archive checksum. The CLI production dependencies are rebuilt
 from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
 fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
@@ -1468,7 +1468,19 @@ image-binding/coverage gaps continue to block. Run
 
 ### Container operational logs
 
-The protected NGINX runtime emits JSON access events to stdout for ECS CloudWatch collection: timestamp, generated request ID, method, status, response bytes and duration. Access events exclude URLs, query strings, IP addresses, headers, cookies and bodies. Error output remains on stderr; native NGINX diagnostics can contain request context and must be treated as restricted operational data. The disposable container smoke sends synthetic URL/query/header secrets and verifies they are absent from captured logs for denied requests. This verifies local behavior, not live AWS delivery.
+The protected NGINX runtime writes one plain access line per request to stdout for ECS CloudWatch collection (plain logs, owner decision 2026-11-17: no JSON, nothing a reader needs a schema for):
+
+```
+2026-11-17T20:45:30+00:00 INFO  GET /learn/algorithmic-patterns/two-pointers 200 31204 B 0.003 s  [request b3e6a0d7]
+2026-11-17T20:45:31+00:00 INFO  GET /api/privacy-probe 404 146 B 0.000 s  [request 7c1d20e5]
+2026-11-17T21:16:40+00:00 ERROR GET /health 503 0 B 0.000 s  [request 0c8e5b21]
+```
+
+How to read a line, left to right: the time (`$time_iso8601`; the container runs in UTC, so it ends in `+00:00`), the level padded to five characters (`INFO` below 500, `ERROR` for every 5xx: an nginx 5xx is something to act on, and the deploy and restart log scans search for the word `ERROR`), the method (one of GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, else `OTHER`), the path the browser asked for cut at `?`, the status, the response body size in plain bytes with the unit `B` (nginx cannot round to kB, so both configurations log bytes), the request time in seconds, and the request bracket with the first 8 characters of the request id: Gateway's `X-Request-Id` when it is a lowercase UUID, otherwise nginx's own id. A 5xx line appends ` upstream <address> status <status>` when nginx proxied the request; this server proxies nothing, so that detail stays empty today. Access lines never carry query strings, IP addresses, headers, cookies or bodies.
+
+Searching in CloudWatch: `[request b3e6a0d7]` finds every line of one request across the Web, Gateway and Domain log groups (the three services print the same first 8 characters); `ERROR` finds every 5xx answer; `GET /learn/` finds one route.
+
+NGINX diagnostics go to stderr at level `warn` in both configurations (native shape, for example `2026/11/17 21:16:40 [error] 7#7: ...`), so upstream connect failures and startup problems are visible; those lines can contain the request line and client address and are restricted operational data. `start-tls.sh` prints `Web TLS validation succeeded` or `Web TLS validation failed; startup denied` as plain sentences; `startup denied` is one of the deploy log scan's failure markers. The disposable container smoke sends synthetic query/header secrets and a malformed request id, verifies they are absent from the captured stdout and stderr, checks that every access line has the shape above (ERROR on 5xx, 8 lowercase hex characters in the bracket) and that Gateway's request id is reused. This verifies local behavior, not live AWS delivery.
 
 PR and main security gates require full-repository CodeQL analysis. The pinned
 action disables diff-informed and overlay analysis; reports marked incremental

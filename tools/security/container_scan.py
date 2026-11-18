@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """App-owned, one-shot container/config security gate. No private checkout needed."""
 import argparse
+import datetime
 import hashlib
 import json
 import os
@@ -113,7 +114,24 @@ def base_images(text):
     return [images[0], images[2]]
 
 
-def report_gate(document, kind):
+# Same owner-approved advisory/deadline as scripts/security/dependency-exception.mjs.
+PICOMATCH_EXPIRY = datetime.datetime.fromisoformat('2026-12-01T05:00:00+00:00')
+
+
+def accepted_build_finding(result, finding, stage, now):
+    paths = {'opt/npm/node_modules/picomatch/package.json'} if stage == 'toolchainImage' else {
+        'opt/npm/node_modules/picomatch/package.json', 'build/node_modules/picomatch/package.json'} if stage == 'builderImage' else set()
+    path = finding.get('PkgPath')
+    return (now < PICOMATCH_EXPIRY and result.get('Class') == 'lang-pkgs' and result.get('Type') == 'node-pkg'
+            and path in paths and finding.get('Severity') == 'HIGH'
+            and finding.get('VulnerabilityID') == 'CVE-2026-112366'
+            and finding.get('VendorIDs') == ['GHSA-fc5q-39xc-vjpf']
+            and finding.get('PkgName') == 'picomatch' and finding.get('InstalledVersion') == '4.0.7'
+            and any(p.get('Name') == 'picomatch' and p.get('Version') == '4.0.7' and p.get('FilePath') == path
+                    for p in result.get('Packages', [])))
+
+
+def report_gate(document, kind, stage=None, now=None):
     if document.get('SchemaVersion') != 2:
         raise ValueError('Unsupported scanner report schema')
     results = document.get('Results')
@@ -138,6 +156,8 @@ def report_gate(document, kind):
             raise ValueError('Dockerfile configuration coverage missing')
     else:
         raise ValueError('Unsupported report kind')
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    accepted = []
     counts = {'high': 0, 'critical': 0, 'unknown': 0, 'secrets': 0, 'lower': 0}
     for result in results:
         for field in ('Vulnerabilities', 'Misconfigurations', 'Secrets'):
@@ -148,8 +168,15 @@ def report_gate(document, kind):
                 severity = finding.get('Severity')
                 if severity not in ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'UNKNOWN'):
                     raise ValueError('Missing or invalid severity')
+                if kind == 'image' and field == 'Vulnerabilities' and accepted_build_finding(result, finding, stage, now):
+                    accepted.append(finding['PkgPath'])
                 counts[severity.lower() if severity in ('HIGH', 'CRITICAL', 'UNKNOWN') else 'lower'] += 1
-    if any(counts[key] for key in ('high', 'critical', 'unknown', 'secrets')):
+    if accepted:
+        counts['exceptedHigh'] = len(accepted)
+        print(json.dumps({'temporaryRiskException': 'GHSA-fc5q-39xc-vjpf', 'package': 'picomatch@4.0.7',
+                          'expiresAt': PICOMATCH_EXPIRY.isoformat(), 'owner': 'DLV-918', 'stage': stage,
+                          'paths': accepted, 'unresolved': True, 'rawCounts': counts}))
+    if counts['high'] > len(accepted) or any(counts[key] for key in ('critical', 'unknown', 'secrets')):
         print(json.dumps({'containerFindingsRequiringAction': counts}))
         raise ValueError('Security findings require action')
     return counts
@@ -339,7 +366,7 @@ def scan(kind, target=None, local=False, stage=None):
     document = json.loads(report.read_text())
     if exceptions:
         exceptions_exercised(document, exceptions)
-    counts = report_gate(document, kind)
+    counts = report_gate(document, kind, stage=stage)
     stage_coverage(document, stage)
     if kind == 'image':
         image_identity(document, target, config_id)

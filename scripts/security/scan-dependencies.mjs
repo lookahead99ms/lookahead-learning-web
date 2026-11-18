@@ -2,7 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { checkAudit, checkSbom, lockInventory } from './reports.mjs';
+import { checkSbom, lockInventory } from './reports.mjs';
+import { checkAuditWithException } from './dependency-exception.mjs';
 
 const output = resolve('.codex-scratch/security');
 mkdirSync(output, { recursive: true });
@@ -29,8 +30,8 @@ try {
   const sbom = checkSbom(JSON.parse(sbomText), inventory);
   const auditResult = command(['audit', ...include, '--json', '--audit-level=high', '--registry=https://registry.npmjs.org', '--prefer-online', '--offline=false'], [0, 1]);
   writeFileSync(resolve(output, 'npm-audit.json'), auditResult.stdout);
-  const audit = checkAudit(JSON.parse(auditResult.stdout), inventory);
-  if (auditResult.status !== (audit.passed ? 0 : 1)) throw new Error('npm exit status disagrees with report');
+  const audit = checkAuditWithException(JSON.parse(auditResult.stdout), inventory);
+  if (auditResult.status !== (audit.passedWithoutExceptions ? 0 : 1)) throw new Error('npm exit status disagrees with report');
   const revision = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' });
   if (revision.status !== 0) throw new Error('Cannot identify scanned source revision');
   const receipt = {
@@ -44,6 +45,8 @@ try {
   };
   writeFileSync(resolve(output, 'dependency-receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`);
   console.log(`Dependency scan: ${audit.packageLocations} package locations, ${sbom.uniqueComponents} SBOM components; ${audit.totals.high} high, ${audit.totals.critical} critical, ${audit.totals.moderate} moderate.`);
+  if (audit.exceptedFindings.length) console.log(`Temporary risk exception: ${audit.exceptedFindings.length} findings exclusively from ${audit.exception.advisory} (${audit.exception.package}@${audit.exception.version}, development only); expires ${audit.exception.expiresAt}. Vulnerability remains unresolved.`);
+  if (audit.blockingFindings.length) console.log(`Blocking dependency findings: ${audit.blockingFindings.join(', ')}.`);
   if (!audit.passed) process.exitCode = 1;
 } catch {
   writeFileSync(resolve(output, 'dependency-receipt.json'), `${JSON.stringify({ schema: 'frontend-dependency-scan/v1', startedAt, completedAt: new Date().toISOString(), passed: false, coverage: 'incomplete' }, null, 2)}\n`);
