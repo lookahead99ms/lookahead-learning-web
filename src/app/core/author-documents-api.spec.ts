@@ -127,8 +127,8 @@ describe('Private author-document boundary', () => {
     const publication = manifest();
     const template = publication.documents[0];
     const ids = ['aws-environment-journey', 'aws-dev-plan', 'aws-dev-decisions', 'aws-dev-operations', 'aws-dev-permissions', 'aws-dev-budget', 'aws-dev-status',
-      'aws-dev-setup', 'aws-dev-workflow', 'aws-dev-procedures', 'aws-dev-records', 'aws-candidate-design', 'aws-candidate-files', 'aws-candidate-commands',
-      'aws-candidate-updates', 'authentication-walkthrough', 'support-runbooks', 'sign-in-flows', 'dynamodb-migration', 'aws-dev-certificates'];
+      'aws-dev-setup', 'aws-dev-workflow', 'aws-dev-procedures', 'aws-dev-records', 'initial-design', 'initial-design-files', 'initial-design-commands',
+      'initial-design-updates', 'authentication-walkthrough', 'support-runbooks', 'sign-in-flows', 'dynamodb-migration', 'aws-dev-certificates'];
     publication.documents = [template, ...ids.map((id) => ({
       ...template, id, content: { ...template.content, href: `${root}${id}/${sha}/index.html` },
     }))];

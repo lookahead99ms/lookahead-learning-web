@@ -132,12 +132,12 @@ async function readEvidence(file, itemId, evidenceId) {
   if (
     !evidence ||
     typeof evidence.path !== 'string' ||
-    !/^docs\/evidence\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.md$/.test(evidence.path)
+    !/^src\/delivery-plan\/evidence\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.md$/.test(evidence.path)
   )
     fail(404, 'Attached Markdown report not found.');
 
   const contentRoot = resolve(dirname(file), '../..');
-  const root = resolve(contentRoot, 'docs/evidence');
+  const root = resolve(contentRoot, 'src/delivery-plan/evidence');
   const candidate = resolve(contentRoot, evidence.path);
   try {
     // Only attached Markdown under the private evidence directory is readable.

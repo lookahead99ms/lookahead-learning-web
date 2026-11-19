@@ -6,10 +6,10 @@ import { contractFile as fetchedContractFile, missingContractMessage } from './f
 
 /**
  * DLV-968: the `/content/...` paths this application opens by a fixed path, as a contract with the private Content
- * repository (owner decision 2026-11-06: every cross-repository contract lives only in Content under docs/contracts/;
+ * repository (owner decision 2026-11-06: every cross-repository contract lives only in Content under contracts/;
  * a consumer fetches the master on its own pull request and tests against it; no repository keeps a copy).
  *
- * Content owns the master (`docs/contracts/web-content-paths.json` there) and promises to publish every listed path in
+ * Content owns the master (`contracts/web-content-paths.json` there) and promises to publish every listed path in
  * each protected release. `npm run contracts:fetch` (scripts/release/fetch-contracts.mjs) brings it to the git-ignored
  * scripts/release/contracts/web-content-paths.json; this module discovers the paths the Web source opens, with the
  * same rule the Content release used while it still cloned this repository:
@@ -136,7 +136,7 @@ export async function main(argv, log = console.log) {
     log(`All ${result.paths} Web content paths are among the ${result.promised} paths Content promises to publish`);
     return 0;
   }
-  log(`${result.missing.length} Web content path(s) are not in Content's contract; add them to Content's docs/contracts/web-content-paths.json first:`);
+  log(`${result.missing.length} Web content path(s) are not in Content's contract; add them to Content's contracts/web-content-paths.json first:`);
   for (const path of result.missing) log(`  ${path}`);
   return 1;
 }
