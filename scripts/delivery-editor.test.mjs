@@ -217,7 +217,7 @@ test('preserves review routes and unknown metadata when editing an existing item
   const plan = structuredClone(source);
   const existing = plan.workItems[0];
   existing.reviewRoutes = ['/delivery-plan'];
-  existing.evidence = [{ id: 'report', title: 'Review report', path: 'docs/evidence/report.md' }];
+  existing.evidence = [{ id: 'report', title: 'Review report', path: 'src/delivery-plan/evidence/report.md' }];
   existing.customMetadata = { owner: 'test' };
   await writeFile(file, JSON.stringify(plan));
   const snapshot = (await request()).body;
@@ -235,12 +235,12 @@ test('preserves review routes and unknown metadata when editing an existing item
 async function evidenceFixture(t) {
   const fixtureData = await fixture(t);
   const { directory, file } = fixtureData;
-  await mkdir(resolve(directory, 'docs/evidence'), { recursive: true });
+  await mkdir(resolve(directory, 'src/delivery-plan/evidence'), { recursive: true });
   const markdown = '# Route report\n\n<script>not executable</script>\n';
-  await writeFile(resolve(directory, 'docs/evidence/report.md'), markdown);
+  await writeFile(resolve(directory, 'src/delivery-plan/evidence/report.md'), markdown);
   const plan = structuredClone(source);
   plan.workItems[0].evidence = [
-    { id: 'report', title: 'Review report', path: 'docs/evidence/report.md' },
+    { id: 'report', title: 'Review report', path: 'src/delivery-plan/evidence/report.md' },
   ];
   await writeFile(file, JSON.stringify(plan));
   return {
@@ -289,7 +289,7 @@ test('formats tables, lists, and code while keeping report-supplied HTML and uns
   plan.workItems[0].evidence[0].title = '<img src=x onerror=alert(1)>';
   await writeFile(file, JSON.stringify(plan));
   await writeFile(
-    resolve(directory, 'docs/evidence/report.md'),
+    resolve(directory, 'src/delivery-plan/evidence/report.md'),
     [
       '# Report',
       '',
@@ -362,31 +362,31 @@ test('restricts evidence to local authorized requests and approved Markdown path
   }
   for (const invalid of [
     '../../private.md',
-    'docs/evidence/../../private.md',
-    'docs/evidence/../evidence/report.md',
+    'src/delivery-plan/evidence/../../private.md',
+    'src/delivery-plan/evidence/../evidence/report.md',
     '/etc/passwd',
-    'docs/evidence/report.html',
-    'docs/evidence/%2e%2e/private.md',
-    'docs/evidence\\report.md',
+    'src/delivery-plan/evidence/report.html',
+    'src/delivery-plan/evidence/%2e%2e/private.md',
+    'src/delivery-plan/evidence\\report.md',
   ]) {
     plan.workItems[0].evidence[0].path = invalid;
     await writeFile(file, JSON.stringify(plan));
     assert.equal((await request('GET', path)).status, 404, invalid);
   }
   await writeFile(resolve(directory, 'private.md'), 'Not attached');
-  await symlink(resolve(directory, 'private.md'), resolve(directory, 'docs/evidence/escape.md'));
-  plan.workItems[0].evidence[0].path = 'docs/evidence/escape.md';
+  await symlink(resolve(directory, 'private.md'), resolve(directory, 'src/delivery-plan/evidence/escape.md'));
+  plan.workItems[0].evidence[0].path = 'src/delivery-plan/evidence/escape.md';
   await writeFile(file, JSON.stringify(plan));
   assert.equal((await request('GET', path)).status, 404);
-  await symlink(directory, resolve(directory, 'docs/evidence/outside'));
-  plan.workItems[0].evidence[0].path = 'docs/evidence/outside/private.md';
+  await symlink(directory, resolve(directory, 'src/delivery-plan/evidence/outside'));
+  plan.workItems[0].evidence[0].path = 'src/delivery-plan/evidence/outside/private.md';
   await writeFile(file, JSON.stringify(plan));
   assert.equal((await request('GET', path)).status, 404);
 });
 
 test('handles missing and oversized evidence without exposing private disk locations', async (t) => {
   const { request, path, directory } = await evidenceFixture(t);
-  const file = resolve(directory, 'docs/evidence/report.md');
+  const file = resolve(directory, 'src/delivery-plan/evidence/report.md');
   await rm(file);
   const missing = await request('GET', path);
   assert.equal(missing.status, 404);

@@ -20,7 +20,7 @@ const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
 const configuredRoot =
   requestedRoot === '--external'
-    ? (process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime')
+    ? (process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/src/content')
     : (requestedRoot ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime');
 const contentRoot = resolve(repositoryRoot, configuredRoot);
 const requiredQuestionFields = [

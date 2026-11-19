@@ -11,7 +11,7 @@ import { assertWorkingGatewayProxy, loadLocalBaseProxy, withLocalStaffDocuments 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const contentRoot = resolve(
   repositoryRoot,
-  process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime',
+  process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/src/content',
 );
 const syncScript = resolve(repositoryRoot, 'scripts/sync-runtime-content.mjs');
 const angularCli = resolve(repositoryRoot, 'node_modules/@angular/cli/bin/ng.js');
@@ -130,7 +130,7 @@ function authorizeWorkingAuthor(request) {
 }
 
 const editor = await startDeliveryEditor({
-  file: resolve(contentRoot, 'delivery/delivery-plan.json'),
+  file: resolve(contentRoot, '../delivery-plan/delivery-plan.json'),
   origins: [`http://localhost:${port}`, `http://127.0.0.1:${port}`],
   authorize: protectedWorking ? authorizeWorkingAuthor : undefined,
 });

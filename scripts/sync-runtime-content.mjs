@@ -16,7 +16,7 @@ const requestedRoot = process.argv[2];
 const demoRoot = resolve(repositoryRoot, 'demo-content/runtime');
 const externalRoot = resolve(
   repositoryRoot,
-  process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime',
+  process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/src/content',
 );
 const destinationRoot = resolve(repositoryRoot, 'public/content');
 const useCandidateRanking = process.env.LOOKAHEAD_DSA_RANKING_CANDIDATE === '1';

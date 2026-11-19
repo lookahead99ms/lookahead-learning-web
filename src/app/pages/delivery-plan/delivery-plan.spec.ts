@@ -664,7 +664,7 @@ describe('DeliveryPlanPage', () => {
   it('links private evidence by item and attachment identity, never by filesystem path', async () => {
     const snapshot = structuredClone(plan);
     snapshot.workItems[0].evidence = [
-      { id: 'report', title: 'Route inventory report', path: 'docs/evidence/report.md' },
+      { id: 'report', title: 'Route inventory report', path: 'src/delivery-plan/evidence/report.md' },
     ];
     editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-1' }));
     const harness = await RouterTestingHarness.create();
@@ -689,7 +689,7 @@ describe('DeliveryPlanPage', () => {
   it('does not offer private evidence endpoints in a read-only public board', async () => {
     const snapshot = structuredClone(plan);
     snapshot.workItems[0].evidence = [
-      { id: 'report', title: 'Route inventory report', path: 'docs/evidence/report.md' },
+      { id: 'report', title: 'Route inventory report', path: 'src/delivery-plan/evidence/report.md' },
     ];
     content.getDeliveryPlan.mockReturnValueOnce(of(snapshot));
     const harness = await RouterTestingHarness.create();
@@ -1060,7 +1060,7 @@ describe('DeliveryPlanPage', () => {
   describe('protected build (no local editor, Content publication served by Domain)', () => {
     const snapshot = structuredClone(plan);
     snapshot.workItems[0].evidence = [
-      { id: 'report', title: 'Route inventory report', path: 'docs/evidence/report.md' },
+      { id: 'report', title: 'Route inventory report', path: 'src/delivery-plan/evidence/report.md' },
     ];
     beforeEach(() => {
       protectedBuild = true;

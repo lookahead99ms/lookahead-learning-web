@@ -91,10 +91,10 @@ describe('AuthorAdminMenu', () => {
       '/admin/aws-dev-workflow',
       '/admin/aws-dev-procedures',
       '/admin/aws-dev-records',
-      '/admin/aws-candidate-design',
-      '/admin/aws-candidate-files',
-      '/admin/aws-candidate-commands',
-      '/admin/aws-candidate-updates',
+      '/admin/initial-design',
+      '/admin/initial-design-files',
+      '/admin/initial-design-commands',
+      '/admin/initial-design-updates',
     ]);
     expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/aws-dev-budget']);
     // Other sections stay collapsed to their parent link.

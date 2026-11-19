@@ -583,7 +583,7 @@ export function parseOptions(args, env = process.env) {
   if (args[0] && !args[0].startsWith('--')) root = args.shift();
   if (args[0] === '--external') {
     args.shift();
-    root = env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime';
+    root = env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/src/content';
   }
   if (args[0] === '--output' && args[1]) {
     args.shift();
