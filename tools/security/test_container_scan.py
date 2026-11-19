@@ -154,11 +154,16 @@ class ContainerGateTests(unittest.TestCase):
                 run.assert_not_called()
 
     def test_runtime_inventory_requires_all_pinned_patched_os_packages(self):
-        versions = {'nginx': '1.28.3-r7', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
+        versions = {'nginx': '1.28.3-r8', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
                     'zlib': '1.3.2-r1', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r0', 'libcrypto3': '3.5.9-r0'}
         document = {'Results': [{'Class': 'os-pkgs', 'Packages': [
             {'Name': name, 'Version': version} for name, version in versions.items()]}]}
         scan.stage_coverage(document, 'applicationImage')
+        nginx = next(pkg for pkg in document['Results'][0]['Packages'] if pkg['Name'] == 'nginx')
+        nginx['Version'] = '1.28.3-r7'
+        with self.assertRaisesRegex(ValueError, 'runtime package coverage'):
+            scan.stage_coverage(document, 'applicationImage')
+        nginx['Version'] = versions['nginx']
         for package in document['Results'][0]['Packages']:
             original = package['Version']
             package['Version'] = '0.0.0-r0'
@@ -281,7 +286,7 @@ class ContainerGateTests(unittest.TestCase):
                 report = image_report()
                 report['Results'][0]['Packages'] = [
                     {'Name': name, 'Version': version} for name, version in {
-                        'nginx': '1.28.3-r7', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
+                        'nginx': '1.28.3-r8', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
                         'zlib': '1.3.2-r1', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r0',
                         'libcrypto3': '3.5.9-r0'}.items()]
                 Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(report))

@@ -1363,6 +1363,11 @@ not deployed Cognito or RDS connectivity.
 
 ### Protected Web container
 
+The runtime pins `nginx=1.28.3-r8`; Alpine replaced the earlier `r7` package in its
+3.23 repository. A digest-pinned base still reads the live APK repository during
+installation, so retired package revisions require a reviewed pin update and
+fresh image/security checks. The package inventory gate rejects the old revision.
+
 The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
 3.23 base, exact Node24 package `nodejs=24.22.3-r0` and npm11.17.0 CLI source verified
 against its SHA256 archive checksum. The CLI production dependencies are rebuilt
