@@ -137,14 +137,14 @@ test('runs each mode with a clear message and exit code', () => fixture(async (r
   const producer = join(root, 'producer.json');
   await writeFile(producer, master([]));
   assert.equal(await main(['--root', root, '--subset', producer], log), 1);
-  assert.match(lines[0], /3 Web content path\(s\) are not in Content's contract; add them to Content's docs\/contracts\/web-content-paths.json first/);
+  assert.match(lines[0], /3 Web content path\(s\) are not in Content's contract; add them to Content's contracts\/web-content-paths.json first/);
   assert.deepEqual(lines.slice(1), EXPECTED.map((path) => `  ${path}`));
 }));
 
 test('every content path this source opens is in the fetched Content master (run `npm run contracts:fetch` first)', async () => {
   const result = await checkAgainstProducer(contractFile(WEB_ROOT), WEB_ROOT);
   assert.deepEqual(result.missing, [],
-    `${result.missing.length} path(s) opened by src/app are not in Content's docs/contracts/web-content-paths.json: ${JSON.stringify(result.missing)}; add them to Content first`);
+    `${result.missing.length} path(s) opened by src/app are not in Content's contracts/web-content-paths.json: ${JSON.stringify(result.missing)}; add them to Content first`);
   assert(result.paths > 0, 'the application opens at least one fixed content path');
   assert(result.promised >= result.paths, 'the master promises at least every path the source opens');
   const promised = readContract(await readFetchedContract(contractFile(WEB_ROOT)));

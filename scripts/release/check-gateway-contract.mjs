@@ -6,7 +6,7 @@ import { contractFile, missingContractMessage } from './fetch-contracts.mjs';
 
 /**
  * DLV-968 T13: every Web path the Gateway forwards (the `webPaths` of the Gateway-owned Domain API contract,
- * docs/contracts/domain-api-v1.json in the Content repository, fetched by `npm run contracts:fetch` to the git-ignored
+ * contracts/domain-api-v1.json in the Content repository, fetched by `npm run contracts:fetch` to the git-ignored
  * scripts/release/contracts/domain-api-v1.json) must be served by the built site. The rules are the container's nginx rules
  * (deployment/container/nginx.conf and nginx-lower-cost-dev.conf):
  * - Gateway-owned prefixes, dotfiles and key material answer 404, so a contract path there is an error;

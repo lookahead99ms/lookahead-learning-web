@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import {
-  CONTENT_BRANCH, CONTENT_REPOSITORY, CONTRACTS_DIRECTORY, CONTRACT_FILES, ContractFetchError, FETCH_COMMAND, RAW_ACCEPT, WEB_ROOT,
+  CONTENT_BRANCH, CONTENT_CONTRACTS_PATH, CONTENT_REPOSITORY, CONTRACTS_DIRECTORY, CONTRACT_FILES, ContractFetchError, FETCH_COMMAND, RAW_ACCEPT, WEB_ROOT,
   checkContractText, contractFile, contractRoute, contractUrl, fetchContracts, fetchWithGh, fetchWithToken, main, missingContractMessage,
   parseArguments, readToken,
 } from './fetch-contracts.mjs';
@@ -21,7 +21,7 @@ function api({ token = SECRET, answers = MASTERS, failWith = null } = {}) {
   const fetchImpl = async (url, options) => {
     calls.push({ url, options });
     if (failWith) throw failWith;
-    const name = CONTRACT_FILES.find((candidate) => url === contractUrl(candidate));
+    const name = CONTRACT_FILES.find((candidate) => url === `https://api.github.com/repos/lookahead99ms/lookahead-learning-content/contents/contracts/${candidate}?ref=main`);
     const authorized = options.headers.Authorization === `Bearer ${token}` && options.headers.Accept === RAW_ACCEPT;
     if (!name || !(name in answers)) return { ok: false, status: 404, text: async () => JSON.stringify({ message: 'Not Found', documentation_url: 'https://docs.github.com/rest' }) };
     if (!authorized) return { ok: false, status: 401, text: async () => JSON.stringify({ message: 'Bad credentials' }) };
@@ -36,7 +36,7 @@ function gh({ answers = MASTERS, error = null } = {}) {
   const exec = async (command, args) => {
     calls.push({ command, args });
     if (error) throw error;
-    const name = CONTRACT_FILES.find((candidate) => args.at(-1) === contractRoute(candidate));
+    const name = CONTRACT_FILES.find((candidate) => args.at(-1) === `repos/lookahead99ms/lookahead-learning-content/contents/contracts/${candidate}?ref=main`);
     if (!name) { const failure = new Error('gh: Not Found (HTTP 404)'); failure.stderr = 'gh: Not Found (HTTP 404)\n'; failure.code = 1; throw failure; }
     return { stdout: answers[name], stderr: '' };
   };
@@ -48,12 +48,22 @@ async function scratch(run) {
   try { await run(directory); } finally { await rm(directory, { recursive: true, force: true }); }
 }
 
+test('provider fixtures reject the retired docs/contracts route independently of the implementation', async () => {
+  const retired = 'repos/lookahead99ms/lookahead-learning-content/contents/docs/contracts/web-content-paths.json?ref=main';
+  const response = await api().fetchImpl(`https://api.github.com/${retired}`, {
+    headers: { Authorization: `Bearer ${SECRET}`, Accept: RAW_ACCEPT },
+  });
+  assert.equal(response.status, 404);
+  await assert.rejects(gh().exec('gh', ['api', retired]), /HTTP 404/);
+});
+
 test('names the Content masters the Web reads and where they land', () => {
   assert.deepEqual(CONTRACT_FILES, ['web-content-paths.json', 'domain-api-v1.json']);
   assert.equal(CONTENT_REPOSITORY, 'lookahead99ms/lookahead-learning-content');
   assert.equal(CONTENT_BRANCH, 'main');
-  assert.equal(contractRoute('x.json'), 'repos/lookahead99ms/lookahead-learning-content/contents/docs/contracts/x.json?ref=main');
-  assert.equal(contractUrl('x.json'), 'https://api.github.com/repos/lookahead99ms/lookahead-learning-content/contents/docs/contracts/x.json?ref=main');
+  assert.equal(CONTENT_CONTRACTS_PATH, 'contracts');
+  assert.equal(contractRoute('x.json'), 'repos/lookahead99ms/lookahead-learning-content/contents/contracts/x.json?ref=main');
+  assert.equal(contractUrl('x.json'), 'https://api.github.com/repos/lookahead99ms/lookahead-learning-content/contents/contracts/x.json?ref=main');
   assert.equal(contractFile('x.json', '/root'), join('/root', 'scripts', 'release', 'contracts', 'x.json'));
   assert.equal(contractFile('x.json'), join(WEB_ROOT, 'scripts', 'release', 'contracts', 'x.json'));
   assert.equal(CONTRACTS_DIRECTORY, 'scripts/release/contracts');
@@ -90,7 +100,7 @@ test('a failed token fetch names the file, the status and the fix, never the tok
   await assert.rejects(fetchWithToken('web-content-paths.json', { key: 'GH_TOKEN', token: 'wrong' }, api().fetchImpl), (error) => {
     assert(error instanceof ContractFetchError);
     assert.equal(error.contract, 'web-content-paths.json');
-    assert.equal(error.message, 'Could not fetch docs/contracts/web-content-paths.json from lookahead99ms/lookahead-learning-content main (HTTP 401: Bad credentials). '
+    assert.equal(error.message, 'Could not fetch contracts/web-content-paths.json from lookahead99ms/lookahead-learning-content main (HTTP 401: Bad credentials). '
       + 'Fix: check that the file exists on Content main and that GH_TOKEN is a fine-grained token with Contents: read on lookahead99ms/lookahead-learning-content.');
     return true;
   });
@@ -134,8 +144,8 @@ test('writes every master into the directory with the token, or with gh when the
   assert.equal(await readFile(join(directory, 'domain-api-v1.json'), 'utf8'), MASTERS['domain-api-v1.json']);
   assert.match(lines[0], /^Fetching 2 contract\(s\) from lookahead99ms\/lookahead-learning-content main with CONTENT_READ_TOKEN into /);
   assert.deepEqual(lines.slice(1), [
-    `  docs/contracts/web-content-paths.json -> scripts/release/contracts/web-content-paths.json (${MASTERS['web-content-paths.json'].length + 1} bytes)`,
-    `  docs/contracts/domain-api-v1.json -> scripts/release/contracts/domain-api-v1.json (${MASTERS['domain-api-v1.json'].length} bytes)`,
+    `  contracts/web-content-paths.json -> scripts/release/contracts/web-content-paths.json (${MASTERS['web-content-paths.json'].length + 1} bytes)`,
+    `  contracts/domain-api-v1.json -> scripts/release/contracts/domain-api-v1.json (${MASTERS['domain-api-v1.json'].length} bytes)`,
   ]);
   assert(!lines.join('\n').includes(SECRET), 'the token is never printed');
   const viaGh = gh();
@@ -152,7 +162,7 @@ test('the default directory is scripts/release/contracts under the Web root', ()
 
 test('stops at the first file that cannot be fetched', () => scratch(async (directory) => {
   const { fetchImpl } = api({ answers: { 'web-content-paths.json': MASTERS['web-content-paths.json'] } });
-  await assert.rejects(fetchContracts({ env: { CONTENT_READ_TOKEN: SECRET }, directory, fetchImpl, log: () => {} }), /Could not fetch docs\/contracts\/domain-api-v1.json .*HTTP 404/);
+  await assert.rejects(fetchContracts({ env: { CONTENT_READ_TOKEN: SECRET }, directory, fetchImpl, log: () => {} }), /Could not fetch contracts\/domain-api-v1.json .*HTTP 404/);
   assert.deepEqual(await readdir(directory), ['web-content-paths.json']);
 }));
 
@@ -171,7 +181,7 @@ test('main prints the failure and exits 1, or exits 0 after writing', () => scra
   assert.deepEqual(errors, []);
   assert.equal(out.length, 3);
   assert.equal(await main(['--directory', directory], { ...logging, env: { CONTENT_READ_TOKEN: 'wrong' }, fetchImpl: api().fetchImpl }), 1);
-  assert.match(errors.at(-1), /^Could not fetch docs\/contracts\/web-content-paths.json .*HTTP 401: Bad credentials/);
+  assert.match(errors.at(-1), /^Could not fetch contracts\/web-content-paths.json .*HTTP 401: Bad credentials/);
   assert.equal(await main(['--bogus'], logging), 1);
   assert.equal(errors.at(-1), 'fetch-contracts: Unknown argument: --bogus');
   assert(!errors.join('\n').includes(SECRET) && !out.join('\n').includes(SECRET), 'the token is never printed');

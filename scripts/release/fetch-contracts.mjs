@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 
 /**
  * DLV-968 (owner decision 2026-11-06): every cross-repository contract lives only in the Content repository under
- * docs/contracts/. No other repository keeps a copy. This script fetches the masters the Web tests read from Content's
+ * contracts/. No other repository keeps a copy. This script fetches the masters the Web tests read from Content's
  * main branch, read-only, into the git-ignored directory scripts/release/contracts/:
  * - web-content-paths.json: read by scripts/release/web-content-paths.test.mjs (npm run test:content-paths);
  * - domain-api-v1.json: read by scripts/release/check-gateway-contract.mjs (npm run test:gateway-contract).
@@ -19,7 +19,7 @@ import { promisify } from 'node:util';
  */
 export const CONTENT_REPOSITORY = 'lookahead99ms/lookahead-learning-content';
 export const CONTENT_BRANCH = 'main';
-export const CONTENT_CONTRACTS_PATH = 'docs/contracts';
+export const CONTENT_CONTRACTS_PATH = 'contracts';
 export const CONTRACTS_DIRECTORY = 'scripts/release/contracts';
 export const CONTRACT_FILES = ['web-content-paths.json', 'domain-api-v1.json'];
 export const RAW_ACCEPT = 'application/vnd.github.raw+json';

@@ -231,7 +231,7 @@ They do not define production hosting or activate learner code execution.
 
 No repository clones another at build or deploy time. Every expectation between
 two repositories is a contract file, and every contract lives only in the Content
-repository under `docs/contracts/` (owner decision 2026-11-06): `registry.json`
+repository under `contracts/` (owner decision 2026-11-06): `registry.json`
 lists each contract with its owner, its master file and every consumer with the
 test that reads it. No other repository keeps a copy. This repository fetches the
 masters it needs from Content's `main` branch on each pull request, read-only,
@@ -251,7 +251,7 @@ file is absent says to run `npm run contracts:fetch`. Pull requests from forks
 have no secret and fail at the fetch step; every pull request comes from a branch
 of this repository.
 
-| Contract (master in Content `docs/contracts/`) | Owner | Read on this repo's PR by | Change order | What a failure means |
+| Contract (master in Content `contracts/`) | Owner | Read on this repo's PR by | Change order | What a failure means |
 | --- | --- | --- | --- | --- |
 | `domain-api-v1.json` | Gateway (consumer of the Domain API; Content holds the master) | `node --test scripts/release/check-gateway-contract.test.mjs` (the fetched master is well formed and forwards no path the container blocks), then `npm run test:gateway-contract` after the build: every path under `webPaths` must be served by the built site under the container's nginx rules (a file, a route snapshot or the application shell; Gateway-owned prefixes are never served). | The Gateway edits the master in Content first, then its own pull request; Domain and this repository follow with the change that serves the new path. | The Gateway would forward a browser path this site cannot answer: the built site is incomplete, or the master lists a path this repository does not serve yet. |
 | `web-content-paths.json` | Content | `npm run test:content-paths` (`scripts/release/web-content-paths.test.mjs`): every `/content/…` path found in `src/app` must be in the master (`node scripts/release/web-content-paths.mjs --subset`; no option prints the discovered paths). | Add the path to the master in Content and ship the file in a Content release first, then open it here. Removing a path: this repository first, then Content. | This repository would open a content path that no protected release promises; the page would get a 404 in DEV. |
