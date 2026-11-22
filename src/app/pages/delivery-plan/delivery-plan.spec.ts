@@ -1610,7 +1610,19 @@ describe('DeliveryPlanPage', () => {
         version: 9,
         reason: null,
         counts: { added: 2, takenLocal: 1, keptDev: 3, conflicts: 1, unchanged: 4, deletedOnDev: 0 },
+        // DLV-1007: the DEV version before the merge and the ticket ids behind each count.
+        versionBefore: 8,
+        details: {
+          added: ['DLV-0101', 'DLV-0102'],
+          takenLocal: ['DLV-0042'],
+          keptDev: ['DLV-0001', 'DLV-0002', 'DLV-0003'],
+          conflicts: ['DLV-0077'],
+          unchanged: [],
+          deletedOnDev: [],
+        },
       };
+      const downloadButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .download-plan');
+      const resultCard = (root: Element) => root.querySelector<HTMLElement>('.upload-result');
       const uploadButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .upload-plan');
       const syncButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .sync-inbox');
       const fileInput = (root: Element) => root.querySelector<HTMLInputElement>('.editor-toolbar input[type="file"]')!;
@@ -1642,7 +1654,7 @@ describe('DeliveryPlanPage', () => {
         let root = harness.routeNativeElement!;
         const labels = (node: Element) =>
           [...node.querySelectorAll<HTMLButtonElement>('.editor-toolbar button:not([hidden])')].map((button) => button.textContent!.trim());
-        expect(labels(root)).toEqual(['Refresh board', 'Upload plan file', 'Sync plan inbox', '+ New ticket']);
+        expect(labels(root)).toEqual(['Refresh board', 'Upload plan file', 'Sync plan inbox', 'Download DEV plan', '+ New ticket']);
         expect(uploadButton(root)!.title).toBe('Sends your local delivery-plan.json to DEV and merges it at once');
         expect(syncButton(root)!.title).toBe('Merges a plan file already placed in delivery/inbox/ on DEV');
         expect(uploadButton(root)!.disabled).toBe(false);
@@ -1680,12 +1692,36 @@ describe('DeliveryPlanPage', () => {
         expect(devApi.uploadInbox).toHaveBeenCalledExactlyOnceWith(text);
         expect(uploadButton(root)!.disabled).toBe(true);
         expect(syncButton(root)!.disabled).toBe(true);
-        devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 9));
+        // DLV-1007: the button says what it is doing while the Domain works.
+        expect(uploadButton(root)!.textContent!.trim()).toBe('Uploading…');
+        expect(uploadButton(root)!.getAttribute('aria-busy')).toBe('true');
+        devApi.load.mockResolvedValueOnce(
+          devPlan([devItem({ id: 'DLV-0077', title: 'Both sides changed me' }), devItem({ id: 'DLV-0101', title: 'Brand new' }), structuredClone(plan.workItems[1])], 9),
+        );
         finish(merged);
         await settle(harness);
         expect(notice(root)).toBe(
           'Plan file uploaded and merged into DEV plan version 9: 2 added, 1 taken from local, 3 kept from DEV, 1 conflict(s).',
         );
+        expect(uploadButton(root)!.textContent!.trim()).toBe('Upload plan file');
+        // The result card: the file, the version move, the counts and one row per ticket, conflicts first.
+        const card = resultCard(root)!;
+        expect(card.querySelector('h2')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Upload plan file: merged into DEV plan version 9');
+        const facts = [...card.querySelectorAll('.upload-result-fact')].map((p) => p.textContent!.replace(/\s+/g, ' ').trim()).join(' | ');
+        expect(facts).toContain('File sent: delivery-plan.json · ');
+        expect(facts).toContain('local version 7, edited from DEV version 7');
+        expect(facts).toContain('DEV plan: version 8 → 9');
+        expect([...card.querySelectorAll('.upload-result-counts li')].map((li) => li.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
+          '1 conflict', '2 added', '1 updated from your file', '3 kept from DEV', '4 unchanged',
+        ]);
+        const rows = [...card.querySelectorAll('tbody tr')].map((row) => [...row.querySelectorAll('td')].map((cell) => cell.textContent!.trim()));
+        expect(rows[0]).toEqual(['DLV-0077', 'Both sides changed me', 'Conflict: changed on DEV and in your file', 'Open the ticket and choose Keep DEV or Take local']);
+        expect(rows[1]).toEqual(['DLV-0101', 'Brand new', 'Added from your file', 'New on DEV']);
+        expect(rows.map((row) => row[0])).toEqual(['DLV-0077', 'DLV-0101', 'DLV-0102', 'DLV-0042', 'DLV-0001', 'DLV-0002', 'DLV-0003']);
+        expect(card.querySelector('tbody tr a')!.getAttribute('href')).toBe('/delivery-plan/work#DLV-0077');
+        card.querySelector<HTMLButtonElement>('.upload-result-close')!.click();
+        await settle(harness);
+        expect(resultCard(root)).toBeNull();
         expect(devApi.load.mock.calls.length).toBe(loads + 1);
         expect(input.value).toBe('');
         expect(uploadButton(root)!.disabled).toBe(false);
@@ -1721,6 +1757,38 @@ describe('DeliveryPlanPage', () => {
         expect(uploadButton(root)!.disabled).toBe(false);
       });
 
+      it('Download DEV plan saves the plan DEV holds now, named by its version, and says so', async () => {
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        const loads = devApi.load.mock.calls.length;
+        devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 11));
+        const createObjectURL = vi.fn<(blob: Blob) => string>(() => 'blob:dev-plan');
+        const revokeObjectURL = vi.fn();
+        Object.assign(URL, { createObjectURL, revokeObjectURL });
+        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+        try {
+          downloadButton(root)!.click();
+          await settle(harness);
+          expect(devApi.load.mock.calls.length).toBe(loads + 1);
+          expect(createObjectURL).toHaveBeenCalledOnce();
+          const blob = createObjectURL.mock.calls[0]![0];
+          expect(blob.type).toBe('application/json');
+          expect(JSON.parse(await blob.text()).version).toBe(11);
+          const anchor = click.mock.instances[0] as HTMLAnchorElement;
+          expect(anchor.download).toBe('delivery-plan-dev-v11.json');
+          expect(revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:dev-plan');
+          expect(notice(root)).toBe('Downloaded delivery-plan-dev-v11.json: DEV plan version 11, 2 tickets.');
+          // A failed read is named and the button recovers.
+          devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(503, 'DELIVERY_PLAN_UNAVAILABLE', 'The plan store is busy.'));
+          downloadButton(root)!.click();
+          await settle(harness);
+          expect(notice(root)).toBe('The DEV plan could not be downloaded: The plan store is busy.');
+          expect(downloadButton(root)!.disabled).toBe(false);
+        } finally {
+          click.mockRestore();
+        }
+      });
+
       it('Sync plan inbox merges the stored file and reloads, says when there is nothing, and names a failure', async () => {
         devApi.syncInbox.mockResolvedValueOnce(merged);
         devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 9));
@@ -1743,6 +1811,9 @@ describe('DeliveryPlanPage', () => {
         syncButton(root)!.click();
         await settle(harness);
         expect(notice(root)).toBe('Sync plan inbox failed: Only the owner and co-authors may sync the plan.');
+        // DLV-1007: an inbox merge shows the same result card, without a file line.
+        expect(resultCard(root)!.querySelector('h2')!.textContent).toContain('Sync plan inbox: merged into DEV plan version 9');
+        expect(resultCard(root)!.textContent).not.toContain('File sent');
         expect(syncButton(root)!.disabled).toBe(false);
         // A merge with no counts still reads.
         devApi.syncInbox.mockResolvedValueOnce({ synced: true, version: 10, reason: null, counts: null });

@@ -1949,3 +1949,19 @@
     transition: none;
   }
 }
+
+/* DLV-1007: busy upload button and merge result card; this file has a 32 kB budget. */
+.busy-dot{display:inline-block;width:.65em;height:.65em;margin-right:.45em;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;vertical-align:-.05em;animation:busy-dot-spin .8s linear infinite}
+@keyframes busy-dot-spin{to{transform:rotate(360deg)}}
+.upload-result{margin:1rem 0 1.5rem;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid color-mix(in srgb,var(--accent-strong) 35%,transparent);border-radius:1rem;background:color-mix(in srgb,var(--accent-strong) 6%,transparent)}
+.upload-result-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.upload-result-header h2{margin:0}
+.upload-result-fact{margin:.75rem 0 0}
+.upload-result-counts{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 0;padding:0;list-style:none}
+.upload-result-counts li{padding:.3rem .75rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--accent-strong) 40%,transparent);font-size:.9rem}
+.upload-result-counts .count-conflicts:not(.zero){border-color:var(--accent-secondary);background:color-mix(in srgb,var(--accent-secondary) 18%,transparent)}
+.upload-result .table-scroll{margin-top:1rem;overflow-x:auto}
+.upload-result-table{width:100%;min-width:40rem;border-collapse:collapse;font-size:.92rem}
+.upload-result-table th,.upload-result-table td{padding:.55rem .75rem;text-align:left;vertical-align:top;border-bottom:1px solid color-mix(in srgb,var(--accent-strong) 20%,transparent)}
+.outcome-pill{display:inline-block;padding:.15rem .6rem;border-radius:999px;font-size:.82rem;font-weight:700;background:color-mix(in srgb,var(--accent-strong) 14%,transparent)}
+.outcome-conflicts .outcome-pill{background:color-mix(in srgb,var(--accent-secondary) 22%,transparent)}

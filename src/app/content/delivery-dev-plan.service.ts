@@ -25,6 +25,20 @@ export interface DeliveryInboxSync {
     unchanged: number;
     deletedOnDev: number;
   } | null;
+  /** DLV-1007: the DEV version the merge started from (absent on older Domains). */
+  versionBefore?: number;
+  /** DLV-1007: the ticket ids behind each count, in plan order (absent on older Domains). */
+  details?: DeliveryInboxDetails | null;
+}
+
+/** The ticket ids an inbox merge touched, one list per outcome. */
+export interface DeliveryInboxDetails {
+  added: string[];
+  takenLocal: string[];
+  keptDev: string[];
+  conflicts: string[];
+  unchanged: string[];
+  deletedOnDev: string[];
 }
 
 /** A failed call; `code` is the Domain's error code when the body carried one (DELIVERY_PLAN_MISSING, VERSION_CONFLICT). */
