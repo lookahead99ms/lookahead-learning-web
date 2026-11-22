@@ -1706,7 +1706,9 @@ describe('DeliveryPlanPage', () => {
         expect(uploadButton(root)!.textContent!.trim()).toBe('Upload plan file');
         // The result card: the file, the version move, the counts and one row per ticket, conflicts first.
         const card = resultCard(root)!;
-        expect(card.querySelector('h2')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Upload plan file: merged into DEV plan version 9');
+        expect(card.querySelector('h2')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Merged into DEV plan version 9');
+        expect(card.querySelector('.dialog-header span')!.textContent).toBe('Upload plan file');
+        expect(card.closest('dialog')!.classList.contains('upload-result-dialog')).toBe(true);
         const facts = [...card.querySelectorAll('.upload-result-fact')].map((p) => p.textContent!.replace(/\s+/g, ' ').trim()).join(' | ');
         expect(facts).toContain('File sent: delivery-plan.json · ');
         expect(facts).toContain('local version 7, edited from DEV version 7');
@@ -1812,7 +1814,7 @@ describe('DeliveryPlanPage', () => {
         await settle(harness);
         expect(notice(root)).toBe('Sync plan inbox failed: Only the owner and co-authors may sync the plan.');
         // DLV-1007: an inbox merge shows the same result card, without a file line.
-        expect(resultCard(root)!.querySelector('h2')!.textContent).toContain('Sync plan inbox: merged into DEV plan version 9');
+        expect(resultCard(root)!.querySelector('.dialog-header span')!.textContent).toBe('Sync plan inbox');
         expect(resultCard(root)!.textContent).not.toContain('File sent');
         expect(syncButton(root)!.disabled).toBe(false);
         // A merge with no counts still reads.

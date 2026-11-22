@@ -1953,9 +1953,8 @@
 /* DLV-1007: busy upload button and merge result card; this file has a 32 kB budget. */
 .busy-dot{display:inline-block;width:.65em;height:.65em;margin-right:.45em;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;vertical-align:-.05em;animation:busy-dot-spin .8s linear infinite}
 @keyframes busy-dot-spin{to{transform:rotate(360deg)}}
-.upload-result{margin:1rem 0 1.5rem;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid color-mix(in srgb,var(--accent-strong) 35%,transparent);border-radius:1rem;background:color-mix(in srgb,var(--accent-strong) 6%,transparent)}
-.upload-result-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
-.upload-result-header h2{margin:0}
+.upload-result-dialog{width:min(1040px,calc(100vw - 30px))}
+.upload-result-body{padding:0 clamp(1rem,2.5vw,1.5rem) 1rem}
 .upload-result-fact{margin:.75rem 0 0}
 .upload-result-counts{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 0;padding:0;list-style:none}
 .upload-result-counts li{padding:.3rem .75rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--accent-strong) 40%,transparent);font-size:.9rem}
