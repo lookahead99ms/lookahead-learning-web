@@ -1949,3 +1949,172 @@
     transition: none;
   }
 }
+
+/* DLV-1007 (owner, 2026-11-22): the upload button says what it is doing, and the merge result is a card with a table. */
+.busy-dot {
+  display: inline-block;
+  width: 0.65em;
+  height: 0.65em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  vertical-align: -0.05em;
+  animation: busy-dot-spin 0.8s linear infinite;
+}
+
+@keyframes busy-dot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.upload-result {
+  margin: 1rem 0 1.5rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 35%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--accent-strong) 6%, var(--surface, transparent));
+}
+
+.upload-result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.upload-result-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.upload-result-eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.upload-result-facts {
+  display: grid;
+  gap: 0.35rem 1.5rem;
+  margin: 1rem 0 0;
+}
+
+.upload-result-facts div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.upload-result-facts dt {
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.upload-result-facts dd {
+  margin: 0;
+}
+
+.upload-result-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.upload-result-counts li {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, transparent);
+  font-size: 0.9rem;
+}
+
+.upload-result-counts li strong {
+  margin-right: 0.3em;
+}
+
+.upload-result-counts li.zero {
+  opacity: 0.55;
+}
+
+.upload-result-counts .count-conflicts:not(.zero) {
+  border-color: var(--accent-secondary);
+  background: color-mix(in srgb, var(--accent-secondary) 18%, transparent);
+}
+
+.upload-result-counts .count-added:not(.zero),
+.upload-result-counts .count-taken:not(.zero) {
+  background: color-mix(in srgb, var(--accent-strong) 14%, transparent);
+}
+
+.upload-result .table-scroll {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.upload-result-table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.upload-result-table th,
+.upload-result-table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-strong) 20%, transparent);
+}
+
+.upload-result-table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.upload-result-table td:first-child {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.outcome-pill {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent-strong) 14%, transparent);
+}
+
+.upload-result-table tr.outcome-conflicts .outcome-pill {
+  background: color-mix(in srgb, var(--accent-secondary) 22%, transparent);
+}
+
+.upload-result-table tr.outcome-keptDev .outcome-pill,
+.upload-result-table tr.outcome-deletedOnDev .outcome-pill {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.upload-result-empty {
+  margin: 1rem 0 0;
+}
+
+.upload-result-actions {
+  margin: 1rem 0 0;
+}
+
+@media (max-width: 640px) {
+  .upload-result-facts div {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+}
+

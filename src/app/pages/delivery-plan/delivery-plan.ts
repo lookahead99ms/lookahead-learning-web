@@ -21,7 +21,13 @@ import {
   DeliverySnapshot,
   DeliveryWorkItemInput,
 } from '../../content/delivery-editor.service';
-import { DeliveryDevPlanService, DeliveryInboxSync, DeliveryPlanApiError, DeliveryPlanWrite } from '../../content/delivery-dev-plan.service';
+import {
+  DeliveryDevPlanService,
+  DeliveryInboxDetails,
+  DeliveryInboxSync,
+  DeliveryPlanApiError,
+  DeliveryPlanWrite,
+} from '../../content/delivery-dev-plan.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import {
   DeliveryDecision,
@@ -110,6 +116,11 @@ export class DeliveryPlanPage implements OnInit {
   });
   /** An upload or inbox sync is running: both controls wait for it. */
   protected readonly syncing = signal(false);
+  /** DLV-1007: what the upload is doing right now, shown on the button while it runs. */
+  protected readonly uploadStage = signal<'' | 'reading' | 'uploading' | 'merging'>('');
+  /** DLV-1007: the last upload or inbox sync, with every ticket it touched; cleared with Close. */
+  protected readonly uploadResult = signal<UploadResult | null>(null);
+  protected readonly downloading = signal(false);
   protected readonly notice = signal('');
   protected readonly saveError = signal('');
   protected readonly conflict = signal(false);
@@ -401,11 +412,18 @@ export class DeliveryPlanPage implements OnInit {
     const file = input.files?.[0];
     if (!file || !this.dev() || !this.canSyncPlan() || this.saving() || this.syncing()) return;
     this.syncing.set(true);
+    this.uploadStage.set('reading');
+    this.uploadResult.set(null);
     try {
-      const result = await this.devPlan.uploadInbox(await file.text());
+      const text = await file.text();
+      const local = parseLocalPlan(text);
+      this.uploadStage.set('uploading');
+      const result = await this.devPlan.uploadInbox(text);
       if (result.synced) {
+        this.uploadStage.set('merging');
         this.notice.set(`Plan file uploaded and merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
         await this.reloadDevPlan(true);
+        this.uploadResult.set(this.describeMerge(result, 'upload', { name: file.name, size: file.size, ...local }));
       } else {
         this.notice.set(`Plan file uploaded but not merged: ${result.reason ?? 'no reason given'}.`);
       }
@@ -413,6 +431,7 @@ export class DeliveryPlanPage implements OnInit {
       this.notice.set(`The plan file could not be uploaded: ${this.syncFailure(error)}.`);
     } finally {
       input.value = '';
+      this.uploadStage.set('');
       this.syncing.set(false);
     }
   }
@@ -426,6 +445,7 @@ export class DeliveryPlanPage implements OnInit {
       if (result.synced) {
         this.notice.set(`Sync plan inbox: merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
         await this.reloadDevPlan(true);
+        this.uploadResult.set(this.describeMerge(result, 'inbox', null));
       } else {
         this.notice.set(`Sync plan inbox: nothing to sync (${result.reason ?? 'no reason given'}).`);
       }
@@ -440,6 +460,80 @@ export class DeliveryPlanPage implements OnInit {
   private mergeCounts(result: DeliveryInboxSync): string {
     const counts = result.counts ?? { added: 0, takenLocal: 0, keptDev: 0, conflicts: 0 };
     return `${counts.added} added, ${counts.takenLocal} taken from local, ${counts.keptDev} kept from DEV, ${counts.conflicts} conflict(s)`;
+  }
+
+  /**
+   * DLV-1007 (owner, 2026-11-22): the merge as a table the owner can read: the file that was sent, the DEV version it
+   * moved, and one row per ticket the merge touched (conflicts first, each pointing at the ticket where Keep DEV or
+   * Take local is chosen). Titles come from the plan just reloaded; a ticket deleted on DEV keeps the title from the file.
+   */
+  private describeMerge(result: DeliveryInboxSync, source: 'upload' | 'inbox', file: LocalPlanFile | null): UploadResult {
+    const counts = result.counts ?? { added: 0, takenLocal: 0, keptDev: 0, conflicts: 0, unchanged: 0, deletedOnDev: 0 };
+    const details: DeliveryInboxDetails = result.details ?? { added: [], takenLocal: [], keptDev: [], conflicts: [], unchanged: [], deletedOnDev: [] };
+    const onDev = new Map((this.plan()?.workItems ?? []).map((item) => [item.id, item.title] as const));
+    const title = (id: string) => onDev.get(id) ?? file?.titles.get(id) ?? '';
+    const rows: UploadResultRow[] = [];
+    const outcomes: [UploadOutcome, string[], string, string][] = [
+      ['conflicts', details.conflicts, 'Conflict: changed on DEV and in your file', 'Open the ticket and choose Keep DEV or Take local'],
+      ['added', details.added, 'Added from your file', 'New on DEV'],
+      ['takenLocal', details.takenLocal, 'Updated from your file', 'Your version replaced the DEV ticket'],
+      ['keptDev', details.keptDev, 'DEV version kept', 'DEV changed it after your copy; your file had no change for it'],
+      ['deletedOnDev', details.deletedOnDev, 'Not restored', 'Deleted on DEV after your copy was taken'],
+    ];
+    for (const [outcome, ids, label, hint] of outcomes)
+      for (const id of ids) rows.push({ id, title: title(id), outcome, label, hint, onDev: onDev.has(id) });
+    const listed = details.added.length + details.takenLocal.length + details.keptDev.length + details.conflicts.length + details.deletedOnDev.length;
+    return {
+      source,
+      fileName: file?.name ?? null,
+      fileSize: file?.size ?? null,
+      localVersion: file?.version ?? null,
+      localBaseVersion: file?.baseVersion ?? null,
+      versionBefore: result.versionBefore ?? null,
+      versionAfter: result.version,
+      at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      counts,
+      rows,
+      detailed: !!result.details || listed > 0,
+    };
+  }
+
+  protected dismissUploadResult(): void {
+    this.uploadResult.set(null);
+  }
+
+  /** "12.4 KB" for the file line of the upload result. */
+  protected fileSize(bytes: number | null): string {
+    if (bytes === null) return '';
+    return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  /**
+   * Download DEV plan: the plan as DEV holds it now, as a file named by its version, so a local copy can start from it
+   * (an upload must be edited from the DEV version or an archived one).
+   */
+  protected async downloadDevPlan(): Promise<void> {
+    if (!this.dev() || this.downloading()) return;
+    this.downloading.set(true);
+    try {
+      const plan = await this.devPlan.load();
+      const name = `delivery-plan-dev-v${plan.version ?? 0}.json`;
+      const url = URL.createObjectURL(new Blob([JSON.stringify(plan, null, 2) + '\n'], { type: 'application/json' }));
+      try {
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = name;
+        anchor.rel = 'noopener';
+        anchor.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+      this.notice.set(`Downloaded ${name}: DEV plan version ${plan.version ?? 0}, ${plan.workItems.length} tickets.`);
+    } catch (error) {
+      this.notice.set(`The DEV plan could not be downloaded: ${this.syncFailure(error)}.`);
+    } finally {
+      this.downloading.set(false);
+    }
   }
 
   /** The Domain's message, else its error code, else what the browser said; the sentence's own full stop follows. */
@@ -1118,5 +1212,55 @@ export class DeliveryPlanPage implements OnInit {
 
   private defaultStageFilter(): 'all' | 'current' {
     return this.view() === 'backlog' || this.view() === 'all-tickets' ? 'all' : 'current';
+  }
+}
+
+/** DLV-1007: one outcome of an inbox merge per ticket. */
+type UploadOutcome = 'added' | 'takenLocal' | 'keptDev' | 'conflicts' | 'deletedOnDev';
+
+interface UploadResultRow {
+  id: string;
+  title: string;
+  outcome: UploadOutcome;
+  label: string;
+  hint: string;
+  onDev: boolean;
+}
+
+interface UploadResult {
+  source: 'upload' | 'inbox';
+  fileName: string | null;
+  fileSize: number | null;
+  localVersion: number | null;
+  localBaseVersion: number | null;
+  versionBefore: number | null;
+  versionAfter: number;
+  at: string;
+  counts: NonNullable<DeliveryInboxSync['counts']>;
+  rows: UploadResultRow[];
+  /** False when the Domain answered with counts only (older Domain): the table cannot be shown. */
+  detailed: boolean;
+}
+
+interface LocalPlanFile {
+  name: string;
+  size: number;
+  version: number | null;
+  baseVersion: number | null;
+  titles: Map<string, string>;
+}
+
+/** The version, base version and ticket titles of the chosen file; a file that is not a plan gives nulls and no titles. */
+function parseLocalPlan(text: string): Omit<LocalPlanFile, 'name' | 'size'> {
+  try {
+    const parsed = JSON.parse(text) as { version?: unknown; baseVersion?: unknown; workItems?: unknown };
+    const number = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : null);
+    const titles = new Map<string, string>();
+    if (Array.isArray(parsed.workItems))
+      for (const item of parsed.workItems as { id?: unknown; title?: unknown }[])
+        if (typeof item?.id === 'string') titles.set(item.id, typeof item.title === 'string' ? item.title : '');
+    return { version: number(parsed.version), baseVersion: number(parsed.baseVersion), titles };
+  } catch {
+    return { version: null, baseVersion: null, titles: new Map() };
   }
 }
