@@ -272,36 +272,28 @@
       @if (uploadResult(); as result) {
         <section class="upload-result" aria-labelledby="upload-result-heading">
           <header class="upload-result-header">
-            <div>
-              <p class="upload-result-eyebrow">{{ result.source === 'upload' ? 'Upload plan file' : 'Sync plan inbox' }}</p>
-              <h2 id="upload-result-heading">Merged into DEV plan version {{ result.versionAfter }}</h2>
-            </div>
+            <h2 id="upload-result-heading">
+              {{ result.source === 'upload' ? 'Upload plan file' : 'Sync plan inbox' }}: merged into DEV plan version {{ result.versionAfter }}
+            </h2>
             <button type="button" class="editor-secondary upload-result-close" (click)="dismissUploadResult()">Close</button>
           </header>
-          <dl class="upload-result-facts">
-            @if (result.fileName) {
-              <div>
-                <dt>File sent</dt>
-                <dd>
-                  <code>{{ result.fileName }}</code> · {{ fileSize(result.fileSize) }}
-                  @if (result.localVersion !== null) {
-                    · local version {{ result.localVersion }}, edited from DEV version {{ result.localBaseVersion ?? result.localVersion }}
-                  }
-                </dd>
-              </div>
+          @if (result.fileName) {
+            <p class="upload-result-fact">
+              <strong>File sent:</strong>&ngsp;<code>{{ result.fileName }}</code>&ngsp;· {{ fileSize(result.fileSize) }}
+              @if (result.localVersion !== null) {
+                · local version {{ result.localVersion }}, edited from DEV version {{ result.localBaseVersion ?? result.localVersion }}
+              }
+            </p>
+          }
+          <p class="upload-result-fact">
+            <strong>DEV plan:</strong>
+            @if (result.versionBefore !== null) {
+              version {{ result.versionBefore }} → <strong>{{ result.versionAfter }}</strong>
+            } @else {
+              now version <strong>{{ result.versionAfter }}</strong>
             }
-            <div>
-              <dt>DEV plan</dt>
-              <dd>
-                @if (result.versionBefore !== null) {
-                  version {{ result.versionBefore }} → <strong>{{ result.versionAfter }}</strong>
-                } @else {
-                  now version <strong>{{ result.versionAfter }}</strong>
-                }
-                · {{ result.at }}
-              </dd>
-            </div>
-          </dl>
+            · {{ result.at }}
+          </p>
           <ul class="upload-result-counts" aria-label="Merge counts">
             <li class="count-conflicts" [class.zero]="!result.counts.conflicts"><strong>{{ result.counts.conflicts }}</strong> conflict{{ result.counts.conflicts === 1 ? '' : 's' }}</li>
             <li class="count-added" [class.zero]="!result.counts.added"><strong>{{ result.counts.added }}</strong> added</li>
@@ -342,11 +334,11 @@
               </table>
             </div>
           } @else if (result.detailed) {
-            <p class="upload-result-empty">Nothing to change: every ticket in the file already matches DEV.</p>
+            <p class="upload-result-fact">Nothing to change: every ticket in the file already matches DEV.</p>
           } @else {
-            <p class="upload-result-empty">This DEV answered with counts only; deploy the current Domain to see the tickets.</p>
+            <p class="upload-result-fact">This DEV answered with counts only; deploy the current Domain to see the tickets.</p>
           }
-          <p class="upload-result-actions">
+          <p class="upload-result-fact">
             <button type="button" class="editor-secondary" [disabled]="downloading()" (click)="downloadDevPlan()">
               Download DEV plan (version {{ result.versionAfter }})
             </button>

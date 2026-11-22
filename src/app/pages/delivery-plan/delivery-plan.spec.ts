@@ -1706,10 +1706,11 @@ describe('DeliveryPlanPage', () => {
         expect(uploadButton(root)!.textContent!.trim()).toBe('Upload plan file');
         // The result card: the file, the version move, the counts and one row per ticket, conflicts first.
         const card = resultCard(root)!;
-        expect(card.querySelector('h2')!.textContent).toBe('Merged into DEV plan version 9');
-        expect(card.querySelector('.upload-result-facts')!.textContent!.replace(/\s+/g, ' ')).toContain('plan.json · ');
-        expect(card.querySelector('.upload-result-facts')!.textContent!.replace(/\s+/g, ' ')).toContain('local version 7, edited from DEV version 7');
-        expect(card.querySelector('.upload-result-facts')!.textContent!.replace(/\s+/g, ' ')).toContain('version 8 → 9');
+        expect(card.querySelector('h2')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Upload plan file: merged into DEV plan version 9');
+        const facts = [...card.querySelectorAll('.upload-result-fact')].map((p) => p.textContent!.replace(/\s+/g, ' ').trim()).join(' | ');
+        expect(facts).toContain('File sent: delivery-plan.json · ');
+        expect(facts).toContain('local version 7, edited from DEV version 7');
+        expect(facts).toContain('DEV plan: version 8 → 9');
         expect([...card.querySelectorAll('.upload-result-counts li')].map((li) => li.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
           '1 conflict', '2 added', '1 updated from your file', '3 kept from DEV', '4 unchanged',
         ]);
@@ -1811,8 +1812,8 @@ describe('DeliveryPlanPage', () => {
         await settle(harness);
         expect(notice(root)).toBe('Sync plan inbox failed: Only the owner and co-authors may sync the plan.');
         // DLV-1007: an inbox merge shows the same result card, without a file line.
-        expect(resultCard(root)!.querySelector('.upload-result-eyebrow')!.textContent).toBe('Sync plan inbox');
-        expect(resultCard(root)!.querySelector('.upload-result-facts')!.textContent).not.toContain('File sent');
+        expect(resultCard(root)!.querySelector('h2')!.textContent).toContain('Sync plan inbox: merged into DEV plan version 9');
+        expect(resultCard(root)!.textContent).not.toContain('File sent');
         expect(syncButton(root)!.disabled).toBe(false);
         // A merge with no counts still reads.
         devApi.syncInbox.mockResolvedValueOnce({ synced: true, version: 10, reason: null, counts: null });
