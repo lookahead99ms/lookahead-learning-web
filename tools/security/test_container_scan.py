@@ -164,6 +164,11 @@ class ContainerGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'runtime package coverage'):
             scan.stage_coverage(document, 'applicationImage')
         nginx['Version'] = versions['nginx']
+        zlib = next(pkg for pkg in document['Results'][0]['Packages'] if pkg['Name'] == 'zlib')
+        zlib['Version'] = '1.3.2-r1'
+        with self.assertRaisesRegex(ValueError, 'runtime package coverage'):
+            scan.stage_coverage(document, 'applicationImage')
+        zlib['Version'] = versions['zlib']
         for package in document['Results'][0]['Packages']:
             original = package['Version']
             package['Version'] = '0.0.0-r0'
