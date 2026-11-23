@@ -269,82 +269,6 @@
       <p class="save-notice" role="status" aria-live="polite">
         {{ saving() ? 'Saving to private JSON...' : notice() }}
       </p>
-      @if (uploadResult(); as result) {
-        <section class="upload-result" aria-labelledby="upload-result-heading">
-          <header class="upload-result-header">
-            <h2 id="upload-result-heading">
-              {{ result.source === 'upload' ? 'Upload plan file' : 'Sync plan inbox' }}: merged into DEV plan version {{ result.versionAfter }}
-            </h2>
-            <button type="button" class="editor-secondary upload-result-close" (click)="dismissUploadResult()">Close</button>
-          </header>
-          @if (result.fileName) {
-            <p class="upload-result-fact">
-              <strong>File sent:</strong>&ngsp;<code>{{ result.fileName }}</code>&ngsp;· {{ fileSize(result.fileSize) }}
-              @if (result.localVersion !== null) {
-                · local version {{ result.localVersion }}, edited from DEV version {{ result.localBaseVersion ?? result.localVersion }}
-              }
-            </p>
-          }
-          <p class="upload-result-fact">
-            <strong>DEV plan:</strong>
-            @if (result.versionBefore !== null) {
-              version {{ result.versionBefore }} → <strong>{{ result.versionAfter }}</strong>
-            } @else {
-              now version <strong>{{ result.versionAfter }}</strong>
-            }
-            · {{ result.at }}
-          </p>
-          <ul class="upload-result-counts" aria-label="Merge counts">
-            <li class="count-conflicts" [class.zero]="!result.counts.conflicts"><strong>{{ result.counts.conflicts }}</strong> conflict{{ result.counts.conflicts === 1 ? '' : 's' }}</li>
-            <li class="count-added" [class.zero]="!result.counts.added"><strong>{{ result.counts.added }}</strong> added</li>
-            <li class="count-taken" [class.zero]="!result.counts.takenLocal"><strong>{{ result.counts.takenLocal }}</strong> updated from your file</li>
-            <li class="count-kept" [class.zero]="!result.counts.keptDev"><strong>{{ result.counts.keptDev }}</strong> kept from DEV</li>
-            <li class="count-unchanged"><strong>{{ result.counts.unchanged }}</strong> unchanged</li>
-            @if (result.counts.deletedOnDev) {
-              <li class="count-deleted"><strong>{{ result.counts.deletedOnDev }}</strong> deleted on DEV</li>
-            }
-          </ul>
-          @if (result.rows.length) {
-            <div class="table-scroll">
-              <table class="upload-result-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Ticket</th>
-                    <th scope="col">Title</th>
-                    <th scope="col">What happened</th>
-                    <th scope="col">What it means</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of result.rows; track row.id) {
-                    <tr [class]="'outcome-' + row.outcome">
-                      <td>
-                        @if (row.onDev) {
-                          <a routerLink="/delivery-plan/work" [fragment]="row.id">{{ row.id }}</a>
-                        } @else {
-                          {{ row.id }}
-                        }
-                      </td>
-                      <td>{{ row.title }}</td>
-                      <td><span class="outcome-pill">{{ row.label }}</span></td>
-                      <td>{{ row.hint }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          } @else if (result.detailed) {
-            <p class="upload-result-fact">Nothing to change: every ticket in the file already matches DEV.</p>
-          } @else {
-            <p class="upload-result-fact">This DEV answered with counts only; deploy the current Domain to see the tickets.</p>
-          }
-          <p class="upload-result-fact">
-            <button type="button" class="editor-secondary" [disabled]="downloading()" (click)="downloadDevPlan()">
-              Download DEV plan (version {{ result.versionAfter }})
-            </button>
-          </p>
-        </section>
-      }
 
       @if (workView()) {
         <header class="work-view-heading">
@@ -1021,6 +945,96 @@
             </button>
           </footer>
         </form>
+      }
+    </dialog>
+    <dialog appScrollLock
+      #uploadResultDialog
+      class="work-item-dialog upload-result-dialog"
+      (close)="uploadResult.set(null)"
+      (pointerdown)="rememberDialogPointerStart($event)"
+      (click)="dismissDialogBackdrop($event)"
+    >
+      @if (uploadResult(); as result) {
+        <div class="dialog-shell upload-result">
+          <header class="dialog-header">
+            <div>
+              <span>{{ result.source === 'upload' ? 'Upload plan file' : 'Sync plan inbox' }}</span>
+              <h2 id="upload-result-heading">Merged into DEV plan version {{ result.versionAfter }}</h2>
+            </div>
+            <button type="button" class="upload-result-close" aria-label="Close upload result" (click)="dismissUploadResult()">
+              &#215;
+            </button>
+          </header>
+          <div class="upload-result-body">
+            @if (result.fileName) {
+              <p class="upload-result-fact">
+                <strong>File sent:</strong>&ngsp;<code>{{ result.fileName }}</code>&ngsp;· {{ fileSize(result.fileSize) }}
+                @if (result.localVersion !== null) {
+                  · local version {{ result.localVersion }}, edited from DEV version {{ result.localBaseVersion ?? result.localVersion }}
+                }
+              </p>
+            }
+            <p class="upload-result-fact">
+              <strong>DEV plan:</strong>
+              @if (result.versionBefore !== null) {
+                version {{ result.versionBefore }} → <strong>{{ result.versionAfter }}</strong>
+              } @else {
+                now version <strong>{{ result.versionAfter }}</strong>
+              }
+              · {{ result.at }}
+            </p>
+            <ul class="upload-result-counts" aria-label="Merge counts">
+              <li class="count-conflicts" [class.zero]="!result.counts.conflicts"><strong>{{ result.counts.conflicts }}</strong> conflict{{ result.counts.conflicts === 1 ? '' : 's' }}</li>
+              <li class="count-added" [class.zero]="!result.counts.added"><strong>{{ result.counts.added }}</strong> added</li>
+              <li class="count-taken" [class.zero]="!result.counts.takenLocal"><strong>{{ result.counts.takenLocal }}</strong> updated from your file</li>
+              <li class="count-kept" [class.zero]="!result.counts.keptDev"><strong>{{ result.counts.keptDev }}</strong> kept from DEV</li>
+              <li class="count-unchanged"><strong>{{ result.counts.unchanged }}</strong> unchanged</li>
+              @if (result.counts.deletedOnDev) {
+                <li class="count-deleted"><strong>{{ result.counts.deletedOnDev }}</strong> deleted on DEV</li>
+              }
+            </ul>
+            @if (result.rows.length) {
+              <div class="table-scroll">
+                <table class="upload-result-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Ticket</th>
+                      <th scope="col">Title</th>
+                      <th scope="col">What happened</th>
+                      <th scope="col">What it means</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of result.rows; track row.id) {
+                      <tr [class]="'outcome-' + row.outcome">
+                        <td>
+                          @if (row.onDev) {
+                            <a routerLink="/delivery-plan/work" [fragment]="row.id" (click)="dismissUploadResult()">{{ row.id }}</a>
+                          } @else {
+                            {{ row.id }}
+                          }
+                        </td>
+                        <td>{{ row.title }}</td>
+                        <td><span class="outcome-pill">{{ row.label }}</span></td>
+                        <td>{{ row.hint }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (result.detailed) {
+              <p class="upload-result-fact">Nothing to change: every ticket in the file already matches DEV.</p>
+            } @else {
+              <p class="upload-result-fact">This DEV answered with counts only; deploy the current Domain to see the tickets.</p>
+            }
+          </div>
+          <footer class="dialog-footer">
+            <button type="button" class="editor-secondary" [disabled]="downloading()" (click)="downloadDevPlan()">
+              Download DEV plan (version {{ result.versionAfter }})
+            </button>
+            <button type="button" class="editor-primary" (click)="dismissUploadResult()">Close</button>
+          </footer>
+        </div>
       }
     </dialog>
   } @else if (error()) {

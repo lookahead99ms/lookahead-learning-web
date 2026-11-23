@@ -80,6 +80,7 @@ export class DeliveryPlanPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly workItemDialog = viewChild<ElementRef<HTMLDialogElement>>('workItemDialog');
+  private readonly uploadResultDialog = viewChild<ElementRef<HTMLDialogElement>>('uploadResultDialog');
   private readonly editorDialog = viewChild<ElementRef<HTMLDialogElement>>('editorDialog');
   private revision = '';
   private draftRevision = '';
@@ -423,7 +424,7 @@ export class DeliveryPlanPage implements OnInit {
         this.uploadStage.set('merging');
         this.notice.set(`Plan file uploaded and merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
         await this.reloadDevPlan(true);
-        this.uploadResult.set(this.describeMerge(result, 'upload', { name: file.name, size: file.size, ...local }));
+        this.showUploadResult(this.describeMerge(result, 'upload', { name: file.name, size: file.size, ...local }));
       } else {
         this.notice.set(`Plan file uploaded but not merged: ${result.reason ?? 'no reason given'}.`);
       }
@@ -445,7 +446,7 @@ export class DeliveryPlanPage implements OnInit {
       if (result.synced) {
         this.notice.set(`Sync plan inbox: merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
         await this.reloadDevPlan(true);
-        this.uploadResult.set(this.describeMerge(result, 'inbox', null));
+        this.showUploadResult(this.describeMerge(result, 'inbox', null));
       } else {
         this.notice.set(`Sync plan inbox: nothing to sync (${result.reason ?? 'no reason given'}).`);
       }
@@ -498,7 +499,18 @@ export class DeliveryPlanPage implements OnInit {
     };
   }
 
+  /** The result opens as a dialog over the board (owner, 2026-11-22), so the page underneath stays where it was. */
+  private showUploadResult(result: UploadResult): void {
+    this.uploadResult.set(result);
+    queueMicrotask(() => {
+      const dialog = this.uploadResultDialog()?.nativeElement;
+      if (dialog && !dialog.open) dialog.showModal();
+    });
+  }
+
   protected dismissUploadResult(): void {
+    const dialog = this.uploadResultDialog()?.nativeElement;
+    if (dialog?.open) dialog.close();
     this.uploadResult.set(null);
   }
 
