@@ -39,7 +39,7 @@ ARG SOURCE_REVISION=local
 LABEL org.opencontainers.image.version="$RELEASE_VERSION" \
       org.opencontainers.image.revision="$SOURCE_REVISION" \
       com.lookahead.app="web"
-RUN apk add --no-cache nginx=1.28.3-r9 musl=1.2.5-r24 musl-utils=1.2.5-r24 \
+RUN apk add --no-cache nginx=1.28.3-r10 musl=1.2.5-r24 musl-utils=1.2.5-r24 \
       zlib=1.4-r0 pcre2=10.49-r0 libssl3=3.5.9-r1 libcrypto3=3.5.9-r1 openssl=3.5.9-r1 \
     && addgroup -S -g 10001 web \
     && adduser -S -D -H -u 10001 -G web web \
