@@ -617,7 +617,7 @@ export class AdminAccessPage implements OnInit {
     const person = row.accountId ? this.people().get(row.accountId) : undefined;
     return person?.email && person.email !== this.nameOf({ accountId: row.accountId, pendingEmail: null }) ? person.email : null;
   }
-  /** "Google", "Password" for a waiting row; empty when the Domain sends none. */
+  /** "Google", "Email and password" for a waiting row; empty when the Domain sends none. */
   methodLabels(row: WaitingRow): string[] { return signInLabels(row.signInMethods); }
   /** "Same Gmail as 1 other account" when other accounts share this row's verified email, else ''. */
   sameEmail(row: WaitingRow): string {
@@ -732,6 +732,35 @@ export class AdminAccessPage implements OnInit {
   }
   setFullCurriculum(value: boolean) {
     if (this.draft) this.draft = { ...this.draft, fullCurriculum: value };
+  }
+  /** The course groups, from the topic ids ("learn:core-java" is in "learn"), Learn, Grow, then Blaze. */
+  readonly topicGroups = computed(() => {
+    const order = ['learn', 'grow', 'blaze'];
+    const rank = (group: string) => (order.includes(group) ? order.indexOf(group) : order.length);
+    const groups = [...new Set(this.topics().map(topic => topic.split(':')[0]))];
+    return groups.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  });
+  groupLabel(group: string): string {
+    return group ? group[0].toUpperCase() + group.slice(1) : group;
+  }
+  groupTopics(group: string): string[] {
+    return this.topics().filter(topic => topic.split(':')[0] === group);
+  }
+  /** 'all' when every course of the group is granted (or the entire curriculum is), 'some' when a few are, else 'none'. */
+  groupState(group: string, row: Pick<Assignment, 'fullCurriculum' | 'topicGrants'>): 'all' | 'some' | 'none' {
+    if (row.fullCurriculum) return 'all';
+    const courses = this.groupTopics(group);
+    const granted = courses.filter(topic => row.topicGrants.includes(topic)).length;
+    if (granted === 0) return 'none';
+    return granted === courses.length ? 'all' : 'some';
+  }
+  /** Ticking a group grants every course in it; unticking removes them. Other groups are left as they are. */
+  toggleGroup(group: string, checked: boolean) {
+    const draft = this.draft;
+    if (!draft) return;
+    const courses = this.groupTopics(group);
+    const kept = draft.topicGrants.filter(topic => !courses.includes(topic));
+    this.draft = { ...draft, topicGrants: checked ? [...kept, ...courses] : kept };
   }
   /** "Admin, Reviewer", or "Learner" for no staff role (DLV-999). */
   roleNames(roles: readonly string[]): string {

@@ -718,7 +718,7 @@ describe('People sign-in methods (DLV-969 account linking)',()=>{
  it('shows the owner each person\'s methods as plain labels and flags the same Gmail',async()=>{
   const {root}=await render('owner');
   const linked=person(root,'linked')!;
-  expect([...linked.querySelectorAll('.method-label')].map(label=>label.textContent)).toEqual(['Google','Password']);
+  expect([...linked.querySelectorAll('.method-label')].map(label=>label.textContent)).toEqual(['Google','Email and password']);
   expect(linked.querySelector('.same-email-flag')?.textContent?.trim()).toBe('⚠ Same Gmail as 1 other account');
   const google=person(root,'google-only')!;
   expect([...google.querySelectorAll('.method-label')].map(label=>label.textContent)).toEqual(['Google']);

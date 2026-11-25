@@ -133,7 +133,7 @@ describe('People directory helpers (DLV-961)', () => {
       account('older', {}),
     ]);
     const row = (id: string) => rows.find(item => item.accountId === id)!;
-    expect([row('linked').signInLabels, row('linked').sameEmail]).toEqual([['Google', 'Password'], 'Same Gmail as 2 other accounts']);
+    expect([row('linked').signInLabels, row('linked').sameEmail]).toEqual([['Google', 'Email and password'], 'Same Gmail as 2 other accounts']);
     expect([row('single').signInLabels, row('single').sameEmail]).toEqual([['Google'], undefined]);
     expect([row('older').signInLabels, row('older').sameEmail]).toEqual([[], undefined]);
     // Rows that do not come from the owner's directory never carry identity data.
@@ -161,7 +161,7 @@ describe('People directory helpers (DLV-961)', () => {
   });
 
   it('labels methods once each and words the same-email flag by the address', () => {
-    expect(signInLabels([{ provider: 'cognito', email: 'a@x.test' }, { provider: 'cognito', email: 'b@x.test' }, { provider: 'google' }])).toEqual(['Google', 'Password']);
+    expect(signInLabels([{ provider: 'cognito', email: 'a@x.test' }, { provider: 'cognito', email: 'b@x.test' }, { provider: 'google' }])).toEqual(['Google', 'Email and password']);
     expect(signInLabels(undefined)).toEqual([]);
     expect([sameEmailCount(1), sameEmailCount(0), sameEmailCount(-2), sameEmailCount(2.5), sameEmailCount('3')]).toEqual([1, 0, 0, 0, 0]);
     expect(sameEmailText(1, 'Sam@GoogleMail.com')).toBe('Same Gmail as 1 other account');
@@ -187,5 +187,15 @@ describe('People directory helpers (DLV-961)', () => {
     expect(matchesFilter(row, 'LEARNER05', '')).toBe(true);
     expect(matchesFilter(row, 'complete', '')).toBe(false);
     expect(matchesFilter(row, '', 'Admin')).toBe(false);
+  });
+});
+
+describe('sign-in method labels (DLV-969)', () => {
+  it('names each provider and keeps the order the Domain sends, once each', () => {
+    expect(signInLabels([{ provider: 'cognito' }, { provider: 'google' }])).toEqual(['Google', 'Email and password']);
+    // Only Google and email and password are read today; Apple and GitHub need their provider added to readSignInMethods first.
+    expect(signInLabels([{ provider: 'apple' }, { provider: 'github' }, { provider: 'apple' }])).toEqual([]);
+    expect(signInLabels([{ provider: 'google' }, { provider: 'saml' }])).toEqual(['Google']);
+    expect(signInLabels(undefined)).toEqual([]);
   });
 });

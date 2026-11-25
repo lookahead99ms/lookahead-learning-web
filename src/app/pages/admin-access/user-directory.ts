@@ -84,7 +84,7 @@ export interface DirectoryRow {
   canDisable?: boolean;
   canEnable?: boolean;
   canRemove?: boolean;
-  /** DLV-969, owner's directory only: "Google", "Password". Other operators never get these. */
+  /** DLV-969, owner's directory only: "Google", "Email and password". Other operators never get these. */
   signInLabels?: string[];
   /** DLV-969, owner's directory only: "Same Gmail as 1 other account" when other accounts share the verified email. */
   sameEmail?: string;
@@ -134,9 +134,10 @@ export function personLines(account: { username: string; displayName?: string | 
   return { name, detail: details.join(' · ') || null };
 }
 
-/** Short labels for the owner's rows: "Google", "Password"; one each, Google first. */
+/** Short labels for the owner's rows: "Google", "Email and password"; one each, Google first. */
+const METHOD_LABELS: Record<string, string> = { google: 'Google', cognito: 'Email and password', apple: 'Apple', github: 'GitHub' };
 export function signInLabels(methods: unknown): string[] {
-  return [...new Set(readSignInMethods(methods).map((method) => (method.provider === 'google' ? 'Google' : 'Password')))];
+  return [...new Set(readSignInMethods(methods).map((method) => METHOD_LABELS[method.provider] ?? method.provider))];
 }
 
 /** A whole count above zero, or 0 for anything else the server sent. */
