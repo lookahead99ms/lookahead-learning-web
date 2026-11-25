@@ -457,6 +457,24 @@ button:disabled {
 .courses label:has(input:disabled) {
   color: var(--text-subtle);
 }
+.course-group {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  grid-column: 1 / -1;
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--line);
+}
+.course-group:last-child {
+  border-bottom: 0;
+}
+.course-group .group-toggle {
+  font-weight: 650;
+  color: var(--text-strong);
+}
+.course-group .course-option {
+  padding-left: 24px;
+}
 .save-row {
   display: flex;
   flex-wrap: wrap;
@@ -1493,4 +1511,25 @@ button:disabled {
   .save-actions button {
     width: 100%;
   }
+}
+
+/* DLV-969: the first method shows, the rest open on "+N" (Google, then Email and password, Apple, GitHub as Cognito adds them). */
+.sign-in-labels .more-methods {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+.sign-in-labels .more-methods > summary {
+  cursor: pointer;
+  color: var(--text-strong);
+  font-weight: 600;
+  list-style: none;
+}
+.sign-in-labels .more-methods > summary::-webkit-details-marker {
+  display: none;
+}
+.sign-in-labels .more-methods > summary:focus-visible {
+  outline: 2px solid var(--focus, currentColor);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

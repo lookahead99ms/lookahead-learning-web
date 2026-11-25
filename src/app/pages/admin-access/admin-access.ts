@@ -9,6 +9,7 @@ import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspa
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
 import { TestAccountRow, TestAccounts } from './test-accounts';
+import { SharedReads } from './shared-reads';
 import { PurchaseRequestsPanel, canDecidePurchases } from './purchase-requests-panel';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
@@ -80,6 +81,8 @@ type AdmissionAction = 'disable' | 'delete';
 })
 export class AdminAccessPage implements OnInit {
   private readonly transport = inject(ACCOUNT_FETCH);
+  /** The lists this page and its Test accounts table both read when the page opens: one request each, not three. */
+  private readonly shared = inject(SharedReads);
   private readonly accounts = inject(StudyPlanAccount);
   readonly canManage = computed(() => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true);
   /** The page's own name follows the menu entry: People & Access for the owner, Test Accounts for admins and co-authors (owner, 2026-11-06). */
@@ -599,7 +602,7 @@ export class AdminAccessPage implements OnInit {
     if (!this.canDecide()) return;
     this.purchasesBusy.set(true);
     try {
-      this.purchaseRows.set(await this.request<TestAccountRow[]>('/admin/test-accounts'));
+      this.purchaseRows.set(await this.shared.read('/admin/test-accounts', path => this.request<TestAccountRow[]>(path)));
       this.purchasesError.set('');
     } catch {
       this.purchasesError.set('Purchase requests could not be loaded. Refresh to retry.');
@@ -617,7 +620,7 @@ export class AdminAccessPage implements OnInit {
     const person = row.accountId ? this.people().get(row.accountId) : undefined;
     return person?.email && person.email !== this.nameOf({ accountId: row.accountId, pendingEmail: null }) ? person.email : null;
   }
-  /** "Google", "Password" for a waiting row; empty when the Domain sends none. */
+  /** "Google", "Email and password" for a waiting row; empty when the Domain sends none. */
   methodLabels(row: WaitingRow): string[] { return signInLabels(row.signInMethods); }
   /** "Same Gmail as 1 other account" when other accounts share this row's verified email, else ''. */
   sameEmail(row: WaitingRow): string {
@@ -632,11 +635,11 @@ export class AdminAccessPage implements OnInit {
   async loadNames() {
     const names = new Map<string, string>();
     try {
-      for (const row of await this.request<{ accountId: string; username: string }[]>('/admin/test-accounts')) names.set(row.accountId, row.username);
+      for (const row of await this.shared.read('/admin/test-accounts', path => this.request<{ accountId: string; username: string }[]>(path))) names.set(row.accountId, row.username);
     } catch { /* short IDs */ }
     if (this.accounts.account()?.permissions?.manageAccess) {
       try {
-        const directory = await loadDirectory(path => this.request(path));
+        const directory = await loadDirectory(path => this.shared.read(path, shared => this.request(shared)));
         for (const row of directory) names.set(row.accountId, personLines(row).name);
         this.people.set(new Map(directory.map(row => [row.accountId, row])));
       } catch { /* short IDs */ }
@@ -732,6 +735,35 @@ export class AdminAccessPage implements OnInit {
   }
   setFullCurriculum(value: boolean) {
     if (this.draft) this.draft = { ...this.draft, fullCurriculum: value };
+  }
+  /** The course groups, from the topic ids ("learn:core-java" is in "learn"), Learn, Grow, then Blaze. */
+  readonly topicGroups = computed(() => {
+    const order = ['learn', 'grow', 'blaze'];
+    const rank = (group: string) => (order.includes(group) ? order.indexOf(group) : order.length);
+    const groups = [...new Set(this.topics().map(topic => topic.split(':')[0]))];
+    return groups.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  });
+  groupLabel(group: string): string {
+    return group ? group[0].toUpperCase() + group.slice(1) : group;
+  }
+  groupTopics(group: string): string[] {
+    return this.topics().filter(topic => topic.split(':')[0] === group);
+  }
+  /** 'all' when every course of the group is granted (or the entire curriculum is), 'some' when a few are, else 'none'. */
+  groupState(group: string, row: Pick<Assignment, 'fullCurriculum' | 'topicGrants'>): 'all' | 'some' | 'none' {
+    if (row.fullCurriculum) return 'all';
+    const courses = this.groupTopics(group);
+    const granted = courses.filter(topic => row.topicGrants.includes(topic)).length;
+    if (granted === 0) return 'none';
+    return granted === courses.length ? 'all' : 'some';
+  }
+  /** Ticking a group grants every course in it; unticking removes them. Other groups are left as they are. */
+  toggleGroup(group: string, checked: boolean) {
+    const draft = this.draft;
+    if (!draft) return;
+    const courses = this.groupTopics(group);
+    const kept = draft.topicGrants.filter(topic => !courses.includes(topic));
+    this.draft = { ...draft, topicGrants: checked ? [...kept, ...courses] : kept };
   }
   /** "Admin, Reviewer", or "Learner" for no staff role (DLV-999). */
   roleNames(roles: readonly string[]): string {

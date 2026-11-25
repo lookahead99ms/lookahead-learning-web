@@ -69,6 +69,14 @@ describe('People and access', () => {
     ] });
     page = TestBed.runInInjectionContext(() => new AdminAccessPage());
   });
+  it('sends one test-accounts request and one directory request when the names and the purchase requests load together', async () => {
+    await Promise.all([page.loadNames(), page.loadNames(), page.loadPurchases()]);
+    expect(requests.filter(row => row.path.endsWith('/admin/test-accounts'))).toHaveLength(1);
+    expect(requests.filter(row => row.path.includes('/admin/accounts?'))).toHaveLength(1);
+    // Nothing is kept afterwards: the next load asks the server again.
+    await page.loadNames();
+    expect(requests.filter(row => row.path.endsWith('/admin/test-accounts'))).toHaveLength(2);
+  });
   it('opens a person from a row, lists the change under Review & confirm and saves it through a CSRF-protected write', async () => {
     await page.giveAccessTo(row('existing-id', 'Learner'));
     expect(page.person()).toMatchObject({ accountId: 'existing-id', name: 'Learner', pendingEmail: null });
@@ -1072,13 +1080,13 @@ describe('Review requests', () => {
     const rows = [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLTableRowElement>('#waiting-for-access tbody tr')];
     const email = (row: HTMLElement) => row.querySelector('[data-label="Email"]')!;
     expect(email(rows[0]).firstChild?.textContent).toBe('alex@gmail.com');
-    expect([...email(rows[0]).querySelectorAll('.method-label')].map(label => label.textContent)).toEqual(['Google', 'Password']);
+    expect([...email(rows[0]).querySelectorAll('.method-label')].map(label => label.textContent)).toEqual(['Google', 'Email and password']);
     expect(email(rows[0]).querySelector('.sign-in-labels .visually-hidden')?.textContent).toBe('Sign-in methods: ');
     expect(email(rows[0]).querySelector('.same-email-flag')?.textContent?.trim()).toBe('⚠ Same Gmail as 1 other account');
     // No count and no methods from the Domain: the cell is only the email, as before.
     expect(email(rows[1]).textContent).toBe('No verified email');
     expect(email(rows[1]).querySelector('.sign-in-labels, .same-email-flag')).toBeNull();
-    expect([...email(rows[2]).querySelectorAll('.method-label')].map(label => label.textContent)).toEqual(['Password']);
+    expect([...email(rows[2]).querySelectorAll('.method-label')].map(label => label.textContent)).toEqual(['Email and password']);
     expect(email(rows[2]).querySelector('.same-email-flag')?.textContent?.trim()).toBe('⚠ Same email as 3 other accounts');
     // Malformed counts never raise a flag.
     const page = fixture.componentInstance;
@@ -1507,5 +1515,67 @@ describe('Person panel: Manage DEV admission', () => {
     root.querySelector<HTMLButtonElement>('.save-actions .secondary-action')!.click(); fixture.detectChanges();
     expect(page.person()).toBeNull();
     expect(requests.filter(request => request.path === '/admin/access' && request.body)).toHaveLength(1);
+  });
+});
+
+describe('Course access groups: Learn, Grow, Blaze and Entire curriculum', () => {
+  let page: AdminAccessPage;
+  const topics = ['blaze:design-patterns', 'grow:aws-cloud', 'grow:java', 'learn:core-java', 'learn:docker'];
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner', username: 'owner', displayName: 'Owner', topicGrants: [], permissions: permissions({ manageAccess: true, previewDocuments: true, deliveryRead: true }) }), apiPath: (path: string) => '/bff/api/v1' + path } },
+      { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+    page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    page.topics.set(topics);
+    page.edit({ id: 'g1', accountId: 'a', pendingEmail: null, roles: [], topicGrants: [], fullCurriculum: false, revision: 1 });
+  });
+  it('lists the groups in the order Learn, Grow, Blaze, and only the groups that have courses', () => {
+    expect(page.topicGroups()).toEqual(['learn', 'grow', 'blaze']);
+    page.topics.set(['zeta:x', 'learn:a']);
+    expect(page.topicGroups()).toEqual(['learn', 'zeta']);
+    expect(page.groupLabel('learn')).toBe('Learn');
+    expect(page.groupLabel('')).toBe('');
+  });
+  it('ticking a group grants all of its courses and leaves the other groups alone', () => {
+    page.toggle('topicGrants', 'blaze:design-patterns', true);
+    page.toggleGroup('learn', true);
+    expect(page.draft!.topicGrants.sort()).toEqual(['blaze:design-patterns', 'learn:core-java', 'learn:docker']);
+    page.toggleGroup('learn', false);
+    expect(page.draft!.topicGrants).toEqual(['blaze:design-patterns']);
+  });
+  it('shows a group as all, some or none from its own courses', () => {
+    expect(page.groupState('grow', page.draft!)).toBe('none');
+    page.toggle('topicGrants', 'grow:java', true);
+    expect(page.groupState('grow', page.draft!)).toBe('some');
+    page.toggle('topicGrants', 'grow:aws-cloud', true);
+    expect(page.groupState('grow', page.draft!)).toBe('all');
+    expect(page.groupState('nothing', page.draft!)).toBe('none');
+  });
+  it('Entire curriculum counts as every group ticked, and ticking a group keeps the curriculum choice', () => {
+    page.setFullCurriculum(true);
+    expect(page.groupState('learn', page.draft!)).toBe('all');
+    expect(page.groupState('blaze', page.draft!)).toBe('all');
+    page.toggleGroup('grow', false);
+    expect(page.draft!.fullCurriculum).toBe(true);
+    expect(page.courseText(page.draft!)).toBe('Entire curriculum');
+  });
+  it('shows the groups and courses in the rendered Course access tab, locked under Entire curriculum', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.componentInstance.topics.set(topics);
+    await fixture.componentInstance.giveAccessTo(row('b-id', 'Learner'));
+    fixture.componentInstance.toggle('topicGrants', 'learn:docker', true);
+    fixture.componentInstance.selectPersonTab('courses');
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const groupBoxes = [...el.querySelectorAll<HTMLInputElement>('.course-group .group-toggle input')];
+    expect(groupBoxes.map(box => box.closest('label')!.textContent!.trim())).toEqual(['All Learn', 'All Grow', 'All Blaze']);
+    expect(groupBoxes.map(box => box.checked)).toEqual([false, false, false]);
+    expect(groupBoxes[0].indeterminate).toBe(true);
+    fixture.componentInstance.setFullCurriculum(true);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    expect(groupBoxes.every(box => box.checked && box.disabled)).toBe(true);
+    expect([...el.querySelectorAll<HTMLInputElement>('.course-option input')].every(box => box.checked && box.disabled)).toBe(true);
   });
 });

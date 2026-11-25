@@ -702,3 +702,24 @@ tr.self > * {
     width: 100%;
   }
 }
+
+/* DLV-969: the first method shows, the rest open on "+N" (Google, then Email and password, Apple, GitHub as Cognito adds them). */
+.sign-in-labels .more-methods {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+.sign-in-labels .more-methods > summary {
+  cursor: pointer;
+  color: var(--text-strong);
+  font-weight: 600;
+  list-style: none;
+}
+.sign-in-labels .more-methods > summary::-webkit-details-marker {
+  display: none;
+}
+.sign-in-labels .more-methods > summary:focus-visible {
+  outline: 2px solid var(--focus, currentColor);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

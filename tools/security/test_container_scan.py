@@ -155,7 +155,7 @@ class ContainerGateTests(unittest.TestCase):
 
     def test_runtime_inventory_requires_all_pinned_patched_os_packages(self):
         versions = {'nginx': '1.28.3-r9', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
-                    'zlib': '1.4-r0', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r0', 'libcrypto3': '3.5.9-r0'}
+                    'zlib': '1.4-r0', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r1', 'libcrypto3': '3.5.9-r1'}
         document = {'Results': [{'Class': 'os-pkgs', 'Packages': [
             {'Name': name, 'Version': version} for name, version in versions.items()]}]}
         scan.stage_coverage(document, 'applicationImage')
@@ -292,8 +292,8 @@ class ContainerGateTests(unittest.TestCase):
                 report['Results'][0]['Packages'] = [
                     {'Name': name, 'Version': version} for name, version in {
                         'nginx': '1.28.3-r9', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
-                        'zlib': '1.4-r0', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r0',
-                        'libcrypto3': '3.5.9-r0'}.items()]
+                        'zlib': '1.4-r0', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r1',
+                        'libcrypto3': '3.5.9-r1'}.items()]
                 Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(report))
                 return subprocess.CompletedProcess(command, 0, b'', b'')
             with patch.object(scan.subprocess, 'run', side_effect=run), patch.object(scan, 'export_local_image') as export, patch.object(scan, 'archive_config_id', return_value='sha256:' + 'c' * 64):

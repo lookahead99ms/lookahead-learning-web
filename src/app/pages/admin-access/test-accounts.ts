@@ -11,6 +11,7 @@ import { approvedLine, canResetOf, resetReserved, upgradeLine, upgradeMarkerOf }
 import { PendingPurchase, pendingPurchaseOf } from '../../content/purchase-requests';
 import { canDecidePurchases, viewerRole } from './purchase-requests-panel';
 import { githubDisplay } from '../../core/github-account/github-account';
+import { SharedReads } from './shared-reads';
 import {
   DirectoryAssignment,
   DirectoryAccount,
@@ -80,6 +81,8 @@ const changedFormat = new Intl.DateTimeFormat('en-GB', {
 })
 export class TestAccounts implements OnInit {
   private readonly api = inject(MembershipApi);
+  /** Shared with the page around this table, which reads the same two lists when it opens. */
+  private readonly shared = inject(SharedReads);
   private readonly accounts = inject(StudyPlanAccount);
   private readonly content = inject(ContentService, { optional: true });
   /** Staff assignments the parent page loaded (owner only); empty for other operators. */
@@ -318,7 +321,7 @@ export class TestAccounts implements OnInit {
       // Test accounts and the owner's People directory load independently (DLV-969, 2026-11-03): in DEV test accounts
       // stay switched off until their IAM grant (S28), and that must not hide the directory's names or Disable/Delete.
       try {
-        this.rows.set(await this.api.request<TestAccountRow[]>('/admin/test-accounts'));
+        this.rows.set(await this.shared.read('/admin/test-accounts', path => this.api.request<TestAccountRow[]>(path)));
         if(this.view()==='test' && this.canCreate())this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
       } catch {
         this.rows.set([]);
@@ -327,7 +330,7 @@ export class TestAccounts implements OnInit {
       this.directoryAccounts.set([]);
       if (this.accounts.account()?.permissions?.manageAccess) {
         try {
-          this.directoryAccounts.set(await loadDirectory((path) => this.api.request(path)));
+          this.directoryAccounts.set(await loadDirectory((path) => this.shared.read(path, (shared) => this.api.request(shared))));
         } catch {
           this.notice.set('The full People directory could not be loaded. Only existing assignments and test accounts are shown. Refresh to retry.');
         }
