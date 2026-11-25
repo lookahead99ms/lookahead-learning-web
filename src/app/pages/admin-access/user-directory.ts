@@ -135,7 +135,7 @@ export function personLines(account: { username: string; displayName?: string | 
 }
 
 /** Short labels for the owner's rows: "Google", "Email and password"; one each, Google first. */
-const METHOD_LABELS: Record<string, string> = { google: 'Google', cognito: 'Email and password', apple: 'Apple', github: 'GitHub' };
+const METHOD_LABELS: Record<string, string> = { google: 'Google', cognito: 'Email and password' };
 export function signInLabels(methods: unknown): string[] {
   return [...new Set(readSignInMethods(methods).map((method) => METHOD_LABELS[method.provider] ?? method.provider))];
 }

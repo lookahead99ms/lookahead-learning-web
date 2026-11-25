@@ -9,6 +9,7 @@ import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspa
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
 import { TestAccountRow, TestAccounts } from './test-accounts';
+import { SharedReads } from './shared-reads';
 import { PurchaseRequestsPanel, canDecidePurchases } from './purchase-requests-panel';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
@@ -80,6 +81,8 @@ type AdmissionAction = 'disable' | 'delete';
 })
 export class AdminAccessPage implements OnInit {
   private readonly transport = inject(ACCOUNT_FETCH);
+  /** The lists this page and its Test accounts table both read when the page opens: one request each, not three. */
+  private readonly shared = inject(SharedReads);
   private readonly accounts = inject(StudyPlanAccount);
   readonly canManage = computed(() => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true);
   /** The page's own name follows the menu entry: People & Access for the owner, Test Accounts for admins and co-authors (owner, 2026-11-06). */
@@ -599,7 +602,7 @@ export class AdminAccessPage implements OnInit {
     if (!this.canDecide()) return;
     this.purchasesBusy.set(true);
     try {
-      this.purchaseRows.set(await this.request<TestAccountRow[]>('/admin/test-accounts'));
+      this.purchaseRows.set(await this.shared.read('/admin/test-accounts', path => this.request<TestAccountRow[]>(path)));
       this.purchasesError.set('');
     } catch {
       this.purchasesError.set('Purchase requests could not be loaded. Refresh to retry.');
@@ -632,11 +635,11 @@ export class AdminAccessPage implements OnInit {
   async loadNames() {
     const names = new Map<string, string>();
     try {
-      for (const row of await this.request<{ accountId: string; username: string }[]>('/admin/test-accounts')) names.set(row.accountId, row.username);
+      for (const row of await this.shared.read('/admin/test-accounts', path => this.request<{ accountId: string; username: string }[]>(path))) names.set(row.accountId, row.username);
     } catch { /* short IDs */ }
     if (this.accounts.account()?.permissions?.manageAccess) {
       try {
-        const directory = await loadDirectory(path => this.request(path));
+        const directory = await loadDirectory(path => this.shared.read(path, shared => this.request(shared)));
         for (const row of directory) names.set(row.accountId, personLines(row).name);
         this.people.set(new Map(directory.map(row => [row.accountId, row])));
       } catch { /* short IDs */ }

@@ -193,7 +193,7 @@ describe('People directory helpers (DLV-961)', () => {
 describe('sign-in method labels (DLV-969)', () => {
   it('names each provider and keeps the order the Domain sends, once each', () => {
     expect(signInLabels([{ provider: 'cognito' }, { provider: 'google' }])).toEqual(['Google', 'Email and password']);
-    // Only Google and email and password are read today; Apple and GitHub need their provider added to readSignInMethods first.
+    // Google and email and password are the two sign-in methods; any other provider is left out.
     expect(signInLabels([{ provider: 'apple' }, { provider: 'github' }, { provider: 'apple' }])).toEqual([]);
     expect(signInLabels([{ provider: 'google' }, { provider: 'saml' }])).toEqual(['Google']);
     expect(signInLabels(undefined)).toEqual([]);

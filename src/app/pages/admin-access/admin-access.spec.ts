@@ -69,6 +69,14 @@ describe('People and access', () => {
     ] });
     page = TestBed.runInInjectionContext(() => new AdminAccessPage());
   });
+  it('sends one test-accounts request and one directory request when the names and the purchase requests load together', async () => {
+    await Promise.all([page.loadNames(), page.loadNames(), page.loadPurchases()]);
+    expect(requests.filter(row => row.path.endsWith('/admin/test-accounts'))).toHaveLength(1);
+    expect(requests.filter(row => row.path.includes('/admin/accounts?'))).toHaveLength(1);
+    // Nothing is kept afterwards: the next load asks the server again.
+    await page.loadNames();
+    expect(requests.filter(row => row.path.endsWith('/admin/test-accounts'))).toHaveLength(2);
+  });
   it('opens a person from a row, lists the change under Review & confirm and saves it through a CSRF-protected write', async () => {
     await page.giveAccessTo(row('existing-id', 'Learner'));
     expect(page.person()).toMatchObject({ accountId: 'existing-id', name: 'Learner', pendingEmail: null });
