@@ -309,24 +309,6 @@ footer {
   line-height: 1.4;
   text-transform: uppercase;
 }
-.review-status[data-review-status='reviewed'] {
-  color: var(--success);
-}
-.review-status[data-review-status='needs-review'] {
-  color: var(--warning);
-}
-.review-status[data-review-status='evolving'] {
-  color: var(--accent-link);
-}
-.review-status[data-review-status='planned'] {
-  color: var(--text-subtle);
-}
-.course-card .review-status {
-  font-size: 0.6rem;
-}
-.context-review-status {
-  margin-bottom: 6px;
-}
 .course-card.unavailable {
   background: var(--surface-muted);
   box-shadow: none;

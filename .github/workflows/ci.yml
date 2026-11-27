@@ -63,13 +63,13 @@ jobs:
         run: npm run test:security-gates
 
       - name: Test container scanner failure and inventory gates
-        run: python3 -m unittest discover -s tools/security -p 'test_*.py'
+        run: python3 -m unittest discover -s .github/pipeline/build -p 'test_*.py'
 
       - name: Install the verified container scanner
-        run: python3 tools/security/container_scan.py install
+        run: python3 .github/pipeline/build/container_scan.py install
 
       - name: Scan container configuration and source for secrets
-        run: python3 tools/security/container_scan.py config
+        run: python3 .github/pipeline/build/container_scan.py config
 
       - name: Install the verified secret scanner
         run: npm run security:install-secret-scanner
@@ -93,20 +93,22 @@ jobs:
 
       - name: Install hash-locked release coverage tooling
         run: |
-          python -m pip install --only-binary=:all: --require-hashes -r tools/release/requirements-coverage.txt
+          python -m pip install --only-binary=:all: --require-hashes -r .github/pipeline/shared/requirements-coverage.txt
 
       - name: Verify immutable image binding
         env:
           COVERAGE_FILE: ${{ runner.temp }}/web-release.coverage
         run: |
-          python -m coverage run --source=tools/release -m unittest discover -s tools/release -p 'test_*.py'
+          src=.github/pipeline/shared,.github/pipeline/publish,.github/pipeline/deploy
+          python -m coverage erase
+          for step in shared publish deploy; do python -m coverage run --append --source="$src" -m unittest discover -s ".github/pipeline/$step" -p 'test_*.py' || exit 1; done
           python -m coverage report --include='*/release_version.py,*/pipeline_tag.py,*/image.py,*/registry.py' --fail-under=85
 
       - name: Verify Git release tag before building
         if: inputs.export-image == true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 tools/release/release_version.py check --app web
+        run: python3 .github/pipeline/shared/release_version.py check --app web
 
       - name: Verify web release metadata
         run: node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=scripts/release-metadata.mjs scripts/release-metadata.test.mjs
@@ -179,7 +181,7 @@ jobs:
         run: npm run build:ci
 
       - name: Test the Gateway contract check with synthetic output and the fetched master
-        run: node --test scripts/release/check-gateway-contract.test.mjs
+        run: node --test .github/pipeline/build/check-gateway-contract.test.mjs
 
       - name: Verify the built site serves every Web path the Gateway forwards (fetched master)
         run: npm run test:gateway-contract
@@ -193,14 +195,14 @@ jobs:
           docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
           docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
           npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
-          WEB_TLS_TEST_IMAGE="$(cat /tmp/lookahead-web-image-id)" python3 scripts/container/test_injected_tls.py -v
+          WEB_TLS_TEST_IMAGE="$(cat /tmp/lookahead-web-image-id)" python3 .github/pipeline/build/container/test_injected_tls.py -v
 
       - name: Scan pinned OS bases and exact toolchain, builder and Web images
-        run: python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
+        run: python3 .github/pipeline/build/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
 
       - name: Export the exact scanned release image
         if: inputs.export-image == true
-        run: python3 tools/release/image.py export --image "$(cat /tmp/lookahead-web-image-id)" --directory "$RUNNER_TEMP/release-image"
+        run: python3 .github/pipeline/shared/image.py export --image "$(cat /tmp/lookahead-web-image-id)" --directory "$RUNNER_TEMP/release-image"
 
       - name: Retain immutable image for the same release run
         if: inputs.export-image == true

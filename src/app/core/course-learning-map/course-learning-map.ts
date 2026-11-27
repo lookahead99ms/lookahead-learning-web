@@ -18,7 +18,6 @@ import {
   CourseLearningUnit,
   CourseLearningUnitCard,
   CourseOutline,
-  reviewStatusLabel,
 } from '../../content/content.models';
 import { questionsForModule } from '../../content/question-discovery';
 import {
@@ -99,15 +98,6 @@ interface UnitCardEntry {
         aria-label="Learning map"
       >
         <header class="unit-card-banner">
-          @if (course().reviewStatus; as status) {
-            @if (status !== 'reviewed') {
-              <span
-                class="review-status unit-card-banner-status"
-                [attr.data-review-status]="status"
-                >{{ reviewStatusText(status) }}</span
-              >
-            }
-          }
           <h1 class="unit-card-banner-title">{{ course().title }}</h1>
           <p class="unit-card-banner-intro">{{ ladderIntro() ?? course().description }}</p>
         </header>
@@ -172,13 +162,6 @@ interface UnitCardEntry {
                       <span class="unit-card-meta" [id]="'unit-card-meta-' + entry.key">
                         @for (item of entry.meta; track $index) {
                           <span class="unit-card-meta-item">{{ item }}</span>
-                        }
-                        @if (entry.planned) {
-                          <span
-                            class="review-status unit-card-planned-status"
-                            data-review-status="planned"
-                            >Planned</span
-                          >
                         }
                       </span>
                     }
@@ -314,9 +297,6 @@ interface UnitCardEntry {
         border: 1px solid var(--line);
         border-radius: 18px;
         background: var(--surface);
-      }
-      .unit-card-banner-status {
-        justify-self: start;
       }
       .unit-card-banner-title {
         margin: 0;
@@ -534,15 +514,6 @@ interface UnitCardEntry {
       .unit-card-planned .unit-card-title,
       .unit-card-planned .unit-card-summary {
         color: var(--text-subtle);
-      }
-      .unit-card-planned-status {
-        padding: 2px 9px;
-        border: 1px solid var(--border-strong);
-        border-radius: 999px;
-        color: var(--text-strong);
-        background: var(--surface);
-        font-size: 0.68rem;
-        letter-spacing: 0.06em;
       }
       .unit-card-scene {
         border-bottom: 1px solid var(--line);
@@ -990,9 +961,6 @@ export class CourseLearningMap {
     });
   }
 
-  protected reviewStatusText(status: Parameters<typeof reviewStatusLabel>[0]): string {
-    return reviewStatusLabel(status);
-  }
 
   private cardEntry(
     unit: CourseLearningUnit,

@@ -804,18 +804,6 @@ main.harbor-catalog.content-page {
   padding: 16px 20px 20px;
 }
 
-.harbor-catalog .catalog-card-kicker {
-  margin: auto 0 0;
-  padding-top: 4px;
-  color: var(--accent-strong);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
-
 .harbor-catalog .catalog-course-card {
   --card-title-size: 1.2rem;
 }
@@ -860,10 +848,6 @@ main.harbor-catalog.content-page {
   line-height: 1.4;
 }
 
-.harbor-catalog .catalog-course-card .review-status {
-  font-size: 0.68rem;
-}
-
 /* Planned: a quieter card that is clearly not a link. */
 .harbor-catalog .catalog-course-card.unavailable {
   border-style: dashed;
@@ -874,14 +858,6 @@ main.harbor-catalog.content-page {
 .catalog-course-card.unavailable .catalog-course-scene {
   opacity: 0.6;
   filter: grayscale(0.6);
-}
-
-.catalog-course-card.unavailable .review-status[data-review-status='planned'] {
-  padding: 2px 9px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  color: var(--text-strong);
-  background: var(--surface);
 }
 
 .catalog-course-card.unavailable .catalog-course-title,

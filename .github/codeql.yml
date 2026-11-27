@@ -2,4 +2,5 @@ name: Frontend JavaScript and TypeScript security
 paths:
   - src
   - scripts
+  - .github/pipeline/build
   - vitest.config.ts

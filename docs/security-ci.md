@@ -3,7 +3,7 @@
 The existing `Learning Web CI` workflow keeps its `verify` job and displayed
 check name, **Test and build Angular application**. Security checks, existing
 content-boundary validation, all frontend unit tests and the public demo build
-and protected container smoke/security checks must succeed in that job. `npm run test:coverage` includes every production TypeScript file and a conservative uncovered count for every runtime shell script recursively under `deployment/container`; the combined line floor is 85%, with branch coverage reported separately. No path filters, tolerated failures or privileged
+and protected container smoke/security checks must succeed in that job. `npm run test:coverage` includes every production TypeScript file and a conservative uncovered count for every runtime shell script recursively under `.github/pipeline/build/container`; the combined line floor is 85%, with branch coverage reported separately. No path filters, tolerated failures or privileged
 `pull_request_target` execution are used. A cancelled, failed or unavailable run
 is not evidence of a passing check. Repository branch-protection settings and
 hosted pull-request behavior require separate verification after authorized
@@ -80,9 +80,9 @@ Use Node.js 24, Python 3, Docker, and the exact npm version declared in `package
 
 ```sh
 npm run test:security-gates
-python3 -m unittest discover -s tools/security -p 'test_*.py'
-python3 tools/security/container_scan.py install
-python3 tools/security/container_scan.py config
+python3 -m unittest discover -s .github/pipeline/build -p 'test_*.py'
+python3 .github/pipeline/build/container_scan.py install
+python3 .github/pipeline/build/container_scan.py config
 npm run security:dependencies
 npm run security:install-secret-scanner
 npm run test:secret-scanner
@@ -90,7 +90,7 @@ npm run security:secrets
 # After an actual CodeQL analysis writes javascript.sarif:
 npm run security:sarif -- .codex-scratch/security/codeql
 # After an authorized local build writes its immutable image ID:
-python3 tools/security/container_scan.py images --image "$(cat /tmp/lookahead-web-image-id)"
+python3 .github/pipeline/build/container_scan.py images --image "$(cat /tmp/lookahead-web-image-id)"
 ```
 
 Reports stay in ignored `.codex-scratch/security/`. The dependency receipt records
@@ -119,7 +119,7 @@ Reviewed on 2026-09-19 using publisher release metadata and action entrypoints:
 | setup-node 6.5.0 | `249970729cb0ef3589644e2896645e5dc5ba9c38` |
 | CodeQL Action v4, linked CLI/bundle 2.27.0 | `1c5b675653bb5c22dbe9b12b556ec555138e09fd` |
 | npm | `11.17.0`, matching the existing package-manager declaration |
-| Trivy | `0.74.0`; platform archive SHA-256 in `tools/security/tools.json`, with executable revalidation before each scan |
+| Trivy | `0.74.0`; platform archive SHA-256 in `.github/pipeline/build/tools.json`, with executable revalidation before each scan |
 | Gitleaks | `8.30.1`; platform archive SHA-256 checked by the installer |
 
 This is a version/provenance review, not an independent audit of bundled tool code.

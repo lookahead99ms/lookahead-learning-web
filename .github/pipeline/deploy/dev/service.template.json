@@ -1,0 +1,285 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "DLV-968: the DEV web application, one ECS service with rolling updates, owned by the Web repository: task definition family lookahead-dev-web and ECS service lookahead-dev-web on the existing cluster, network, log group, credentials and IAM roles; nothing else is created.",
+  "Metadata": {
+    "Owner": "lookahead99ms/lookahead-learning-web",
+    "Ticket": "DLV-968",
+    "Resources": [
+      "AWS::ECS::TaskDefinition lookahead-dev-web",
+      "AWS::ECS::Service lookahead-dev-web"
+    ],
+    "Deploy": ".github/pipeline/deploy/deploy.py renders one change set app-<run> against this template; a deploy is an ECS rolling update (surge to two tasks, circuit-breaker rollback); DesiredCount 1 serves, 0 parks the service (user decision V, 2026-11-01)"
+  },
+  "Parameters": {
+    "Cluster": {
+      "Type": "String"
+    },
+    "ApplicationSubnets": {
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ServiceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "ApplicationImage": {
+      "Type": "String",
+      "AllowedPattern": "[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.amazonaws\\.com/[a-z0-9/_-]+@sha256:[a-f0-9]{64}"
+    },
+    "TaskRoleArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_/-]+"
+    },
+    "ExecutionRoleArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_/-]+"
+    },
+    "TlsSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:[a-zA-Z0-9/_+=.@-]+"
+    },
+    "TlsVersion": {
+      "Type": "String",
+      "MinLength": 32,
+      "MaxLength": 64,
+      "AllowedPattern": "[a-zA-Z0-9-]+"
+    },
+    "DiscoveryServiceArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:servicediscovery:[a-z0-9-]+:[0-9]{12}:service/srv-[a-z0-9]+"
+    },
+    "LogGroupName": {
+      "Type": "String"
+    },
+    "RefreshToken": {
+      "Type": "String",
+      "Default": "none",
+      "AllowedPattern": "^[A-Za-z0-9-]{1,64}$",
+      "Description": "Changed only by an APPROVE REFRESH answer in 04 \u00b7 Deploy DEV: a new value registers a new task definition revision with the same image, so ECS restarts the task (Domain re-reads the content release in S3)"
+    },
+    "DesiredCount": {
+      "Type": "Number",
+      "AllowedValues": [
+        0,
+        1
+      ],
+      "Default": 0
+    }
+  },
+  "Resources": {
+    "Task": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Family": "lookahead-dev-web",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "NetworkMode": "awsvpc",
+        "Cpu": "256",
+        "Memory": "512",
+        "RuntimePlatform": {
+          "OperatingSystemFamily": "LINUX",
+          "CpuArchitecture": "X86_64"
+        },
+        "TaskRoleArn": {
+          "Ref": "TaskRoleArn"
+        },
+        "ExecutionRoleArn": {
+          "Ref": "ExecutionRoleArn"
+        },
+        "Volumes": [
+          {
+            "Name": "applicationTmp"
+          },
+          {
+            "Name": "credentials"
+          }
+        ],
+        "ContainerDefinitions": [
+          {
+            "Name": "web",
+            "Image": {
+              "Ref": "ApplicationImage"
+            },
+            "User": "10001:10001",
+            "ReadonlyRootFilesystem": true,
+            "LinuxParameters": {
+              "Capabilities": {
+                "Drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "StopTimeout": 30,
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "LogGroupName"
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                },
+                "awslogs-stream-prefix": "web",
+                "mode": "non-blocking",
+                "max-buffer-size": "4m"
+              }
+            },
+            "Essential": true,
+            "StartTimeout": 120,
+            "PortMappings": [
+              {
+                "ContainerPort": 8443,
+                "Protocol": "tcp"
+              }
+            ],
+            "MountPoints": [
+              {
+                "SourceVolume": "applicationTmp",
+                "ContainerPath": "/tmp",
+                "ReadOnly": false
+              },
+              {
+                "SourceVolume": "credentials",
+                "ContainerPath": "/run/credentials",
+                "ReadOnly": false
+              }
+            ],
+            "Secrets": [
+              {
+                "Name": "LOOKAHEAD_TLS_SCHEMA",
+                "ValueFrom": {
+                  "Fn::Sub": "${TlsSecretArn}:schema::${TlsVersion}"
+                }
+              },
+              {
+                "Name": "LOOKAHEAD_TLS_SERVER_CERTIFICATE",
+                "ValueFrom": {
+                  "Fn::Sub": "${TlsSecretArn}:serverCertificate::${TlsVersion}"
+                }
+              },
+              {
+                "Name": "LOOKAHEAD_TLS_SERVER_KEY",
+                "ValueFrom": {
+                  "Fn::Sub": "${TlsSecretArn}:serverKey::${TlsVersion}"
+                }
+              },
+              {
+                "Name": "LOOKAHEAD_TLS_TRUST",
+                "ValueFrom": {
+                  "Fn::Sub": "${TlsSecretArn}:trust::${TlsVersion}"
+                }
+              }
+            ],
+            "EntryPoint": [
+              "/opt/lookahead/start-tls.sh"
+            ],
+            "Command": [],
+            "Environment": [
+              {
+                "Name": "LOOKAHEAD_DEPLOY_REFRESH",
+                "Value": {
+                  "Ref": "RefreshToken"
+                }
+              },
+              {
+                "Name": "LOOKAHEAD_ENVIRONMENT",
+                "Value": "dev"
+              },
+              {
+                "Name": "LOOKAHEAD_RUNTIME_MODE",
+                "Value": "lower-cost-dev"
+              },
+              {
+                "Name": "LOOKAHEAD_TLS_SERVER_NAME",
+                "Value": "web.lookahead-dev.internal"
+              }
+            ],
+            "HealthCheck": {
+              "Command": [
+                "CMD",
+                "/opt/lookahead/healthcheck.sh"
+              ],
+              "Interval": 15,
+              "Timeout": 5,
+              "Retries": 3,
+              "StartPeriod": 60
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "LookAheadEnvironment",
+            "Value": "dev"
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "Service": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "ServiceName": "lookahead-dev-web",
+        "Cluster": {
+          "Ref": "Cluster"
+        },
+        "TaskDefinition": {
+          "Ref": "Task"
+        },
+        "DesiredCount": {
+          "Ref": "DesiredCount"
+        },
+        "LaunchType": "FARGATE",
+        "PlatformVersion": "1.4.0",
+        "EnableExecuteCommand": false,
+        "DeploymentConfiguration": {
+          "MinimumHealthyPercent": 100,
+          "MaximumPercent": 200,
+          "DeploymentCircuitBreaker": {
+            "Enable": true,
+            "Rollback": true
+          }
+        },
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "ENABLED",
+            "Subnets": {
+              "Ref": "ApplicationSubnets"
+            },
+            "SecurityGroups": [
+              {
+                "Ref": "ServiceSecurityGroup"
+              }
+            ]
+          }
+        },
+        "ServiceRegistries": [
+          {
+            "RegistryArn": {
+              "Ref": "DiscoveryServiceArn"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "LookAheadEnvironment",
+            "Value": "dev"
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    }
+  },
+  "Outputs": {
+    "ServiceArn": {
+      "Value": {
+        "Ref": "Service"
+      }
+    },
+    "TaskDefinitionArn": {
+      "Value": {
+        "Ref": "Task"
+      }
+    }
+  }
+}

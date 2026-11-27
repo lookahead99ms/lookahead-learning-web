@@ -369,7 +369,7 @@ describe('CourseLearningMap', () => {
     expect(metaText(cardFor('empty'))).toEqual([]);
   });
 
-  it('shows planned units as non-link cards with the Planned state', () => {
+  it('shows planned units as non-link cards without a status label', () => {
     fixture.componentRef.setInput('units', [
       {
         id: 'unit',
@@ -391,8 +391,20 @@ describe('CourseLearningMap', () => {
     expect(planned.tagName).toBe('ARTICLE');
     expect(planned.classList).toContain('unit-card-planned');
     expect(planned.querySelector('a')).toBeNull();
-    const status = planned.querySelector('[data-review-status="planned"]');
-    expect(status?.textContent?.trim()).toBe('Planned');
+    expect(planned.querySelector('.review-status, [data-review-status]')).toBeNull();
+    expect(planned.textContent).not.toContain('Planned');
+  });
+
+  it('shows no status label on the banner, whatever the course review status is', () => {
+    for (const reviewStatus of ['needs-review', 'evolving', 'planned', 'reviewed'] as const) {
+      fixture.componentRef.setInput('course', { ...course, reviewStatus });
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+      expect(root.querySelector('.review-status, [data-review-status]')).toBeNull();
+      expect(root.querySelector('.unit-card-banner')?.textContent).not.toMatch(
+        /Review pending|Evolving topic|Planned|Reviewed/,
+      );
+    }
   });
 });
 

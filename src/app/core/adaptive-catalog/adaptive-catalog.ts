@@ -23,7 +23,6 @@ import {
   CatalogOverviewItem,
   ContentPath,
   highlightLearn,
-  reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { AccessLevelsService, freeLessonsLabel } from '../../content/access-levels';
@@ -201,7 +200,6 @@ export class AdaptiveCatalog implements OnInit {
       }))
       .filter((group) => group.courses.length > 0),
   }));
-  protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly pathHasFreeUnits = computed(
     () =>
       this.accessLevels()

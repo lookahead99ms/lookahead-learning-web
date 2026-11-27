@@ -9,7 +9,6 @@ import {
   CourseModule,
   CourseSection,
   ContentItemSummary,
-  reviewStatusLabel,
   navTitle,
 } from '../../content/content.models';
 import { catalogGroupForCourse } from '../../content/catalog-course-groups';
@@ -145,7 +144,6 @@ export class Module implements OnInit {
   protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly recoveryPreview = signal<RecoveryPreview>({});
   protected readonly retryLoad = new Subject<void>();
-  protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly navTitle = navTitle;
   private readonly accessLevels = inject(AccessLevelsService).levels;
   private readonly accounts = inject(StudyPlanAccount);

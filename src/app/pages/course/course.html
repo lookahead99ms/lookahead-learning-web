@@ -31,15 +31,6 @@
         <section class="course-page-intro" [class.course-page-intro-cards]="unitCards">
           <div class="course-intro-summary">
             @if (!unitCards) {
-              @if (currentCourse.reviewStatus; as status) {
-                @if (status !== 'reviewed') {
-                  <span
-                    class="review-status context-review-status"
-                    [attr.data-review-status]="status"
-                    >{{ reviewStatusLabel(status) }}</span
-                  >
-                }
-              }
               <h1 class="reader-question-title">{{ currentCourse.title }}</h1>
               <p
                 class="eyebrow"
@@ -221,13 +212,6 @@
                     [class.empty]="questionsFor(module.id).length === 0"
                     [routerLink]="['/', pathId(), courseId(), 'module', module.id]"
                   >
-                    @if (module.reviewStatus; as status) {
-                      @if (status !== 'reviewed') {
-                        <span class="review-status" [attr.data-review-status]="status">{{
-                          reviewStatusLabel(status)
-                        }}</span>
-                      }
-                    }
                     <h3>{{ module.title }}</h3>
                     <p [innerHTML]="highlightGrow(module.description)"></p>
                   </a>
