@@ -81,13 +81,6 @@
                 </h3>
                 <div class="question-card-meta">
                   <p class="eyebrow">{{ question.difficulty }}</p>
-                  @if (question.reviewStatus; as status) {
-                    @if (status !== 'reviewed') {
-                      <span class="review-status" [attr.data-review-status]="status">{{
-                        reviewStatusLabel(status)
-                      }}</span>
-                    }
-                  }
                 </div>
                 <div class="question-filter-tags" aria-label="Question filters">
                   @for (tag of questionFilterTags(question); track tag) {

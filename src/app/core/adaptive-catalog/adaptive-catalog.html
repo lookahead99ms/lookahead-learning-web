@@ -196,22 +196,9 @@
                         @if (freeLessons) {
                           <p class="catalog-course-free" [id]="freeId">{{ freeLessons }}</p>
                         }
-                        @if (
-                          (item.reviewStatus ?? 'reviewed') !== 'reviewed' ||
-                          (group.featuredCourseId === item.id && group.featuredLabel)
-                        ) {
+                        @if (group.featuredCourseId === item.id && group.featuredLabel) {
                           <p class="catalog-course-badges">
-                            @if (group.featuredCourseId === item.id && group.featuredLabel) {
-                              <span class="catalog-featured-label">{{ group.featuredLabel }}</span>
-                            }
-                            @if ((item.reviewStatus ?? 'reviewed') !== 'reviewed') {
-                              <span
-                                class="review-status"
-                                [attr.data-review-status]="item.reviewStatus ?? 'needs-review'"
-                              >
-                                {{ reviewStatusLabel(item.reviewStatus ?? 'needs-review') }}
-                              </span>
-                            }
+                            <span class="catalog-featured-label">{{ group.featuredLabel }}</span>
                           </p>
                         }
                       </div>
@@ -233,14 +220,6 @@
                         <h3 class="catalog-course-title" [id]="titleId">{{ item.title }}</h3>
                         <p class="catalog-course-description">
                           {{ item.description || 'Content is being prepared for this course.' }}
-                        </p>
-                        <p class="catalog-card-kicker">
-                          <span
-                            class="review-status"
-                            [attr.data-review-status]="item.reviewStatus ?? 'planned'"
-                          >
-                            {{ reviewStatusLabel(item.reviewStatus ?? 'planned') }}
-                          </span>
                         </p>
                       </div>
                     </article>

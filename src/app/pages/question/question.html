@@ -92,13 +92,6 @@
         </aside>
       }
       <section class="reader-question-panel">
-        @if (item.reviewStatus; as status) {
-          @if (status !== 'reviewed') {
-            <span class="review-status" [attr.data-review-status]="status">{{
-              reviewStatusLabel(status)
-            }}</span>
-          }
-        }
         <div class="reader-title-block" [class.has-unit-scene]="!!unitScene()">
         @if (unitScene(); as scene) {
           <app-card-scene

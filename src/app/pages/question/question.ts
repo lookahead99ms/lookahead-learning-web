@@ -37,7 +37,6 @@ import {
   TheoryVisual,
   isFoundationLessonV1,
   isPatternLesson,
-  reviewStatusLabel,
   systemLessonStages,
   lessonPatternDefinition,
   navTitle,
@@ -1561,7 +1560,6 @@ export class Question implements OnInit {
     Record<string, Pick<DsaProblemNavigation, 'previous' | 'next'>>
   >({});
   private readonly catalogPatternByProblemId = signal<Record<string, string>>({});
-  protected readonly reviewStatusLabel = reviewStatusLabel;
 
   /** Index of the walkthrough body paragraph a step table follows; defaults to the last paragraph. */
   protected walkthroughTableAfter(step: QuestionWalkthroughStep): number {

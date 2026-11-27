@@ -239,9 +239,9 @@ and runs its own tests against them. Contracts are public by nature; anything
 that would need to stay private is not a contract but configuration, and it
 belongs to Infra.
 
-`npm run contracts:fetch` (`scripts/release/fetch-contracts.mjs`, Node built-ins
+`npm run contracts:fetch` (`.github/pipeline/build/fetch-contracts.mjs`, Node built-ins
 only) writes `web-content-paths.json` and `domain-api-v1.json` to the git-ignored
-directory `scripts/release/contracts/`. In CI the step "Fetch contracts from
+directory `.github/pipeline/build/contracts/`. In CI the step "Fetch contracts from
 Content" runs before the contract tests with the repository secret
 `CONTENT_READ_TOKEN`, a fine-grained token with Contents: read on the Content
 repository alone; locally the script uses `CONTENT_READ_TOKEN`, then `GH_TOKEN`,
@@ -253,8 +253,8 @@ of this repository.
 
 | Contract (master in Content `contracts/`) | Owner | Read on this repo's PR by | Change order | What a failure means |
 | --- | --- | --- | --- | --- |
-| `domain-api-v1.json` | Gateway (consumer of the Domain API; Content holds the master) | `node --test scripts/release/check-gateway-contract.test.mjs` (the fetched master is well formed and forwards no path the container blocks), then `npm run test:gateway-contract` after the build: every path under `webPaths` must be served by the built site under the container's nginx rules (a file, a route snapshot or the application shell; Gateway-owned prefixes are never served). | The Gateway edits the master in Content first, then its own pull request; Domain and this repository follow with the change that serves the new path. | The Gateway would forward a browser path this site cannot answer: the built site is incomplete, or the master lists a path this repository does not serve yet. |
-| `web-content-paths.json` | Content | `npm run test:content-paths` (`scripts/release/web-content-paths.test.mjs`): every `/content/…` path found in `src/app` must be in the master (`node scripts/release/web-content-paths.mjs --subset`; no option prints the discovered paths). | Add the path to the master in Content and ship the file in a Content release first, then open it here. Removing a path: this repository first, then Content. | This repository would open a content path that no protected release promises; the page would get a 404 in DEV. |
+| `domain-api-v1.json` | Gateway (consumer of the Domain API; Content holds the master) | `node --test .github/pipeline/build/check-gateway-contract.test.mjs` (the fetched master is well formed and forwards no path the container blocks), then `npm run test:gateway-contract` after the build: every path under `webPaths` must be served by the built site under the container's nginx rules (a file, a route snapshot or the application shell; Gateway-owned prefixes are never served). | The Gateway edits the master in Content first, then its own pull request; Domain and this repository follow with the change that serves the new path. | The Gateway would forward a browser path this site cannot answer: the built site is incomplete, or the master lists a path this repository does not serve yet. |
+| `web-content-paths.json` | Content | `npm run test:content-paths` (`.github/pipeline/build/web-content-paths.test.mjs`): every `/content/…` path found in `src/app` must be in the master (`node .github/pipeline/build/web-content-paths.mjs --subset`; no option prints the discovered paths). | Add the path to the master in Content and ship the file in a Content release first, then open it here. Removing a path: this repository first, then Content. | This repository would open a content path that no protected release promises; the page would get a 404 in DEV. |
 
 Discovery of the content paths follows the rule the Content release used while
 it still cloned this repository: every quoted `/content/…` path with a file
@@ -463,8 +463,7 @@ account flow uses the BFF so access tokens stay server-side. Private
 content appears only after an authorized immutable publication has been prepared
 and mounted by the local infrastructure workflow.
 
-See `lookahead-learning-infra/docs/local-accounts.md` and
-`lookahead-learning-infra/docs/oauth-local.md` for service startup and shutdown.
+The infrastructure repository's own documentation covers starting and stopping those services.
 Do not start a second stack for a frontend-only styling change.
 
 ### Custom Study Plan builder
@@ -633,11 +632,12 @@ adds its token-protected local editor route. Targets must be HTTP loopback
 services; the selected file cannot override `/__local` or dynamic proxy routing.
 Omitting the variable preserves the checked-in `proxy.conf.json` defaults.
 
-For the protected working UI on4301 connected to Gateway4350:
+For the protected working UI on4301 connected to Gateway4350 (the base proxy file is the local Gateway proxy
+configuration that the infrastructure repository provides):
 
 ```sh
 LOOKAHEAD_CONTENT_ROOT=/absolute/path/to/private-content/runtime \
-LOOKAHEAD_BASE_PROXY_CONFIG=/absolute/path/to/infra/environments/local/proxy.development.json \
+LOOKAHEAD_BASE_PROXY_CONFIG=/absolute/path/to/proxy.development.json \
 npm run start:private -- --configuration protected --host 127.0.0.1 --port 4301
 ```
 
@@ -1315,23 +1315,19 @@ indicator. Opening another problem conceals its pattern again; reveal changes no
 saved practice progress.
 
 
-## AWS DEV deployment candidate (DLV-810)
+## Service deployment definition
 
-`deployment/service.yaml` is the application-owned service contract for the local AWS candidate. It declares health, capacity, immutable image/release inputs and symbolic approved resource/secret references. Shared DEV/PROD values, IAM, S3, networking, CloudFormation and tooling belong to Infra. YAML uses JSON syntax. Current image/evidence values are unresolved and desired count is zero; this is not an activated cloud profile. Local configuration and authorization are preserved. See the sibling Infra `aws/devprod/README.md` for local planning commands and remaining application/identity/bootstrap gates. No resource creation, upload or GitHub activation has been performed.
+This application deploys itself to DEV. Its deployment definition is
+`.github/pipeline/deploy/dev/service.template.json` (the ECS task definition and service of the stack
+`lookahead-dev-web`) with `.github/pipeline/deploy/dev/deploy-config.json` (cluster, stack, log group, Cloud Map
+service, role and secret-version bindings, observation window), applied by `.github/pipeline/deploy/deploy.py` through
+`04 · Deploy DEV`; `.github/pipeline/shared/README.md` describes the stages. Infra owns the shared AWS resources the
+service runs on (network, cluster, IAM roles, secrets, registry). Since the owner decision of November 27, 2026 no
+tool or workflow here reads a file of the Infra repository and Infra reads no file of this one; the earlier service
+contract file in the root `deployment/` folder (`lookahead-service/v2`, the input of an offline planner Infra used to
+have) was removed that day.
 
 Admin → Operations includes a protected AWS deployment reference maintained in the private Content repository. It covers content startup and RAM caching, resource/YAML ownership, approval-gated commands and recovery. The reader accepts up to 32 named sections, supports bounded document heights up to 60,000 pixels for narrow-screen references and accounts for the actual wrapped header when navigating sections. It provides no AWS execution controls.
-
-Deployment direction: this application owns its service YAML and future thin caller to an immutable-pinned Infra reusable workflow. The v2 manifest separates shared settings from DEV/PROD overrides. Infra owns bootstrap/IAM/security groups/templates/orchestration; see workspace Infra `docs/deployment/README.md`. Build-once digest promotion, required scans and separate DEV/PROD approvals remain gates, not enabled deployment behavior.
-
-## Service deployment configuration
-
-`deployment/service.yaml` uses `lookahead-service/v2`: `shared` owns service port, health, settings and approved resource/secret/Infra output references; `environments.dev` and `.prod` select capacity, image digest, content release and activation evidence. Both candidates retain zero tasks. Shared account/region values and all infrastructure remain Infra-owned. Infra's maintained `aws/devprod/parameter-bindings.yaml` validates every template parameter; `scripts/aws_deployment.py plan --environment dev|prod` generates an offline plan. See Infra `docs/deployment/README.md` for commands and activation gates. No application contract or Local Docker behavior changed; AWS deployment remains blocked.
-
-October8 candidate service configuration adds explicit Fargate runtime/private networking, ingress/target-group references, optional alarm references, and per-environment scaling min/max, CPU targets, cooldowns and alarm thresholds. Desired/min tasks stay0 and scaling/alarms disabled. Fargate uses CPU/memory, not an EC2 instance type. Infra owns conditional scaling/IAM/CloudWatch resources; see Infra docs/deployment/README.md.
-
-Deployment `service.yaml` now declares task startup, health probes, temporary disk, logging/rollout settings and approved environment/Secrets Manager bindings. This Angular service has `jvm: null`; its protected static image uses the launch and health contract described below. Infra shared values and maintained templates remain authoritative; see Infra `docs/deployment/README.md` → JVM and task configuration. Local Docker/runtime behavior is unchanged and AWS activation remains blocked.
-
-AWS candidate `deployment/service.yaml` now references the shared application task role and separate shared Fargate execution role from its owning environment foundation. Active cloud applications reuse this pair; DEV/PROD have separate role resources/scopes. Infra owns policies, trust and validation; service-specific secret mappings and existing authorization are preserved. See Infra `docs/deployment/README.md` → Two shared IAM roles per environment. No cloud activation.
 
 
 ## Server-selected cloud sign-in
@@ -1371,7 +1367,7 @@ fresh image/security checks. The package inventory gate rejects the old revision
 The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
 3.23 base, exact Node24 package `nodejs=24.22.3-r0` and npm11.17.0 CLI source verified
 against its SHA256 archive checksum. The CLI production dependencies are rebuilt
-from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
+from the reviewed `.github/pipeline/build/container/npm-cli-lock.json`, with real maintained
 fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
 This is an application-owned reconstructed npm distribution, rather than the
 unmodified vulnerable bundle in the former Node base. Every installed dependency
@@ -1404,7 +1400,7 @@ npm run test:container-boundary
 docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
 docker build --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
 docker build --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
-python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
+python3 .github/pipeline/build/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
 npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
 ```
 
@@ -1452,7 +1448,7 @@ Infra release gates; this local build does not authorize deployment or upload.
 
 
 `test:coverage` also checks a conservative production-line lower bound including
-all shell probes in `deployment/container/`: every noncomment shell line counts
+all shell probes in `.github/pipeline/build/container/`: every noncomment shell line counts
 as uncovered because it has no V8 instrumentation. This avoids crediting smoke
 execution as numeric coverage and blocks CI even when Angular alone narrowly
 passes85%. Runtime probe behavior is separately checked by the actual image smoke.
@@ -1469,7 +1465,7 @@ OS base, exact toolchain, complete compiler or serving image), aggregate blockin
 reasons. Raw scanner output, arbitrary error text and findings remain in ignored
 scratch reports. High/Critical/Unknown findings, secrets, scanner failures and
 image-binding/coverage gaps continue to block. Run
-`python3 -m unittest discover -s tools/security -p 'test_*.py'` for this tooling.
+`python3 -m unittest discover -s .github/pipeline/build -p 'test_*.py'` for this tooling.
 
 ### Container operational logs
 
@@ -1498,7 +1494,7 @@ archive without rebuilding, validates source/Dockerfile/workflow/archive/config
 digests, and uses a separately reviewed DEV OIDC role. Its only source selector is
 an existing calendar release tag: a `resolve` job resolves the tag to its commit once,
 requires that commit to be on `main`, freezes the record (`release-source` artifact),
-CI builds that commit while the workflow and `tools/release/` run from `main`, the
+CI builds that commit while the workflow and `.github/pipeline/` run from `main`, the
 frozen record is the expected source for the environment check, and the tag is
 re-checked before credentials. Rollback is a new tag at an older `main` commit; the
 scanned and registry receipts record the built commit and the executed workflow commit
@@ -1531,7 +1527,7 @@ This is not a production multiuser Delivery Plan service.
 
 ### Lower-cost DEV serving candidate
 
-`deployment/container/nginx-lower-cost-dev.conf` is an optional configuration for
+`.github/pipeline/build/container/nginx-lower-cost-dev.conf` is an optional configuration for
 Gateway-to-Web mTLS on8443 and loopback-only readiness on8081. It requires the
 Gateway client identity; it does not receive browser OAuth credentials. The
 ordinary container configuration remains separate. The protected frontend can
@@ -1545,7 +1541,7 @@ one-day remaining lifetime, EKU, CA chain and matching PKCS8 key, then writes mo
 0400 files on the dedicated UID-10001-owned `/run/credentials` mount. The root
 filesystem remains read-only; `/tmp` and that mount are explicitly writable.
 Secret variables are removed before NGINX is launched, and errors reveal no values.
-Run `WEB_TLS_TEST_IMAGE=<local-image-id> python3 scripts/container/test_injected_tls.py -v`
+Run `WEB_TLS_TEST_IMAGE=<local-image-id> python3 .github/pipeline/build/container/test_injected_tls.py -v`
 after building the image; CI runs the same synthetic positive/negative checks.
 Infra owns the deployment inputs and start/stop runbook. This configuration is
 locally tested with synthetic credentials, not deployed or verified in AWS.
@@ -1563,8 +1559,8 @@ owns the first-task observation of `10001:10001:700`.
 
 ### DEV activation preparation (DLV-914, October 30, 2026)
 
-The DEV task definition Infra generates for this application (`aws/compute/lower_cost_dev_workloads.py`,
-written to `aws/ingress/templates/dev/web.template.json`) runs the image with `EntryPoint`
+The DEV task definition Infra generated for this application at the time (replaced on November 1, 2026 by this
+repository's own `.github/pipeline/deploy/dev/service.template.json`) runs the image with `EntryPoint`
 `/opt/lookahead/start-tls.sh` and an empty `Command`, `LOOKAHEAD_ENVIRONMENT=dev`,
 `LOOKAHEAD_RUNTIME_MODE=lower-cost-dev` and `LOOKAHEAD_TLS_SERVER_NAME=web-<slot>.lookahead-dev.internal`,
 and injects `LOOKAHEAD_TLS_SCHEMA`, `LOOKAHEAD_TLS_SERVER_CERTIFICATE`, `LOOKAHEAD_TLS_SERVER_KEY` and
@@ -1597,12 +1593,10 @@ account calls use `/bff/api/v1/**` and `/api/v1/**` with the session CSRF token;
 through `/bff/api/v1/plans/**`. Dormant learner-code execution is unchanged: no Run control is shown and
 no execution request is sent.
 
-`deployment/service.yaml` remains the retained `lookahead-service/v2` candidate for Infra's older
-planner (port 8080, plain NGINX entry point); it is not the DEV task contract above and is left
-unchanged for that consumer. The release pipeline's optional `DEV_VERIFY_URL` cannot target this
-application in DEV: the candidate slot is reachable only from the Gateway inside the VPC and every
-public route requires admission, so the variable stays unset and functional proof comes from Infra's
-finite verifier. Exact bindings, findings and remaining gates are recorded in the private Content
+The retained `lookahead-service/v2` service contract for Infra's older planner and the release pipeline's optional
+`DEV_VERIFY_URL` check were removed on November 27, 2026: nothing read either. A deploy is proven by the
+verification and observation of `04 · Deploy DEV` itself (`.github/pipeline/shared/README.md`).
+Exact bindings, findings and remaining gates of this preparation are recorded in the private Content
 handoff `docs/evidence/DLV-914-web-activation-preparation-20261030/`.
 
 ### Landing component styles
@@ -1726,7 +1720,7 @@ only, so CI can check the gates before installing project dependencies.
 
 ### Calendar image releases
 
-DEV image releases use one shared `lookahead-dev-ecr` repository and `web-vyyyy.mm.dd.hh.<00-nn>` tags. The source Git tag omits `web-`. UTC counters start at `00` each hour independently per app. Run `python3 tools/release/release_version.py next --app web` to suggest the next version from remote Git tags; this does not create or reserve a tag. Publish the exact source tag through the user-owned Git cycle, then supply it as `release-version` to the manual release workflow on main. CI verifies the tag/source before building and retains app/version/source/config/archive/manifest provenance. Deployment still selects an immutable digest. Prefixes organize images; IAM upload scope covers the shared repository.
+DEV image releases use one shared `lookahead-dev-ecr` repository and `web-vyyyy.mm.dd.hh.<00-nn>` tags. The source Git tag omits `web-`. UTC counters start at `00` each hour independently per app. Run `python3 .github/pipeline/shared/release_version.py next --app web` to suggest the next version from remote Git tags; this does not create or reserve a tag. Publish the exact source tag through the user-owned Git cycle, then supply it as `release-version` to the manual release workflow on main. CI verifies the tag/source before building and retains app/version/source/config/archive/manifest provenance. Deployment still selects an immutable digest. Prefixes organize images; IAM upload scope covers the shared repository.
 Web builds embed `release.json` from `LOOKAHEAD_RELEASE_VERSION` and `LOOKAHEAD_SOURCE_REVISION`; npm package version remains semantic. Local builds omit release metadata.
 
 

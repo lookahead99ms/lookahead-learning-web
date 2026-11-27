@@ -47,19 +47,6 @@ export function growTagline(text: string | undefined): string {
   return (text ?? '').match(/\bgrow\b[\s\S]*/i)?.[0] ?? '';
 }
 
-export function reviewStatusLabel(status: ContentReviewStatus): string {
-  switch (status) {
-    case 'reviewed':
-      return 'Reviewed';
-    case 'needs-review':
-      return 'Review pending';
-    case 'evolving':
-      return 'Evolving topic';
-    case 'planned':
-      return 'Planned';
-  }
-}
-
 export interface CompatibilityRequirement {
   technology: string;
   version: string;

@@ -7,7 +7,6 @@ import {
   CourseModule,
   CourseOutline,
   CourseSection as ContentSection,
-  reviewStatusLabel,
 } from '../../content/content.models';
 import { catalogGroupForCourse } from '../../content/catalog-course-groups';
 import { ContentService } from '../../content/content.service';
@@ -72,7 +71,6 @@ export class CourseSection implements OnInit {
   protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly recoveryPreview = signal<RecoveryPreview>({});
   protected readonly retryLoad = new Subject<void>();
-  protected readonly reviewStatusLabel = reviewStatusLabel;
 
   ngOnInit(): void {
     merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))

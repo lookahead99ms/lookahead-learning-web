@@ -190,12 +190,13 @@ describe('hidden Blaze courses', () => {
 });
 
 describe('planned Blaze course', () => {
-  it('renders an unavailable course as a Planned card without a link', async () => {
+  it('renders an unavailable course as a card without a link or a status label', async () => {
     const catalog: CatalogOverviewItem[] = [
       {
         id: 'ai-systems-architecture',
         title: 'AI Systems Architecture',
         available: true,
+        reviewStatus: 'needs-review',
         lessonCount: 2,
         questionCount: 5,
         moduleCount: 2,
@@ -207,6 +208,7 @@ describe('planned Blaze course', () => {
         title: 'AI Collaborators',
         description: 'Work with AI teammates.',
         available: false,
+        reviewStatus: 'needs-review',
         lessonCount: 0,
         questionCount: 0,
         moduleCount: 0,
@@ -226,7 +228,10 @@ describe('planned Blaze course', () => {
     expect(card.tagName).toBe('ARTICLE');
     expect(card.classList).toContain('unavailable');
     expect(card.getAttribute('href')).toBeNull();
-    expect(card.querySelector('.review-status')?.textContent?.trim()).toBe('Planned');
+    // No card carries a status label (owner, 2026-11-27): not Review pending, Planned, Evolving topic or Reviewed.
+    const page = harness.routeNativeElement!;
+    expect(page.querySelector('.review-status, [data-review-status], .catalog-card-kicker')).toBeNull();
+    expect(page.textContent).not.toMatch(/Review pending|Planned|Evolving topic|Reviewed/);
     expect(card.querySelector('h3')?.textContent?.trim()).toBe('AI Collaborators');
     expect(card.querySelector('a, [href]')).toBeNull();
     expect(card.textContent).toContain('Work with AI teammates.');

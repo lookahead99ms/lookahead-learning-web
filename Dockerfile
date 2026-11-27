@@ -1,8 +1,8 @@
 # Exact toolchain, compiler and serving images are scanned independently.
 FROM alpine:3.23@sha256:21f3e19bafab57a9ff7aa9dd571dac72f868370472c10f450cc0416cc1aca553 AS toolchain
 RUN apk add --no-cache nodejs=24.22.3-r0
-COPY scripts/container/prepare-npm-cli.mjs /opt/lookahead/prepare-npm-cli.mjs
-COPY deployment/container/npm-cli-lock.json /opt/npm/package-lock.json
+COPY .github/pipeline/build/container/prepare-npm-cli.mjs /opt/lookahead/prepare-npm-cli.mjs
+COPY .github/pipeline/build/container/npm-cli-lock.json /opt/npm/package-lock.json
 # Bootstrap stays inside this RUN; only the genuinely patched locked CLI persists.
 RUN wget -q https://registry.npmjs.org/npm/-/npm-11.17.0.tgz -O /tmp/npm.tgz \
     && echo "b290bbb35b9e72c3ef84edbe041f28c4479c4d9ee79f555817b8caafe7ce4bba  /tmp/npm.tgz" | sha256sum -c - \
@@ -28,10 +28,10 @@ RUN npm ci --include=prod --include=dev --include=optional --include=peer --no-a
 COPY --chown=10001:10001 angular.json tsconfig*.json ./
 COPY --chown=10001:10001 src ./src
 COPY --chown=10001:10001 scripts/build.mjs scripts/release-metadata.mjs scripts/build-code-presentation.mjs scripts/generate-seo-files.mjs scripts/generate-route-snapshots.mjs ./scripts/
-COPY --chown=10001:10001 scripts/container/verify-static.mjs ./scripts/container/
+COPY --chown=10001:10001 .github/pipeline/build/container/verify-static.mjs ./.github/pipeline/build/container/
 COPY --chown=10001:10001 public ./public
 RUN npm run build:protected \
-    && node scripts/container/verify-static.mjs dist/lookahead-learning-web/browser
+    && node .github/pipeline/build/container/verify-static.mjs dist/lookahead-learning-web/browser
 
 FROM alpine:3.23@sha256:21f3e19bafab57a9ff7aa9dd571dac72f868370472c10f450cc0416cc1aca553 AS runtime
 ARG RELEASE_VERSION=dev
@@ -48,10 +48,10 @@ RUN apk add --no-cache nginx=1.28.3-r10 musl=1.2.5-r24 musl-utils=1.2.5-r24 \
     && chmod 0700 /run/credentials \
     && chown 10001:10001 /tmp \
     && chmod 1777 /tmp
-COPY deployment/container/nginx.conf /etc/nginx/nginx.conf
-COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
-COPY --chmod=0555 deployment/container/start-tls.sh /opt/lookahead/start-tls.sh
-COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
+COPY .github/pipeline/build/container/nginx.conf /etc/nginx/nginx.conf
+COPY .github/pipeline/build/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
+COPY --chmod=0555 .github/pipeline/build/container/start-tls.sh /opt/lookahead/start-tls.sh
+COPY --chmod=0555 .github/pipeline/build/container/healthcheck.sh /opt/lookahead/healthcheck.sh
 COPY --from=build /build/dist/lookahead-learning-web/browser /usr/share/nginx/html
 # ECS copies a VOLUME path's ownership into the task's empty bind mount; without it the Fargate
 # mount at /run/credentials is root-owned 0755 and start-tls.sh (UID 10001) cannot publish files,

@@ -18,7 +18,6 @@ import {
   CourseOutline,
   highlightGrow,
   highlightLearn,
-  reviewStatusLabel,
 } from '../../content/content.models';
 import { CatalogCourseGroup, catalogGroupForCourse } from '../../content/catalog-course-groups';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -315,7 +314,6 @@ export class Course implements OnInit {
   protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly recoveryPreview = signal<RecoveryPreview>({});
   protected readonly retryLoad = new Subject<void>();
-  protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly highlightGrow = highlightGrow;
   protected readonly highlightLearn = highlightLearn;
   /** Card courses show their title in the banner at the top of the learning map. */
