@@ -1363,8 +1363,8 @@ not deployed Cognito or RDS connectivity.
 
 ### Protected Web container
 
-The runtime pins `nginx=1.28.3-r9` and `zlib=1.4-r0`; Alpine replaced the earlier `r8`
-nginx and `1.3.2-r1` zlib packages in its 3.23 repository (2026-11-22). A digest-pinned base still reads the live APK repository during
+The runtime pins `nginx=1.28.3-r10`, `zlib=1.4-r0` and OpenSSL `3.5.9-r1`; Alpine replaced the earlier `r8`
+nginx and `1.3.2-r1` zlib packages in its 3.23 repository (2026-11-22), then OpenSSL `3.5.9-r0` and nginx `r9` (2026-11-25). A digest-pinned base still reads the live APK repository during
 installation, so retired package revisions require a reviewed pin update and
 fresh image/security checks. The package inventory gate rejects the old revision.
 
