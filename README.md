@@ -1721,7 +1721,9 @@ verified push range when available; manual/pinned sources are explicitly scoped
 to their exact revision, not claimed as a delta since the previous deployment.
 The central Content/Infra approval flows retain this snapshot with the approval
 receipt and disclose lookup failures or bounded/truncated results. Runtime APIs,
-workflow triggers, AWS grants and existing approval commands are unchanged.
+workflow triggers and AWS grants are unchanged. Approval issue titles and the comment to post are
+readable since DLV-1027 (`DEV: Deploy web v…`, `APPROVE deploy dev web v…`); the table is in
+[readable approvals](.github/pipeline/shared/README.md#readable-approvals-dlv-1027).
 
 ### Angular build-tool security patches
 

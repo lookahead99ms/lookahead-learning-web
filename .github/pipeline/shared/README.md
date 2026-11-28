@@ -80,8 +80,8 @@ and its recheck fails that recheck. The 5-minute duplicate-image wait is fixed; 
    retained as `release-image-<S>` with a `lookahead-scanned-image/v3` receipt that records S and M.
 4. **Approve ECR publish** (`approve`): no credentials, no environment. `owner_release.py gate`
    re-resolves the tag from the frozen record and `owner_release.py approve` opens the owner issue
-   bound to the exact image: `APPROVE IMAGE <version>` (the ECR image tag, for example
-   `web-v2026.10.28.15.01`) within 10 minutes of the issue being created, `REJECT` stops; edited
+   bound to the exact image: `APPROVE publish image dev <app> <version>` (for example
+   `APPROVE publish image dev web v2026.11.27.19.00`; readable approvals below) within 10 minutes of the issue being created, `REJECT` stops; edited
    comments, a moved tag or main, or a changed issue fail closed. Once posted, the approval stays
    valid for 15 minutes from the comment (`approvedAt` in the receipt), so a late answer still leaves
    the publish job its whole recheck window.
@@ -121,14 +121,15 @@ scheduled scale-down from 2026-11-05). `01 · Full` always passes `1`.
    whose image and count already match the stack is recorded as `unchanged` (a duplicate image) and offers
    `refresh` and `verify` instead of `deploy` (`verify` only when the duplicate is a parked service).
 3. **Approve DEV deploy** (`approve-deploy`): no credentials; `deploy.py approve` opens the owner
-   issue bound to that plan: `APPROVE DEPLOY <image tag>` (for example `web-v2026.11.01.14.00`)
+   issue bound to that plan: `APPROVE deploy dev <app> <version>` (for example `APPROVE deploy dev web v2026.11.27.19.00`;
+   `park` instead of `deploy` for `desired_count` 0)
    within 10 minutes of the issue being created, `REJECT` stops; the plan digest is in the issue body and the receipt,
    and the approval stays valid for 15 minutes from the comment (`approvedAt`) for the deploy job's recheck. For a
    **duplicate image** the issue title and first line carry a warning, the window is **5 minutes**, and
-   the answers are `APPROVE REFRESH <image tag>` (restart on the same image: the change set sets the
+   the answers are `APPROVE refresh dev <app> <version>` (restart on the same image: the change set sets the
    template parameter `RefreshToken` to `run-<run id>`, CloudFormation registers a new task definition
    revision and ECS performs the rolling update; the new task re-reads its configuration and, for Domain,
-   the content release in S3), `APPROVE VERIFY <image tag>` (no AWS change, verification only, no
+   the content release in S3), `APPROVE verify dev <app> <version>` (no AWS change, verification only, no
    observation) or `REJECT`; no answer closes the issue with nothing done (user decision 2026-11-02).
    The receipt records the chosen mode and the deploy job executes only that mode.
 4. **Deploy to DEV** (`deploy-dev`, environment `dev`): `deploy.py verify` rechecks the approval (the same
@@ -223,7 +224,7 @@ concurrency group, so it never runs beside a deploy. Use `04 · Deploy DEV` for 
    the target itself). With neither, the plan stops and asks for the input. The fallback tag is frozen the same way;
    then `recover.py plan` writes one `deploy.py` plan per stage (artifact `recover-plan`).
 3. **Approve DEV recovery**: one issue lists every stage, both releases and the park steps; the owner answers
-   `APPROVE RECOVER <app>-<tag>` within 10 minutes of the issue being created (`REJECT` stops the run); the approval
+   `APPROVE recover dev <app> <version>` within 10 minutes of the issue being created (`REJECT` stops the run); the approval
    stays valid for 15 minutes from the comment (`approvedAt`).
 4. **Recover DEV** (environment `dev`): the live approval (same comment, within 15 minutes of it) is rechecked before any
    credentials; then each stage assumes
@@ -246,6 +247,34 @@ Each stage keeps every `deploy.py` check: provenance, owner on `main`, the froze
 plan's digest and template, the change-set preview, and the session identity. Stage change sets are named
 `app-<run>-<stage>`. Prerequisite: the busy-stack park's `ecs:UpdateService` for the `<app>-deploy-*` sessions (above);
 without it a busy stack stops the run at its first stage, and an idle stack recovers without it.
+
+## Readable approvals (DLV-1027)
+
+Owner decision 2026-11-27. Every approval issue's title reads `DEV: <Action> <app> <version or name>`, its first line
+says in one sentence what happens after approval, and the exact comment to post is shown in a copyable block (and again
+under "Approve or reject"). The comment names the change like a branch name, `APPROVE <action> <env> <app> <version or
+name>`: lower-case words, the environment always present (today `dev`; a DEV approval can never satisfy a PROD issue),
+`<app>` the repository name without `lookahead-learning-` (`domain-api`, `web`, `gateway-bff`) and `<version>` the release
+tag. The image in ECR keeps its tag `<image app>-<version>` (for example `domain-v…`).
+
+The run accepts only the exact phrase after trimming surrounding whitespace (case-sensitive, single spaces), posted by the
+owner as a new, unedited comment on the run's own issue after the issue was created and within the wait window; `REJECT`
+stops. The plan or image digest stays in the issue body and the receipt, the body is re-rendered and compared before
+credentials, and the approval stays valid for `APPROVAL_VALID_MINUTES` from the comment. The old forms (`APPROVE IMAGE
+<tag>`, `APPROVE DEPLOY <tag>`, `APPROVE REFRESH <tag>`, `APPROVE VERIFY <tag>`, `APPROVE RECOVER <tag>`, `APPROVE RESTART
+<digest>`) are no longer accepted; an issue opened before the change expires unanswered.
+
+| Workflow | Issue title | Comment to post | First line of the issue |
+| --- | --- | --- | --- |
+| `01 · Full` / `03 · Publish`: Approve ECR publish | `DEV: Publish image web v2026.11.27.19.00` | `APPROVE publish image dev web v2026.11.27.19.00` | Publishes image web v2026.11.27.19.00 to ECR. Nothing is deployed. |
+| `04 · Deploy DEV` | `DEV: Deploy web v2026.11.27.19.00` | `APPROVE deploy dev web v2026.11.27.19.00` | Deploys web v2026.11.27.19.00 to DEV with a rolling update of lookahead-dev-<service>. IAM, network and data do not change. |
+| `04 · Deploy DEV`, `desired_count` 0 | `DEV: Park web v2026.11.27.19.00` | `APPROVE park dev web v2026.11.27.19.00` | Parks lookahead-dev-<service> at zero tasks. Nothing is deleted. |
+| `04 · Deploy DEV`, duplicate image | `DEV: Deploy web v2026.11.27.19.00 · duplicate image` | `APPROVE refresh dev web v2026.11.27.19.00` or `APPROVE verify dev web v2026.11.27.19.00` | Duplicate image: lookahead-dev-<service> already runs web v2026.11.27.19.00. Nothing changes unless you answer refresh or verify within 5 minutes. |
+| `05 · Recover DEV` | `DEV: Recover web v2026.11.27.19.00` | `APPROVE recover dev web v2026.11.27.19.00` | Recovers lookahead-dev-<service>: parks it, serves v2026.11.27.19.00 and falls back to <fallback> if needed. Nothing is deleted. |
+| `06 · Restart DEV` | `DEV: Restart web · revision 3` | `APPROVE restart dev web` | Restarts web on the revision it runs now (revision 3). Nothing else changes. |
+
+When an approval stage fails before it has a receipt, its last step closes the open issue of the run by title text
+(`issue_close.py --match`, repeatable: `04 · Deploy DEV` passes `--match "Deploy" --match "Park"`).
 
 ## Settings the repository needs
 

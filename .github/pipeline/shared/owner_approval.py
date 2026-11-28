@@ -37,6 +37,32 @@ PUBLISHERS = {
 }
 
 
+# DLV-1027 (owner decision 2026-11-27): an approval comment names the change like a
+# branch name, `APPROVE <action> <env> <subject> <version or name>`. The environment is
+# always in it, so a DEV approval can never satisfy a PROD issue.
+ENVIRONMENT = "dev"
+
+
+def approvalName(repository):
+    """The application as approval phrases and titles name it: the repository name
+    without `lookahead-learning-` (`domain-api`, `web`, `gateway-bff`)."""
+    require(repository in PUBLISHERS, "Unknown application repository")
+    return repository.split("/", 1)[1].removeprefix("lookahead-learning-")
+
+
+def phrase(action, subject, *names):
+    """The exact approving comment, for example `APPROVE publish image dev web
+    v2026.11.27.19.00`: matched after trimming surrounding whitespace, case-sensitive,
+    on the run's own issue only. Old forms (`APPROVE IMAGE <tag>`) never match."""
+    return " ".join(("APPROVE", action, ENVIRONMENT, subject) + names)
+
+
+def command(plan):
+    return phrase(
+        "publish image", approvalName(plan["repository"]), plan["releaseVersion"]
+    )
+
+
 def require(value, message):
     if not value:
         raise ValueError(message)
@@ -268,7 +294,7 @@ def headline(plan):
     return {
         "env": "DEV",
         "action": "Publish image",
-        "subject": plan["imageTag"],
+        "subject": approvalName(plan["repository"]) + " " + plan["releaseVersion"],
         "change": newest["title"]
         if newest and newest.get("title")
         else "no merged PR associated with this source",
@@ -415,8 +441,8 @@ def gist(plan, receipt):
 
 
 def body(plan, receipt):
-    # The comment names the version as ECR shows it (user decision 2026-10-28); the
-    # digest binds the plan in the body and receipt.
+    # The comment is the readable phrase `command(plan)` (DLV-1027); the digest binds
+    # the plan in the body and receipt.
     fields = (
         "target",
         "releaseVersion",
@@ -446,6 +472,11 @@ def body(plan, receipt):
     )
     return issueTemplate.render(
         headline=headline(plan),
+        outcome="Publishes image "
+        + approvalName(plan["repository"])
+        + " "
+        + plan["releaseVersion"]
+        + " to ECR. Nothing is deployed.",
         gist=gist(plan, receipt),
         resources=[],
         overview=opened + "**Publish the verified DEV image**\n\nAuthorize one upload"
@@ -486,7 +517,7 @@ def body(plan, receipt):
             "This approval does not extend IAM permissions; the write"
             " session is at most 15 minutes."
         ),
-        command="APPROVE IMAGE " + plan["imageTag"],
+        command=command(plan),
         payload=plan,
     )
 
@@ -557,22 +588,18 @@ def decision(plan, receipt, env, get=api, now=None):
         isinstance(comments, list) and len(comments) < 100,
         "Incomplete approval comment inventory",
     )
-    selected = None
+    selected, expected = None, command(plan)
     for comment in comments:
         if comment.get("user", {}).get("login") != OWNER:
             continue
-        command = comment.get("body", "").strip()
+        answer = comment.get("body", "").strip()
         # Even an edited owner rejection blocks this attempt; approval never overrides
         # REJECT.
-        require(command != "REJECT", "Owner rejected publication")
+        require(answer != "REJECT", "Owner rejected publication")
         if comment.get("created_at") != comment.get("updated_at"):
             continue
         when = timestamp(comment["created_at"])
-        if (
-            created <= when <= now
-            and when < expires
-            and command == "APPROVE IMAGE " + plan["imageTag"]
-        ):
+        if created <= when <= now and when < expires and answer == expected:
             selected = (comment["id"], when)
     return answered(receipt, selected, now, expires, valid)
 
@@ -598,7 +625,7 @@ def approve(
     issue = get(
         plan["repository"],
         "issues",
-        {"title": issueTemplate.title(headline(plan), plan["runId"]), "body": preview},
+        {"title": issueTemplate.title(headline(plan)), "body": preview},
     )
     receipt["issue"] = issue["number"]
     # A nonsecret review URL is useful while the job waits; no approval is posted by
