@@ -80,38 +80,45 @@ describe('Restricted third-sign-in chooser', () => {
     choice.click();
     fixture.detectChanges();
   }
-  it('shows only restricted choices, with no protected navigation, identity, raw IDs or preselection', async () => {
-    await mount();
-    expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
-    expect(fixture.nativeElement.querySelector('app-platform-header')).toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('a')).toHaveLength(0);
-    expect(fixture.nativeElement.textContent).not.toMatch(
-      /opaque-one|opaque-two|Manage account|Study Plan|Search|learner@example/,
-    );
-    expect(fixture.nativeElement.querySelectorAll('input:checked')).toHaveLength(0);
-    expect(button('End selected sign-in and continue').disabled).toBe(true);
-    expect(client.replace).not.toHaveBeenCalled();
-    expect(client.cancelChallenge).not.toHaveBeenCalled();
-  });
-  it('replaces only the explicit selection and continues only after admission acknowledgement', async () => {
-    await mount();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    let admit!: (value: { oauth: boolean }) => void;
-    client.replace.mockReturnValue(
-      new Promise<{ oauth: boolean }>((resolve) => {
-        admit = resolve;
-      }),
-    );
-    choose(1);
-    button('End selected sign-in and continue').click();
-    fixture.detectChanges();
-    expect(client.replace).toHaveBeenCalledExactlyOnceWith('opaque-two');
-    expect(navigate).not.toHaveBeenCalled();
-    expect(button('Cancel sign-in').disabled).toBe(true);
-    admit({ oauth: false });
-    await settle();
-    expect(navigate).toHaveBeenCalledExactlyOnceWith('/study-plan?plan=owned#schedule');
-  });
+  it(
+    'shows only restricted choices, with no protected navigation, identity, raw IDs or ' +
+      'preselection',
+    async () => {
+      await mount();
+      expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
+      expect(fixture.nativeElement.querySelector('app-platform-header')).toBeNull();
+      expect(fixture.nativeElement.querySelectorAll('a')).toHaveLength(0);
+      expect(fixture.nativeElement.textContent).not.toMatch(
+        /opaque-one|opaque-two|Manage account|Study Plan|Search|learner@example/,
+      );
+      expect(fixture.nativeElement.querySelectorAll('input:checked')).toHaveLength(0);
+      expect(button('End selected sign-in and continue').disabled).toBe(true);
+      expect(client.replace).not.toHaveBeenCalled();
+      expect(client.cancelChallenge).not.toHaveBeenCalled();
+    },
+  );
+  it(
+    'replaces only the explicit selection and continues only after admission ' + 'acknowledgement',
+    async () => {
+      await mount();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      let admit!: (value: { oauth: boolean }) => void;
+      client.replace.mockReturnValue(
+        new Promise<{ oauth: boolean }>((resolve) => {
+          admit = resolve;
+        }),
+      );
+      choose(1);
+      button('End selected sign-in and continue').click();
+      fixture.detectChanges();
+      expect(client.replace).toHaveBeenCalledExactlyOnceWith('opaque-two');
+      expect(navigate).not.toHaveBeenCalled();
+      expect(button('Cancel sign-in').disabled).toBe(true);
+      admit({ oauth: false });
+      await settle();
+      expect(navigate).toHaveBeenCalledExactlyOnceWith('/study-plan?plan=owned#schedule');
+    },
+  );
   it('cancels the challenge without selecting or revoking an existing sign-in', async () => {
     await mount();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
@@ -124,7 +131,7 @@ describe('Restricted third-sign-in chooser', () => {
       state: { signInCanceled: true },
     });
   });
-  it('preserves the selection and gives focused safe feedback on a failed replacement', async () => {
+  it('keeps the selection and gives focused safe feedback on a failed replacement', async () => {
     client.replace.mockRejectedValue(new Error('private transport response'));
     await mount();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl');

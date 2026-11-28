@@ -14,7 +14,9 @@ import { TheoryLadderStep } from '../../content/content.models';
       <li class="navigation-card">
         <span class="ladder-rung" aria-hidden="true">{{ index + 1 }}</span>
         <div class="ladder-body">
-          <a data-card-primary [routerLink]="['/', pathId(), courseId(), step.questionId]">{{ step.title }}</a>
+          <a data-card-primary [routerLink]="['/', pathId(), courseId(), step.questionId]">{{
+            step.title
+          }}</a>
           <span class="ladder-level">{{ step.difficulty }}</span>
           <p [innerHTML]="step.newIdea"></p>
         </div>

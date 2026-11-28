@@ -3,22 +3,27 @@ import { TestBed } from '@angular/core/testing';
 import { AuthorWorkspaceNav } from './author-workspace-nav';
 
 describe('AuthorWorkspaceNav', () => {
-  it('renders the title without an eyebrow by default, and an eyebrow only when one is given', () => {
-    const fixture = TestBed.createComponent(AuthorWorkspaceNav);
-    fixture.componentRef.setInput('pageTitle', 'Operations');
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.eyebrow')).toBeNull();
-    fixture.componentRef.setInput('eyebrow', 'Help');
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.eyebrow').textContent).toBe('Help');
-    expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Operations');
-    expect(fixture.nativeElement.querySelector('app-platform-signature')).toBeNull();
-  });
+  it(
+    'renders the title without an eyebrow by default, and an eyebrow only when one is ' + 'given',
+    () => {
+      const fixture = TestBed.createComponent(AuthorWorkspaceNav);
+      fixture.componentRef.setInput('pageTitle', 'Operations');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.eyebrow')).toBeNull();
+      fixture.componentRef.setInput('eyebrow', 'Help');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.eyebrow').textContent).toBe('Help');
+      expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Operations');
+      expect(fixture.nativeElement.querySelector('app-platform-signature')).toBeNull();
+    },
+  );
 
   it('keeps section navigation visible without an On this page disclosure', () => {
     const fixture = TestBed.createComponent(AuthorWorkspaceNav);
     fixture.componentRef.setInput('pageTitle', 'Reviewer guide');
-    fixture.componentRef.setInput('outline', [{ label: 'What to review', href: '#what-to-review' }]);
+    fixture.componentRef.setInput('outline', [
+      { label: 'What to review', href: '#what-to-review' },
+    ]);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('button')).toBeNull();
@@ -290,7 +295,12 @@ describe('Copy on behalf of the embedded document', () => {
     fixture.detectChanges();
     const send = (data: unknown, source: Window | null = frame.contentWindow, origin = 'null') =>
       window.dispatchEvent(new MessageEvent('message', { data, source, origin }));
-    const request = { type: 'lookahead:author-document:copy', version: 1, requestId: 7, text: 'git status' };
+    const request = {
+      type: 'lookahead:author-document:copy',
+      version: 1,
+      requestId: 7,
+      text: 'git status',
+    };
     try {
       send(request, window);
       send(request, frame.contentWindow, location.origin);
@@ -310,7 +320,12 @@ describe('Copy on behalf of the embedded document', () => {
       send({ ...request, requestId: 8 });
       await vi.waitFor(() =>
         expect(reply).toHaveBeenCalledWith(
-          { type: 'lookahead:author-document:copy-result', version: 1, requestId: 8, copied: false },
+          {
+            type: 'lookahead:author-document:copy-result',
+            version: 1,
+            requestId: 8,
+            copied: false,
+          },
           '*',
         ),
       );
@@ -323,78 +338,211 @@ describe('Copy on behalf of the embedded document', () => {
 });
 
 describe('Admin section tab panels', () => {
-  it('switches one panel at a time, preserves drafts and restores deep links without scrolling', () => {
-    history.replaceState(null, '', '/admin/plans#second');
-    @Component({imports:[AuthorWorkspaceNav], template:`<main>
-      <app-author-workspace-nav [tabbed]="true" pageTitle="Guide" [outline]="items" />
-      <section id="first"><h2>First</h2><input value="draft"></section>
-      <section id="second"><h2>Second</h2><button>Second action</button></section>
-    </main>`})
-    class Host { items = [{label:'First',href:'#first'}, {label:'Second',href:'#second'}]; }
-    const fixture = TestBed.createComponent(Host); fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const panel = (id:string) => root.querySelector<HTMLElement>(`#workspace-panel-${id}`)!;
-    const tabs = () => [...root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')];
-    expect(panel('first').hidden).toBe(true); expect(panel('second').hidden).toBe(false);
-    const input = root.querySelector('input')!; input.value='unsaved work';
-    const scroll = vi.fn();
-    root.querySelector<HTMLElement>('#first')!.scrollIntoView = scroll;
-    root.querySelector<HTMLElement>('#second')!.scrollIntoView = scroll;
-    tabs()[0].click(); fixture.detectChanges();
-    expect(panel('first').hidden).toBe(false); expect(panel('second').hasAttribute('inert')).toBe(true);
-    expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
-    expect(tabs()[0].getAttribute('aria-controls')).toBe(panel('first').id);
-    expect(panel('first').getAttribute('aria-labelledby')).toBe(tabs()[0].id);
-    expect(location.hash).toBe('#first'); expect(scroll).not.toHaveBeenCalled();
-    tabs()[0].dispatchEvent(new KeyboardEvent('keydown',{key:'End',bubbles:true})); fixture.detectChanges();
-    expect(panel('second').hidden).toBe(false); expect(document.activeElement).toBe(tabs()[1]);
-    tabs()[1].dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true})); fixture.detectChanges();
-    expect(root.querySelector('input')).toBe(input); expect(input.value).toBe('unsaved work');
-    history.replaceState(null, '', '/admin/plans#second'); window.dispatchEvent(new PopStateEvent('popstate')); fixture.detectChanges();
-    expect(panel('second').hidden).toBe(false);
-    fixture.destroy(); history.replaceState(null,'','/');
-  });
+  it(
+    'switches one panel at a time, preserves drafts and restores deep links without ' + 'scrolling',
+    () => {
+      history.replaceState(null, '', '/admin/plans#second');
+      @Component({
+        imports: [AuthorWorkspaceNav],
+        template: `<main>
+          <app-author-workspace-nav [tabbed]="true" pageTitle="Guide" [outline]="items" />
+          <section id="first"><h2>First</h2><input value="draft" /></section>
+          <section id="second"><h2>Second</h2><button>Second action</button></section>
+        </main>`,
+      })
+      class Host {
+        items = [
+          { label: 'First', href: '#first' },
+          { label: 'Second', href: '#second' },
+        ];
+      }
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const panel = (id: string) => root.querySelector<HTMLElement>(`#workspace-panel-${id}`)!;
+      const tabs = () => [...root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')];
+      expect(panel('first').hidden).toBe(true);
+      expect(panel('second').hidden).toBe(false);
+      const input = root.querySelector('input')!;
+      input.value = 'unsaved work';
+      const scroll = vi.fn();
+      root.querySelector<HTMLElement>('#first')!.scrollIntoView = scroll;
+      root.querySelector<HTMLElement>('#second')!.scrollIntoView = scroll;
+      tabs()[0].click();
+      fixture.detectChanges();
+      expect(panel('first').hidden).toBe(false);
+      expect(panel('second').hasAttribute('inert')).toBe(true);
+      expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
+      expect(tabs()[0].getAttribute('aria-controls')).toBe(panel('first').id);
+      expect(panel('first').getAttribute('aria-labelledby')).toBe(tabs()[0].id);
+      expect(location.hash).toBe('#first');
+      expect(scroll).not.toHaveBeenCalled();
+      tabs()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+      fixture.detectChanges();
+      expect(panel('second').hidden).toBe(false);
+      expect(document.activeElement).toBe(tabs()[1]);
+      tabs()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+      fixture.detectChanges();
+      expect(root.querySelector('input')).toBe(input);
+      expect(input.value).toBe('unsaved work');
+      history.replaceState(null, '', '/admin/plans#second');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      fixture.detectChanges();
+      expect(panel('second').hidden).toBe(false);
+      fixture.destroy();
+      history.replaceState(null, '', '/');
+    },
+  );
 
-  it('sends bounded selection to the opaque document and only accepts its own ready/selection messages', () => {
-    history.replaceState(null,'','/admin/review-guide');
-    @Component({imports:[AuthorWorkspaceNav],template:`<main><app-author-workspace-nav [tabbed]="true" pageTitle="Guide" [outline]="items" [embeddedFrame]="frame" embeddedDocumentId="reviewer-guide"/><section><iframe #frame sandbox="allow-scripts"></iframe></section></main>`})
-    class Host {items=[{label:'First',href:'#first'},{label:'Second',href:'#second'}];}
-    const fixture=TestBed.createComponent(Host); fixture.detectChanges();
-    const root=fixture.nativeElement as HTMLElement, frame=root.querySelector('iframe')!;
-    const send=vi.spyOn(frame.contentWindow!, 'postMessage');
-    const scroll=vi.spyOn(window,'scrollTo').mockImplementation(()=>{});
-    const marker=root.querySelector<HTMLElement>('.tab-position')!;
-    vi.spyOn(marker,'getBoundingClientRect').mockReturnValue({top:-20} as DOMRect);
-    const raf=vi.spyOn(window,'requestAnimationFrame').mockImplementation(callback=>{callback(0);return 1;});
+  it(
+    'sends bounded selection to the opaque document and only accepts its own ' +
+      'ready/selection messages',
+    () => {
+      history.replaceState(null, '', '/admin/review-guide');
+      @Component({
+        imports: [AuthorWorkspaceNav],
+        template: `<main
+          ><app-author-workspace-nav
+            [tabbed]="true"
+            pageTitle="Guide"
+            [outline]="items"
+            [embeddedFrame]="frame"
+            embeddedDocumentId="reviewer-guide" /><section
+            ><iframe #frame sandbox="allow-scripts"></iframe></section
+        ></main>`,
+      })
+      class Host {
+        items = [
+          { label: 'First', href: '#first' },
+          { label: 'Second', href: '#second' },
+        ];
+      }
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement,
+        frame = root.querySelector('iframe')!;
+      const send = vi.spyOn(frame.contentWindow!, 'postMessage');
+      const scroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+      const marker = root.querySelector<HTMLElement>('.tab-position')!;
+      vi.spyOn(marker, 'getBoundingClientRect').mockReturnValue({ top: -20 } as DOMRect);
+      const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+        callback(0);
+        return 1;
+      });
 
-    root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')[1].click();fixture.detectChanges();
-    expect(send).toHaveBeenCalledWith({type:'lookahead:author-document:tab-request',version:1,documentId:'reviewer-guide',anchor:'second'},'*');
-    scroll.mockClear();
-    const height=()=>window.dispatchEvent(new MessageEvent('message',{source:frame.contentWindow,origin:'null',data:{type:'lookahead:author-document:height',version:1,documentId:'reviewer-guide',height:500}}));
-    height(); height(); expect(scroll).toHaveBeenCalledTimes(2);
-    window.dispatchEvent(new WheelEvent('wheel')); height(); expect(scroll).toHaveBeenCalledTimes(2);
-    raf.mockRestore(); scroll.mockRestore();
+      root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')[1].click();
+      fixture.detectChanges();
+      expect(send).toHaveBeenCalledWith(
+        {
+          type: 'lookahead:author-document:tab-request',
+          version: 1,
+          documentId: 'reviewer-guide',
+          anchor: 'second',
+        },
+        '*',
+      );
+      scroll.mockClear();
+      const height = () =>
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source: frame.contentWindow,
+            origin: 'null',
+            data: {
+              type: 'lookahead:author-document:height',
+              version: 1,
+              documentId: 'reviewer-guide',
+              height: 500,
+            },
+          }),
+        );
+      height();
+      height();
+      expect(scroll).toHaveBeenCalledTimes(2);
+      window.dispatchEvent(new WheelEvent('wheel'));
+      height();
+      expect(scroll).toHaveBeenCalledTimes(2);
+      raf.mockRestore();
+      scroll.mockRestore();
 
-    const message=(source:Window|null,origin:string,anchor:string)=>window.dispatchEvent(new MessageEvent('message',{source,origin,data:{type:'lookahead:author-document:tab-selected',version:1,documentId:'reviewer-guide',anchor}}));
-    message(window,'null','first');message(frame.contentWindow,'https://wrong.test','first');message(frame.contentWindow,'null','unknown');
-    expect(location.hash).toBe('#second');
-    message(frame.contentWindow,'null','first');fixture.detectChanges();
-    expect(location.hash).toBe('#first');
-    history.replaceState(null,'','/admin/review-guide#nested');
-    window.dispatchEvent(new MessageEvent('message',{source:frame.contentWindow,origin:'null',data:{type:'lookahead:author-document:tab-selected',version:1,documentId:'reviewer-guide',anchor:'first',fragment:'nested'}}));
-    fixture.detectChanges();
-    expect(location.hash).toBe('#nested');
-    expect(root.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()).toBe('First');
-    const introMessage = (text: string, source: Window | null = frame.contentWindow) => window.dispatchEvent(new MessageEvent('message', {source, origin: 'null', data:{type:'lookahead:author-document:introduction', version:1, documentId:'reviewer-guide', text}}));
-    introMessage('Wrong frame', window); introMessage('x'.repeat(5001)); fixture.detectChanges();
-    expect(root.querySelector('.embedded-introduction')).toBeNull();
-    introMessage('<b>Shared introduction</b>'); fixture.detectChanges();
-    const intro = root.querySelector('.embedded-introduction')!;
-    expect(intro.textContent).toBe('<b>Shared introduction</b>'); expect(intro.querySelector('b')).toBeNull();
-    expect(intro.compareDocumentPosition(root.querySelector('[role="tablist"]')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(send).toHaveBeenCalledWith({type:'lookahead:author-document:introduction-accepted',version:1,documentId:'reviewer-guide'},'*');
-    expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
-    expect(root.querySelector('[role="tabpanel"]')?.getAttribute('aria-labelledby')).toBe('workspace-tab-first');
-    fixture.destroy();history.replaceState(null,'','/');
-  });
+      const message = (source: Window | null, origin: string, anchor: string) =>
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source,
+            origin,
+            data: {
+              type: 'lookahead:author-document:tab-selected',
+              version: 1,
+              documentId: 'reviewer-guide',
+              anchor,
+            },
+          }),
+        );
+      message(window, 'null', 'first');
+      message(frame.contentWindow, 'https://wrong.test', 'first');
+      message(frame.contentWindow, 'null', 'unknown');
+      expect(location.hash).toBe('#second');
+      message(frame.contentWindow, 'null', 'first');
+      fixture.detectChanges();
+      expect(location.hash).toBe('#first');
+      history.replaceState(null, '', '/admin/review-guide#nested');
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: frame.contentWindow,
+          origin: 'null',
+          data: {
+            type: 'lookahead:author-document:tab-selected',
+            version: 1,
+            documentId: 'reviewer-guide',
+            anchor: 'first',
+            fragment: 'nested',
+          },
+        }),
+      );
+      fixture.detectChanges();
+      expect(location.hash).toBe('#nested');
+      expect(root.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()).toBe(
+        'First',
+      );
+      const introMessage = (text: string, source: Window | null = frame.contentWindow) =>
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source,
+            origin: 'null',
+            data: {
+              type: 'lookahead:author-document:introduction',
+              version: 1,
+              documentId: 'reviewer-guide',
+              text,
+            },
+          }),
+        );
+      introMessage('Wrong frame', window);
+      introMessage('x'.repeat(5001));
+      fixture.detectChanges();
+      expect(root.querySelector('.embedded-introduction')).toBeNull();
+      introMessage('<b>Shared introduction</b>');
+      fixture.detectChanges();
+      const intro = root.querySelector('.embedded-introduction')!;
+      expect(intro.textContent).toBe('<b>Shared introduction</b>');
+      expect(intro.querySelector('b')).toBeNull();
+      expect(
+        intro.compareDocumentPosition(root.querySelector('[role="tablist"]')!) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(send).toHaveBeenCalledWith(
+        {
+          type: 'lookahead:author-document:introduction-accepted',
+          version: 1,
+          documentId: 'reviewer-guide',
+        },
+        '*',
+      );
+      expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
+      expect(root.querySelector('[role="tabpanel"]')?.getAttribute('aria-labelledby')).toBe(
+        'workspace-tab-first',
+      );
+      fixture.destroy();
+      history.replaceState(null, '', '/');
+    },
+  );
 });

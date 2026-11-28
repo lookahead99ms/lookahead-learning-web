@@ -200,7 +200,8 @@ export class AuthorDocumentsApi implements AuthorDocumentsClient {
       throw new AuthorDocumentError('unpublished');
     const account = this.accounts.account();
     if (!account || this.accounts.sessionExpired()) throw new AuthorDocumentError('unauthorized');
-    if (!(account.permissions?.previewDocuments ?? account.authorPreview === true)) throw new AuthorDocumentError('forbidden');
+    if (!(account.permissions?.previewDocuments ?? account.authorPreview === true))
+      throw new AuthorDocumentError('forbidden');
     if (!documentIds.has(id)) throw new AuthorDocumentError('invalid');
     try {
       const value = await firstValueFrom(
@@ -211,7 +212,10 @@ export class AuthorDocumentsApi implements AuthorDocumentsClient {
         this.accounts.account()?.accountId !== account.accountId
       )
         throw new AuthorDocumentError('unauthorized');
-      if (!(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true))
+      if (!(
+        this.accounts.account()?.permissions?.previewDocuments ??
+        this.accounts.account()?.authorPreview === true
+      ))
         throw new AuthorDocumentError('forbidden');
       return parseAuthorDocument(value, id, this.root);
     } catch (error) {

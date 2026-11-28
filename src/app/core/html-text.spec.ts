@@ -3,7 +3,9 @@ import { htmlText } from './html-text';
 
 describe('htmlText', () => {
   it('reads nested markup and decodes named and numeric entities once', () => {
-    expect(htmlText('<strong>A &amp; B</strong> &lt; C &#39;x&#39; &#x2192;')).toBe("A & B < C 'x' →");
+    expect(htmlText('<strong>A &amp; B</strong> &lt; C &#39;x&#39; &#x2192;')).toBe(
+      "A & B < C 'x' →",
+    );
     expect(htmlText('&amp;lt;img&amp;gt;')).toBe('&lt;img&gt;');
   });
 
@@ -13,7 +15,14 @@ describe('htmlText', () => {
 
   it('excludes executable and non-rendered content and never attaches parsed nodes', () => {
     const before = document.body.innerHTML;
-    expect(htmlText('<script>throw new Error("executed")</script><style>body{display:none}</style><template>hidden</template><img src="x" onerror="alert(1)">Visible')).toBe('Visible');
+    expect(
+      htmlText(
+        '<script>throw new ' +
+          'Error("executed")</script><style>body{display:none}</style><template>hidden</' +
+          'template><img ' +
+          'src="x" onerror="alert(1)">Visible',
+      ),
+    ).toBe('Visible');
     expect(document.body.innerHTML).toBe(before);
   });
 

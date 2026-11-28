@@ -507,67 +507,74 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     );
   });
 
-  it('keeps the editor and complete debugger state side by side without a permanent explanation panel', () => {
-    const workspace = fixture.nativeElement.querySelector('.ide-workspace') as HTMLElement;
-    const sourcePanel = workspace.querySelector('.source-panel') as HTMLElement;
-    expect(sourcePanel).not.toBeNull();
-    expect(workspace.querySelector('.debugger-panel')).not.toBeNull();
-    expect(workspace.querySelector('.explanation-panel')).toBeNull();
-    expect(sourcePanel.querySelector('.pane-heading')).toBeNull();
-    expect(sourcePanel.querySelector('.editor-file')?.textContent).toContain('.java');
-    expect(sourcePanel.querySelector('pre app-code-copy-button')).toBeNull();
-    expect(sourcePanel.querySelector('.editor-copy')).not.toBeNull();
-    expect(normalizedText(sourcePanel)).not.toContain('Current instruction is line');
-    expect(getComputedStyle(workspace).gridTemplateColumns).toBe(
-      'minmax(0, 7fr) minmax(300px, 3fr)',
-    );
+  it(
+    'keeps the editor and complete debugger state side by side without a permanent ' +
+      'explanation panel',
+    () => {
+      const workspace = fixture.nativeElement.querySelector('.ide-workspace') as HTMLElement;
+      const sourcePanel = workspace.querySelector('.source-panel') as HTMLElement;
+      expect(sourcePanel).not.toBeNull();
+      expect(workspace.querySelector('.debugger-panel')).not.toBeNull();
+      expect(workspace.querySelector('.explanation-panel')).toBeNull();
+      expect(sourcePanel.querySelector('.pane-heading')).toBeNull();
+      expect(sourcePanel.querySelector('.editor-file')?.textContent).toContain('.java');
+      expect(sourcePanel.querySelector('pre app-code-copy-button')).toBeNull();
+      expect(sourcePanel.querySelector('.editor-copy')).not.toBeNull();
+      expect(normalizedText(sourcePanel)).not.toContain('Current instruction is line');
+      expect(getComputedStyle(workspace).gridTemplateColumns).toBe(
+        'minmax(0, 7fr) minmax(300px, 3fr)',
+      );
 
-    const variables = [...workspace.querySelectorAll('.variables > div')].map(normalizedText);
-    expect(variables).toEqual([
-      expect.stringContaining('index intchanged0'),
-      expect.stringContaining('answer int—'),
-    ]);
-    expect(workspace.querySelector('.debugger-output')?.textContent).toContain('Pending');
-  });
+      const variables = [...workspace.querySelectorAll('.variables > div')].map(normalizedText);
+      expect(variables).toEqual([
+        expect.stringContaining('index intchanged0'),
+        expect.stringContaining('answer int—'),
+      ]);
+      expect(workspace.querySelector('.debugger-output')?.textContent).toContain('Pending');
+    },
+  );
 
-  it('uses a stable one-screen Focus layout with explanation, state dock, terminal, and Escape', () => {
-    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
-    const source = fixture.nativeElement.querySelector('.source-panel') as HTMLElement;
-    fixture.componentInstance.focusMode.set(true);
-    fixture.detectChanges();
+  it(
+    'uses a stable one-screen Focus layout with explanation, state dock, terminal, and ' + 'Escape',
+    () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+      const source = fixture.nativeElement.querySelector('.source-panel') as HTMLElement;
+      fixture.componentInstance.focusMode.set(true);
+      fixture.detectChanges();
 
-    const root = fixture.nativeElement.querySelector('.guided-trace') as HTMLElement;
-    const workspace = root.querySelector('.ide-workspace') as HTMLElement;
-    const dock = root.querySelector('.focus-state-dock') as HTMLElement;
-    expect(root.classList.contains('focus-mode')).toBe(true);
-    expect(workspace.querySelector('.source-panel')).toBe(source);
-    expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('What happened');
-    expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('Why');
-    expect(workspace.querySelector('.debugger-shell')).toBeNull();
-    expect([...dock.querySelectorAll('h3')].map(normalizedText)).toEqual([
-      'State structure',
-      'Array',
-      'Observation',
-      'Variables',
-      'Output',
-    ]);
-    expect(dock.querySelector('.focus-terminal')?.textContent).toContain('Terminal');
-    expect(getComputedStyle(workspace).gridTemplateRows).toBe('minmax(0, 1fr) 144px');
+      const root = fixture.nativeElement.querySelector('.guided-trace') as HTMLElement;
+      const workspace = root.querySelector('.ide-workspace') as HTMLElement;
+      const dock = root.querySelector('.focus-state-dock') as HTMLElement;
+      expect(root.classList.contains('focus-mode')).toBe(true);
+      expect(workspace.querySelector('.source-panel')).toBe(source);
+      expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('What happened');
+      expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('Why');
+      expect(workspace.querySelector('.debugger-shell')).toBeNull();
+      expect([...dock.querySelectorAll('h3')].map(normalizedText)).toEqual([
+        'State structure',
+        'Array',
+        'Observation',
+        'Variables',
+        'Output',
+      ]);
+      expect(dock.querySelector('.focus-terminal')?.textContent).toContain('Terminal');
+      expect(getComputedStyle(workspace).gridTemplateRows).toBe('minmax(0, 1fr) 144px');
 
-    const next = root.querySelector<HTMLButtonElement>('.trace-controls .primary')!;
-    next.click();
-    fixture.detectChanges();
-    expect(root.querySelector('.source-panel')).toBe(source);
-    expect(root.querySelector('.ide-workspace')).toBe(workspace);
-    expect(root.querySelector('.focus-state-dock')).toBe(dock);
-    expect(root.querySelector('.step-status')?.textContent).toContain('2 of 3');
-    expect(normalizedText(root.querySelector('.focus-variables')!)).toContain('index changed1');
-    expect(scrollTo).not.toHaveBeenCalled();
+      const next = root.querySelector<HTMLButtonElement>('.trace-controls .primary')!;
+      next.click();
+      fixture.detectChanges();
+      expect(root.querySelector('.source-panel')).toBe(source);
+      expect(root.querySelector('.ide-workspace')).toBe(workspace);
+      expect(root.querySelector('.focus-state-dock')).toBe(dock);
+      expect(root.querySelector('.step-status')?.textContent).toContain('2 of 3');
+      expect(normalizedText(root.querySelector('.focus-variables')!)).toContain('index changed1');
+      expect(scrollTo).not.toHaveBeenCalled();
 
-    root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    expect(fixture.componentInstance.focusExitCount()).toBe(1);
-    scrollTo.mockRestore();
-  });
+      root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(fixture.componentInstance.focusExitCount()).toBe(1);
+      scrollTo.mockRestore();
+    },
+  );
 
   it.each([
     ['two-sum', 'seen · map', 'lookup · optional index', 'seen', 'map', 'lookup', 'optional index'],
@@ -690,59 +697,63 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     );
   });
 
-  it('checks both complexity bounds before revealing algorithm-specific reasoning and resets it', () => {
-    const activeProblem = problem('complexity', 'Complexity Exercise', 'values');
-    activeProblem.complexity.caveat =
-      'A fixed alphabet can bound the number of retained keys independently of input length.';
-    fixture.componentInstance.activeProblem.set(activeProblem);
-    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
-    fixture.detectChanges();
-
-    const complexity = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
-      '.debugger-view-tabs button',
-    )[3];
-    complexity.click();
-    fixture.detectChanges();
-
-    const panel = fixture.nativeElement.querySelector('#debugger-view-panel') as HTMLElement;
-    expect(panel.querySelectorAll('fieldset')).toHaveLength(2);
-    expect(panel.querySelector('.complexity-feedback')).toBeNull();
-    const actions = panel.querySelectorAll<HTMLButtonElement>('.complexity-actions button');
-    expect(actions[0].disabled).toBe(true);
-
-    const select = (name: string, value: string) => {
-      const option = panel.querySelector<HTMLInputElement>(
-        `input[name="${name}"][value="${value}"]`,
-      )!;
-      option.click();
+  it(
+    'checks both complexity bounds before revealing algorithm-specific reasoning and ' +
+      'resets it',
+    () => {
+      const activeProblem = problem('complexity', 'Complexity Exercise', 'values');
+      activeProblem.complexity.caveat =
+        'A fixed alphabet can bound the number of retained keys independently of input length.';
+      fixture.componentInstance.activeProblem.set(activeProblem);
+      fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
       fixture.detectChanges();
-    };
-    select('guided-complexity-time', 'O(n)');
-    select('guided-complexity-space', 'O(1)');
-    expect(actions[0].disabled).toBe(false);
-    actions[0].click();
-    fixture.detectChanges();
 
-    const feedback = normalizedText(panel.querySelector('.complexity-feedback')!);
-    expect(feedback).toContain('Correct: both bounds match');
-    expect(feedback).toContain('Time: O(n) · Space: O(1)');
-    expect(feedback).toContain('Each position is visited once.');
-    expect(feedback).toContain('A fixed alphabet can bound');
+      const complexity = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+        '.debugger-view-tabs button',
+      )[3];
+      complexity.click();
+      fixture.detectChanges();
 
-    const reset = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
-      '.trace-controls button',
-    )[1];
-    reset.click();
-    fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelector('.debugger-view-tabs button[aria-selected="true"]')
-        .textContent,
-    ).toContain('Debugger');
-    complexity.click();
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.complexity-feedback')).toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('input:checked')).toHaveLength(0);
-  });
+      const panel = fixture.nativeElement.querySelector('#debugger-view-panel') as HTMLElement;
+      expect(panel.querySelectorAll('fieldset')).toHaveLength(2);
+      expect(panel.querySelector('.complexity-feedback')).toBeNull();
+      const actions = panel.querySelectorAll<HTMLButtonElement>('.complexity-actions button');
+      expect(actions[0].disabled).toBe(true);
+
+      const select = (name: string, value: string) => {
+        const option = panel.querySelector<HTMLInputElement>(
+          `input[name="${name}"][value="${value}"]`,
+        )!;
+        option.click();
+        fixture.detectChanges();
+      };
+      select('guided-complexity-time', 'O(n)');
+      select('guided-complexity-space', 'O(1)');
+      expect(actions[0].disabled).toBe(false);
+      actions[0].click();
+      fixture.detectChanges();
+
+      const feedback = normalizedText(panel.querySelector('.complexity-feedback')!);
+      expect(feedback).toContain('Correct: both bounds match');
+      expect(feedback).toContain('Time: O(n) · Space: O(1)');
+      expect(feedback).toContain('Each position is visited once.');
+      expect(feedback).toContain('A fixed alphabet can bound');
+
+      const reset = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+        '.trace-controls button',
+      )[1];
+      reset.click();
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('.debugger-view-tabs button[aria-selected="true"]')
+          .textContent,
+      ).toContain('Debugger');
+      complexity.click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.complexity-feedback')).toBeNull();
+      expect(fixture.nativeElement.querySelectorAll('input:checked')).toHaveLength(0);
+    },
+  );
 
   it('reveals complexity without requiring a guess and resets the check on language change', () => {
     const complexity = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
@@ -771,39 +782,44 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(fixture.nativeElement.querySelector('.complexity-feedback')).toBeNull();
   });
 
-  it('offers in-pane continuation only while debugger state overflows and is not at the bottom', () => {
-    const panel = fixture.nativeElement.querySelector('.debugger-panel') as HTMLElement;
-    Object.defineProperty(panel, 'clientHeight', { configurable: true, value: 200 });
-    Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 500 });
-    Object.defineProperty(panel, 'scrollTop', { configurable: true, value: 0, writable: true });
-    let requestedTop = 0;
-    panel.scrollBy = (options?: ScrollToOptions | number, y?: number) => {
-      requestedTop = typeof options === 'number' ? (y ?? 0) : (options?.top ?? 0);
-    };
+  it(
+    'offers in-pane continuation only while debugger state overflows and is not at the ' + 'bottom',
+    () => {
+      const panel = fixture.nativeElement.querySelector('.debugger-panel') as HTMLElement;
+      Object.defineProperty(panel, 'clientHeight', { configurable: true, value: 200 });
+      Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 500 });
+      Object.defineProperty(panel, 'scrollTop', { configurable: true, value: 0, writable: true });
+      let requestedTop = 0;
+      panel.scrollBy = (options?: ScrollToOptions | number, y?: number) => {
+        requestedTop = typeof options === 'number' ? (y ?? 0) : (options?.top ?? 0);
+      };
 
-    window.dispatchEvent(new Event('resize'));
-    fixture.detectChanges();
-    const more = fixture.nativeElement.querySelector('.debugger-more button') as HTMLButtonElement;
-    expect(more).not.toBeNull();
-    more.click();
-    expect(requestedTop).toBeGreaterThanOrEqual(180);
+      window.dispatchEvent(new Event('resize'));
+      fixture.detectChanges();
+      const more = fixture.nativeElement.querySelector(
+        '.debugger-more button',
+      ) as HTMLButtonElement;
+      expect(more).not.toBeNull();
+      more.click();
+      expect(requestedTop).toBeGreaterThanOrEqual(180);
 
-    panel.scrollTop = 300;
-    panel.dispatchEvent(new Event('scroll'));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.debugger-more button')).toBeNull();
+      panel.scrollTop = 300;
+      panel.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.debugger-more button')).toBeNull();
 
-    panel.scrollTop = 100;
-    panel.dispatchEvent(new Event('scroll'));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.debugger-more button')).not.toBeNull();
+      panel.scrollTop = 100;
+      panel.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.debugger-more button')).not.toBeNull();
 
-    Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 200 });
-    panel.scrollTop = 0;
-    window.dispatchEvent(new Event('resize'));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.debugger-more button')).toBeNull();
-  });
+      Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 200 });
+      panel.scrollTop = 0;
+      window.dispatchEvent(new Event('resize'));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.debugger-more button')).toBeNull();
+    },
+  );
 
   it('updates trace state in the existing editor and debugger panes', () => {
     const editor = fixture.nativeElement.querySelector('.source-panel');
@@ -933,74 +949,84 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     );
   });
 
-  it('documents disabled boundaries and ignores trace shortcuts from interactive descendants', () => {
-    const previous = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-      '.trace-controls button:first-child',
-    )!;
-    expect(previous.disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('.boundary-status').textContent).toContain(
-      'Previous is unavailable',
-    );
+  it(
+    'documents disabled boundaries and ignores trace shortcuts from interactive ' + 'descendants',
+    () => {
+      const previous = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        '.trace-controls button:first-child',
+      )!;
+      expect(previous.disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.boundary-status').textContent).toContain(
+        'Previous is unavailable',
+      );
 
-    const source = fixture.nativeElement.querySelector('pre') as HTMLElement;
-    source.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('1 of 3');
+      const source = fixture.nativeElement.querySelector('pre') as HTMLElement;
+      source.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('1 of 3');
 
-    const debuggerPanel = fixture.nativeElement.querySelector('.debugger-panel') as HTMLElement;
-    debuggerPanel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
-    debuggerPanel.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('1 of 3');
-  });
+      const debuggerPanel = fixture.nativeElement.querySelector('.debugger-panel') as HTMLElement;
+      debuggerPanel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+      debuggerPanel.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      );
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('1 of 3');
+    },
+  );
 
-  it('terminates the signed-values trace at the successful return and keeps debugger state visible', async () => {
-    const activeProblem = signedTwoSumProblem();
-    fixture.componentInstance.activeProblem.set(activeProblem);
-    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[2]);
-    fixture.detectChanges();
-    await fixture.whenStable();
+  it(
+    'terminates the signed-values trace at the successful return and keeps debugger state ' +
+      'visible',
+    async () => {
+      const activeProblem = signedTwoSumProblem();
+      fixture.componentInstance.activeProblem.set(activeProblem);
+      fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[2]);
+      fixture.detectChanges();
+      await fixture.whenStable();
 
-    const next = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-      '.trace-controls .primary',
-    )!;
-    for (let step = 1; step < 7; step += 1) next.click();
-    fixture.detectChanges();
+      const next = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        '.trace-controls .primary',
+      )!;
+      for (let step = 1; step < 7; step += 1) next.click();
+      fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('7 of 7');
-    expect(next.disabled).toBe(true);
-    expect(normalizedText(fixture.nativeElement.querySelector('.terminal'))).toContain(
-      'Execution returned [0,2]. Next is disabled because the successful return terminated execution.',
-    );
-    const variableRows = [
-      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.variables > div'),
-    ].map(normalizedText);
-    expect(variableRows).toContainEqual(expect.stringContaining('seen map{-3:0,4:1}'));
-    expect(variableRows).toContainEqual(
-      expect.stringContaining('lookup optional indexfound index 0'),
-    );
-    expect(variableRows).toContainEqual(expect.stringContaining('returned int[]changed[0,2]'));
-    expect(normalizedText(fixture.nativeElement.querySelector('.debugger-output'))).toContain(
-      '[0,2]',
-    );
-    expect(fixture.nativeElement.querySelector('.debugger-summary')).toBeNull();
-    const predict = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
-      '.debugger-view-tabs button',
-    )[2];
-    expect(predict.disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('7 of 7');
+      expect(next.disabled).toBe(true);
+      expect(normalizedText(fixture.nativeElement.querySelector('.terminal'))).toContain(
+        'Execution returned [0,2]. Next is disabled because the successful return ' +
+          'terminated execution.',
+      );
+      const variableRows = [
+        ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.variables > div'),
+      ].map(normalizedText);
+      expect(variableRows).toContainEqual(expect.stringContaining('seen map{-3:0,4:1}'));
+      expect(variableRows).toContainEqual(
+        expect.stringContaining('lookup optional indexfound index 0'),
+      );
+      expect(variableRows).toContainEqual(expect.stringContaining('returned int[]changed[0,2]'));
+      expect(normalizedText(fixture.nativeElement.querySelector('.debugger-output'))).toContain(
+        '[0,2]',
+      );
+      expect(fixture.nativeElement.querySelector('.debugger-summary')).toBeNull();
+      const predict = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+        '.debugger-view-tabs button',
+      )[2];
+      expect(predict.disabled).toBe(true);
 
-    const activeLine = fixture.nativeElement.querySelector('.source-line.active') as HTMLElement;
-    expect(activeLine.textContent).toContain('return result');
-    expect(activeLine.getAttribute('aria-label')).toContain('current instruction');
-    const unreachable = fixture.nativeElement.querySelectorAll('.source-line.unreachable');
-    expect(unreachable).toHaveLength(2);
-    expect(normalizedText(unreachable[0])).toContain('insert current value');
-    expect(normalizedText(unreachable[1])).toContain('return empty result');
-    expect(
-      fixture.nativeElement.querySelector('[aria-label*="not scanned after return"]'),
-    ).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.sr-status').textContent).toContain(
-      'Data state: values',
-    );
-  });
+      const activeLine = fixture.nativeElement.querySelector('.source-line.active') as HTMLElement;
+      expect(activeLine.textContent).toContain('return result');
+      expect(activeLine.getAttribute('aria-label')).toContain('current instruction');
+      const unreachable = fixture.nativeElement.querySelectorAll('.source-line.unreachable');
+      expect(unreachable).toHaveLength(2);
+      expect(normalizedText(unreachable[0])).toContain('insert current value');
+      expect(normalizedText(unreachable[1])).toContain('return empty result');
+      expect(
+        fixture.nativeElement.querySelector('[aria-label*="not scanned after return"]'),
+      ).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.sr-status').textContent).toContain(
+        'Data state: values',
+      );
+    },
+  );
 });

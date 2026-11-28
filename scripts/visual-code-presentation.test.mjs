@@ -2,9 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { JSDOM } from 'jsdom';
-const source = await readFile(new URL('../public/assets/visual-code-presentation.js', import.meta.url), 'utf8');
+const source = await readFile(
+  new URL('../public/assets/visual-code-presentation.js', import.meta.url),
+  'utf8',
+);
 function setup() {
-  const dom = new JSDOM('<button id="copy">Copy</button><pre><code></code></pre>', {runScripts:'outside-only'});
+  const dom = new JSDOM('<button id="copy">Copy</button><pre><code></code></pre>', {
+    runScripts: 'outside-only',
+  });
   dom.window.eval(source);
   return dom;
 }
@@ -17,13 +22,13 @@ test('missing syntax bundle preserves literal source without creating markup', (
   assert.equal(code.querySelector('img'), null);
   dom.window.close();
 });
-test('gesture copy works when sandbox async clipboard is unavailable and restores focus', async () => {
+test('gesture copy works without sandbox async clipboard and restores focus', async () => {
   const dom = setup();
   const document = dom.window.document;
   const button = document.querySelector('button');
   button.focus();
   let copied;
-  document.execCommand = command => {
+  document.execCommand = (command) => {
     assert.equal(command, 'copy');
     copied = document.activeElement.value;
     return true;
@@ -37,7 +42,11 @@ test('gesture copy works when sandbox async clipboard is unavailable and restore
 test('async clipboard remains available when selection copy cannot run', async () => {
   const dom = setup();
   let copied;
-  dom.window.navigator.clipboard = {writeText:async value => {copied=value;}};
+  dom.window.navigator.clipboard = {
+    writeText: async (value) => {
+      copied = value;
+    },
+  };
   await dom.window.LookAheadVisualCode.copy('source');
   assert.equal(copied, 'source');
   assert.equal(dom.window.document.querySelector('textarea'), null);

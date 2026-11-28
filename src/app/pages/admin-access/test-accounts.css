@@ -31,8 +31,14 @@
   margin-bottom: 12px;
 }
 @media (max-width: 600px) {
-  .heading-actions { width: 100%; flex-direction: column; align-items: stretch; }
-  .heading-actions button { width: 100%; }
+  .heading-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .heading-actions button {
+    width: 100%;
+  }
 }
 .note,
 .empty,
@@ -116,12 +122,30 @@
   border-radius: 12px;
   background: var(--surface-muted);
 }
-.selection-toolbar p { margin: 0; color: var(--text-strong); }
-.selection-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.select-cell { width: 64px; }
-.select-cell label { display: inline-flex; align-items: center; }
-.select-cell input { width: 18px; height: 18px; accent-color: var(--accent-strong); }
-.selected-row > * { background: color-mix(in srgb, var(--accent-strong) 9%, transparent); }
+.selection-toolbar p {
+  margin: 0;
+  color: var(--text-strong);
+}
+.selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.select-cell {
+  width: 64px;
+}
+.select-cell label {
+  display: inline-flex;
+  align-items: center;
+}
+.select-cell input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-strong);
+}
+.selected-row > * {
+  background: color-mix(in srgb, var(--accent-strong) 9%, transparent);
+}
 .directory-table {
   width: 100%;
   border-collapse: collapse;
@@ -147,7 +171,8 @@
 }
 .directory-table tbody th {
   font-weight: 400;
-  /* Only the person's long emails break mid-word, so the table stays inside its card (user, 2026-11-03). */
+  /* Only the person's long emails break mid-word, so the table stays inside its card (user,
+     2026-11-03). */
   overflow-wrap: anywhere;
 }
 .person {
@@ -235,7 +260,8 @@ tr.self > * {
   white-space: nowrap;
 }
 /* Phones and narrow columns: each person becomes a card with labelled lines. By the column's width
-   (the page's access-panel container), so a laptop with both side menus gets cards too (user, 2026-11-03). */
+   (the page's access-panel container), so a laptop with both side menus gets cards too (user,
+   2026-11-03). */
 @container access-panel (max-width: 560px) {
   .directory-table thead {
     display: none;
@@ -265,8 +291,14 @@ tr.self > * {
   .directory-table td {
     border-bottom: 0;
   }
-  .selection-toolbar, .selection-actions { flex-direction: column; align-items: stretch; }
-  .selection-actions button { width: 100%; }
+  .selection-toolbar,
+  .selection-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .selection-actions button {
+    width: 100%;
+  }
   .history li {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -444,9 +476,10 @@ tr.self > * {
     gap: 6px;
   }
 }
-/* DLV-969 (owner, 2026-11-04): Test accounts opens with two cards of equal height in one row, Test accounts and Test
-   roster; by the column's width (the page's access-panel container) they stack one above the other. Each card has a
-   small header row, its description, then its action rows behind a subtle divider. */
+/* DLV-969 (owner, 2026-11-04): Test accounts opens with two cards of equal height in one row, Test
+   accounts and Test roster; by the column's width (the page's access-panel container) they stack
+   one above the other. Each card has a small header row, its description, then its action rows
+   behind a subtle divider. */
 .test-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -524,7 +557,8 @@ tr.self > * {
   margin-top: 16px;
   border-top: 1px solid var(--line);
 }
-/* A line and the button that acts on it, on one row; the button wraps under the line when the card is narrow. */
+/* A line and the button that acts on it, on one row; the button wraps under the line when the card
+   is narrow. */
 .roster-line {
   display: flex;
   flex-wrap: wrap;
@@ -642,7 +676,8 @@ tr.self > * {
   color: var(--text-subtle);
   font-size: 0.92em;
 }
-/* A test account with a purchase request waiting (the requests are on Waiting for access → Purchase requests). */
+/* A test account with a purchase request waiting (the requests are on Waiting for access → Purchase
+   requests). */
 .state-badge.request-badge {
   border: 1px solid var(--warning);
   color: var(--text-body);
@@ -668,8 +703,8 @@ tr.self > * {
   max-width: 60ch;
 }
 
-
-/* Owner, 2026-11-08: People has one action per row, Manage access; the person panel holds everything else. */
+/* Owner, 2026-11-08: People has one action per row, Manage access; the person panel holds
+   everything else. */
 .row-actions {
   width: 1%;
   white-space: nowrap;
@@ -703,7 +738,8 @@ tr.self > * {
   }
 }
 
-/* DLV-969: the first method shows, the rest open on "+N" (Google, then Email and password, Apple, GitHub as Cognito adds them). */
+/* DLV-969: the first method shows, the rest open on "+N" (Google, then Email and password, Apple,
+   GitHub as Cognito adds them). */
 .sign-in-labels .more-methods {
   display: inline-flex;
   flex-wrap: wrap;

@@ -10,13 +10,16 @@ describe('even grid columns', () => {
     expect(evenGridColumns(7)).toBe(3);
   });
 
-  it('lists the even count for every capacity from 2 to 5 as CSS custom properties (DLV-803)', () => {
-    expect(evenGridColumnVars(4)).toBe(
-      '--even-cols-2: 2; --even-cols-3: 2; --even-cols-4: 4; --even-cols-5: 4',
-    );
-    expect(evenGridColumnVars(9)).toBe(
-      '--even-cols-2: 2; --even-cols-3: 3; --even-cols-4: 3; --even-cols-5: 5',
-    );
-    expect(evenGridColumnVars(1, 3)).toBe('--even-cols-2: 1; --even-cols-3: 1');
-  });
+  it(
+    'lists the even count for every capacity from 2 to 5 as CSS custom properties ' + '(DLV-803)',
+    () => {
+      expect(evenGridColumnVars(4)).toBe(
+        '--even-cols-2: 2; --even-cols-3: 2; --even-cols-4: 4; --even-cols-5: 4',
+      );
+      expect(evenGridColumnVars(9)).toBe(
+        '--even-cols-2: 2; --even-cols-3: 3; --even-cols-4: 3; --even-cols-5: 5',
+      );
+      expect(evenGridColumnVars(1, 3)).toBe('--even-cols-2: 1; --even-cols-3: 1');
+    },
+  );
 });

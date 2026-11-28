@@ -119,9 +119,7 @@ describe('unitSceneForModule', () => {
       theoryModuleId: 'caching',
       practiceModuleId: 'caching-practice',
       questionModuleId: 'caching-questions',
-      subUnits: [
-        { id: 'cdn', title: 'CDN', description: 'Edge.', theoryModuleId: 'cdn' },
-      ],
+      subUnits: [{ id: 'cdn', title: 'CDN', description: 'Edge.', theoryModuleId: 'cdn' }],
     },
     {
       id: 'reservation-round',
@@ -136,20 +134,28 @@ describe('unitSceneForModule', () => {
     },
     { id: 'later', title: 'Later', description: 'Soon.', theoryModuleId: 'later', planned: true },
   ];
-  const course = { id: 'design-fundamentals', layout: 'learning-map' as const, learningUnits: units };
+  const course = {
+    id: 'design-fundamentals',
+    layout: 'learning-map' as const,
+    learningUnits: units,
+  };
 
-  it('uses the conventional unit scene for the unit owning a lesson, practice or question module', () => {
-    for (const moduleId of ['caching', 'caching-practice', 'caching-questions']) {
-      expect(unitSceneForModule('blaze', course, moduleId)).toEqual({
-        src: '/assets/scenes/units/blaze/design-fundamentals/caching.svg',
-        alt: '',
-        unitTitle: 'Caching',
-      });
-    }
-    expect(unitSceneForModule('blaze', course, 'cdn')?.src).toBe(
-      '/assets/scenes/units/blaze/design-fundamentals/cdn.svg',
-    );
-  });
+  it(
+    'uses the conventional unit scene for the unit owning a lesson, practice or question ' +
+      'module',
+    () => {
+      for (const moduleId of ['caching', 'caching-practice', 'caching-questions']) {
+        expect(unitSceneForModule('blaze', course, moduleId)).toEqual({
+          src: '/assets/scenes/units/blaze/design-fundamentals/caching.svg',
+          alt: '',
+          unitTitle: 'Caching',
+        });
+      }
+      expect(unitSceneForModule('blaze', course, 'cdn')?.src).toBe(
+        '/assets/scenes/units/blaze/design-fundamentals/cdn.svg',
+      );
+    },
+  );
 
   it('prefers the authored card scene and its description', () => {
     expect(unitSceneForModule('blaze', course, 'reservation-round')).toEqual({

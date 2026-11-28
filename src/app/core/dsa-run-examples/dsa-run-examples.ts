@@ -329,7 +329,8 @@ export class DsaRunExamples {
     if (!this.ready() || !supported || this.busy() || this.tooLarge()) return;
     if (!globalThis.crypto?.subtle || !globalThis.crypto?.randomUUID) {
       this.message.set(
-        'Running examples requires HTTPS or localhost. This connection cannot securely identify the submitted source. Your draft remains available.',
+        'Running examples requires HTTPS or localhost. This connection cannot securely ' +
+          'identify the submitted source. Your draft remains available.',
       );
       return;
     }

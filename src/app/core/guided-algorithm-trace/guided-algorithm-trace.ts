@@ -158,7 +158,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
             <pre
               tabindex="0"
               [attr.aria-label]="'Source editor. ' + activeLineSummary()"
-            ><code class="learning-code" [attr.data-code-language]="language()">@for (line of source().lines; track line.id; let lineNumber = $index) {<span class="source-line" [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)" [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id === activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id, lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow" aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span class="line-code" [innerHTML]="highlightedLines()[lineNumber]"></span></span>}</code></pre>
+            ><code class="learning-code" [attr.data-code-language]="language()">@for (line of
+              source().lines; track line.id; let lineNumber = $index) {<span class="source-line"
+              [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)"
+              [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id ===
+              activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id,
+              lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow"
+              aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span
+              class="line-code"
+                [innerHTML]="highlightedLines()[lineNumber]"></span></span>}</code></pre>
           </section>
 
           @if (focusMode()) {
@@ -1921,7 +1929,14 @@ export class GuidedAlgorithmTrace {
   readonly initialLanguage = input<PatternLanguage>('java');
   readonly fixtureChange = output<PatternProblemFixture>();
   readonly focusExitRequest = output<void>();
-  protected readonly highlightedLines = computed(() => highlightStudioSource(this.source().lines.map(line => line.text).join('\n'), this.language()));
+  protected readonly highlightedLines = computed(() =>
+    highlightStudioSource(
+      this.source()
+        .lines.map((line) => line.text)
+        .join('\n'),
+      this.language(),
+    ),
+  );
   protected readonly language = signal<PatternLanguage>('java');
   /** Remembered for the next problem and for DSA core Learn lessons. */
   private readonly referenceLanguage = inject(ReferenceLanguageService);
@@ -2047,7 +2062,9 @@ export class GuidedAlgorithmTrace {
           const values = JSON.parse(variable.value);
           if (!Array.isArray(values)) return null;
           return {
-            id: `${this.problem().id}-${this.selectedFixture().id}-${this.language()}-${variable.name}-state`,
+            id:
+              `${this.problem().id}-${this.selectedFixture().id}-${this.language()}-` +
+              `${variable.name}-state`,
             label: variable.name,
             cells: (values.length ? values.slice(0, 32) : ['empty']).map((value, index) => {
               const states: GuidedTraceCellState[] = [];
@@ -2127,7 +2144,8 @@ export class GuidedAlgorithmTrace {
   protected readonly activeStepExplanation = computed(() => {
     const explanation = this.event().what;
     return /^Execute .+ at source line \d+:/u.test(explanation)
-      ? `Follow the selected implementation's actual control flow through ${this.activeLineLabel()}.`
+      ? `Follow the selected implementation's actual control flow ` +
+          `through ${this.activeLineLabel()}.`
       : explanation;
   });
   protected readonly predictionPrompt = computed(() => {
@@ -2142,7 +2160,10 @@ export class GuidedAlgorithmTrace {
       ),
     ];
     const state = changedNames.length ? changedNames.join(', ') : 'the live state';
-    return `Which source line executes next? Predict how ${state} will change and whether execution continues or returns.`;
+    return (
+      `Which source line executes next? Predict how ${state} will change and whether ` +
+      `execution continues or returns.`
+    );
   });
   protected readonly predictionOptions = computed(() => {
     const next = this.events()[this.stepIndex() + 1];
@@ -2191,12 +2212,21 @@ export class GuidedAlgorithmTrace {
   });
   protected readonly terminalMessage = computed(() => {
     if (this.isComplete() && this.event().result !== undefined) {
-      return `Execution returned ${this.event().result}. Next is disabled because the successful return terminated execution.`;
+      return (
+        `Execution returned ${this.event().result}. Next is disabled because the ` +
+        `successful return terminated execution.`
+      );
     }
     if (this.isComplete()) {
-      return 'Execution reached the final traced instruction. Next is disabled because no later instruction is available.';
+      return (
+        'Execution reached the final traced instruction. Next is disabled because no ' +
+        'later instruction is available.'
+      );
     }
-    return `Execution paused ${this.event().timing} ${this.activeLineLabel()}. Select Next to execute the next meaningful step.`;
+    return (
+      `Execution paused ${this.event().timing} ${this.activeLineLabel()}. Select Next to ` +
+      `execute the next meaningful step.`
+    );
   });
   protected readonly solutionFileName = computed(
     () => ({ java: 'Solution.java', python: 'solution.py', go: 'solution.go' })[this.language()],
@@ -2213,8 +2243,12 @@ export class GuidedAlgorithmTrace {
   );
   protected readonly drawsState = computed(
     () =>
-      visualPlanKind(this.problem(), this.tracedFixture(), this.panelSnapshot(), this.language()) !==
-      'none',
+      visualPlanKind(
+        this.problem(),
+        this.tracedFixture(),
+        this.panelSnapshot(),
+        this.language(),
+      ) !== 'none',
   );
   protected readonly player = new TracePlayer(
     () => ({ step: this.stepIndex(), count: this.events().length }),
@@ -2258,7 +2292,8 @@ export class GuidedAlgorithmTrace {
         this.announcement.set(
           selected.id === traced.id
             ? `${selected.label} selected. Trace reset to step 1.`
-            : `${selected.label} selected for independent dry-run practice. Guided trace reset to ${traced.label}, step 1.`,
+            : `${selected.label} selected for independent dry-run practice. Guided trace ` +
+                `reset to ${traced.label}, step 1.`,
         );
       }
       previousProblem = problemId;
@@ -2472,7 +2507,10 @@ export class GuidedAlgorithmTrace {
     if (this.isComplete() && this.event().result !== undefined) return this.terminalMessage();
     if (this.stepIndex() === 0) return 'At the first step. Previous is unavailable.';
     if (this.isComplete()) return 'Trace complete. Next is unavailable.';
-    return 'Previous, Next, and Reset are available. Focus the trace region and use Left Arrow, Right Arrow, or Home as shortcuts.';
+    return (
+      'Previous, Next, and Reset are available. Focus the trace region and use Left ' +
+      'Arrow, Right Arrow, or Home as shortcuts.'
+    );
   }
 
   private assistiveStepSummary(): string {
@@ -2482,7 +2520,12 @@ export class GuidedAlgorithmTrace {
           `${row.label}: ${row.cells.map((cell, index) => this.cellLabel(cell, index)).join('; ')}`,
       )
       .join('. ');
-    return `Step ${this.stepIndex() + 1} of ${this.events().length}: ${this.event().phase}, ${this.activeLineLabel()}. Variables: ${this.transcriptState(this.visibleVariables())}. Data state: ${rows}. ${this.terminalMessage()}`;
+    return (
+      `Step ${this.stepIndex() + 1} ` +
+      `of ${this.events().length}: ${this.event().phase}, ${this.activeLineLabel()}. ` +
+      `Variables: ${this.transcriptState(this.visibleVariables())}. Data ` +
+      `state: ${rows}. ${this.terminalMessage()}`
+    );
   }
 
   private variableDisplayName(name: string): string | null {

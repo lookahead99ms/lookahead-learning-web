@@ -111,7 +111,7 @@ describe.each(routeCases)(
       pending = new Subject<CourseOutline>();
       content.getContentItem.mockReset().mockReturnValue(of(course.questions[0]));
       content.getCourseOutline.mockReset().mockImplementation((_path, id) => {
-        if (id === 'missing') return throwError(() => ({status:404}));
+        if (id === 'missing') return throwError(() => ({ status: 404 }));
         if (id === 'pending') return pending;
         return of(outlineFor(contentPath));
       });
@@ -131,10 +131,13 @@ describe.each(routeCases)(
         'We couldn’t find this page',
       );
       expect(harness.routeNativeElement?.textContent).not.toContain(title);
-      const recoveryLinks = Array.from(harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.recovery-links a'));
-      expect(recoveryLinks.find(link => link.textContent === 'Home')?.getAttribute('href')).toBe('/');
-      expect(recoveryLinks.find(link => link.textContent === 'Go back')).toBeDefined();
-
+      const recoveryLinks = Array.from(
+        harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.recovery-links a'),
+      );
+      expect(recoveryLinks.find((link) => link.textContent === 'Home')?.getAttribute('href')).toBe(
+        '/',
+      );
+      expect(recoveryLinks.find((link) => link.textContent === 'Go back')).toBeDefined();
     });
 
     it('recovers on the same component after a failed request', async () => {
@@ -148,28 +151,42 @@ describe.each(routeCases)(
     });
 
     it('retries a transient failure on the same route', async () => {
-      content.getCourseOutline.mockReturnValueOnce(throwError(() => ({status:503})));
+      content.getCourseOutline.mockReturnValueOnce(throwError(() => ({ status: 503 })));
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl(`/${contentPath}/sample${suffix}`, component);
       expect(harness.routeNativeElement?.textContent).toContain('We couldn’t load this content');
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('app-content-recovery button.primary-action')!.click();
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>(
+          'app-content-recovery button.primary-action',
+        )!
+        .click();
       harness.detectChanges();
       expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(title);
     });
 
     if (name === 'question') {
-      it.each([401, 403])('does not render protected answers after a %s denial and preserves the exact account return', async (status) => {
-        content.getContentItem.mockReturnValue(throwError(() => ({status})));
-        const harness = await RouterTestingHarness.create();
-        const destination = `/${contentPath}/sample${suffix}?view=review#example`;
-        await harness.navigateByUrl(destination, component);
-        expect(harness.routeNativeElement?.textContent).not.toContain('An example answer.');
-        expect(harness.routeNativeElement?.textContent).toContain('Sample question');
-        const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
-        // DLV-969 (owner, 2026-11-04): signed out, sign in and come back; signed in without the lesson, subscribe.
-        expect(link.getAttribute('href')).toBe(status === 401 ? `/sign-in?returnTo=${encodeURIComponent(destination)}` : '/pricing');
-        expect(harness.routeNativeElement?.textContent).not.toContain('Pro access');
-      });
+      it.each([401, 403])(
+        'does not render protected answers after a %s denial and preserves the exact ' +
+          'account return',
+        async (status) => {
+          content.getContentItem.mockReturnValue(throwError(() => ({ status })));
+          const harness = await RouterTestingHarness.create();
+          const destination = `/${contentPath}/sample${suffix}?view=review#example`;
+          await harness.navigateByUrl(destination, component);
+          expect(harness.routeNativeElement?.textContent).not.toContain('An example answer.');
+          expect(harness.routeNativeElement?.textContent).toContain('Sample question');
+          const link =
+            harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
+              'dialog a.primary-action',
+            )!;
+          // DLV-969 (owner, 2026-11-04): signed out, sign in and come back; signed in without the
+          // lesson, subscribe.
+          expect(link.getAttribute('href')).toBe(
+            status === 401 ? `/sign-in?returnTo=${encodeURIComponent(destination)}` : '/pricing',
+          );
+          expect(harness.routeNativeElement?.textContent).not.toContain('Pro access');
+        },
+      );
     }
 
     it('clears stale content while loading and ignores a superseded response', async () => {
@@ -187,7 +204,7 @@ describe.each(routeCases)(
     });
 
     if (suffix) {
-      it('does not retain a valid item when the next item ID is absent from the course', async () => {
+      it('does not keep a valid item when the next item ID is absent from the course', async () => {
         const harness = await RouterTestingHarness.create();
         await harness.navigateByUrl(`/${contentPath}/sample${suffix}`, component);
         await harness.navigateByUrl(

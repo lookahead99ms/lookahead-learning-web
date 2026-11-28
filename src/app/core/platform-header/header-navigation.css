@@ -304,7 +304,8 @@ p {
   color: var(--accent-strong);
 }
 
-/* DLV-969: before admission a path is a plain word with its tagline; it looks like the links it replaces. */
+/* DLV-969: before admission a path is a plain word with its tagline; it looks like the links it
+   replaces. */
 .path-entry > .path-locked {
   display: inline-flex;
   align-items: center;

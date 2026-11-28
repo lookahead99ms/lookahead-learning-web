@@ -37,7 +37,13 @@ import {
   lockStudio,
   migrateStudioState,
 } from './workspace-state';
-import { ComplexityPrediction, PracticeTimer, loadPrediction, savePrediction, defaultTimerMinutes } from './practice-tools';
+import {
+  ComplexityPrediction,
+  PracticeTimer,
+  loadPrediction,
+  savePrediction,
+  defaultTimerMinutes,
+} from './practice-tools';
 import {
   StudioComplexity,
   StudioPrediction,
@@ -132,8 +138,8 @@ export class FocusStudio {
     () => this.progress.records()[this.problem().id]?.status === 'solved',
   );
   /**
-   * Option B: the problem's hand-made story, when one is published. Without one (or while it
-   * loads, or if it is malformed) the page keeps the fallback walkthrough (StudioFallbackWalkthrough).
+   * Option B: the problem's hand-made story, when one is published. Without one (or while it loads,
+   * or if it is malformed) the page keeps the fallback walkthrough (StudioFallbackWalkthrough).
    */
   protected readonly story = signal<DsaStoryV1 | null>(null);
   protected readonly state = signal(createStudioState('', 'java'));
@@ -271,8 +277,13 @@ export class FocusStudio {
     this.mode() === 'recall' ? this.current().revealed : true,
   );
   protected readonly composition = signal<'stack' | 'laptop' | 'wide'>('laptop');
-  protected readonly modeIndex = computed(() => this.modes.findIndex((item) => item.id === this.mode()));
-  /** One line under the tabs that says what the selected tab is for (user review 2026-10-05, option B). */
+  protected readonly modeIndex = computed(() =>
+    this.modes.findIndex((item) => item.id === this.mode()),
+  );
+  /**
+   * One line under the tabs that says what the selected tab is for (user review 2026-10-05, option
+   * B).
+   */
   protected readonly modeGuide = computed(() => {
     switch (this.mode()) {
       case 'practice':
@@ -287,11 +298,12 @@ export class FocusStudio {
     }
   });
   /**
-   * Each tab has one action at rest, in the same place: Try it yourself shows the solution, Approach and
-   * Recall visualize the solution. The Visual walkthrough brings its own player ("Every line" replaced the
-   * separate guided debugger, 2026-10-06), so it only offers "Close visualization" after a handoff, which
-   * returns to the tab it came from (Escape does the same). An open solution always offers its close
-   * action. During a timed attempt every opening action gives way to one "unlock when you stop" note.
+   * Each tab has one action at rest, in the same place: Try it yourself shows the solution,
+   * Approach and Recall visualize the solution. The Visual walkthrough brings its own player
+   * ("Every line" replaced the separate guided debugger, 2026-10-06), so it only offers "Close
+   * visualization" after a handoff, which returns to the tab it came from (Escape does the same).
+   * An open solution always offers its close action. During a timed attempt every opening action
+   * gives way to one "unlock when you stop" note.
    */
   protected readonly actions = computed<StudioAction[]>(() => {
     const actions = this.restingActions();
@@ -301,7 +313,8 @@ export class FocusStudio {
   });
   private readonly restingActions = computed<StudioAction[]>(() => {
     const current = this.current();
-    if (this.mode() === 'visual') return this.state().visualizationOrigin ? ['close-visualization'] : [];
+    if (this.mode() === 'visual')
+      return this.state().visualizationOrigin ? ['close-visualization'] : [];
     switch (this.mode()) {
       case 'practice':
         return ['solution'];
@@ -318,7 +331,9 @@ export class FocusStudio {
    */
   protected readonly opened = signal<ReadonlySet<StudioMode>>(new Set<StudioMode>(['practice']));
   /** DLV-965: this problem belongs to a family of equally optimal approaches. */
-  protected readonly hasOtherApproaches = computed(() => !!this.problem().approachFamily?.siblings?.length);
+  protected readonly hasOtherApproaches = computed(
+    () => !!this.problem().approachFamily?.siblings?.length,
+  );
   /**
    * "Other optimal solutions" (user, 2026-10-16): offered once the learner has the solution open or
    * is on the Approach tab, the two places that show the "Other optimal approaches" card. Never
@@ -332,10 +347,26 @@ export class FocusStudio {
       ((this.current().revealed && this.mode() !== 'visual') || this.mode() === 'approach'),
   );
   protected readonly modes: { id: StudioMode; label: string; description: string }[] = [
-    { id: 'practice', label: 'Try it yourself', description: 'Write your own solution and test your reasoning against the examples (1)' },
-    { id: 'approach', label: 'Approach', description: 'Review the invariant, reasoning and complexity of the canonical approach (2)' },
-    { id: 'visual', label: 'Visual walkthrough', description: 'Follow the algorithm visually, including each executed line (3)' },
-    { id: 'recall', label: 'Recall', description: 'Answer the recall questions from memory, then check each answer (4)' },
+    {
+      id: 'practice',
+      label: 'Try it yourself',
+      description: 'Write your own solution and test your reasoning against the examples (1)',
+    },
+    {
+      id: 'approach',
+      label: 'Approach',
+      description: 'Review the invariant, reasoning and complexity of the canonical approach (2)',
+    },
+    {
+      id: 'visual',
+      label: 'Visual walkthrough',
+      description: 'Follow the algorithm visually, including each executed line (3)',
+    },
+    {
+      id: 'recall',
+      label: 'Recall',
+      description: 'Answer the recall questions from memory, then check each answer (4)',
+    },
   ];
   protected readonly languages: PatternLanguage[] = ['java', 'python', 'go'];
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -349,11 +380,15 @@ export class FocusStudio {
     effect((onCleanup) => {
       const problem = this.problem();
       this.story.set(null);
-      const subscription = this.storyLoader.load(problem.id).subscribe((value) =>
-        this.story.set(
-          value && problem.fixtures.some((fixture) => fixture.id === value.fixtureId) ? value : null,
-        ),
-      );
+      const subscription = this.storyLoader
+        .load(problem.id)
+        .subscribe((value) =>
+          this.story.set(
+            value && problem.fixtures.some((fixture) => fixture.id === value.fixtureId)
+              ? value
+              : null,
+          ),
+        );
       onCleanup(() => subscription.unsubscribe());
     });
     // A story page uses the full screen width (see question.ts .option-b-page).
@@ -397,7 +432,10 @@ export class FocusStudio {
             !visual.debugger &&
             !state.visualizationOrigin;
           return pristine && visual.fixtureId !== story.fixtureId
-            ? { ...state, modes: { ...state.modes, visual: { ...visual, fixtureId: story.fixtureId } } }
+            ? {
+                ...state,
+                modes: { ...state.modes, visual: { ...visual, fixtureId: story.fixtureId } },
+              }
             : state;
         }),
       );
@@ -412,7 +450,8 @@ export class FocusStudio {
         this.prediction.set(loadPrediction(id));
       });
     });
-    // Starting, resuming or restoring a timed attempt closes any open solution, Every line or hints.
+    // Starting, resuming or restoring a timed attempt closes any open solution, Every line or
+    // hints.
     effect(() => {
       if (!this.locked()) return;
       untracked(() => {
@@ -515,7 +554,10 @@ export class FocusStudio {
     this.selectLanguage(language);
   }
   private applyLanguage(language: PatternLanguage): void {
-    if (this.position().language !== language || Object.values(this.state().modes).some((mode) => mode.language !== language))
+    if (
+      this.position().language !== language ||
+      Object.values(this.state().modes).some((mode) => mode.language !== language)
+    )
       this.state.update((state) => setStudioLanguage(state, language));
     if (this.draftLanguage() !== language) this.draftLanguage.set(language);
   }
@@ -537,7 +579,10 @@ export class FocusStudio {
       modes: { ...state.modes, visual: { ...state.modes.visual, fixtureId, chosen: true } },
     }));
   }
-  /** "Every line": the walkthrough steps the recorded line trace (it replaced "Open guided debugger"). */
+  /**
+   * "Every line": the walkthrough steps the recorded line trace (it replaced "Open guided
+   * debugger").
+   */
   protected setEveryLine(on: boolean): void {
     if (on) this.markStarted();
     this.state.update((state) => ({
@@ -559,14 +604,16 @@ export class FocusStudio {
     }
   }
   /**
-   * Scrolls to the visible "Other optimal approaches" card (the solution's rationale first, then the
-   * Approach tab's "Why it works" disclosure, which opens) and moves focus to its heading. Smooth
-   * scrolling only when the learner has not asked for reduced motion.
+   * Scrolls to the visible "Other optimal approaches" card (the solution's rationale first, then
+   * the Approach tab's "Why it works" disclosure, which opens) and moves focus to its heading.
+   * Smooth scrolling only when the learner has not asked for reduced motion.
    */
   protected showOtherApproaches(): void {
     const host = this.host.nativeElement;
     const cards = [
-      ...host.querySelectorAll<HTMLElement>('.reference-rationale .other-approaches, .compare-rationale .other-approaches'),
+      ...host.querySelectorAll<HTMLElement>(
+        '.reference-rationale .other-approaches, .compare-rationale .other-approaches',
+      ),
       ...host.querySelectorAll<HTMLElement>('app-studio-approach .other-approaches'),
     ];
     const card = cards.find((candidate) => !candidate.closest('[hidden]'));
@@ -615,19 +662,25 @@ export class FocusStudio {
   }
   /**
    * Keyboard shortcuts (practice tools): 1–4 switch tabs, P toggles the Problem panel and H the
-   * hints; Escape closes a "Visualize solution" handoff (visualEscape). They never fire while typing
-   * (editor, inputs, selects), with a modifier, or when focus is elsewhere on the page; the tabs keep
-   * their own arrow, Home and End keys (modeKeys).
+   * hints; Escape closes a "Visualize solution" handoff (visualEscape). They never fire while
+   * typing (editor, inputs, selects), with a modifier, or when focus is elsewhere on the page; the
+   * tabs keep their own arrow, Home and End keys (modeKeys).
    */
   protected shortcutKeys(event: KeyboardEvent): void {
     if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
     const target = event.target instanceof Element ? event.target : null;
     const host = this.host.nativeElement;
-    if (target && target !== document.body && target !== document.documentElement && !host.contains(target))
+    if (
+      target &&
+      target !== document.body &&
+      target !== document.documentElement &&
+      !host.contains(target)
+    )
       return;
     if (
       target?.closest(
-        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), .cm-editor, app-studio-editor',
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), ' +
+          '.cm-editor, app-studio-editor',
       )
     )
       return;
@@ -644,19 +697,28 @@ export class FocusStudio {
         .querySelector<HTMLButtonElement>(`[data-studio-mode="${mode}"]`)
         ?.focus({ preventScroll: true });
     } else if (key === 'p') this.toggleProblem();
-    else if (key === 'h' && this.mode() === 'practice' && !this.locked() && !this.current().revealed)
+    else if (
+      key === 'h' &&
+      this.mode() === 'practice' &&
+      !this.locked() &&
+      !this.current().revealed
+    )
       this.toggleHints();
     else return;
     event.preventDefault();
   }
   /**
    * Escape on the Visual walkthrough after a handoff does what "Close visualization" does: back to
-   * the tab it came from, with focus on that tab. The Problem panel's peek keeps its own Escape, and
-   * an open dialog (pattern help, a confirmation) owns Escape while it is open.
+   * the tab it came from, with focus on that tab. The Problem panel's peek keeps its own Escape,
+   * and an open dialog (pattern help, a confirmation) owns Escape while it is open.
    */
   private visualEscape(target: Element | null): boolean {
     if (this.mode() !== 'visual' || !this.state().visualizationOrigin || this.peek()) return false;
-    if (target?.closest('dialog, [role="dialog"], [role="alertdialog"], .problem-rail, .problem-toggle'))
+    if (
+      target?.closest(
+        'dialog, [role="dialog"], [role="alertdialog"], .problem-rail, .problem-toggle',
+      )
+    )
       return false;
     if (document.querySelector('dialog[open], [aria-modal="true"]')) return false;
     this.closeReference();
@@ -671,7 +733,9 @@ export class FocusStudio {
   protected visualize(): void {
     if (this.locked()) return;
     const story = this.story();
-    this.state.update((state) => visualizeStudio(state, story ? { fixtureId: story.fixtureId } : {}));
+    this.state.update((state) =>
+      visualizeStudio(state, story ? { fixtureId: story.fixtureId } : {}),
+    );
     this.peek.set(false);
     requestAnimationFrame(() =>
       this.host.nativeElement

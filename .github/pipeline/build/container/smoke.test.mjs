@@ -4,37 +4,104 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { smokeImage, parseResponse, assertPrivateBundle, deniedPaths, requireLocalEngine, assertOperationalLogs, credentialMount } from './smoke.mjs';
+import {
+  smokeImage,
+  parseResponse,
+  assertPrivateBundle,
+  deniedPaths,
+  requireLocalEngine,
+  assertOperationalLogs,
+  credentialMount,
+} from './smoke.mjs';
 
 const reference = 'sha256:' + 'a'.repeat(64);
 const resolvedDockerId = 'sha256:' + 'b'.repeat(64);
 const id = 'c'.repeat(64);
 const index = '<!doctype html><app-root></app-root><script src="main-ABCDEFGH.js"></script>';
 function response(status, body, headers = {}) {
-  return { status: status >= 400 ? 1 : 0, stdout: body,
-    stderr: `Connecting to127.0.0.1\n  HTTP/1.1 ${status} Response\n` + Object.entries(headers).map(([k, v]) => `  ${k}: ${v}\n`).join('') };
+  return {
+    status: status >= 400 ? 1 : 0,
+    stdout: body,
+    stderr:
+      `Connecting to127.0.0.1\n  HTTP/1.1 ${status} Response\n` +
+      Object.entries(headers)
+        .map(([k, v]) => `  ${k}: ${v}\n`)
+        .join(''),
+  };
 }
 
-/** One plain access line as nginx writes it: the bracket carries the first 8 characters of the request id. */
+/**
+ * One plain access line as nginx writes it: the bracket carries the first 8 characters of the
+ * request id.
+ */
 function accessLine(changes = {}) {
-  const record = { time: '2026-10-09T00:00:00+00:00', level: 'INFO ', requestId: 'a'.repeat(32), method: 'GET', path: '/api/privacy-probe',
-    status: '404', bytes: '9', seconds: '0.001', upstream: '', ...changes };
-  return `${record.time} ${record.level} ${record.method} ${record.path} ${record.status} ${record.bytes} B ${record.seconds} s${record.upstream}  [request ${record.requestId.slice(0, 8)}]`;
+  const record = {
+    time: '2026-10-09T00:00:00+00:00',
+    level: 'INFO ',
+    requestId: 'a'.repeat(32),
+    method: 'GET',
+    path: '/api/privacy-probe',
+    status: '404',
+    bytes: '9',
+    seconds: '0.001',
+    upstream: '',
+    ...changes,
+  };
+  return (
+    `${record.time} ${record.level} ${record.method} ${record.path} ${record.status} ` +
+    `${record.bytes} ` +
+    `B ${record.seconds} s${record.upstream}  [request ${record.requestId.slice(0, 8)}]`
+  );
 }
 
-function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { '/tmp': {}, [credentialMount]: {} }, echoGatewayId = true } = {}) {
+function fixture({
+  unhealthy = false,
+  fallbackPath,
+  privateFile = false,
+  volumes = { '/tmp': {}, [credentialMount]: {} },
+  echoGatewayId = true,
+} = {}) {
   const calls = [];
   const logs = ['Web TLS validation succeeded', accessLine()];
-  const docker = args => {
+  const docker = (args) => {
     calls.push(args);
-    const ok = stdout => ({ status: 0, stdout, stderr: '' });
-    if (args[0] === 'context') return ok(JSON.stringify([{ Endpoints: { docker: { Host: 'unix:///var/run/docker.sock' } } }]));
-    if (args[0] === 'image') return ok(JSON.stringify([{ Id: resolvedDockerId, Config: { User: '10001:10001', Volumes: volumes, Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] } } }]));
+    const ok = (stdout) => ({ status: 0, stdout, stderr: '' });
+    if (args[0] === 'context')
+      return ok(
+        JSON.stringify([{ Endpoints: { docker: { Host: 'unix:///var/run/docker.sock' } } }]),
+      );
+    if (args[0] === 'image')
+      return ok(
+        JSON.stringify([
+          {
+            Id: resolvedDockerId,
+            Config: {
+              User: '10001:10001',
+              Volumes: volumes,
+              Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] },
+            },
+          },
+        ]),
+      );
     if (args[0] === 'create') return ok(id + '\n');
     if (args[0] === 'logs') return ok(logs.join('\n') + '\n');
     if (args[0] === 'start' || args[0] === 'rm') return ok('');
-    if (args[0] === 'container') return ok(JSON.stringify([{ Image: resolvedDockerId, State: { Running: true, Health: { Status: unhealthy ? 'unhealthy' : 'healthy' } },
-      HostConfig: { NetworkMode: 'none', ReadonlyRootfs: true, CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges:true'], Tmpfs: { '/tmp': 'rw', [credentialMount]: 'rw' } } }]));
+    if (args[0] === 'container')
+      return ok(
+        JSON.stringify([
+          {
+            Image: resolvedDockerId,
+            State: { Running: true, Health: { Status: unhealthy ? 'unhealthy' : 'healthy' } },
+            HostConfig: {
+              NetworkMode: 'none',
+              ReadonlyRootfs: true,
+              CapDrop: ['ALL'],
+              SecurityOpt: ['no-new-privileges:true'],
+              Tmpfs: { '/tmp': 'rw', [credentialMount]: 'rw' },
+            },
+          },
+        ]),
+      );
     if (args[0] === 'cp') {
       writeFileSync(join(args[2], 'index.html'), index);
       writeFileSync(join(args[2], 'main-ABCDEFGH.js'), 'console.log("public application")');
@@ -43,51 +110,108 @@ function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes
     }
     assert.equal(args[0], 'exec');
     if (args[2] === 'id') return ok('10001\n');
-    if (args[2] === 'find') return ok('/opt/lookahead/start-tls.sh\n/opt/lookahead/healthcheck.sh\n');
+    if (args[2] === 'find')
+      return ok('/opt/lookahead/start-tls.sh\n/opt/lookahead/healthcheck.sh\n');
     if (args[2] === 'sh') return ok('');
     assert.equal(args[2], 'wget');
     const path = new URL(args.at(-1)).pathname;
-    const supplied = args.find(arg => arg.startsWith('X-Request-Id: '))?.slice('X-Request-Id: '.length);
-    if (supplied && echoGatewayId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(supplied)) {
-      logs.push(accessLine({ requestId: supplied, path, status: path === '/health' ? '200' : '404', bytes: '16' }));
+    const supplied = args
+      .find((arg) => arg.startsWith('X-Request-Id: '))
+      ?.slice('X-Request-Id: '.length);
+    if (
+      supplied &&
+      echoGatewayId &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(supplied)
+    ) {
+      logs.push(
+        accessLine({
+          requestId: supplied,
+          path,
+          status: path === '/health' ? '200' : '404',
+          bytes: '16',
+        }),
+      );
     }
     if (path === '/health') return response(200, '{"status":"UP"}\n');
-    if (['/', '/index.html', '/learn/deep', fallbackPath].includes(path)) return response(200, index, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' });
-    if (path === '/main-ABCDEFGH.js') return response(200, 'console.log("public application")', { 'Content-Type': 'application/javascript', 'Cache-Control': 'private, max-age=31536000, immutable' });
+    if (['/', '/index.html', '/learn/deep', fallbackPath].includes(path))
+      return response(200, index, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' });
+    if (path === '/main-ABCDEFGH.js')
+      return response(200, 'console.log("public application")', {
+        'Content-Type': 'application/javascript',
+        'Cache-Control': 'private, max-age=31536000, immutable',
+      });
     return response(404, 'Not found');
   };
   return { docker, calls };
 }
 
 test('rejects mutable tags before any Docker operation', async () => {
-  await assert.rejects(smokeImage('web:latest', { docker: () => assert.fail('Docker must not run') }), /immutable/);
+  await assert.rejects(
+    smokeImage('web:latest', { docker: () => assert.fail('Docker must not run') }),
+    /immutable/,
+  );
 });
 
 test('rejects remote Docker hosts and honors explicit context precedence', () => {
   const noInspect = () => assert.fail('Context lookup was not expected');
-  assert.throws(() => requireLocalEngine(noInspect, { DOCKER_HOST: 'tcp://remote.example:2376' }), /local Unix/);
+  assert.throws(
+    () => requireLocalEngine(noInspect, { DOCKER_HOST: 'tcp://remote.example:2376' }),
+    /local Unix/,
+  );
   requireLocalEngine(noInspect, { DOCKER_HOST: 'unix:///var/run/docker.sock' });
-  const inspect = args => {
+  const inspect = (args) => {
     assert.deepEqual(args, ['context', 'inspect', 'remote']);
     return JSON.stringify([{ Endpoints: { docker: { Host: 'ssh://remote.example' } } }]);
   };
-  assert.throws(() => requireLocalEngine(inspect, { DOCKER_CONTEXT: 'remote', DOCKER_HOST: 'unix:///var/run/docker.sock' }), /local Unix/);
+  assert.throws(
+    () =>
+      requireLocalEngine(inspect, {
+        DOCKER_CONTEXT: 'remote',
+        DOCKER_HOST: 'unix:///var/run/docker.sock',
+      }),
+    /local Unix/,
+  );
 });
 
 test('does not certify redirected or failed HTTP probes', () => {
-  assert.throws(() => parseResponse({ status: 0, stdout: '', stderr: ' HTTP/1.1 302 Found\n HTTP/1.1 200 OK\n' }), /without redirects/);
-  assert.throws(() => parseResponse({ status: 4, stdout: '', stderr: ' HTTP/1.1 200 OK\n' }), /probe failed/);
+  assert.throws(
+    () =>
+      parseResponse({ status: 0, stdout: '', stderr: ' HTTP/1.1 302 Found\n HTTP/1.1 200 OK\n' }),
+    /without redirects/,
+  );
+  assert.throws(
+    () => parseResponse({ status: 4, stdout: '', stderr: ' HTTP/1.1 200 OK\n' }),
+    /probe failed/,
+  );
 });
 
 test('rejects shared-cache bundle headers, incorrect MIME and SPA fallback', () => {
-  const good = { status: 200, headers: { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'private,max-age=31536000,immutable' }, body: 'console.log(1)' };
+  const good = {
+    status: 200,
+    headers: {
+      'content-type': 'text/javascript; charset=utf-8',
+      'cache-control': 'private,max-age=31536000,immutable',
+    },
+    body: 'console.log(1)',
+  };
   assertPrivateBundle(good);
-  assert.throws(() => assertPrivateBundle({ ...good, headers: { ...good.headers, 'cache-control': 'public,max-age=31536000,immutable' } }), /cache contract/);
-  assert.throws(() => assertPrivateBundle({ ...good, headers: { ...good.headers, 'content-type': 'text/html' } }), /MIME/);
+  assert.throws(
+    () =>
+      assertPrivateBundle({
+        ...good,
+        headers: { ...good.headers, 'cache-control': 'public,max-age=31536000,immutable' },
+      }),
+    /cache contract/,
+  );
+  assert.throws(
+    () =>
+      assertPrivateBundle({ ...good, headers: { ...good.headers, 'content-type': 'text/html' } }),
+    /MIME/,
+  );
   assert.throws(() => assertPrivateBundle({ ...good, body: index }), /HTML fallback/);
 });
 
-test('checks immutable config identity, all denied routes, hardening and cleanup', async t => {
+test('checks immutable config identity, all denied routes, hardening and cleanup', async (t) => {
   const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
   t.after(() => rm(scratchRoot, { recursive: true, force: true }));
   const { docker, calls } = fixture();
@@ -95,101 +219,242 @@ test('checks immutable config identity, all denied routes, hardening and cleanup
   assert.equal(report.buildArtifactDigest, reference);
   assert.equal(report.resolvedDockerId, resolvedDockerId);
   assert.equal(report.passed, true);
-  assert(deniedPaths.every(path => report.requests.some(item => item.path === path && item.status === 404)));
-  const create = calls.find(args => args[0] === 'create');
-  assert(create.includes('--pull=never') && create.includes('--read-only') && create.includes('--cap-drop'));
+  assert(
+    deniedPaths.every((path) =>
+      report.requests.some((item) => item.path === path && item.status === 404),
+    ),
+  );
+  const create = calls.find((args) => args[0] === 'create');
+  assert(
+    create.includes('--pull=never') &&
+      create.includes('--read-only') &&
+      create.includes('--cap-drop'),
+  );
   assert.equal(create.at(-1), resolvedDockerId);
   assert(!create.includes('-p') && !create.includes('--publish'));
-  // DLV-914: the declared credential volume is mounted as an owned tmpfs, never as an anonymous Docker volume.
-  assert(create.some(arg => arg.startsWith(`${credentialMount}:`) && arg.includes('uid=10001') && arg.includes('mode=0700')), 'Credential tmpfs missing');
+  // DLV-914: the declared credential volume is mounted as an owned tmpfs, never as an anonymous
+  // Docker volume.
+  assert(
+    create.some(
+      (arg) =>
+        arg.startsWith(`${credentialMount}:`) &&
+        arg.includes('uid=10001') &&
+        arg.includes('mode=0700'),
+    ),
+    'Credential tmpfs missing',
+  );
   assert.deepEqual(calls.at(-1), ['rm', '-f', id]);
 });
 
-// DLV-914/DLV-968: ECS copies a declared VOLUME path's ownership into the Fargate bind mount; the image must declare exactly the two task mounts.
-for (const [name, volumes] of [['no volume', {}], ['only the credential mount', { [credentialMount]: {} }], ['only /tmp', { '/tmp': {} }],
-  ['an extra volume', { [credentialMount]: {}, '/tmp': {}, '/data': {} }], ['a different volume', { '/data': {} }]]) {
-  test(`rejects an image declaring ${name} before creating a container`, async t => {
+// DLV-914/DLV-968: ECS copies a declared VOLUME path's ownership into the Fargate bind mount; the
+// image must declare exactly the two task mounts.
+for (const [name, volumes] of [
+  ['no volume', {}],
+  ['only the credential mount', { [credentialMount]: {} }],
+  ['only /tmp', { '/tmp': {} }],
+  ['an extra volume', { [credentialMount]: {}, '/tmp': {}, '/data': {} }],
+  ['a different volume', { '/data': {} }],
+]) {
+  test(`rejects an image declaring ${name} before creating a container`, async (t) => {
     const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
     t.after(() => rm(scratchRoot, { recursive: true, force: true }));
     const { docker, calls } = fixture({ volumes });
-    await assert.rejects(smokeImage(reference, { docker, scratchRoot, environment: {} }), /credential mount/);
-    assert(!calls.some(args => args[0] === 'create'), 'No container may be created for a rejected image');
+    await assert.rejects(
+      smokeImage(reference, { docker, scratchRoot, environment: {} }),
+      /credential mount/,
+    );
+    assert(
+      !calls.some((args) => args[0] === 'create'),
+      'No container may be created for a rejected image',
+    );
   });
 }
 
 for (const [name, options, failure] of [
   ['Docker reports unhealthy', { unhealthy: true }, /healthcheck failed/],
   ['reserved API returns SPA shell', { fallbackPath: '/api' }, /return404/],
-  ['actual copied runtime contains a private file', { privateFile: true }, /Forbidden static artifact/],
+  [
+    'actual copied runtime contains a private file',
+    { privateFile: true },
+    /Forbidden static artifact/,
+  ],
 ]) {
-  test(`fails and cleans only its disposable container when ${name}`, async t => {
+  test(`fails and cleans only its disposable container when ${name}`, async (t) => {
     const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
     t.after(() => rm(scratchRoot, { recursive: true, force: true }));
     const { docker, calls } = fixture(options);
     await assert.rejects(smokeImage(reference, { docker, scratchRoot, environment: {} }), failure);
     assert.deepEqual(calls.at(-1), ['rm', '-f', id]);
-    assert.equal(calls.filter(args => args[0] === 'rm').length, 1);
+    assert.equal(calls.filter((args) => args[0] === 'rm').length, 1);
   });
 }
 
 test('operational logs reject private content, JSON records and unexpected line shapes', () => {
   assert.equal(assertOperationalLogs(accessLine(), 'synthetic-secret'), 1);
-  assert.throws(() => assertOperationalLogs(accessLine() + ' uri=/private', 'synthetic-secret'), /Unexpected/);
-  assert.throws(() => assertOperationalLogs(accessLine() + '\nsynthetic-secret', 'synthetic-secret'), /leaked/);
+  assert.throws(
+    () => assertOperationalLogs(accessLine() + ' uri=/private', 'synthetic-secret'),
+    /Unexpected/,
+  );
+  assert.throws(
+    () => assertOperationalLogs(accessLine() + '\nsynthetic-secret', 'synthetic-secret'),
+    /leaked/,
+  );
   assert.throws(() => assertOperationalLogs('', 'synthetic-secret'), /emit/);
   // Plain logs: a JSON record is a regression, not an access line to parse.
-  assert.throws(() => assertOperationalLogs('{"event":"http_access","status":"404"}', 'synthetic-secret'), /plain lines/);
-  // Column order is the contract shared with the Java services: a line without its level column is malformed.
-  assert.throws(() => assertOperationalLogs(accessLine().replace('INFO  ', ''), 'synthetic-secret'), /Unexpected/);
-  // Lines that do not open with a time (start-tls.sh sentences, nginx error_log) are not access lines but are scanned for the marker.
-  assert.equal(assertOperationalLogs('Web TLS validation succeeded\n2026/10/09 00:00:00 [warn] 1#1: a warning\n' + accessLine(), 'synthetic-secret'), 1);
-  assert.throws(() => assertOperationalLogs('2026/10/09 00:00:00 [error] 1#1: synthetic-secret\n' + accessLine(), 'synthetic-secret'), /leaked/);
+  assert.throws(
+    () => assertOperationalLogs('{"event":"http_access","status":"404"}', 'synthetic-secret'),
+    /plain lines/,
+  );
+  // Column order is the contract shared with the Java services: a line without its level column is
+  // malformed.
+  assert.throws(
+    () => assertOperationalLogs(accessLine().replace('INFO  ', ''), 'synthetic-secret'),
+    /Unexpected/,
+  );
+  // Lines that do not open with a time (start-tls.sh sentences, nginx error_log) are not access
+  // lines but are scanned for the marker.
+  assert.equal(
+    assertOperationalLogs(
+      'Web TLS validation succeeded\n2026/10/09 00:00:00 [warn] 1#1: a warning\n' + accessLine(),
+      'synthetic-secret',
+    ),
+    1,
+  );
+  assert.throws(
+    () =>
+      assertOperationalLogs(
+        '2026/10/09 00:00:00 [error] 1#1: synthetic-secret\n' + accessLine(),
+        'synthetic-secret',
+      ),
+    /leaked/,
+  );
 });
 
 test('operational logs keep the path without its query string', () => {
-  assert.equal(assertOperationalLogs(accessLine({ path: '/assets/main-ABCDEFGH.js' }), 'synthetic-secret'), 1);
-  assert.throws(() => assertOperationalLogs(accessLine({ path: '/api/x?code=1' }), 'synthetic-secret'), /query string/);
-  assert.throws(() => assertOperationalLogs(accessLine({ path: 'GET /api HTTP/1.1' }), 'synthetic-secret'), /Unexpected/);
+  assert.equal(
+    assertOperationalLogs(accessLine({ path: '/assets/main-ABCDEFGH.js' }), 'synthetic-secret'),
+    1,
+  );
+  assert.throws(
+    () => assertOperationalLogs(accessLine({ path: '/api/x?code=1' }), 'synthetic-secret'),
+    /query string/,
+  );
+  assert.throws(
+    () => assertOperationalLogs(accessLine({ path: 'GET /api HTTP/1.1' }), 'synthetic-secret'),
+    /Unexpected/,
+  );
 });
 
-test('operational logs carry a status-derived level padded to five characters and the upstream detail on 5xx', () => {
-  const lines = [accessLine(), accessLine({ status: '503', level: 'ERROR', bytes: '0' }),
-    accessLine({ status: '502', level: 'ERROR', path: '/bff/api/v1/plans', upstream: ' upstream 10.0.1.9:8443 status 502' })].join('\n');
-  assert.equal(assertOperationalLogs(lines, 'synthetic-secret'), 3);
-  assert.throws(() => assertOperationalLogs([accessLine(), accessLine({ status: '503' })].join('\n'), 'synthetic-secret'), /level/);
-  assert.throws(() => assertOperationalLogs(accessLine({ level: 'ERROR' }), 'synthetic-secret'), /level/);
-  assert.throws(() => assertOperationalLogs([accessLine(), accessLine({ status: '503', level: 'WARN ' })].join('\n'), 'synthetic-secret'), /level/);
-  assert.throws(() => assertOperationalLogs(accessLine({ bytes: '31 kB' }), 'synthetic-secret'), /Unexpected/);
-  assert.throws(() => assertOperationalLogs(accessLine({ method: 'TRACE' }), 'synthetic-secret'), /Unbounded/);
-});
+test(
+  'operational logs carry a status-derived level padded to five characters and the ' +
+    'upstream detail on 5xx',
+  () => {
+    const lines = [
+      accessLine(),
+      accessLine({ status: '503', level: 'ERROR', bytes: '0' }),
+      accessLine({
+        status: '502',
+        level: 'ERROR',
+        path: '/bff/api/v1/plans',
+        upstream: ' upstream 10.0.1.9:8443 status 502',
+      }),
+    ].join('\n');
+    assert.equal(assertOperationalLogs(lines, 'synthetic-secret'), 3);
+    assert.throws(
+      () =>
+        assertOperationalLogs(
+          [accessLine(), accessLine({ status: '503' })].join('\n'),
+          'synthetic-secret',
+        ),
+      /level/,
+    );
+    assert.throws(
+      () => assertOperationalLogs(accessLine({ level: 'ERROR' }), 'synthetic-secret'),
+      /level/,
+    );
+    assert.throws(
+      () =>
+        assertOperationalLogs(
+          [accessLine(), accessLine({ status: '503', level: 'WARN ' })].join('\n'),
+          'synthetic-secret',
+        ),
+      /level/,
+    );
+    assert.throws(
+      () => assertOperationalLogs(accessLine({ bytes: '31 kB' }), 'synthetic-secret'),
+      /Unexpected/,
+    );
+    assert.throws(
+      () => assertOperationalLogs(accessLine({ method: 'TRACE' }), 'synthetic-secret'),
+      /Unbounded/,
+    );
+  },
+);
 
-test("operational logs reuse the first 8 characters of Gateway's canonical request ID and reject other shapes", () => {
-  const gatewayId = '3f2b8c1e-1d2a-4b7e-9c1a-5e6f7a8b9c0d';
-  const lines = [accessLine(), accessLine({ requestId: gatewayId, path: '/health', status: '200' })].join('\n');
-  assert.equal(assertOperationalLogs(lines, 'synthetic-secret', { gatewayId }), 2);
-  assert(lines.includes('[request 3f2b8c1e]'), 'The bracket carries only the first 8 characters');
-  assert.throws(() => assertOperationalLogs(accessLine(), 'synthetic-secret', { gatewayId }), /not reused/);
-  for (const requestId of ['3F2B8C1E-1D2A-4B7E-9C1A-5E6F7A8B9C0D', 'not-a-request-id', '', 'abc']) {
-    assert.throws(() => assertOperationalLogs(accessLine({ requestId }), 'synthetic-secret'), /request ID/);
-  }
-});
+test(
+  "operational logs reuse the first 8 characters of Gateway's canonical request ID and " +
+    'reject other shapes',
+  () => {
+    const gatewayId = '3f2b8c1e-1d2a-4b7e-9c1a-5e6f7a8b9c0d';
+    const lines = [
+      accessLine(),
+      accessLine({ requestId: gatewayId, path: '/health', status: '200' }),
+    ].join('\n');
+    assert.equal(assertOperationalLogs(lines, 'synthetic-secret', { gatewayId }), 2);
+    assert(lines.includes('[request 3f2b8c1e]'), 'The bracket carries only the first 8 characters');
+    assert.throws(
+      () => assertOperationalLogs(accessLine(), 'synthetic-secret', { gatewayId }),
+      /not reused/,
+    );
+    for (const requestId of [
+      '3F2B8C1E-1D2A-4B7E-9C1A-5E6F7A8B9C0D',
+      'not-a-request-id',
+      '',
+      'abc',
+    ]) {
+      assert.throws(
+        () => assertOperationalLogs(accessLine({ requestId }), 'synthetic-secret'),
+        /request ID/,
+      );
+    }
+  },
+);
 
-test('smoke probe sends the private marker only outside the logged path and checks request-ID reuse', async t => {
-  const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
-  t.after(() => rm(scratchRoot, { recursive: true, force: true }));
-  const { docker, calls } = fixture();
-  await smokeImage(reference, { docker, scratchRoot, environment: {} });
-  const probe = calls.find(args => args.some(arg => arg.startsWith('Cookie: synthetic=')));
-  const marker = probe.find(arg => arg.startsWith('Cookie: synthetic=')).slice('Cookie: synthetic='.length);
-  assert.equal(new URL(probe.at(-1)).pathname.includes(marker), false, 'The logged path must not carry the private marker');
-  assert(probe.includes(`X-Request-Id: ${marker}`), 'A malformed request ID must be probed');
-  assert(calls.some(args => args.at(-1) === 'http://127.0.0.1:8080/health' && args.some(arg => /^X-Request-Id: [0-9a-f-]{36}$/.test(arg))));
-});
+test(
+  'smoke probe sends the private marker only outside the logged path and checks ' +
+    'request-ID reuse',
+  async (t) => {
+    const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
+    t.after(() => rm(scratchRoot, { recursive: true, force: true }));
+    const { docker, calls } = fixture();
+    await smokeImage(reference, { docker, scratchRoot, environment: {} });
+    const probe = calls.find((args) => args.some((arg) => arg.startsWith('Cookie: synthetic=')));
+    const marker = probe
+      .find((arg) => arg.startsWith('Cookie: synthetic='))
+      .slice('Cookie: synthetic='.length);
+    assert.equal(
+      new URL(probe.at(-1)).pathname.includes(marker),
+      false,
+      'The logged path must not carry the private marker',
+    );
+    assert(probe.includes(`X-Request-Id: ${marker}`), 'A malformed request ID must be probed');
+    assert(
+      calls.some(
+        (args) =>
+          args.at(-1) === 'http://127.0.0.1:8080/health' &&
+          args.some((arg) => /^X-Request-Id: [0-9a-f-]{36}$/.test(arg)),
+      ),
+    );
+  },
+);
 
-test('smoke fails when nginx does not reuse the Gateway request ID', async t => {
+test('smoke fails when nginx does not reuse the Gateway request ID', async (t) => {
   const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
   t.after(() => rm(scratchRoot, { recursive: true, force: true }));
   const { docker, calls } = fixture({ echoGatewayId: false });
-  await assert.rejects(smokeImage(reference, { docker, scratchRoot, environment: {} }), /not reused/);
+  await assert.rejects(
+    smokeImage(reference, { docker, scratchRoot, environment: {} }),
+    /not reused/,
+  );
   assert.deepEqual(calls.at(-1), ['rm', '-f', id]);
 });

@@ -80,21 +80,25 @@ describe('Study Desk saved-schedule projection', () => {
     expect(result.resume?.assignment.id).toBe('second');
     expect(result.resume?.day).toBe(2);
   });
-  it('keeps future recalls attached to the canonical item without admitting them into the window', () => {
-    const saved = plan([[item('first')]]);
-    saved.futureReviews = [
-      item('review', {
-        sourceContentId: 'first',
-        kind: 'review',
-        activity: 'Recall',
-        reviewDueDay: 8,
-      }),
-    ];
-    const result = studyDeskActivities(saved, new Set(['first']), {}, [], 1, true, () => true);
-    expect(result.entries[1].outsideWindow).toBe(true);
-    expect(result.entries[1].assignment.sourceContentId).toBe('first');
-    expect(result.resume).toBeNull();
-  });
+  it(
+    'keeps future recalls attached to the canonical item without admitting them into the ' +
+      'window',
+    () => {
+      const saved = plan([[item('first')]]);
+      saved.futureReviews = [
+        item('review', {
+          sourceContentId: 'first',
+          kind: 'review',
+          activity: 'Recall',
+          reviewDueDay: 8,
+        }),
+      ];
+      const result = studyDeskActivities(saved, new Set(['first']), {}, [], 1, true, () => true);
+      expect(result.entries[1].outsideWindow).toBe(true);
+      expect(result.entries[1].assignment.sourceContentId).toBe('first');
+      expect(result.resume).toBeNull();
+    },
+  );
   it('does not resume inaccessible or prerequisite-blocked work', () => {
     const saved = plan([[item('restricted'), item('blocked', { prerequisiteIds: ['missing'] })]]);
     const result = studyDeskActivities(
@@ -109,14 +113,17 @@ describe('Study Desk saved-schedule projection', () => {
     expect(result.resume).toBeNull();
     expect(result.entries).toHaveLength(2);
   });
-  it('includes completion-day recall with its original canonical source and respects recovery', () => {
-    const saved = plan([[item('first')], [], []]);
-    const result = studyDeskActivities(saved, new Set(['first']), {}, [], 2, true, () => true);
-    expect(result.resume?.assignment.id).toBe('first:daily-recall:2');
-    expect(result.resume?.assignment.sourceContentId).toBe('first');
-    expect(
-      result.entries.some((entry) => entry.assignment.id === result.resume?.assignment.id),
-    ).toBe(true);
-    expect(saved.days[1].assignments).toEqual([]);
-  });
+  it(
+    'includes completion-day recall with its original canonical source and respects ' + 'recovery',
+    () => {
+      const saved = plan([[item('first')], [], []]);
+      const result = studyDeskActivities(saved, new Set(['first']), {}, [], 2, true, () => true);
+      expect(result.resume?.assignment.id).toBe('first:daily-recall:2');
+      expect(result.resume?.assignment.sourceContentId).toBe('first');
+      expect(
+        result.entries.some((entry) => entry.assignment.id === result.resume?.assignment.id),
+      ).toBe(true);
+      expect(saved.days[1].assignments).toEqual([]);
+    },
+  );
 });

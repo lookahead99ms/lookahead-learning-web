@@ -8,7 +8,9 @@ describe('A helpful report strip (DLV-971)', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('.tips-label')?.textContent?.trim()).toBe('A helpful report');
-    expect(root.querySelector('[role="group"]')?.getAttribute('aria-label')).toBe('A helpful report');
+    expect(root.querySelector('[role="group"]')?.getAttribute('aria-label')).toBe(
+      'A helpful report',
+    );
     expect(
       [...root.querySelectorAll('li > span:last-child')].map((tip) =>
         tip.textContent?.replace(/\s+/g, ' ').trim(),

@@ -1,7 +1,11 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { documentationGroupHref, documentationLandingGroup, visibleDocumentationGroups } from '../../core/author-workspace-nav/author-workspace-links';
+import {
+  documentationGroupHref,
+  documentationLandingGroup,
+  visibleDocumentationGroups,
+} from '../../core/author-workspace-nav/author-workspace-links';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
@@ -22,7 +26,10 @@ export class AuthorDocsPage {
   /** Only pages available to the current account are listed. */
   protected readonly groups = computed(() => visibleDocumentationGroups(this.accounts.account()));
   protected readonly selectedGroup = computed(() => {
-    const id = documentationLandingGroup(this.document.location.search, this.document.location.hash);
-    return this.groups().find(group => group.id === id);
+    const id = documentationLandingGroup(
+      this.document.location.search,
+      this.document.location.hash,
+    );
+    return this.groups().find((group) => group.id === id);
   });
 }

@@ -50,14 +50,18 @@ const teaching = {
   workedTransition: { input: '[1, 2]', steps: ['Read 1', 'Read 2'], outcome: '2' },
 };
 describe('authored Approach teaching', () => {
-  it('keeps the two-card composition without inventing a starting algorithm when teaching is absent', () => {
-    const fixture = TestBed.createComponent(StudioApproach);
-    fixture.componentRef.setInput('problem', problem);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.approach-card')).toHaveLength(2);
-    expect(fixture.nativeElement.querySelector('pre')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Existing choice');
-  });
+  it(
+    'keeps the two-card composition without inventing a starting algorithm when teaching ' +
+      'is absent',
+    () => {
+      const fixture = TestBed.createComponent(StudioApproach);
+      fixture.componentRef.setInput('problem', problem);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('.approach-card')).toHaveLength(2);
+      expect(fixture.nativeElement.querySelector('pre')).toBeNull();
+      expect(fixture.nativeElement.textContent).toContain('Existing choice');
+    },
+  );
   it('shares four paired section tracks and restores natural mobile disclosure flow', () => {
     const fixture = TestBed.createComponent(StudioApproach);
     fixture.componentRef.setInput('problem', {

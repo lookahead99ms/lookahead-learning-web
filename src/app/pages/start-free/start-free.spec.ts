@@ -17,7 +17,12 @@ import {
   startFreeTarget,
 } from './start-free';
 
-function outline(path: string, id: string, title: string, units: CourseLearningUnit[]): CourseOutline {
+function outline(
+  path: string,
+  id: string,
+  title: string,
+  units: CourseLearningUnit[],
+): CourseOutline {
   return {
     id,
     path,
@@ -105,7 +110,13 @@ describe('startFreeShowcase (what you are missing)', () => {
         size: 'big',
         columns: 2,
         fromPrice: 'From $69.99/year',
-        units: [{ key: 'learn/core-java/collections', title: 'Collections', fragment: 'unit-collections' }],
+        units: [
+          {
+            key: 'learn/core-java/collections',
+            title: 'Collections',
+            fragment: 'unit-collections',
+          },
+        ],
         more: 0,
         paidTotal: 1,
         plansLine: 'Included in Learn, Advance and Complete, from $69.99/year.',
@@ -120,14 +131,24 @@ describe('startFreeShowcase (what you are missing)', () => {
   it('fills a 4×6 grid exactly with mixed tile sizes', () => {
     const cells = { big: 4, wide: 2, tall: 2, small: 1 };
     expect(MISSING_SHOWCASE.reduce((total, tile) => total + cells[tile.size], 0)).toBe(24);
-    for (const added of ['grow/api-design', 'grow/aws-cloud', 'blaze/ai-systems-architecture', 'grow/distributed-systems'])
+    for (const added of [
+      'grow/api-design',
+      'grow/aws-cloud',
+      'blaze/ai-systems-architecture',
+      'grow/distributed-systems',
+    ])
       expect(MISSING_SHOWCASE.map((tile) => tile.key)).toContain(added);
     const keys = MISSING_SHOWCASE.map((tile) => tile.key);
     expect(keys).toContain('blaze/design-systems');
     expect(MISSING_SHOWCASE.find((tile) => tile.key === 'blaze/design-systems')?.size).toBe('big');
-    expect(MISSING_SHOWCASE.find((tile) => tile.key === 'blaze/design-fundamentals')?.size).toBe('small');
-    expect(MISSING_SHOWCASE.find((tile) => tile.key === 'learn/algorithmic-patterns')?.size).toBe('wide');
-    for (const dropped of ['learn/core-data-structures', 'grow/advanced-java']) expect(keys).not.toContain(dropped);
+    expect(MISSING_SHOWCASE.find((tile) => tile.key === 'blaze/design-fundamentals')?.size).toBe(
+      'small',
+    );
+    expect(MISSING_SHOWCASE.find((tile) => tile.key === 'learn/algorithmic-patterns')?.size).toBe(
+      'wide',
+    );
+    for (const dropped of ['learn/core-data-structures', 'grow/advanced-java'])
+      expect(keys).not.toContain(dropped);
   });
 });
 
@@ -156,12 +177,9 @@ describe('fitShowcase (every tile full, no cut-off lines)', () => {
     const fits = tile([30, 60], 0);
     list.append(full, fits, document.createElement('li'));
     fitShowcase(list);
-    expect([...full.querySelectorAll('.locked-units > li')].map((item) => (item as HTMLElement).hidden)).toEqual([
-      false,
-      false,
-      true,
-      true,
-    ]);
+    expect(
+      [...full.querySelectorAll('.locked-units > li')].map((item) => (item as HTMLElement).hidden),
+    ).toEqual([false, false, true, true]);
     expect(full.querySelector('.more')?.textContent).toBe('and 5 more');
     expect(fits.querySelector<HTMLElement>('.more')!.style.visibility).toBe('hidden');
     expect(fits.querySelector('.more')?.textContent).toBe('');
@@ -169,53 +187,78 @@ describe('fitShowcase (every tile full, no cut-off lines)', () => {
 });
 
 describe('startFreeGroups', () => {
-  it('lists Open units first, then Free with account, Learn before Blaze, with lesson routes', () => {
-    const groups = startFreeGroups(
-      levels,
-      new Map<string, CourseOutline | null>([
-        ['learn/core-java', outlines['learn/core-java']!],
-        ['blaze/system-design', outlines['blaze/system-design']!],
-        ['grow/broken', null],
-      ]),
-    );
-    expect(
-      groups.map((group) => [
-        group.heading,
-        group.items.map((item) => [item.unitTitle, item.courseTitle, item.route.join('/'), item.fragment]),
-      ]),
-    ).toEqual([
-      [
-        'Open to everyone',
+  it(
+    'lists Open units first, then Free with account, Learn before Blaze, with lesson ' + 'routes',
+    () => {
+      const groups = startFreeGroups(
+        levels,
+        new Map<string, CourseOutline | null>([
+          ['learn/core-java', outlines['learn/core-java']!],
+          ['blaze/system-design', outlines['blaze/system-design']!],
+          ['grow/broken', null],
+        ]),
+      );
+      expect(
+        groups.map((group) => [
+          group.heading,
+          group.items.map((item) => [
+            item.unitTitle,
+            item.courseTitle,
+            item.route.join('/'),
+            item.fragment,
+          ]),
+        ]),
+      ).toEqual([
         [
-          ['Java Platform', 'Java Foundations', '//learn/core-java/java-platform-lesson', undefined],
-          ['Interview Method', 'System Design', '//blaze/system-design/interview-method-lesson', undefined],
+          'Open to everyone',
+          [
+            [
+              'Java Platform',
+              'Java Foundations',
+              '//learn/core-java/java-platform-lesson',
+              undefined,
+            ],
+            [
+              'Interview Method',
+              'System Design',
+              '//blaze/system-design/interview-method-lesson',
+              undefined,
+            ],
+          ],
         ],
-      ],
-      [
-        'Free with an account',
         [
-          ['Error Handling', 'Java Foundations', '//learn/core-java/error-handling-lesson', undefined],
-          // No lesson: the unit's card on the course page.
-          ['Case Studies', 'System Design', '//blaze/system-design', 'unit-no-lesson'],
+          'Free with an account',
+          [
+            [
+              'Error Handling',
+              'Java Foundations',
+              '//learn/core-java/error-handling-lesson',
+              undefined,
+            ],
+            // No lesson: the unit's card on the course page.
+            ['Case Studies', 'System Design', '//blaze/system-design', 'unit-no-lesson'],
+          ],
         ],
-      ],
-    ]);
-  });
+      ]);
+    },
+  );
 
   it('opens the unit lesson, not a question, when both exist', () => {
     const course = outlines['learn/core-java']!;
     const target = startFreeTarget('learn', course, course.learningUnits![0]!);
-    expect(target).toEqual({ route: ['/', 'learn', 'core-java', 'java-platform-lesson'], fragment: undefined });
+    expect(target).toEqual({
+      route: ['/', 'learn', 'core-java', 'java-platform-lesson'],
+      fragment: undefined,
+    });
   });
 });
 
 describe('StartFreePage', () => {
   async function render(published: AccessLevels | null) {
-    const getCourseOutline = vi.fn(
-      (path: string, courseId: string): Observable<CourseOutline> =>
-        outlines[`${path}/${courseId}`] && courseId !== 'broken'
-          ? of(outlines[`${path}/${courseId}`]!)
-          : throwError(() => new Error('unavailable')),
+    const getCourseOutline = vi.fn((path: string, courseId: string): Observable<CourseOutline> =>
+      outlines[`${path}/${courseId}`] && courseId !== 'broken'
+        ? of(outlines[`${path}/${courseId}`]!)
+        : throwError(() => new Error('unavailable')),
     );
     await TestBed.configureTestingModule({
       providers: [
@@ -232,12 +275,21 @@ describe('StartFreePage', () => {
     return { root: harness.routeNativeElement as HTMLElement, getCourseOutline, harness };
   }
 
-  it('fills the space between the sidebars on large monitors instead of the 1440px reader', async () => {
+  it('fills the space between the sidebars on large monitors, not the 1440px reader', async () => {
     const { root } = await render(levels);
     // Component styles are emitted as <style> elements; read them as written (2026-10-16).
-    const css = [...document.querySelectorAll('style')].map(style => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
     expect(root.querySelector('main')?.classList).toContain('start-free-page');
-    expect(css).toMatch(/@media \(min-width: 1100px\) \{ \.start-free-page\[data-sidebar-columns\]\[[^\]]+\] \{ max-width: min\(1840px, calc\(100% - 2 \* var\(--reader-sidebar-space\)\)\) !important; \}/);
+    expect(css).toMatch(
+      new RegExp(
+        '@media \\(min-width: 1100px\\) \\{ \\.start-free-page\\[data-sidebar-columns\\]\\[[^' +
+          '\\]]+\\] \\{ max-width: min\\(1840px, calc\\(100% - 2 \\* ' +
+          'var\\(--reader-sidebar-space\\)\\)\\) !important; \\}',
+      ),
+    );
   });
 
   it('lists every open and free unit with plain labels and level-bearing link names', async () => {
@@ -250,18 +302,25 @@ describe('StartFreePage', () => {
     ]);
     // The showcase courses are not in this fixture, so there is nothing to show as missing.
     expect(root.querySelector('#missing')).toBeNull();
-    expect([...root.querySelectorAll('.hero-stats li')].map((item) => item.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      '2 open to everyone',
-      '2 more with a free account',
-    ]);
+    expect(
+      [...root.querySelectorAll('.hero-stats li')].map((item) =>
+        item.textContent?.replace(/\s+/g, ' ').trim(),
+      ),
+    ).toEqual(['2 open to everyone', '2 more with a free account']);
     // Each section is a card with one action on the right; Sign in stays in the header.
     expect(
-      [...root.querySelectorAll('[data-access-level="free"] .group-heading a')].map((link) => [link.textContent?.trim(), link.getAttribute('href')]),
+      [...root.querySelectorAll('[data-access-level="free"] .group-heading a')].map((link) => [
+        link.textContent?.trim(),
+        link.getAttribute('href'),
+      ]),
     ).toEqual([['Create a free account', '/sign-up?returnTo=%2Fstart-free']]);
     expect(root.querySelector('[data-access-level="open"] .group-heading a')).toBeNull();
     // The hero also leads to every plan, next to Create a free account.
     expect(
-      [...root.querySelectorAll('.hero-actions a')].map((link) => [link.textContent?.trim(), link.getAttribute('href')]),
+      [...root.querySelectorAll('.hero-actions a')].map((link) => [
+        link.textContent?.trim(),
+        link.getAttribute('href'),
+      ]),
     ).toEqual([
       ['Create a free account', '/sign-up'],
       ['See all plans', '/pricing'],
@@ -281,35 +340,49 @@ describe('StartFreePage', () => {
     // One outline request per course (free-unit courses plus the showcase, no repeats);
     // a failed course drops only its own units.
     const requested = new Set([
-      'learn/core-java', 'blaze/system-design', 'grow/broken',
+      'learn/core-java',
+      'blaze/system-design',
+      'grow/broken',
       ...MISSING_SHOWCASE.map((tile) => tile.key),
     ]);
     expect(getCourseOutline).toHaveBeenCalledTimes(requested.size);
     expect(root.textContent).not.toContain('Lost');
   });
 
-  it('shows staff the full visitor page, and a signed-in learner only what fits (DLV-209)', async () => {
+  it('shows staff the full visitor page, a learner only what fits (DLV-209)', async () => {
     const { root, harness } = await render(levels);
     const accounts = TestBed.inject(StudyPlanAccount);
-    const heroLinks = () => [...root.querySelectorAll('.hero-actions a')].map((link) => link.textContent?.trim());
+    const heroLinks = () =>
+      [...root.querySelectorAll('.hero-actions a')].map((link) => link.textContent?.trim());
 
     // A signed-in learner: no sign-up prompts, and the free section says their account can read it.
-    accounts.account.set({ accountId: 'learner', username: 'l', displayName: 'L', topicGrants: [] } as never);
+    accounts.account.set({
+      accountId: 'learner',
+      username: 'l',
+      displayName: 'L',
+      topicGrants: [],
+    } as never);
     harness.detectChanges();
     expect(root.querySelector('.staff-note')).toBeNull();
     expect(heroLinks()).toEqual(['See all plans']);
-    expect(root.querySelector('[data-access-level="free"] .start-free-note')?.textContent?.trim()).toBe(
-      'Your account can read these.',
-    );
+    expect(
+      root.querySelector('[data-access-level="free"] .start-free-note')?.textContent?.trim(),
+    ).toBe('Your account can read these.');
 
     // An author sees everything a visitor does, with a note saying so.
-    accounts.account.set({ accountId: 'author', username: 'a', displayName: 'A', topicGrants: [], authorPreview: true } as never);
+    accounts.account.set({
+      accountId: 'author',
+      username: 'a',
+      displayName: 'A',
+      topicGrants: [],
+      authorPreview: true,
+    } as never);
     harness.detectChanges();
     expect(root.querySelector('.staff-note')?.textContent).toContain('Staff view.');
     expect(heroLinks()).toEqual(['Create a free account', 'See all plans']);
-    expect(root.querySelector('[data-access-level="free"] .group-heading a')?.textContent?.trim()).toBe(
-      'Create a free account',
-    );
+    expect(
+      root.querySelector('[data-access-level="free"] .group-heading a')?.textContent?.trim(),
+    ).toBe('Create a free account');
   });
 
   it('renders a showcase course and refits its tiles when the grid resizes (DLV-209)', async () => {
@@ -334,7 +407,9 @@ describe('StartFreePage', () => {
       harness.detectChanges();
       await harness.fixture.whenStable();
       const missing = root.querySelector('#missing')!;
-      expect(missing.querySelector('.missing-course h3')?.textContent?.trim()).toBe('SQL Fundamentals');
+      expect(missing.querySelector('.missing-course h3')?.textContent?.trim()).toBe(
+        'SQL Fundamentals',
+      );
       expect(missing.querySelector('.group-heading a')?.getAttribute('href')).toBe('/pricing');
       expect(observed).toContain(missing.querySelector('.missing-courses'));
       resize?.();
@@ -373,11 +448,15 @@ describe('StartFreePage', () => {
     expect(getCourseOutline).not.toHaveBeenCalled();
   });
 
-  it('promises the lessons a plan adds conservatively: clean totals exact, others a lower milestone', () => {
-    expect(paidLessonsShown(203)).toBe('200+');
-    expect(paidLessonsShown(249)).toBe('225+');
-    expect(paidLessonsShown(200)).toBe('200');
-    expect(paidLessonsShown(87)).toBe('85+');
-    expect(paidLessonsShown(7)).toBe('7');
-  });
+  it(
+    'promises the lessons a plan adds conservatively: clean totals exact, others a lower ' +
+      'milestone',
+    () => {
+      expect(paidLessonsShown(203)).toBe('200+');
+      expect(paidLessonsShown(249)).toBe('225+');
+      expect(paidLessonsShown(200)).toBe('200');
+      expect(paidLessonsShown(87)).toBe('85+');
+      expect(paidLessonsShown(7)).toBe('7');
+    },
+  );
 });

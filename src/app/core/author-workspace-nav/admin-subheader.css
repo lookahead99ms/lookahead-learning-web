@@ -1,4 +1,5 @@
-/* One strip under the platform header: the Admin eyebrow, then the admin pages as pills; wraps on narrow screens. */
+/* One strip under the platform header: the Admin eyebrow, then the admin pages as pills; wraps on
+   narrow screens. */
 :host {
   display: block;
 }

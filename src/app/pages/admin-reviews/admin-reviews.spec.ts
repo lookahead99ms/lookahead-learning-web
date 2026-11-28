@@ -90,23 +90,33 @@ const draft = (change: Partial<PlatformReviewDraft> = {}): PlatformReviewDraft =
 });
 
 describe('platform review rules', () => {
-  it('marks a learner support ticket Ticket with its type and every staff item Feedback (DLV-971)', () => {
-    expect(kindBadge(request('r', 'problem'))).toBe('Ticket · Problem');
-    expect(kindBadge(request('r', 'feedback'))).toBe('Ticket · Feedback');
-    expect(kindBadge(request('r', 'question'))).toBe('Ticket · Question');
-    expect(kindBadge({ kind: 'request', requestType: null })).toBe('Ticket');
-    expect(kindBadge({ kind: 'review', requestType: null })).toBe('Feedback');
-    expect(kindBadge(item('a', 'x', 'X'))).toBe('Feedback');
-    expect(kindBadge({ kind: null })).toBe('Feedback');
-    expect(kindBadge({})).toBe('Feedback');
-  });
+  it(
+    'marks a learner support ticket Ticket with its type and every staff item Feedback ' +
+      '(DLV-971)',
+    () => {
+      expect(kindBadge(request('r', 'problem'))).toBe('Ticket · Problem');
+      expect(kindBadge(request('r', 'feedback'))).toBe('Ticket · Feedback');
+      expect(kindBadge(request('r', 'question'))).toBe('Ticket · Question');
+      expect(kindBadge({ kind: 'request', requestType: null })).toBe('Ticket');
+      expect(kindBadge({ kind: 'review', requestType: null })).toBe('Feedback');
+      expect(kindBadge(item('a', 'x', 'X'))).toBe('Feedback');
+      expect(kindBadge({ kind: null })).toBe('Feedback');
+      expect(kindBadge({})).toBe('Feedback');
+    },
+  );
 
-  it('writes the ticket pill as id and status, the id alone without a status, nothing before a promote (DLV-971)', () => {
-    expect(ticketPill({ ticketId: 'DLV-0042', ticketStatus: 'In progress' })).toBe('DLV-0042 · In progress');
-    expect(ticketPill({ ticketId: 'DLV-0042', ticketStatus: null })).toBe('DLV-0042');
-    expect(ticketPill({ ticketId: null, ticketStatus: null })).toBe('');
-    expect(ticketPill({})).toBe('');
-  });
+  it(
+    'writes the ticket pill as id and status, the id alone without a status, nothing ' +
+      'before a promote (DLV-971)',
+    () => {
+      expect(ticketPill({ ticketId: 'DLV-0042', ticketStatus: 'In progress' })).toBe(
+        'DLV-0042 · In progress',
+      );
+      expect(ticketPill({ ticketId: 'DLV-0042', ticketStatus: null })).toBe('DLV-0042');
+      expect(ticketPill({ ticketId: null, ticketStatus: null })).toBe('');
+      expect(ticketPill({})).toBe('');
+    },
+  );
 
   it('accepts a complete item and explains each rejected field', () => {
     expect(draftProblem(draft())).toBeNull();
@@ -170,13 +180,25 @@ describe('Platform reviews page', () => {
         status,
         ownerNote,
       }),
-      // The Domain adds the ticket to the DEV plan and stamps the record; the page shows what comes back.
+      // The Domain adds the ticket to the DEV plan and stamps the record; the page shows what comes
+      // back.
       promote: vi.fn(async (id: string) => {
-        const promoted = { ...stored.find((entry) => entry.id === id)!, ticketId: 'DLV-0042', ticketStatus: 'Backlog' };
+        const promoted = {
+          ...stored.find((entry) => entry.id === id)!,
+          ticketId: 'DLV-0042',
+          ticketStatus: 'Backlog',
+        };
         stored = stored.map((entry) => (entry.id === id ? promoted : entry));
         return { ticketId: 'DLV-0042', item: promoted };
       }),
-      runSweeps: async (job) => ({ job, ranAt: '2026-11-06T18:30:00Z', supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved: null }),
+      runSweeps: async (job) => ({
+        job,
+        ranAt: '2026-11-06T18:30:00Z',
+        supportRequestsClosed: null,
+        inboxMerged: null,
+        inboxResult: null,
+        admissionsRemoved: null,
+      }),
       attachmentUrl: async () => 'blob:test',
       releaseAttachmentUrl: () => {},
     };
@@ -217,7 +239,7 @@ describe('Platform reviews page', () => {
     [...root.querySelectorAll('.summary-title')].map((title) => title.textContent?.trim());
   let current: ReturnType<typeof TestBed.createComponent<AdminReviewsPage>>;
 
-  it('shows a reviewer only their own items and the add form, without triage controls', async () => {
+  it('shows a reviewer only their own items and the add form, no triage controls', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     const root = await render();
     expect(root.querySelector('#review-form')).not.toBeNull();
@@ -229,10 +251,9 @@ describe('Platform reviews page', () => {
   it('groups items by day, newest day first, and loads details only when a row opens', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     const root = await render();
-    expect([...root.querySelectorAll('.day-heading')].map((h) => h.firstChild?.textContent?.trim())).toEqual([
-      'Monday, 12 October 2026',
-      'Sunday, 11 October 2026',
-    ]);
+    expect(
+      [...root.querySelectorAll('.day-heading')].map((h) => h.firstChild?.textContent?.trim()),
+    ).toEqual(['Monday, 12 October 2026', 'Sunday, 11 October 2026']);
     expect(root.querySelector('.item-details')).toBeNull();
     expect(client.item).not.toHaveBeenCalled();
     const row = root.querySelectorAll('.item-summary')[1] as HTMLButtonElement;
@@ -241,7 +262,9 @@ describe('Platform reviews page', () => {
     await settle();
     expect(client.item).toHaveBeenCalledWith('b');
     expect(row.getAttribute('aria-expanded')).toBe('true');
-    expect(root.querySelector('.item-details')?.textContent).toContain('Results miss the Java lesson.');
+    expect(root.querySelector('.item-details')?.textContent).toContain(
+      'Results miss the Java lesson.',
+    );
     expect(root.querySelectorAll('.triage')).toHaveLength(1);
     row.click();
     await settle();
@@ -268,137 +291,191 @@ describe('Platform reviews page', () => {
     await settle();
     const [first, second] = client.save.mock.calls.map(([value]) => value as PlatformReviewDraft);
     expect(second).toEqual(
-      expect.objectContaining({ title: 'Search misses lessons', newFiles: [], requestKey: first.requestKey }),
+      expect.objectContaining({
+        title: 'Search misses lessons',
+        newFiles: [],
+        requestKey: first.requestKey,
+      }),
     );
     expect(client.save.mock.calls[1][1]).toBeUndefined();
     expect(titles(root)).toContain('Search misses lessons');
   });
 
-  it('offers the type as four cards like the ticket kinds, with no importance control, and sends the chosen type with the default priority (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    const root = await render('submit');
-    expect(root.querySelector('.type-picker legend')?.textContent?.trim()).toBe('Type');
-    const cards = [...root.querySelectorAll<HTMLLabelElement>('.type-option')];
-    expect(cards.map((card) => card.querySelector('strong')?.textContent)).toEqual(['Problem', 'Change request', 'Idea', 'Content correction']);
-    expect(cards.map((card) => card.querySelector('small')?.textContent)).toEqual([
-      'Something broke or looks wrong',
-      'Works, but should work differently',
-      'Something new worth adding',
-      'A lesson, text or example is wrong',
-    ]);
-    expect(cards.map((card) => card.querySelector('input')?.getAttribute('type'))).toEqual(['radio', 'radio', 'radio', 'radio']);
-    expect(cards[0].classList.contains('selected')).toBe(true);
-    expect(root.querySelector('select[name="category"]')).toBeNull();
-    expect(root.querySelector('select[name="priority"]')).toBeNull();
-    expect(root.textContent).not.toContain('How important');
-    // Page and the optional Page address sit side by side under the cards.
-    expect([...root.querySelectorAll('.form-grid > label')].map((label) => label.childNodes[0].textContent?.trim())).toEqual(['Page', 'Page address']);
-    const idea = cards[2].querySelector('input') as HTMLInputElement;
-    idea.click();
-    idea.dispatchEvent(new Event('change'));
-    await settle();
-    expect(cards[2].classList.contains('selected')).toBe(true);
-    expect(cards[0].classList.contains('selected')).toBe(false);
-    expect((root.querySelector('input[name="category"]:checked') as HTMLInputElement).value).toBe('idea');
-    const title = root.querySelector('input[name="title"]') as HTMLInputElement;
-    const details = root.querySelector('textarea[name="details"]') as HTMLTextAreaElement;
-    title.value = 'Rename a week';
-    title.dispatchEvent(new Event('input'));
-    details.value = 'Let me rename a study-plan week.';
-    details.dispatchEvent(new Event('input'));
-    await settle();
-    expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Send feedback');
-    root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
-    await settle();
-    expect(client.save.mock.calls[0][0]).toEqual(expect.objectContaining({ category: 'idea', priority: 'medium' }));
-    expect(root.querySelector('.form-status')?.textContent).toBe('Your feedback is sent.');
-  });
+  it(
+    'offers the type as four cards like the ticket kinds, with no importance control, and ' +
+      'sends the chosen type with the default priority (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      const root = await render('submit');
+      expect(root.querySelector('.type-picker legend')?.textContent?.trim()).toBe('Type');
+      const cards = [...root.querySelectorAll<HTMLLabelElement>('.type-option')];
+      expect(cards.map((card) => card.querySelector('strong')?.textContent)).toEqual([
+        'Problem',
+        'Change request',
+        'Idea',
+        'Content correction',
+      ]);
+      expect(cards.map((card) => card.querySelector('small')?.textContent)).toEqual([
+        'Something broke or looks wrong',
+        'Works, but should work differently',
+        'Something new worth adding',
+        'A lesson, text or example is wrong',
+      ]);
+      expect(cards.map((card) => card.querySelector('input')?.getAttribute('type'))).toEqual([
+        'radio',
+        'radio',
+        'radio',
+        'radio',
+      ]);
+      expect(cards[0].classList.contains('selected')).toBe(true);
+      expect(root.querySelector('select[name="category"]')).toBeNull();
+      expect(root.querySelector('select[name="priority"]')).toBeNull();
+      expect(root.textContent).not.toContain('How important');
+      // Page and the optional Page address sit side by side under the cards.
+      expect(
+        [...root.querySelectorAll('.form-grid > label')].map((label) =>
+          label.childNodes[0].textContent?.trim(),
+        ),
+      ).toEqual(['Page', 'Page address']);
+      const idea = cards[2].querySelector('input') as HTMLInputElement;
+      idea.click();
+      idea.dispatchEvent(new Event('change'));
+      await settle();
+      expect(cards[2].classList.contains('selected')).toBe(true);
+      expect(cards[0].classList.contains('selected')).toBe(false);
+      expect((root.querySelector('input[name="category"]:checked') as HTMLInputElement).value).toBe(
+        'idea',
+      );
+      const title = root.querySelector('input[name="title"]') as HTMLInputElement;
+      const details = root.querySelector('textarea[name="details"]') as HTMLTextAreaElement;
+      title.value = 'Rename a week';
+      title.dispatchEvent(new Event('input'));
+      details.value = 'Let me rename a study-plan week.';
+      details.dispatchEvent(new Event('input'));
+      await settle();
+      expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe(
+        'Send feedback',
+      );
+      root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+      await settle();
+      expect(client.save.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ category: 'idea', priority: 'medium' }),
+      );
+      expect(root.querySelector('.form-status')?.textContent).toBe('Your feedback is sent.');
+    },
+  );
 
-  it('on the Support page (compact, category from the kind cards) shows no header, tips or type picker, says Send and Clear, and reports what it edits (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    current = TestBed.createComponent(AdminReviewsPage);
-    current.componentRef.setInput('section', 'submit');
-    current.componentRef.setInput('compact', true);
-    current.componentRef.setInput('category', 'content');
-    const edits: (string | null)[] = [];
-    current.componentInstance.editing.subscribe((category) => edits.push(category));
-    current.detectChanges();
-    await settle();
-    const root = current.nativeElement as HTMLElement;
-    expect(root.querySelector('header')).toBeNull();
-    expect(root.querySelector('app-report-tips')).toBeNull();
-    expect(root.querySelector('.type-picker')).toBeNull();
-    expect(root.querySelector('#review-form')?.classList.contains('visually-hidden')).toBe(true);
-    expect([...root.querySelectorAll('.form-actions button')].map((button) => button.textContent?.trim())).toEqual(['Send', 'Clear']);
-    const title = root.querySelector('input[name="title"]') as HTMLInputElement;
-    const details = root.querySelector('textarea[name="details"]') as HTMLTextAreaElement;
-    title.value = 'Wrong output';
-    title.dispatchEvent(new Event('input'));
-    details.value = 'The second example prints 3, the text says 4.';
-    details.dispatchEvent(new Event('input'));
-    await settle();
-    // Clear empties the fields and keeps the page's category.
-    [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')].find((button) => button.textContent?.trim() === 'Clear')!.click();
-    await settle();
-    expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
-    title.value = 'Wrong output';
-    title.dispatchEvent(new Event('input'));
-    details.value = 'The second example prints 3, the text says 4.';
-    details.dispatchEvent(new Event('input'));
-    await settle();
-    root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
-    await settle();
-    expect(client.save.mock.calls[0][0]).toEqual(expect.objectContaining({ category: 'content', priority: 'medium' }));
-    // The page switches the kind card: the category follows while nothing is being edited.
-    current.componentRef.setInput('category', 'change');
-    current.detectChanges();
-    await settle();
-    expect((current.componentInstance as any).category).toBe('change');
-    // Edit: the loaded item's category is reported, the heading shows, and clearing reports null.
-    (current.componentInstance as any).fillForm({ ...stored[0], category: 'idea' });
-    current.detectChanges();
-    await settle();
-    expect(edits).toEqual(['idea']);
-    expect(root.querySelector('#review-form')?.classList.contains('visually-hidden')).toBe(false);
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
-    current.componentRef.setInput('category', 'content');
-    current.detectChanges();
-    expect((current.componentInstance as any).category).toBe('idea');
-    [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')].find((button) => button.textContent?.includes('Cancel editing'))!.click();
-    await settle();
-    expect(edits).toEqual(['idea', null]);
-    expect((current.componentInstance as any).category).toBe('content');
-  });
+  it(
+    'on the Support page (compact, category from the kind cards) shows no header, tips or ' +
+      'type picker, says Send and Clear, and reports what it edits (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      current = TestBed.createComponent(AdminReviewsPage);
+      current.componentRef.setInput('section', 'submit');
+      current.componentRef.setInput('compact', true);
+      current.componentRef.setInput('category', 'content');
+      const edits: (string | null)[] = [];
+      current.componentInstance.editing.subscribe((category) => edits.push(category));
+      current.detectChanges();
+      await settle();
+      const root = current.nativeElement as HTMLElement;
+      expect(root.querySelector('header')).toBeNull();
+      expect(root.querySelector('app-report-tips')).toBeNull();
+      expect(root.querySelector('.type-picker')).toBeNull();
+      expect(root.querySelector('#review-form')?.classList.contains('visually-hidden')).toBe(true);
+      expect(
+        [...root.querySelectorAll('.form-actions button')].map((button) =>
+          button.textContent?.trim(),
+        ),
+      ).toEqual(['Send', 'Clear']);
+      const title = root.querySelector('input[name="title"]') as HTMLInputElement;
+      const details = root.querySelector('textarea[name="details"]') as HTMLTextAreaElement;
+      title.value = 'Wrong output';
+      title.dispatchEvent(new Event('input'));
+      details.value = 'The second example prints 3, the text says 4.';
+      details.dispatchEvent(new Event('input'));
+      await settle();
+      // Clear empties the fields and keeps the page's category.
+      [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')]
+        .find((button) => button.textContent?.trim() === 'Clear')!
+        .click();
+      await settle();
+      expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
+      title.value = 'Wrong output';
+      title.dispatchEvent(new Event('input'));
+      details.value = 'The second example prints 3, the text says 4.';
+      details.dispatchEvent(new Event('input'));
+      await settle();
+      root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+      await settle();
+      expect(client.save.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ category: 'content', priority: 'medium' }),
+      );
+      // The page switches the kind card: the category follows while nothing is being edited.
+      current.componentRef.setInput('category', 'change');
+      current.detectChanges();
+      await settle();
+      expect((current.componentInstance as any).category).toBe('change');
+      // Edit: the loaded item's category is reported, the heading shows, and clearing reports null.
+      (current.componentInstance as any).fillForm({ ...stored[0], category: 'idea' });
+      current.detectChanges();
+      await settle();
+      expect(edits).toEqual(['idea']);
+      expect(root.querySelector('#review-form')?.classList.contains('visually-hidden')).toBe(false);
+      expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
+      current.componentRef.setInput('category', 'content');
+      current.detectChanges();
+      expect((current.componentInstance as any).category).toBe('idea');
+      [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')]
+        .find((button) => button.textContent?.includes('Cancel editing'))!
+        .click();
+      await settle();
+      expect(edits).toEqual(['idea', null]);
+      expect((current.componentInstance as any).category).toBe('content');
+    },
+  );
 
-  it('preselects the type card of the item being edited and never carries its stored importance (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    stored[0] = { ...stored[0], category: 'content', priority: 'high' };
-    TestBed.inject(ReviewEditIntent).set('a');
-    const root = await render('submit');
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
-    expect(root.querySelector('.type-option.selected strong')?.textContent).toBe('Content correction');
-    expect((root.querySelector('input[name="category"]:checked') as HTMLInputElement).value).toBe('content');
-    expect(root.querySelector('select[name="priority"]')).toBeNull();
-    const title = root.querySelector('input[name="title"]') as HTMLInputElement;
-    title.value = 'Item a, corrected';
-    title.dispatchEvent(new Event('input'));
-    await settle();
-    root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
-    await settle();
-    expect(client.save.mock.calls[0][0]).toEqual(expect.objectContaining({ category: 'content', priority: 'medium' }));
-    expect(client.save.mock.calls[0][1]).toBe('a');
-  });
+  it(
+    'preselects the type card of the item being edited and never carries its stored ' +
+      'importance (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      stored[0] = { ...stored[0], category: 'content', priority: 'high' };
+      TestBed.inject(ReviewEditIntent).set('a');
+      const root = await render('submit');
+      expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
+      expect(root.querySelector('.type-option.selected strong')?.textContent).toBe(
+        'Content correction',
+      );
+      expect((root.querySelector('input[name="category"]:checked') as HTMLInputElement).value).toBe(
+        'content',
+      );
+      expect(root.querySelector('select[name="priority"]')).toBeNull();
+      const title = root.querySelector('input[name="title"]') as HTMLInputElement;
+      title.value = 'Item a, corrected';
+      title.dispatchEvent(new Event('input'));
+      await settle();
+      root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+      await settle();
+      expect(client.save.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ category: 'content', priority: 'medium' }),
+      );
+      expect(client.save.mock.calls[0][1]).toBe('a');
+    },
+  );
 
   it('shows no importance on a row and keeps the kind marker first (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     const root = await render('submitted');
     const row = root.querySelector('.item-summary')!;
     expect(row.textContent).not.toMatch(/importance/i);
-    expect(row.querySelector('.summary-head')?.firstElementChild?.classList.contains('kind-badge')).toBe(true);
+    expect(
+      row.querySelector('.summary-head')?.firstElementChild?.classList.contains('kind-badge'),
+    ).toBe(true);
     expect(row.querySelector('.kind-badge')?.textContent?.trim()).toBe('Feedback');
   });
 
-  it('shows the owner every reviewer, per-reviewer counts, filters and the reviewer view', async () => {
+  it('shows the owner every reviewer, counts per reviewer, filters and reviewer view', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     const root = await render();
     expect(root.querySelector('#review-form')).toBeNull();
@@ -422,127 +499,180 @@ describe('Platform reviews page', () => {
     expect(root.textContent).toContain('Nothing submitted yet.');
   });
 
-  it('splits into Give feedback (the form) and Support tickets and feedback (the items and their status) for a reviewer (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    let root = await render('submit');
-    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Tell us what should change.');
-    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('One item for each problem, change or idea on the platform. Attach screenshots when they help. Other reviewers cannot see your items; the owner sets a status on each one under Support tickets and feedback.');
-    expect(root.querySelector('#review-form')).not.toBeNull();
-    expect(root.querySelector('#review-items')).toBeNull();
-    expect(root.querySelector('.view-tabs')).toBeNull();
-    current.destroy();
-    root = await render('submitted');
-    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Your feedback, and where each item stands.');
-    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Each item shows the status the owner set. Add new feedback under Give feedback on Support.');
-    expect(root.querySelector('#review-form')).toBeNull();
-    expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your feedback');
-    expect(titles(root)).toEqual(['Item a']);
-  });
+  it(
+    'splits into Give feedback (the form) and Support tickets and feedback (the items and ' +
+      'their status) for a reviewer (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      let root = await render('submit');
+      expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe(
+        'Tell us what should change.',
+      );
+      expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'One item for each problem, change or idea on the platform. Attach screenshots ' +
+          'when they help. Other reviewers cannot see your items; the owner sets a status on ' +
+          'each one under Support tickets and feedback.',
+      );
+      expect(root.querySelector('#review-form')).not.toBeNull();
+      expect(root.querySelector('#review-items')).toBeNull();
+      expect(root.querySelector('.view-tabs')).toBeNull();
+      current.destroy();
+      root = await render('submitted');
+      expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe(
+        'Your feedback, and where each item stands.',
+      );
+      expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Each item shows the status the owner set. Add new feedback under Give feedback ' +
+          'on Support.',
+      );
+      expect(root.querySelector('#review-form')).toBeNull();
+      expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your feedback');
+      expect(titles(root)).toEqual(['Item a']);
+    },
+  );
 
-  it('gives the owner the form alone under Give feedback, and the overview with every item under Support tickets and feedback (DLV-971)', async () => {
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    let root = await render('submit');
-    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Tell us what should change.');
-    expect(root.querySelector('#review-form')).not.toBeNull();
-    expect(root.querySelector('.view-tabs')).toBeNull();
-    expect(root.querySelector('#review-overview')).toBeNull();
-    expect(root.querySelector('#review-items')).toBeNull();
-    current.destroy();
-    root = await render('submitted');
-    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('See what reviewers want to change.');
-    expect(root.querySelector('#review-overview')).not.toBeNull();
-    expect(root.querySelector('#review-form')).toBeNull();
-    const mine = [...root.querySelectorAll('.view-tabs button')].find((button) => button.textContent?.includes('Mine')) as HTMLButtonElement;
-    mine.click();
-    current.detectChanges();
-    expect(root.querySelector('#review-form')).toBeNull();
-    expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your feedback');
-  });
+  it(
+    'gives the owner the form alone under Give feedback, and the overview with every item ' +
+      'under Support tickets and feedback (DLV-971)',
+    async () => {
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      let root = await render('submit');
+      expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe(
+        'Tell us what should change.',
+      );
+      expect(root.querySelector('#review-form')).not.toBeNull();
+      expect(root.querySelector('.view-tabs')).toBeNull();
+      expect(root.querySelector('#review-overview')).toBeNull();
+      expect(root.querySelector('#review-items')).toBeNull();
+      current.destroy();
+      root = await render('submitted');
+      expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe(
+        'See what reviewers want to change.',
+      );
+      expect(root.querySelector('#review-overview')).not.toBeNull();
+      expect(root.querySelector('#review-form')).toBeNull();
+      const mine = [...root.querySelectorAll('.view-tabs button')].find((button) =>
+        button.textContent?.includes('Mine'),
+      ) as HTMLButtonElement;
+      mine.click();
+      current.detectChanges();
+      expect(root.querySelector('#review-form')).toBeNull();
+      expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your feedback');
+    },
+  );
 
-  it('shows the Give feedback form even when the item list cannot load, and never asks for the list there (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    failing = true;
-    const listed = vi.spyOn(client, 'list');
-    const root = await render('submit');
-    expect(root.querySelector('#review-form')).not.toBeNull();
-    expect(root.querySelector('.state-panel')).toBeNull();
-    expect(root.textContent).not.toContain('Tickets and feedback are unavailable');
-    expect(listed).not.toHaveBeenCalled();
-  });
+  it(
+    'shows the Give feedback form even when the item list cannot load, and never asks for ' +
+      'the list there (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      failing = true;
+      const listed = vi.spyOn(client, 'list');
+      const root = await render('submit');
+      expect(root.querySelector('#review-form')).not.toBeNull();
+      expect(root.querySelector('.state-panel')).toBeNull();
+      expect(root.textContent).not.toContain('Tickets and feedback are unavailable');
+      expect(listed).not.toHaveBeenCalled();
+    },
+  );
 
-  it('says Nothing submitted yet for a reviewer or the owner with nothing recorded (DLV-971)', async () => {
-    stored = [];
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    let root = await render('submitted');
-    expect(root.querySelector('.state-panel')).toBeNull();
-    expect(root.textContent).toContain('Nothing submitted yet.');
-    current.destroy();
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    root = await render('submitted');
-    expect(root.textContent).toContain('Nothing submitted yet.');
-  });
+  it(
+    'says Nothing submitted yet for a reviewer or the owner with nothing recorded ' + '(DLV-971)',
+    async () => {
+      stored = [];
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      let root = await render('submitted');
+      expect(root.querySelector('.state-panel')).toBeNull();
+      expect(root.textContent).toContain('Nothing submitted yet.');
+      current.destroy();
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      root = await render('submitted');
+      expect(root.textContent).toContain('Nothing submitted yet.');
+    },
+  );
 
   it('names the unavailable state after the items, not the reviews (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     failing = true;
     const root = await render('submitted');
-    expect(root.querySelector('.state-panel h2')?.textContent).toBe('Tickets and feedback are unavailable');
-  });
-
-  it('denies an account the service answers with role "user" itself, wherever the page is embedded (DLV-971, audit finding 2)', async () => {
-    viewer = { role: 'user', reviewerId: 'learner-1', displayName: 'Learner 1' };
-    const root = await render('submit');
-    expect(root.textContent).toContain('Feedback access required');
-    expect(root.querySelector('#review-form')).toBeNull();
-    expect(root.querySelector('#review-items')).toBeNull();
-  });
-
-  it('shows an admin the overview and every item like the owner, but never the triage form (DLV-971)', async () => {
-    viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
-    stored[1] = { ...stored[1], status: 'planned', ownerNote: 'Scheduled for the next release.' };
-    stored.push({ ...item('d', 'reviewer-2', 'Reviewer 2'), createdAt: '2026-10-11T09:00:00.000Z' });
-    const root = await render('submitted');
-    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('See what reviewers want to change.');
-    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      "Every reviewer's feedback and every learner support ticket, newest day first. Open one to read it and see its images. You set the status of learner support tickets; the owner sets the status and note on feedback.",
+    expect(root.querySelector('.state-panel h2')?.textContent).toBe(
+      'Tickets and feedback are unavailable',
     );
-    expect(root.querySelector('#review-overview')).not.toBeNull();
-    expect([...root.querySelectorAll('.view-tabs button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'All 3',
-      'Support tickets 0',
-      'Feedback 3',
-      'Mine 2',
-    ]);
-    expect(root.querySelectorAll('.filters select')).toHaveLength(4);
-    expect(titles(root)).toEqual(['Item a', 'Item b', 'Item d']);
-    // Another reviewer's item: the owner's note is read-only, no status or note controls.
-    const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    rows[0].click();
-    await settle();
-    expect(root.querySelector('.item-details')?.textContent).toContain('Results miss the Java lesson.');
-    expect(root.querySelector('.triage')).toBeNull();
-    expect(root.textContent).not.toContain('Save status');
-    expect(root.querySelector('.item-actions')).toBeNull();
-    rows[0].click();
-    await settle();
-    rows[1].click();
-    await settle();
-    expect(root.querySelector('.owner-note')?.textContent).toContain('Scheduled for the next release.');
-    expect(root.querySelector('.triage')).toBeNull();
-    expect(root.querySelector('.item-detail select')).toBeNull();
-    expect(root.querySelector('.item-detail textarea')).toBeNull();
-    expect(root.querySelector('.item-actions')).toBeNull();
-    rows[1].click();
-    await settle();
-    // The admin's own item, still New: Edit and Delete, as a reviewer has.
-    rows[2].click();
-    await settle();
-    expect(root.querySelector('.triage')).toBeNull();
-    expect([...root.querySelectorAll('.item-actions button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'Edit Item d',
-      'Delete Item d',
-    ]);
   });
+
+  it(
+    'denies an account the service answers with role "user" itself, wherever the page is ' +
+      'embedded (DLV-971, audit finding 2)',
+    async () => {
+      viewer = { role: 'user', reviewerId: 'learner-1', displayName: 'Learner 1' };
+      const root = await render('submit');
+      expect(root.textContent).toContain('Feedback access required');
+      expect(root.querySelector('#review-form')).toBeNull();
+      expect(root.querySelector('#review-items')).toBeNull();
+    },
+  );
+
+  it(
+    'shows an admin the overview and every item like the owner, but never the triage form ' +
+      '(DLV-971)',
+    async () => {
+      viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
+      stored[1] = { ...stored[1], status: 'planned', ownerNote: 'Scheduled for the next release.' };
+      stored.push({
+        ...item('d', 'reviewer-2', 'Reviewer 2'),
+        createdAt: '2026-10-11T09:00:00.000Z',
+      });
+      const root = await render('submitted');
+      expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe(
+        'See what reviewers want to change.',
+      );
+      expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        "Every reviewer's feedback and every learner support ticket, newest day first. " +
+          'Open one to read it and see its images. You set the status of learner support ' +
+          'tickets; the owner sets the status and note on feedback.',
+      );
+      expect(root.querySelector('#review-overview')).not.toBeNull();
+      expect(
+        [...root.querySelectorAll('.view-tabs button')].map((b) =>
+          b.textContent?.replace(/\s+/g, ' ').trim(),
+        ),
+      ).toEqual(['All 3', 'Support tickets 0', 'Feedback 3', 'Mine 2']);
+      expect(root.querySelectorAll('.filters select')).toHaveLength(4);
+      expect(titles(root)).toEqual(['Item a', 'Item b', 'Item d']);
+      // Another reviewer's item: the owner's note is read-only, no status or note controls.
+      const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      rows[0].click();
+      await settle();
+      expect(root.querySelector('.item-details')?.textContent).toContain(
+        'Results miss the Java lesson.',
+      );
+      expect(root.querySelector('.triage')).toBeNull();
+      expect(root.textContent).not.toContain('Save status');
+      expect(root.querySelector('.item-actions')).toBeNull();
+      rows[0].click();
+      await settle();
+      rows[1].click();
+      await settle();
+      expect(root.querySelector('.owner-note')?.textContent).toContain(
+        'Scheduled for the next release.',
+      );
+      expect(root.querySelector('.triage')).toBeNull();
+      expect(root.querySelector('.item-detail select')).toBeNull();
+      expect(root.querySelector('.item-detail textarea')).toBeNull();
+      expect(root.querySelector('.item-actions')).toBeNull();
+      rows[1].click();
+      await settle();
+      // The admin's own item, still New: Edit and Delete, as a reviewer has.
+      rows[2].click();
+      await settle();
+      expect(root.querySelector('.triage')).toBeNull();
+      expect(
+        [...root.querySelectorAll('.item-actions button')].map((b) =>
+          b.textContent?.replace(/\s+/g, ' ').trim(),
+        ),
+      ).toEqual(['Edit Item d', 'Delete Item d']);
+    },
+  );
 
   it('keeps the triage form for the owner alone (DLV-971)', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
@@ -550,7 +680,9 @@ describe('Platform reviews page', () => {
     (root.querySelector('.item-summary') as HTMLButtonElement).click();
     await settle();
     expect(root.querySelector('.triage')).not.toBeNull();
-    expect(root.querySelector('.triage button[type="submit"]')?.textContent?.trim()).toBe('Save status');
+    expect(root.querySelector('.triage button[type="submit"]')?.textContent?.trim()).toBe(
+      'Save status',
+    );
     const note = root.querySelector('.triage textarea') as HTMLTextAreaElement;
     note.value = 'Thanks, scheduled.';
     note.dispatchEvent(new Event('input'));
@@ -561,339 +693,454 @@ describe('Platform reviews page', () => {
     expect(root.querySelector('.owner-note')?.textContent).toContain('Thanks, scheduled.');
   });
 
-  it('carries the report tips inside the Give feedback card and keeps the screenshots as one slim row (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    let root = await render('submit');
-    const tips = root.querySelector('app-report-tips')!;
-    expect(tips).not.toBeNull();
-    expect(tips.querySelector('.tips-label')?.textContent?.trim()).toBe('A helpful report');
-    // Under the lede, above the form.
-    const header = root.querySelector('header')!;
-    const form = root.querySelector('form')!;
-    expect(header.compareDocumentPosition(tips) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(tips.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const attach = root.querySelector('.attachments-field .attach')!;
-    expect(attach.querySelector('.file-picker')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('📎 Add screenshots');
-    expect(attach.querySelector('input[type="file"]')?.getAttribute('accept')).toBe('image/png,image/jpeg,image/webp');
-    expect(attach.querySelector('.hint')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'Up to 6 images, 5 MB each; or paste one into the form.',
-    );
-    expect(root.querySelector('.attachments-field legend')?.classList.contains('visually-hidden')).toBe(true);
-    current.destroy();
-    root = await render('submitted');
-    expect(root.querySelector('app-report-tips')).toBeNull();
-  });
+  it(
+    'carries the report tips inside the Give feedback card and keeps the screenshots as ' +
+      'one slim row (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      let root = await render('submit');
+      const tips = root.querySelector('app-report-tips')!;
+      expect(tips).not.toBeNull();
+      expect(tips.querySelector('.tips-label')?.textContent?.trim()).toBe('A helpful report');
+      // Under the lede, above the form.
+      const header = root.querySelector('header')!;
+      const form = root.querySelector('form')!;
+      expect(header.compareDocumentPosition(tips) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(tips.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      const attach = root.querySelector('.attachments-field .attach')!;
+      expect(attach.querySelector('.file-picker')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        '📎 Add screenshots',
+      );
+      expect(attach.querySelector('input[type="file"]')?.getAttribute('accept')).toBe(
+        'image/png,image/jpeg,image/webp',
+      );
+      expect(attach.querySelector('.hint')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Up to 6 images, 5 MB each; or paste one into the form.',
+      );
+      expect(
+        root.querySelector('.attachments-field legend')?.classList.contains('visually-hidden'),
+      ).toBe(true);
+      current.destroy();
+      root = await render('submitted');
+      expect(root.querySelector('app-report-tips')).toBeNull();
+    },
+  );
 
-  it('badges learner requests, filters by request type and counts them in the Overview (DLV-971)', async () => {
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    stored = [
-      { ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' },
-      { ...request('f', 'feedback'), createdAt: '2026-10-12T15:30:00.000Z' },
-      { ...request('q', 'question', 'learner-2'), reviewerName: 'Learner 2', createdAt: '2026-10-12T15:10:00.000Z' },
-      ...stored,
-    ];
-    const root = await render('submitted');
-    expect([...root.querySelectorAll('thead th')].map((cell) => cell.textContent?.trim())).toEqual([
-      'From',
-      'Items',
-      'Tickets',
-      'New',
-      'Accepted',
-      'Planned',
-      'Done',
-      'Declined',
-    ]);
-    const rowOf = (name: string) =>
-      [...root.querySelectorAll('tbody tr')]
-        .find((row) => row.querySelector('th')?.textContent?.trim() === name)!
-        .querySelectorAll('td');
-    expect([...rowOf('Learner 1')].map((cell) => cell.textContent?.trim())).toEqual(['2', '2', '2', '0', '0', '0', '0']);
-    expect([...rowOf('Learner 2')].map((cell) => cell.textContent?.trim())).toEqual(['1', '1', '1', '0', '0', '0', '0']);
-    expect([...rowOf('Reviewer 1')].map((cell) => cell.textContent?.trim())).toEqual(['1', '0', '1', '0', '0', '0', '0']);
-    const badges = [...root.querySelectorAll('.item-row')].map((row) => row.querySelector('.kind-badge')?.textContent?.trim() ?? null);
-    expect(badges).toEqual([
-      'Ticket · Problem',
-      'Ticket · Feedback',
-      'Ticket · Question',
-      'Feedback',
-      'Feedback',
-    ]);
-    expect([...root.querySelectorAll('.item-row .kind-badge.ticket')]).toHaveLength(3);
-    const type = root.querySelectorAll<HTMLSelectElement>('.filters select')[3];
-    expect([...type.options].map((option) => option.textContent?.trim())).toEqual([
-      'All types',
-      'Problem',
-      'Change request',
-      'Idea',
-      'Content correction',
-      'Support ticket: Problem',
-      'Support ticket: Feedback',
-      'Support ticket: Question',
-    ]);
-    type.value = 'request:feedback';
-    type.dispatchEvent(new Event('change'));
-    current.detectChanges();
-    expect(titles(root)).toEqual(['Request f']);
-    expect(root.querySelector('.result-count')?.textContent?.trim()).toBe('1 of 5 items');
-    type.value = 'request:problem';
-    type.dispatchEvent(new Event('change'));
-    current.detectChanges();
-    expect(titles(root)).toEqual(['Request p']);
-    // A review category still matches reviews (and requests stored under it).
-    type.value = 'problem';
-    type.dispatchEvent(new Event('change'));
-    current.detectChanges();
-    expect(titles(root)).toEqual(['Request p', 'Item a', 'Item b']);
-    type.value = '';
-    type.dispatchEvent(new Event('change'));
-    current.detectChanges();
-    expect(titles(root)).toHaveLength(5);
-  });
-
-  it('lets an admin set the status of a learner request but not of a review; the owner sets both (DLV-971)', async () => {
-    stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
-    viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
-    let root = await render('submitted');
-    let rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    rows[0].click();
-    await settle();
-    expect(root.querySelector('.triage')).not.toBeNull();
-    expect(root.querySelector('.triage button[type="submit"]')?.textContent?.trim()).toBe('Save status');
-    expect(root.querySelector('.item-actions')).toBeNull();
-    rows[0].click();
-    await settle();
-    rows[1].click();
-    await settle();
-    expect(root.querySelector('.triage')).toBeNull();
-    expect(root.textContent).not.toContain('Save status');
-    current.destroy();
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    root = await render('submitted');
-    rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    rows[0].click();
-    await settle();
-    expect(root.querySelector('.triage')).not.toBeNull();
-    rows[0].click();
-    await settle();
-    rows[1].click();
-    await settle();
-    expect(root.querySelector('.triage')).not.toBeNull();
-  });
-
-  it('shows the reference of an open request with a copy button that reports Copied or Copy failed (DLV-971)', async () => {
-    stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
-    viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
-    const writeText = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('denied'));
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    const root = await render('submitted');
-    const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    rows[0].click();
-    await settle();
-    const reference = root.querySelector('.item-reference')!;
-    expect(reference.textContent?.replace(/\s+/g, ' ').trim()).toBe('Reference: SUP-P-2026 Copy reference SUP-P-2026');
-    expect(reference.querySelector('code')?.textContent).toBe('SUP-P-2026');
-    const copy = reference.querySelector<HTMLButtonElement>('.copy-reference')!;
-    copy.click();
-    await settle();
-    expect(writeText).toHaveBeenCalledWith('SUP-P-2026');
-    expect(reference.querySelector('.copy-status')?.textContent).toBe('Copied');
-    copy.click();
-    await settle();
-    expect(reference.querySelector('.copy-status')?.textContent).toBe('Copy failed');
-    // A review has no reference line.
-    rows[0].click();
-    await settle();
-    rows[1].click();
-    await settle();
-    expect(root.querySelector('.item-reference')).toBeNull();
-    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
-  });
-
-  it('never offers Edit or Delete on a learner request, even the viewer\'s own, and shows no lock hint (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    stored = [
-      { ...request('p', 'problem', 'reviewer-1'), reviewerName: 'Reviewer 1', createdAt: '2026-10-12T16:00:00.000Z' },
-      ...stored,
-    ];
-    const root = await render('submitted');
-    expect(titles(root)).toEqual(['Request p', 'Item a']);
-    const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    expect(rows[0].querySelector('.kind-badge')?.textContent?.trim()).toBe('Ticket · Problem');
-    rows[0].click();
-    await settle();
-    expect(root.querySelector('.item-actions')).toBeNull();
-    expect(root.querySelector('.triage')).toBeNull();
-    expect(root.textContent).not.toContain('can no longer be changed');
-    rows[0].click();
-    await settle();
-    rows[1].click();
-    await settle();
-    expect([...root.querySelectorAll('.item-actions button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'Edit Item a',
-      'Delete Item a',
-    ]);
-  });
-
-  it('Edit on Support tickets and feedback records the item and opens the Give feedback tab, which loads it into the form (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const intent = TestBed.inject(ReviewEditIntent);
-    let root = await render('submitted');
-    (root.querySelector('.item-summary') as HTMLButtonElement).click();
-    await settle();
-    expect(root.querySelector('#review-form')).toBeNull();
-    [...root.querySelectorAll<HTMLButtonElement>('.item-actions button')]
-      .find((button) => button.textContent?.includes('Edit'))!
-      .click();
-    await settle();
-    expect(intent.itemId()).toBe('a');
-    expect(navigate).toHaveBeenCalledWith(['/support'], { queryParams: { view: null }, queryParamsHandling: 'merge' });
-    current.destroy();
-    // The Give feedback instance on /support takes the id on init and clears it.
-    client.item.mockClear();
-    root = await render('submit');
-    expect(client.item).toHaveBeenCalledWith('a');
-    expect(intent.itemId()).toBeNull();
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
-    expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('Item a');
-    expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe('Results miss the Java lesson.');
-    expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Save changes');
-    current.destroy();
-    // A fresh Give feedback instance with nothing pending opens the empty form.
-    client.item.mockClear();
-    root = await render('submit');
-    expect(client.item).not.toHaveBeenCalled();
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
-  });
-
-  it('tells the reviewer when a recorded edit cannot be opened, and never loads a request into the form (DLV-971)', async () => {
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    const intent = TestBed.inject(ReviewEditIntent);
-    intent.set('missing');
-    client.item.mockRejectedValueOnce(new PlatformReviewError('not-found'));
-    let root = await render('submit');
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
-    expect(root.querySelector('.form-status')?.textContent).toContain('could not be opened for editing');
-    current.destroy();
-    stored = [request('p', 'problem', 'reviewer-1')];
-    intent.set('p');
-    root = await render('submit');
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
-    expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
-  });
-
-  it('hides Promote to ticket on a production build without a DEV session; a DEV session brings it back (owner, 2026-11-07)', async () => {
-    stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    const env = environment as { production: boolean };
-    env.production = true;
-    try {
+  it(
+    'badges learner requests, filters by request type and counts them in the Overview ' +
+      '(DLV-971)',
+    async () => {
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      stored = [
+        { ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' },
+        { ...request('f', 'feedback'), createdAt: '2026-10-12T15:30:00.000Z' },
+        {
+          ...request('q', 'question', 'learner-2'),
+          reviewerName: 'Learner 2',
+          createdAt: '2026-10-12T15:10:00.000Z',
+        },
+        ...stored,
+      ];
       const root = await render('submitted');
-      [...root.querySelectorAll<HTMLButtonElement>('.item-summary')][1].click();
+      expect(
+        [...root.querySelectorAll('thead th')].map((cell) => cell.textContent?.trim()),
+      ).toEqual(['From', 'Items', 'Tickets', 'New', 'Accepted', 'Planned', 'Done', 'Declined']);
+      const rowOf = (name: string) =>
+        [...root.querySelectorAll('tbody tr')]
+          .find((row) => row.querySelector('th')?.textContent?.trim() === name)!
+          .querySelectorAll('td');
+      expect([...rowOf('Learner 1')].map((cell) => cell.textContent?.trim())).toEqual([
+        '2',
+        '2',
+        '2',
+        '0',
+        '0',
+        '0',
+        '0',
+      ]);
+      expect([...rowOf('Learner 2')].map((cell) => cell.textContent?.trim())).toEqual([
+        '1',
+        '1',
+        '1',
+        '0',
+        '0',
+        '0',
+        '0',
+      ]);
+      expect([...rowOf('Reviewer 1')].map((cell) => cell.textContent?.trim())).toEqual([
+        '1',
+        '0',
+        '1',
+        '0',
+        '0',
+        '0',
+        '0',
+      ]);
+      const badges = [...root.querySelectorAll('.item-row')].map(
+        (row) => row.querySelector('.kind-badge')?.textContent?.trim() ?? null,
+      );
+      expect(badges).toEqual([
+        'Ticket · Problem',
+        'Ticket · Feedback',
+        'Ticket · Question',
+        'Feedback',
+        'Feedback',
+      ]);
+      expect([...root.querySelectorAll('.item-row .kind-badge.ticket')]).toHaveLength(3);
+      const type = root.querySelectorAll<HTMLSelectElement>('.filters select')[3];
+      expect([...type.options].map((option) => option.textContent?.trim())).toEqual([
+        'All types',
+        'Problem',
+        'Change request',
+        'Idea',
+        'Content correction',
+        'Support ticket: Problem',
+        'Support ticket: Feedback',
+        'Support ticket: Question',
+      ]);
+      type.value = 'request:feedback';
+      type.dispatchEvent(new Event('change'));
+      current.detectChanges();
+      expect(titles(root)).toEqual(['Request f']);
+      expect(root.querySelector('.result-count')?.textContent?.trim()).toBe('1 of 5 items');
+      type.value = 'request:problem';
+      type.dispatchEvent(new Event('change'));
+      current.detectChanges();
+      expect(titles(root)).toEqual(['Request p']);
+      // A review category still matches reviews (and requests stored under it).
+      type.value = 'problem';
+      type.dispatchEvent(new Event('change'));
+      current.detectChanges();
+      expect(titles(root)).toEqual(['Request p', 'Item a', 'Item b']);
+      type.value = '';
+      type.dispatchEvent(new Event('change'));
+      current.detectChanges();
+      expect(titles(root)).toHaveLength(5);
+    },
+  );
+
+  it(
+    'lets an admin set the status of a learner request but not of a review; the owner ' +
+      'sets both (DLV-971)',
+    async () => {
+      stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
+      viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
+      let root = await render('submitted');
+      let rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      rows[0].click();
       await settle();
-      expect(root.querySelector('.promote button')).toBeNull();
-      TestBed.inject(DevSession).gated.set(true);
+      expect(root.querySelector('.triage')).not.toBeNull();
+      expect(root.querySelector('.triage button[type="submit"]')?.textContent?.trim()).toBe(
+        'Save status',
+      );
+      expect(root.querySelector('.item-actions')).toBeNull();
+      rows[0].click();
       await settle();
-      expect(root.querySelector<HTMLButtonElement>('.promote button')?.textContent).toContain('Promote to ticket');
-    } finally {
-      env.production = false;
-      TestBed.inject(DevSession).gated.set(false);
-    }
-  });
+      rows[1].click();
+      await settle();
+      expect(root.querySelector('.triage')).toBeNull();
+      expect(root.textContent).not.toContain('Save status');
+      current.destroy();
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      root = await render('submitted');
+      rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      rows[0].click();
+      await settle();
+      expect(root.querySelector('.triage')).not.toBeNull();
+      rows[0].click();
+      await settle();
+      rows[1].click();
+      await settle();
+      expect(root.querySelector('.triage')).not.toBeNull();
+    },
+  );
 
-  it('offers Promote to ticket to the owner on any item, to an admin on a learner request only, and shows the ticket pill once promoted (DLV-971)', async () => {
-    stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    let root = await render('submitted');
-    let rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    expect(root.querySelector('.ticket-pill')).toBeNull();
-    rows[1].click();
-    await settle();
-    const button = root.querySelector<HTMLButtonElement>('.promote button')!;
-    expect(button.textContent?.replace(/\s+/g, ' ').trim()).toBe('Promote to ticket Item a');
-    button.click();
-    await settle();
-    expect(client.promote).toHaveBeenCalledWith('a');
-    expect(root.querySelector('.promote')).toBeNull();
-    const pill = root.querySelector<HTMLAnchorElement>('.item-ticket a.ticket-pill')!;
-    expect(pill.textContent?.trim()).toBe('DLV-0042 · Backlog');
-    expect(pill.getAttribute('href')).toBe('/delivery-plan#DLV-0042');
-    expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe('Ticket DLV-0042 created.');
-    // The row carries the pill too, as text inside the row button.
-    expect(rows[1].querySelector('.summary-head .ticket-pill')?.textContent?.trim()).toBe('DLV-0042 · Backlog');
-    expect(rows[1].querySelector('a')).toBeNull();
-    // The status form stays: promoting does not replace triage.
-    expect(root.querySelector('.triage')).not.toBeNull();
-    current.destroy();
+  it(
+    'shows the reference of an open request with a copy button that reports Copied or ' +
+      'Copy failed (DLV-971)',
+    async () => {
+      stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
+      viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
+      const writeText = vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('denied'));
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+      const root = await render('submitted');
+      const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      rows[0].click();
+      await settle();
+      const reference = root.querySelector('.item-reference')!;
+      expect(reference.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Reference: SUP-P-2026 Copy reference SUP-P-2026',
+      );
+      expect(reference.querySelector('code')?.textContent).toBe('SUP-P-2026');
+      const copy = reference.querySelector<HTMLButtonElement>('.copy-reference')!;
+      copy.click();
+      await settle();
+      expect(writeText).toHaveBeenCalledWith('SUP-P-2026');
+      expect(reference.querySelector('.copy-status')?.textContent).toBe('Copied');
+      copy.click();
+      await settle();
+      expect(reference.querySelector('.copy-status')?.textContent).toBe('Copy failed');
+      // A review has no reference line.
+      rows[0].click();
+      await settle();
+      rows[1].click();
+      await settle();
+      expect(root.querySelector('.item-reference')).toBeNull();
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+    },
+  );
 
-    viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
-    root = await render('submitted');
-    rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    rows[0].click();
-    await settle();
-    expect(root.querySelector('.promote button')).not.toBeNull();
-    rows[0].click();
-    await settle();
-    rows[2].click();
-    await settle();
-    expect(root.querySelector('.promote')).toBeNull();
-    expect(root.textContent).not.toContain('Promote to ticket');
-    current.destroy();
+  it(
+    "never offers Edit or Delete on a learner request, even the viewer's own, and shows " +
+      'no lock hint (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      stored = [
+        {
+          ...request('p', 'problem', 'reviewer-1'),
+          reviewerName: 'Reviewer 1',
+          createdAt: '2026-10-12T16:00:00.000Z',
+        },
+        ...stored,
+      ];
+      const root = await render('submitted');
+      expect(titles(root)).toEqual(['Request p', 'Item a']);
+      const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      expect(rows[0].querySelector('.kind-badge')?.textContent?.trim()).toBe('Ticket · Problem');
+      rows[0].click();
+      await settle();
+      expect(root.querySelector('.item-actions')).toBeNull();
+      expect(root.querySelector('.triage')).toBeNull();
+      expect(root.textContent).not.toContain('can no longer be changed');
+      rows[0].click();
+      await settle();
+      rows[1].click();
+      await settle();
+      expect(
+        [...root.querySelectorAll('.item-actions button')].map((b) =>
+          b.textContent?.replace(/\s+/g, ' ').trim(),
+        ),
+      ).toEqual(['Edit Item a', 'Delete Item a']);
+    },
+  );
 
-    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
-    root = await render('submitted');
-    (root.querySelector('.item-summary') as HTMLButtonElement).click();
-    await settle();
-    expect(root.querySelector('.promote')).toBeNull();
-    expect(root.querySelector('.item-ticket a.ticket-pill')?.textContent?.trim()).toBe('DLV-0042 · Backlog');
-  });
+  it(
+    'Edit on Support tickets and feedback records the item and opens the Give feedback ' +
+      'tab, which loads it into the form (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const intent = TestBed.inject(ReviewEditIntent);
+      let root = await render('submitted');
+      (root.querySelector('.item-summary') as HTMLButtonElement).click();
+      await settle();
+      expect(root.querySelector('#review-form')).toBeNull();
+      [...root.querySelectorAll<HTMLButtonElement>('.item-actions button')]
+        .find((button) => button.textContent?.includes('Edit'))!
+        .click();
+      await settle();
+      expect(intent.itemId()).toBe('a');
+      expect(navigate).toHaveBeenCalledWith(['/support'], {
+        queryParams: { view: null },
+        queryParamsHandling: 'merge',
+      });
+      current.destroy();
+      // The Give feedback instance on /support takes the id on init and clears it.
+      client.item.mockClear();
+      root = await render('submit');
+      expect(client.item).toHaveBeenCalledWith('a');
+      expect(intent.itemId()).toBeNull();
+      expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
+      expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('Item a');
+      expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe(
+        'Results miss the Java lesson.',
+      );
+      expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Save changes');
+      current.destroy();
+      // A fresh Give feedback instance with nothing pending opens the empty form.
+      client.item.mockClear();
+      root = await render('submit');
+      expect(client.item).not.toHaveBeenCalled();
+      expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
+    },
+  );
 
-  it('reports a refused promote, and reloads an item someone promoted first so its pill shows (DLV-971)', async () => {
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    const root = await render('submitted');
-    const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    rows[0].click();
-    await settle();
-    const promote = () => {
-      root.querySelector<HTMLButtonElement>('.promote button')!.click();
-      return settle();
-    };
-    client.promote.mockRejectedValueOnce(new PlatformReviewError('unavailable'));
-    await promote();
-    expect(root.querySelector('.promote .promote-status')?.textContent).toBe('Not promoted. Try again.');
-    expect(root.querySelector('.ticket-pill')).toBeNull();
-    client.promote.mockRejectedValueOnce(new PlatformReviewError('forbidden'));
-    await promote();
-    expect(root.querySelector('.promote .promote-status')?.textContent).toBe('Your role cannot promote this item.');
-    // Promoted by someone else meanwhile: the Domain answers 409 and the reloaded item carries the ticket.
-    stored = stored.map((entry) => (entry.id === 'a' ? { ...entry, ticketId: 'DLV-0007', ticketStatus: 'Planned' } : entry));
-    client.item.mockClear();
-    client.promote.mockRejectedValueOnce(new PlatformReviewError('conflict', 'Already promoted.'));
-    await promote();
-    expect(client.item).toHaveBeenCalledWith('a');
-    expect(root.querySelector('.promote')).toBeNull();
-    expect(root.querySelector('.item-ticket a.ticket-pill')?.textContent?.trim()).toBe('DLV-0007 · Planned');
-    expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe('This item already has a ticket.');
-  });
+  it(
+    'tells the reviewer when a recorded edit cannot be opened, and never loads a request ' +
+      'into the form (DLV-971)',
+    async () => {
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      const intent = TestBed.inject(ReviewEditIntent);
+      intent.set('missing');
+      client.item.mockRejectedValueOnce(new PlatformReviewError('not-found'));
+      let root = await render('submit');
+      expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
+      expect(root.querySelector('.form-status')?.textContent).toContain(
+        'could not be opened for editing',
+      );
+      current.destroy();
+      stored = [request('p', 'problem', 'reviewer-1')];
+      intent.set('p');
+      root = await render('submit');
+      expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
+      expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
+    },
+  );
 
-  it('opens and marks the item an /admin/feedback#<id> link names, and ignores an unknown id (DLV-971)', async () => {
-    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
-    const route = { snapshot: { fragment: 'b' as string | null } };
-    TestBed.overrideProvider(ActivatedRoute, { useValue: route });
-    let root = await render('submitted');
-    const open = root.querySelector('.item-row.open')!;
-    expect(open.id).toBe('review-b');
-    expect(open.classList.contains('targeted')).toBe(true);
-    expect(client.item).toHaveBeenCalledWith('b');
-    expect(open.querySelector('.item-detail .item-details')?.textContent).toContain('Results miss the Java lesson.');
-    expect(root.querySelectorAll('.item-row.open')).toHaveLength(1);
-    current.destroy();
-    route.snapshot.fragment = 'REV-999999';
-    client.item.mockClear();
-    root = await render('submitted');
-    expect(root.querySelector('.item-row.open')).toBeNull();
-    expect(client.item).not.toHaveBeenCalled();
-  });
+  it(
+    'hides Promote to ticket on a production build without a DEV session; a DEV session ' +
+      'brings it back (owner, 2026-11-07)',
+    async () => {
+      stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      const env = environment as { production: boolean };
+      env.production = true;
+      try {
+        const root = await render('submitted');
+        [...root.querySelectorAll<HTMLButtonElement>('.item-summary')][1].click();
+        await settle();
+        expect(root.querySelector('.promote button')).toBeNull();
+        TestBed.inject(DevSession).gated.set(true);
+        await settle();
+        expect(root.querySelector<HTMLButtonElement>('.promote button')?.textContent).toContain(
+          'Promote to ticket',
+        );
+      } finally {
+        env.production = false;
+        TestBed.inject(DevSession).gated.set(false);
+      }
+    },
+  );
+
+  it(
+    'offers Promote to ticket to the owner on any item, to an admin on a learner request ' +
+      'only, and shows the ticket pill once promoted (DLV-971)',
+    async () => {
+      stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      let root = await render('submitted');
+      let rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      expect(root.querySelector('.ticket-pill')).toBeNull();
+      rows[1].click();
+      await settle();
+      const button = root.querySelector<HTMLButtonElement>('.promote button')!;
+      expect(button.textContent?.replace(/\s+/g, ' ').trim()).toBe('Promote to ticket Item a');
+      button.click();
+      await settle();
+      expect(client.promote).toHaveBeenCalledWith('a');
+      expect(root.querySelector('.promote')).toBeNull();
+      const pill = root.querySelector<HTMLAnchorElement>('.item-ticket a.ticket-pill')!;
+      expect(pill.textContent?.trim()).toBe('DLV-0042 · Backlog');
+      expect(pill.getAttribute('href')).toBe('/delivery-plan#DLV-0042');
+      expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe(
+        'Ticket DLV-0042 created.',
+      );
+      // The row carries the pill too, as text inside the row button.
+      expect(rows[1].querySelector('.summary-head .ticket-pill')?.textContent?.trim()).toBe(
+        'DLV-0042 · Backlog',
+      );
+      expect(rows[1].querySelector('a')).toBeNull();
+      // The status form stays: promoting does not replace triage.
+      expect(root.querySelector('.triage')).not.toBeNull();
+      current.destroy();
+
+      viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
+      root = await render('submitted');
+      rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      rows[0].click();
+      await settle();
+      expect(root.querySelector('.promote button')).not.toBeNull();
+      rows[0].click();
+      await settle();
+      rows[2].click();
+      await settle();
+      expect(root.querySelector('.promote')).toBeNull();
+      expect(root.textContent).not.toContain('Promote to ticket');
+      current.destroy();
+
+      viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+      root = await render('submitted');
+      (root.querySelector('.item-summary') as HTMLButtonElement).click();
+      await settle();
+      expect(root.querySelector('.promote')).toBeNull();
+      expect(root.querySelector('.item-ticket a.ticket-pill')?.textContent?.trim()).toBe(
+        'DLV-0042 · Backlog',
+      );
+    },
+  );
+
+  it(
+    'reports a refused promote, and reloads an item someone promoted first so its pill ' +
+      'shows (DLV-971)',
+    async () => {
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      const root = await render('submitted');
+      const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+      rows[0].click();
+      await settle();
+      const promote = () => {
+        root.querySelector<HTMLButtonElement>('.promote button')!.click();
+        return settle();
+      };
+      client.promote.mockRejectedValueOnce(new PlatformReviewError('unavailable'));
+      await promote();
+      expect(root.querySelector('.promote .promote-status')?.textContent).toBe(
+        'Not promoted. Try again.',
+      );
+      expect(root.querySelector('.ticket-pill')).toBeNull();
+      client.promote.mockRejectedValueOnce(new PlatformReviewError('forbidden'));
+      await promote();
+      expect(root.querySelector('.promote .promote-status')?.textContent).toBe(
+        'Your role cannot promote this item.',
+      );
+      // Promoted by someone else meanwhile: the Domain answers 409 and the reloaded item carries
+      // the ticket.
+      stored = stored.map((entry) =>
+        entry.id === 'a' ? { ...entry, ticketId: 'DLV-0007', ticketStatus: 'Planned' } : entry,
+      );
+      client.item.mockClear();
+      client.promote.mockRejectedValueOnce(
+        new PlatformReviewError('conflict', 'Already promoted.'),
+      );
+      await promote();
+      expect(client.item).toHaveBeenCalledWith('a');
+      expect(root.querySelector('.promote')).toBeNull();
+      expect(root.querySelector('.item-ticket a.ticket-pill')?.textContent?.trim()).toBe(
+        'DLV-0007 · Planned',
+      );
+      expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe(
+        'This item already has a ticket.',
+      );
+    },
+  );
+
+  it(
+    'opens and marks the item an /admin/feedback#<id> link names, and ignores an unknown ' +
+      'id (DLV-971)',
+    async () => {
+      viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+      const route = { snapshot: { fragment: 'b' as string | null } };
+      TestBed.overrideProvider(ActivatedRoute, { useValue: route });
+      let root = await render('submitted');
+      const open = root.querySelector('.item-row.open')!;
+      expect(open.id).toBe('review-b');
+      expect(open.classList.contains('targeted')).toBe(true);
+      expect(client.item).toHaveBeenCalledWith('b');
+      expect(open.querySelector('.item-detail .item-details')?.textContent).toContain(
+        'Results miss the Java lesson.',
+      );
+      expect(root.querySelectorAll('.item-row.open')).toHaveLength(1);
+      current.destroy();
+      route.snapshot.fragment = 'REV-999999';
+      client.item.mockClear();
+      root = await render('submitted');
+      expect(root.querySelector('.item-row.open')).toBeNull();
+      expect(client.item).not.toHaveBeenCalled();
+    },
+  );
 
   it('tells an account without a review role that access is required', async () => {
     viewer = { role: 'reviewer', reviewerId: 'x', displayName: 'X' };

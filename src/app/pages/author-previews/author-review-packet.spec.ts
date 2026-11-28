@@ -11,7 +11,9 @@ const packet = {
   title: 'Versioned Study Plan packet',
   version: 'review/test.1',
   htmlSha256: 'a'.repeat(64),
-  href: `/bff/author/previews/preview-directory/author-documents/study-plan-review/${'a'.repeat(64)}/index.html`,
+  href:
+    `/bff/author/previews/preview-directory/author-documents/study-plan-review/` +
+    `${'a'.repeat(64)}/index.html`,
   owningTicket: 'DLV-704',
   scope: 'The published review scope',
   decisionDependencies: ['DLV-921'],
@@ -19,7 +21,9 @@ const packet = {
   evidence: [
     {
       label: 'Learner-style Study Plan scenarios',
-      href: '/bff/author/previews/preview-directory/author-documents/evidence/test/study-plan-experience.html',
+      href:
+        '/bff/author/previews/preview-directory/author-documents/evidence/test/study-plan-' +
+        'experience.html',
     },
     { label: 'Review evidence', href: 'https://example.test/evidence' },
   ],
@@ -55,42 +59,52 @@ describe('Study Plan review packet', () => {
     fixture.detectChanges();
     return fixture;
   }
-  it('shows exact private metadata and a review link without embedding or recording from the card', async () => {
-    const fixture = await create();
-    expect(fixture.nativeElement.textContent).toContain(packet.version);
-    expect(fixture.nativeElement.textContent).toContain(packet.scope);
-    expect(fixture.nativeElement.textContent).toContain('1open decisions');
-    expect(fixture.nativeElement.textContent).not.toContain(packet.remainingDecisions[0]);
-    expect(
-      fixture.nativeElement.querySelector('a[href="/admin/previews/study-plan"]'),
-    ).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
-    expect(fixture.nativeElement.querySelector('form')).toBeNull();
-  });
-  it('keeps trusted controls outside the scripts-only document and follows the selected theme', async () => {
-    const fixture = await create(true);
-    const frame = fixture.nativeElement.querySelector('iframe');
-    expect(frame.getAttribute('sandbox')).toBe(
-      'allow-scripts allow-top-navigation-by-user-activation',
-    );
-    expect(frame.src).toContain('?theme=light');
-    expect(frame.src).toContain('study-plan-experience.html');
-    expect(fixture.nativeElement.querySelector('app-author-review-controls')).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('not connected yet');
-    theme.set('dark');
-    fixture.detectChanges();
-    expect(frame.src).toContain('?theme=dark');
-  });
-  it('does not load documents without author capability and removes a loaded frame on expiry', async () => {
-    account.set({ accountId: 'learner', authorPreview: false });
-    const first = await create();
-    expect(load).not.toHaveBeenCalled();
-    first.destroy();
-    account.set({ accountId: 'author', authorPreview: true });
-    const fixture = await create(true);
-    sessionExpired.set(true);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
-    expect(fixture.nativeElement.querySelector('app-author-review-controls')).toBeNull();
-  });
+  it(
+    'shows exact private metadata and a review link without embedding or recording from ' +
+      'the card',
+    async () => {
+      const fixture = await create();
+      expect(fixture.nativeElement.textContent).toContain(packet.version);
+      expect(fixture.nativeElement.textContent).toContain(packet.scope);
+      expect(fixture.nativeElement.textContent).toContain('1open decisions');
+      expect(fixture.nativeElement.textContent).not.toContain(packet.remainingDecisions[0]);
+      expect(
+        fixture.nativeElement.querySelector('a[href="/admin/previews/study-plan"]'),
+      ).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+      expect(fixture.nativeElement.querySelector('form')).toBeNull();
+    },
+  );
+  it(
+    'keeps trusted controls outside the scripts-only document and follows the selected ' + 'theme',
+    async () => {
+      const fixture = await create(true);
+      const frame = fixture.nativeElement.querySelector('iframe');
+      expect(frame.getAttribute('sandbox')).toBe(
+        'allow-scripts allow-top-navigation-by-user-activation',
+      );
+      expect(frame.src).toContain('?theme=light');
+      expect(frame.src).toContain('study-plan-experience.html');
+      expect(fixture.nativeElement.querySelector('app-author-review-controls')).not.toBeNull();
+      expect(fixture.nativeElement.textContent).toContain('not connected yet');
+      theme.set('dark');
+      fixture.detectChanges();
+      expect(frame.src).toContain('?theme=dark');
+    },
+  );
+  it(
+    'does not load documents without author capability and removes a loaded frame on ' + 'expiry',
+    async () => {
+      account.set({ accountId: 'learner', authorPreview: false });
+      const first = await create();
+      expect(load).not.toHaveBeenCalled();
+      first.destroy();
+      account.set({ accountId: 'author', authorPreview: true });
+      const fixture = await create(true);
+      sessionExpired.set(true);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+      expect(fixture.nativeElement.querySelector('app-author-review-controls')).toBeNull();
+    },
+  );
 });

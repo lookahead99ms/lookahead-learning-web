@@ -264,8 +264,9 @@ a {
 :root {
   --card-title-color: var(--text-strong);
   --card-title-weight: 800;
-  /* Card titles in apricot, the colour that stands out (user, 2026-10-02): deep apricot #a84e17 on light
-     (5.6:1 on white), the dark theme's apricot #ffba87 on dark (8.8:1 on #192942, 7.6:1 on #22344e). */
+  /* Card titles in apricot, the colour that stands out (user, 2026-10-02): deep apricot #a84e17 on
+     light (5.6:1 on white), the dark theme's apricot #ffba87 on dark (8.8:1 on #192942, 7.6:1 on
+     #22344e). */
   --card-title-learn: #a84e17;
   --card-title-grow: #a84e17;
   --card-title-blaze: #a84e17;
@@ -729,7 +730,10 @@ main.harbor-learn .harbor-course-layout .learning-map {
     width: calc(var(--reader-frame) - 2 * var(--reader-sidebar-space)) !important;
     max-width: min(1440px, calc(var(--reader-frame) - 2 * var(--reader-sidebar-space))) !important;
   }
-  main.reader-page[data-sidebar-columns]:has(> .question-detail-reader):not(.focus-studio-page, :has(.system)) {
+  main.reader-page[data-sidebar-columns]:has(> .question-detail-reader):not(
+      .focus-studio-page,
+      :has(.system)
+    ) {
     --reader-sidebar-space: clamp(248px, 0.18 * min(100vw, var(--site-frame-max, 100rem)), 360px);
   }
 }
@@ -752,38 +756,109 @@ main.harbor-learn.content-page.hands-on-dsa-page {
   main.content-page.hands-on-dsa-page[data-sidebar-columns][data-sidebar-left-collapsed] {
     --reader-sidebar-toggle-space: 64px;
     width: calc(100% - var(--reader-sidebar-toggle-space) - var(--reader-sidebar-space)) !important;
-    max-width: calc(100% - var(--reader-sidebar-toggle-space) - var(--reader-sidebar-space)) !important;
+    max-width: calc(
+      100% - var(--reader-sidebar-toggle-space) - var(--reader-sidebar-space)
+    ) !important;
     margin-inline: var(--reader-sidebar-toggle-space) var(--reader-sidebar-space) !important;
   }
 }
 
 /* The same language palettes used by the Hands-on DSA editor and trace. */
-pre:has(> .learning-code) { background: var(--code-bg); color: var(--code-ink); overflow-x: auto; }
-.learning-code { font-weight: 400; white-space: pre; tab-size: 4; }
-/* System lessons stack the code at the card width: the whole file shows and a long line wraps with a hanging
-   indent instead of a scroll box. The line spans come from the LearningCode directive (innerHTML, so global). */
-.system .code-stack .learning-code { white-space: pre-wrap; overflow-wrap: anywhere; }
-.system .code-stack .learning-code .code-line { display: inline-block; box-sizing: border-box; width: 100%; padding-left: 3ch; text-indent: -3ch; white-space: pre-wrap; overflow-wrap: anywhere; vertical-align: top; }
-.learning-code[data-code-language='java'] { --syntax-keyword:#c792ea; --syntax-string:#c3e88d; --syntax-number:#f78c6c; --syntax-comment:#8ba3af; --syntax-type:#ffcb6b; color:#b2ccd6; }
-pre:has(> .learning-code[data-code-language='java']) { background:#263238; }
-.learning-code[data-code-language='python'] { --syntax-keyword:#c678dd; --syntax-string:#98c379; --syntax-number:#d19a66; --syntax-comment:#9198a5; --syntax-type:#e5c07b; color:#abb2bf; }
-pre:has(> .learning-code[data-code-language='python']) { background:#282c34; }
-.learning-code[data-code-language='go'] { --syntax-keyword:#ff6ac1; --syntax-string:#7fd88f; --syntax-number:#ffb86c; --syntax-comment:#969dc0; --syntax-type:#7aa2f7; color:#c7ccd1; }
-pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
-.learning-code .syntax-keyword { color:var(--syntax-keyword,var(--code-keyword)); }
-.learning-code .syntax-string { color:var(--syntax-string,var(--code-string)); }
-.learning-code .syntax-number { color:var(--syntax-number,var(--code-number)); }
-.learning-code .syntax-comment { color:var(--syntax-comment,var(--code-muted)); }
-.learning-code .syntax-type { color:var(--syntax-type,var(--code-keyword)); }
+pre:has(> .learning-code) {
+  background: var(--code-bg);
+  color: var(--code-ink);
+  overflow-x: auto;
+}
+.learning-code {
+  font-weight: 400;
+  white-space: pre;
+  tab-size: 4;
+}
+/* System lessons stack the code at the card width: the whole file shows and a long line wraps with
+   a hanging indent instead of a scroll box. The line spans come from the LearningCode directive
+   (innerHTML, so global). */
+.system .code-stack .learning-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.system .code-stack .learning-code .code-line {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 100%;
+  padding-left: 3ch;
+  text-indent: -3ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.learning-code[data-code-language='java'] {
+  --syntax-keyword: #c792ea;
+  --syntax-string: #c3e88d;
+  --syntax-number: #f78c6c;
+  --syntax-comment: #8ba3af;
+  --syntax-type: #ffcb6b;
+  color: #b2ccd6;
+}
+pre:has(> .learning-code[data-code-language='java']) {
+  background: #263238;
+}
+.learning-code[data-code-language='python'] {
+  --syntax-keyword: #c678dd;
+  --syntax-string: #98c379;
+  --syntax-number: #d19a66;
+  --syntax-comment: #9198a5;
+  --syntax-type: #e5c07b;
+  color: #abb2bf;
+}
+pre:has(> .learning-code[data-code-language='python']) {
+  background: #282c34;
+}
+.learning-code[data-code-language='go'] {
+  --syntax-keyword: #ff6ac1;
+  --syntax-string: #7fd88f;
+  --syntax-number: #ffb86c;
+  --syntax-comment: #969dc0;
+  --syntax-type: #7aa2f7;
+  color: #c7ccd1;
+}
+pre:has(> .learning-code[data-code-language='go']) {
+  background: #14161a;
+}
+.learning-code .syntax-keyword {
+  color: var(--syntax-keyword, var(--code-keyword));
+}
+.learning-code .syntax-string {
+  color: var(--syntax-string, var(--code-string));
+}
+.learning-code .syntax-number {
+  color: var(--syntax-number, var(--code-number));
+}
+.learning-code .syntax-comment {
+  color: var(--syntax-comment, var(--code-muted));
+}
+.learning-code .syntax-type {
+  color: var(--syntax-type, var(--code-keyword));
+}
 
 /* DLV-408 system lessons. Lesson prose is inserted with innerHTML, which component
    styles cannot reach, so its inline elements are styled here. */
 .system {
-  --lesson-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  --lesson-mono:
+    'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
 }
 /* Inline code: a monospace face on a tinted chip in its own colour, so Driver::id
    or d -> d.id() never blends into the sentence. */
-.system :is(.prose, .lesson-table, .spoken-answer, .follow-ups, .lesson-callout, .cheat-sheet, .section-card) code:not(pre code),
+.system
+  :is(
+    .prose,
+    .lesson-table,
+    .spoken-answer,
+    .follow-ups,
+    .lesson-callout,
+    .cheat-sheet,
+    .section-card
+  )
+  code:not(pre code),
 .rich code:not(pre code),
 .recall-question code {
   padding: 0.1em 0.38em;
@@ -1026,7 +1101,9 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   text-decoration: underline dotted transparent;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
-  transition: text-decoration-color 0.15s ease, background-color 0.15s ease;
+  transition:
+    text-decoration-color 0.15s ease,
+    background-color 0.15s ease;
 }
 .glossary-term-first {
   text-decoration-color: color-mix(in srgb, var(--text-subtle) 45%, transparent);
@@ -1166,8 +1243,9 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   }
 }
 
-/* DLV-969: in DEV (the Gateway's gate answers, <html data-dev>) learner-facing prices stay blurred until
-   hovered, or until their plan card holds keyboard focus (user, 2026-11-03). Admin pages show them plainly. */
+/* DLV-969: in DEV (the Gateway's gate answers, <html data-dev>) learner-facing prices stay blurred
+   until hovered, or until their plan card holds keyboard focus (user, 2026-11-03). Admin pages show
+   them plainly. */
 :root[data-dev] .price-figure {
   filter: blur(0.45em);
   transition: filter 150ms ease;
@@ -1183,7 +1261,8 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   }
 }
 
-/* DLV-971 (owner, 2026-11-06): while an item is open on Support tickets and feedback, the page behind the dialog does not scroll. */
+/* DLV-971 (owner, 2026-11-06): while an item is open on Support tickets and feedback, the page
+   behind the dialog does not scroll. */
 html.feedback-dialog-open,
 html.feedback-dialog-open body {
   overflow: hidden;

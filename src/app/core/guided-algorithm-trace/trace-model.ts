@@ -32,7 +32,8 @@ export function languageTraceEvents(
       sourceAnchor: { ...base.sourceAnchor, [language]: step.sourceAnchor },
       what: sameAnchor
         ? base.what
-        : `Execute ${source.lines[lineIndex]?.text.trim() || step.sourceAnchor} in the selected implementation.`,
+        : `Execute ${source.lines[lineIndex]?.text.trim() || step.sourceAnchor} in the ` +
+          `selected implementation.`,
       variables: native ? (step.variables ?? []) : base.variables,
       rows: native ? (step.rows ?? []) : base.rows,
       ...(step.stateUnavailable ? { stateUnavailable: true } : {}),

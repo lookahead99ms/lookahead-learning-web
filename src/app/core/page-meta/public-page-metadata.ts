@@ -14,7 +14,8 @@ import { CatalogPath, DynamicPageTarget } from './page-meta-routes';
  * allowlisted title/description fields below, so a protected body cannot reach a meta tag even
  * if a locator ever carried one. Loaded lazily by PageTitleStrategy on the first course page.
  */
-export const PUBLIC_METADATA_URL = /^\/content\/(learn|grow|blaze)\/[a-z0-9][a-z0-9-]*\/content-locator\.json$/;
+export const PUBLIC_METADATA_URL =
+  /^\/content\/(learn|grow|blaze)\/[a-z0-9][a-z0-9-]*\/content-locator\.json$/;
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 

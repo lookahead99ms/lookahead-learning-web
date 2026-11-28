@@ -220,7 +220,8 @@ export class AuthorReviewControls {
     if (!artifact.sourceSha256 || !/^[a-f0-9]{64}$/.test(artifact.sourceSha256)) {
       this.state.set('stale');
       this.failure.set(
-        'The review publication has no verified source binding. Reload the packet before making a decision.',
+        'The review publication has no verified source binding. Reload the packet ' +
+          'before making a decision.',
       );
       this.focusResult();
       return;
@@ -271,7 +272,8 @@ export class AuthorReviewControls {
         this.historyState.set('failed');
         this.state.set('failed');
         this.historyError.set(
-          'A review decision changed or this request conflicts with a recorded submission. Reload history and review the latest decision before continuing.',
+          'A review decision changed or this request conflicts with a recorded ' +
+            'submission. Reload history and review the latest decision before continuing.',
         );
         this.failure.set('The replacement decision was not confirmed. Your comment is preserved.');
       } else if (
@@ -292,7 +294,8 @@ export class AuthorReviewControls {
       } else {
         this.state.set('failed');
         this.failure.set(
-          'Recording could not be confirmed. Your decision and comment are preserved. Retry the same submission to check its outcome.',
+          'Recording could not be confirmed. Your decision and comment are preserved. ' +
+            'Retry the same submission to check its outcome.',
         );
       }
     }

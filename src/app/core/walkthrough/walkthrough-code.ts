@@ -1,10 +1,24 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, computed, effect, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { PatternLanguage } from '../../content/content.models';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 import { WalkthroughCodeLine, codeScrollTop, pinnedCover } from './walkthrough.model';
 
 let nextCodeId = 0;
-const LANGUAGE_LABELS: Record<PatternLanguage, string> = { java: 'Java', python: 'Python', go: 'Go' };
+const LANGUAGE_LABELS: Record<PatternLanguage, string> = {
+  java: 'Java',
+  python: 'Python',
+  go: 'Go',
+};
 
 /**
  * Option B, right column: the reference solution, always on screen, with the current line
@@ -33,7 +47,10 @@ const LANGUAGE_LABELS: Record<PatternLanguage, string> = { java: 'Java', python:
       #codeBox
       tabindex="0"
       [attr.aria-label]="label() + ' reference solution'"
-    ><code class="learning-code" [attr.data-code-language]="language()">@for (line of lines(); track line.id) {<span class="line" [class.current]="line.current" [class.ran]="line.ran" [attr.data-line]="line.number" [attr.aria-current]="line.current ? 'step' : null"><span class="no" aria-hidden="true">{{ line.number }}</span><span [innerHTML]="line.html"></span>
+    ><code class="learning-code" [attr.data-code-language]="language()">@for (line of lines(); track
+      line.id) {<span class="line" [class.current]="line.current" [class.ran]="line.ran"
+      [attr.data-line]="line.number" [attr.aria-current]="line.current ? 'step' : null"><span
+      class="no" aria-hidden="true">{{ line.number }}</span><span [innerHTML]="line.html"></span>
 </span>}</code></pre>
   </section>`,
   styles: `
@@ -178,7 +195,10 @@ export class WalkthroughCode {
     if (!line) return;
     // On a short screen the page can cut the box: keep the line in the part that is on screen.
     const rect = box.getBoundingClientRect();
-    const pin = pinnedCover(box, parseFloat(getComputedStyle(box).getPropertyValue('--stage-top')) || 0);
+    const pin = pinnedCover(
+      box,
+      parseFloat(getComputedStyle(box).getPropertyValue('--stage-top')) || 0,
+    );
     const height = box.ownerDocument.defaultView?.innerHeight ?? Infinity;
     const top = Math.max(0, pin - rect.top);
     const bottom = Math.min(box.clientHeight, height - rect.top);

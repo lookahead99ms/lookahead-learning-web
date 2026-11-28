@@ -11,6 +11,12 @@ it('lists the three paths with their landing wording and path colours', () => {
     'Grow Handle production reality',
     'Blaze Lead the larger decision',
   ]);
-  expect(rows.map((row) => [...row.classList].sort().join(' '))).toEqual(['path-learn path-mark', 'path-grow path-mark', 'path-blaze path-mark']);
-  expect(rows.every((row) => row.querySelector('.path-icon')!.getAttribute('aria-hidden') === 'true')).toBe(true);
+  expect(rows.map((row) => [...row.classList].sort().join(' '))).toEqual([
+    'path-learn path-mark',
+    'path-grow path-mark',
+    'path-blaze path-mark',
+  ]);
+  expect(
+    rows.every((row) => row.querySelector('.path-icon')!.getAttribute('aria-hidden') === 'true'),
+  ).toBe(true);
 });

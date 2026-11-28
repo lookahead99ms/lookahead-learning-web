@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """App-owned, one-shot container/config security gate. No private checkout needed."""
+
 import argparse
 import datetime
 import hashlib
@@ -11,189 +12,270 @@ import re
 import selectors
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
-import tarfile
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / '.codex-scratch/security/container'
-PINS = Path(__file__).with_name('tools.json')
-MISCONFIGURATION_EXCEPTIONS = Path(__file__).with_name('misconfiguration-exceptions.json')
+OUT = ROOT / ".codex-scratch/security/container"
+PINS = Path(__file__).with_name("tools.json")
+MISCONFIGURATION_EXCEPTIONS = Path(__file__).with_name(
+    "misconfiguration-exceptions.json"
+)
 LIMIT = 200 * 1024 * 1024
 
 
 # Emit only reviewed constant reasons; never print raw scanner/parser errors.
-SAFE_FAILURE_REASONS = frozenset({
-    'Dockerfile configuration coverage missing',
-    'Expected exactly one exported image manifest',
-    'Expected pinned Alpine toolchain and runtime bases',
-    'Complete toolchain package coverage missing',
-    'Pinned runtime package inventory missing',
-    'Complete runtime package coverage missing',
-    'Complete builder dependency coverage missing',
-    'Complete npm CLI dependency coverage missing',
-    'Exported image has no configuration',
-    'Image configuration identity absent',
-    'Image report must describe Linux AMD64',
-    'Immutable local image ID from build iidfile required',
-    'Immutable local image required',
-    'Invalid or oversized image archive',
-    'Invalid scanner archive entry',
-    'Local image export exceeds bound',
-    'Local image export failed',
-    'Local image export timed out',
-    'Missing or invalid severity',
-    'Missing or unsupported operating system',
-    'OS package coverage missing',
-    'Remote image must have immutable digest',
-    'Required image metadata missing or oversized',
-    'Scanner archive checksum/size mismatch',
-    'Scanner archive too large',
-    'Scanner executable no longer matches pinned archive',
-    'Scanner failed; private diagnostics retained locally',
-    'Scanner image differs from exported local configuration',
-    'Scanner image differs from requested pinned base',
-    'Scanner result coverage missing',
-    'Security findings require action',
-    'Selected local image must be Linux AMD64',
-    'Unsafe or ambiguous archive member',
-    'Unsupported report kind',
-    'Unsupported scanner report schema',
-})
+SAFE_FAILURE_REASONS = frozenset(
+    {
+        "Dockerfile configuration coverage missing",
+        "Expected exactly one exported image manifest",
+        "Expected pinned Alpine toolchain and runtime bases",
+        "Complete toolchain package coverage missing",
+        "Pinned runtime package inventory missing",
+        "Complete runtime package coverage missing",
+        "Complete builder dependency coverage missing",
+        "Complete npm CLI dependency coverage missing",
+        "Exported image has no configuration",
+        "Image configuration identity absent",
+        "Image report must describe Linux AMD64",
+        "Immutable local image ID from build iidfile required",
+        "Immutable local image required",
+        "Invalid or oversized image archive",
+        "Invalid scanner archive entry",
+        "Local image export exceeds bound",
+        "Local image export failed",
+        "Local image export timed out",
+        "Missing or invalid severity",
+        "Missing or unsupported operating system",
+        "OS package coverage missing",
+        "Remote image must have immutable digest",
+        "Required image metadata missing or oversized",
+        "Scanner archive checksum/size mismatch",
+        "Scanner archive too large",
+        "Scanner executable no longer matches pinned archive",
+        "Scanner failed; private diagnostics retained locally",
+        "Scanner image differs from exported local configuration",
+        "Scanner image differs from requested pinned base",
+        "Scanner result coverage missing",
+        "Security findings require action",
+        "Selected local image must be Linux AMD64",
+        "Unsafe or ambiguous archive member",
+        "Unsupported report kind",
+        "Unsupported scanner report schema",
+    }
+)
 
 
 def failure_message(error):
-    reason = str(error) if type(error) is ValueError and str(error) in SAFE_FAILURE_REASONS else 'No clean result is available'
-    return 'Container security gate failed: ' + reason
+    reason = (
+        str(error)
+        if type(error) is ValueError and str(error) in SAFE_FAILURE_REASONS
+        else "No clean result is available"
+    )
+    return "Container security gate failed: " + reason
 
 
 def target_pin():
-    host = {'Linux-x86_64': 'linux-amd64', 'Darwin-arm64': 'darwin-arm64'}[platform.system() + '-' + platform.machine().lower()]
-    return json.loads(PINS.read_text())['trivy']['archives'][host]
+    host = {"Linux-x86_64": "linux-amd64", "Darwin-arm64": "darwin-arm64"}[
+        platform.system() + "-" + platform.machine().lower()
+    ]
+    return json.loads(PINS.read_text())["trivy"]["archives"][host]
 
 
 def verified_binary(archive, expected):
-    if archive.stat().st_size > LIMIT or hashlib.sha256(archive.read_bytes()).hexdigest() != expected:
-        raise ValueError('Scanner archive checksum/size mismatch')
-    with tarfile.open(archive, 'r:gz') as package:
-        entry = package.getmember('trivy')
+    if (
+        archive.stat().st_size > LIMIT
+        or hashlib.sha256(archive.read_bytes()).hexdigest() != expected
+    ):
+        raise ValueError("Scanner archive checksum/size mismatch")
+    with tarfile.open(archive, "r:gz") as package:
+        entry = package.getmember("trivy")
         if not entry.isfile() or entry.size > LIMIT:
-            raise ValueError('Invalid scanner archive entry')
+            raise ValueError("Invalid scanner archive entry")
         return package.extractfile(entry).read()
 
 
 def install():
     OUT.mkdir(parents=True, exist_ok=True)
     pin = target_pin()
-    with urllib.request.urlopen(pin['url'], timeout=60) as response:
+    with urllib.request.urlopen(pin["url"], timeout=60) as response:
         payload = response.read(LIMIT + 1)
     if len(payload) > LIMIT:
-        raise ValueError('Scanner archive too large')
-    archive = OUT / 'trivy.tar.gz'
+        raise ValueError("Scanner archive too large")
+    archive = OUT / "trivy.tar.gz"
     archive.write_bytes(payload)
-    binary = verified_binary(archive, pin['sha256'])
-    executable = OUT / 'trivy'
+    binary = verified_binary(archive, pin["sha256"])
+    executable = OUT / "trivy"
     executable.write_bytes(binary)
     executable.chmod(0o700)
-    print('Trivy archive and executable verified')
+    print("Trivy archive and executable verified")
 
 
 def executable():
-    binary = verified_binary(OUT / 'trivy.tar.gz', target_pin()['sha256'])
-    path = OUT / 'trivy'
+    binary = verified_binary(OUT / "trivy.tar.gz", target_pin()["sha256"])
+    path = OUT / "trivy"
     if path.is_symlink() or path.read_bytes() != binary:
-        raise ValueError('Scanner executable no longer matches pinned archive')
+        raise ValueError("Scanner executable no longer matches pinned archive")
     return str(path)
 
 
 def base_images(text):
-    images = re.findall(r'^FROM\s+(?:--platform=\S+\s+)?(\S+)', text, re.M | re.I)
-    if len(images) != 3 or not re.fullmatch(r'alpine:3.23@sha256:[a-f0-9]{64}', images[0]) or images[1] != 'toolchain' or not re.fullmatch(r'alpine:3.23@sha256:[a-f0-9]{64}', images[2]):
-        raise ValueError('Expected pinned Alpine toolchain and runtime bases')
+    images = re.findall(r"^FROM\s+(?:--platform=\S+\s+)?(\S+)", text, re.M | re.I)
+    if (
+        len(images) != 3
+        or not re.fullmatch(r"alpine:3.23@sha256:[a-f0-9]{64}", images[0])
+        or images[1] != "toolchain"
+        or not re.fullmatch(r"alpine:3.23@sha256:[a-f0-9]{64}", images[2])
+    ):
+        raise ValueError("Expected pinned Alpine toolchain and runtime bases")
     return [images[0], images[2]]
 
 
-# Same owner-approved advisory/deadline as .github/pipeline/build/security/dependency-exception.mjs.
-PICOMATCH_EXPIRY = datetime.datetime.fromisoformat('2026-12-01T05:00:00+00:00')
+# Same owner-approved advisory/deadline as
+# .github/pipeline/build/security/dependency-exception.mjs.
+PICOMATCH_EXPIRY = datetime.datetime.fromisoformat("2026-12-01T05:00:00+00:00")
 
 
 def accepted_build_finding(result, finding, stage, now):
-    paths = {'opt/npm/node_modules/picomatch/package.json'} if stage == 'toolchainImage' else {
-        'opt/npm/node_modules/picomatch/package.json', 'build/node_modules/picomatch/package.json'} if stage == 'builderImage' else set()
-    path = finding.get('PkgPath')
-    return (now < PICOMATCH_EXPIRY and result.get('Class') == 'lang-pkgs' and result.get('Type') == 'node-pkg'
-            and path in paths and finding.get('Severity') == 'HIGH'
-            and finding.get('VulnerabilityID') == 'CVE-2026-112366'
-            and finding.get('VendorIDs') == ['GHSA-fc5q-39xc-vjpf']
-            and finding.get('PkgName') == 'picomatch' and finding.get('InstalledVersion') == '4.0.7'
-            and any(p.get('Name') == 'picomatch' and p.get('Version') == '4.0.7' and p.get('FilePath') == path
-                    for p in result.get('Packages', [])))
+    paths = (
+        {"opt/npm/node_modules/picomatch/package.json"}
+        if stage == "toolchainImage"
+        else {
+            "opt/npm/node_modules/picomatch/package.json",
+            "build/node_modules/picomatch/package.json",
+        }
+        if stage == "builderImage"
+        else set()
+    )
+    path = finding.get("PkgPath")
+    return (
+        now < PICOMATCH_EXPIRY
+        and result.get("Class") == "lang-pkgs"
+        and result.get("Type") == "node-pkg"
+        and path in paths
+        and finding.get("Severity") == "HIGH"
+        and finding.get("VulnerabilityID") == "CVE-2026-112366"
+        and finding.get("VendorIDs") == ["GHSA-fc5q-39xc-vjpf"]
+        and finding.get("PkgName") == "picomatch"
+        and finding.get("InstalledVersion") == "4.0.7"
+        and any(
+            p.get("Name") == "picomatch"
+            and p.get("Version") == "4.0.7"
+            and p.get("FilePath") == path
+            for p in result.get("Packages", [])
+        )
+    )
 
 
 def report_gate(document, kind, stage=None, now=None):
-    if document.get('SchemaVersion') != 2:
-        raise ValueError('Unsupported scanner report schema')
-    results = document.get('Results')
+    if document.get("SchemaVersion") != 2:
+        raise ValueError("Unsupported scanner report schema")
+    results = document.get("Results")
     if not isinstance(results, list) or not results:
-        raise ValueError('Scanner result coverage missing')
-    if kind == 'image':
-        metadata = document.get('Metadata', {})
-        config = metadata.get('ImageConfig', {})
-        if config.get('os') != 'linux' or config.get('architecture') != 'amd64':
-            raise ValueError('Image report must describe Linux AMD64')
-        if not re.fullmatch(r'sha256:[a-f0-9]{64}', metadata.get('ImageID', '')):
-            raise ValueError('Image configuration identity absent')
-        info = metadata.get('OS', {})
-        if not info.get('Family') or info.get('EOSL'):
-            raise ValueError('Missing or unsupported operating system')
-        if not any(r.get('Class') == 'os-pkgs' and isinstance(r.get('Packages'), list) and r['Packages']
-                   and all(isinstance(p.get('Name'), str) and p['Name'] and isinstance(p.get('Version'), str) and p['Version'] for p in r['Packages']) for r in results):
-            raise ValueError('OS package coverage missing')
-    elif kind == 'config':
-        if not any(r.get('Class') == 'config' and r.get('Target') == 'Dockerfile'
-                   and sum(r.get('MisconfSummary', {}).get(k, 0) for k in ('Successes', 'Failures')) > 0 for r in results):
-            raise ValueError('Dockerfile configuration coverage missing')
+        raise ValueError("Scanner result coverage missing")
+    if kind == "image":
+        metadata = document.get("Metadata", {})
+        config = metadata.get("ImageConfig", {})
+        if config.get("os") != "linux" or config.get("architecture") != "amd64":
+            raise ValueError("Image report must describe Linux AMD64")
+        if not re.fullmatch(r"sha256:[a-f0-9]{64}", metadata.get("ImageID", "")):
+            raise ValueError("Image configuration identity absent")
+        info = metadata.get("OS", {})
+        if not info.get("Family") or info.get("EOSL"):
+            raise ValueError("Missing or unsupported operating system")
+        if not any(
+            r.get("Class") == "os-pkgs"
+            and isinstance(r.get("Packages"), list)
+            and r["Packages"]
+            and all(
+                isinstance(p.get("Name"), str)
+                and p["Name"]
+                and isinstance(p.get("Version"), str)
+                and p["Version"]
+                for p in r["Packages"]
+            )
+            for r in results
+        ):
+            raise ValueError("OS package coverage missing")
+    elif kind == "config":
+        if not any(
+            r.get("Class") == "config"
+            and r.get("Target") == "Dockerfile"
+            and sum(
+                r.get("MisconfSummary", {}).get(k, 0) for k in ("Successes", "Failures")
+            )
+            > 0
+            for r in results
+        ):
+            raise ValueError("Dockerfile configuration coverage missing")
     else:
-        raise ValueError('Unsupported report kind')
+        raise ValueError("Unsupported report kind")
     now = now or datetime.datetime.now(datetime.timezone.utc)
     accepted = []
-    counts = {'high': 0, 'critical': 0, 'unknown': 0, 'secrets': 0, 'lower': 0}
+    counts = {"high": 0, "critical": 0, "unknown": 0, "secrets": 0, "lower": 0}
     for result in results:
-        for field in ('Vulnerabilities', 'Misconfigurations', 'Secrets'):
+        for field in ("Vulnerabilities", "Misconfigurations", "Secrets"):
             for finding in result.get(field) or []:
-                if field == 'Secrets':
-                    counts['secrets'] += 1
+                if field == "Secrets":
+                    counts["secrets"] += 1
                     continue
-                severity = finding.get('Severity')
-                if severity not in ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'UNKNOWN'):
-                    raise ValueError('Missing or invalid severity')
-                if kind == 'image' and field == 'Vulnerabilities' and accepted_build_finding(result, finding, stage, now):
-                    accepted.append(finding['PkgPath'])
-                counts[severity.lower() if severity in ('HIGH', 'CRITICAL', 'UNKNOWN') else 'lower'] += 1
+                severity = finding.get("Severity")
+                if severity not in ("LOW", "MEDIUM", "HIGH", "CRITICAL", "UNKNOWN"):
+                    raise ValueError("Missing or invalid severity")
+                if (
+                    kind == "image"
+                    and field == "Vulnerabilities"
+                    and accepted_build_finding(result, finding, stage, now)
+                ):
+                    accepted.append(finding["PkgPath"])
+                counts[
+                    severity.lower()
+                    if severity in ("HIGH", "CRITICAL", "UNKNOWN")
+                    else "lower"
+                ] += 1
     if accepted:
-        counts['exceptedHigh'] = len(accepted)
-        print(json.dumps({'temporaryRiskException': 'GHSA-fc5q-39xc-vjpf', 'package': 'picomatch@4.0.7',
-                          'expiresAt': PICOMATCH_EXPIRY.isoformat(), 'owner': 'DLV-918', 'stage': stage,
-                          'paths': accepted, 'unresolved': True, 'rawCounts': counts}))
-    if counts['high'] > len(accepted) or any(counts[key] for key in ('critical', 'unknown', 'secrets')):
-        print(json.dumps({'containerFindingsRequiringAction': counts}))
-        raise ValueError('Security findings require action')
+        counts["exceptedHigh"] = len(accepted)
+        print(
+            json.dumps(
+                {
+                    "temporaryRiskException": "GHSA-fc5q-39xc-vjpf",
+                    "package": "picomatch@4.0.7",
+                    "expiresAt": PICOMATCH_EXPIRY.isoformat(),
+                    "owner": "DLV-918",
+                    "stage": stage,
+                    "paths": accepted,
+                    "unresolved": True,
+                    "rawCounts": counts,
+                }
+            )
+        )
+    if counts["high"] > len(accepted) or any(
+        counts[key] for key in ("critical", "unknown", "secrets")
+    ):
+        print(json.dumps({"containerFindingsRequiringAction": counts}))
+        raise ValueError("Security findings require action")
     return counts
 
 
 def image_identity(document, target, config_id=None):
-    metadata = document.get('Metadata', {})
+    metadata = document.get("Metadata", {})
     if config_id is not None:
-        if metadata.get('ImageID') != config_id:
-            raise ValueError('Scanner image differs from exported local configuration')
+        if metadata.get("ImageID") != config_id:
+            raise ValueError("Scanner image differs from exported local configuration")
     else:
-        digest = target.rsplit('@', 1)[-1]
-        if not re.fullmatch(r'sha256:[a-f0-9]{64}', digest):
-            raise ValueError('Remote image must have immutable digest')
-        digests = metadata.get('RepoDigests')
-        if not isinstance(digests, list) or not any(isinstance(value, str) and re.fullmatch(r'[^@\s]+@sha256:[a-f0-9]{64}', value) and value.rsplit('@', 1)[-1] == digest for value in digests):
-            raise ValueError('Scanner image differs from requested pinned base')
+        digest = target.rsplit("@", 1)[-1]
+        if not re.fullmatch(r"sha256:[a-f0-9]{64}", digest):
+            raise ValueError("Remote image must have immutable digest")
+        digests = metadata.get("RepoDigests")
+        if not isinstance(digests, list) or not any(
+            isinstance(value, str)
+            and re.fullmatch(r"[^@\s]+@sha256:[a-f0-9]{64}", value)
+            and value.rsplit("@", 1)[-1] == digest
+            for value in digests
+        ):
+            raise ValueError("Scanner image differs from requested pinned base")
 
 
 ARCHIVE_LIMIT = 2 * 1024 * 1024 * 1024
@@ -202,9 +284,15 @@ ARCHIVE_LIMIT = 2 * 1024 * 1024 * 1024
 def export_local_image(target, archive):
     # Stream only the selected immutable daemon image; enforce a disk bound and
     # deadline while reading, rather than after an unbounded docker save.
-    with archive.open('wb') as output, subprocess.Popen(
-            ['docker', 'image', 'save', target], cwd=ROOT, stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL) as process:
+    with (
+        archive.open("wb") as output,
+        subprocess.Popen(
+            ["docker", "image", "save", target],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        ) as process,
+    ):
         try:
             deadline = time.monotonic() + 120
             size = 0
@@ -213,7 +301,7 @@ def export_local_image(target, archive):
                 while True:
                     remaining = deadline - time.monotonic()
                     if remaining <= 0:
-                        raise ValueError('Local image export timed out')
+                        raise ValueError("Local image export timed out")
                     if not selector.select(min(remaining, 1)):
                         continue
                     chunk = os.read(process.stdout.fileno(), 1024 * 1024)
@@ -221,10 +309,10 @@ def export_local_image(target, archive):
                         break
                     size += len(chunk)
                     if size > ARCHIVE_LIMIT:
-                        raise ValueError('Local image export exceeds bound')
+                        raise ValueError("Local image export exceeds bound")
                     output.write(chunk)
             if process.wait(timeout=max(0.01, deadline - time.monotonic())):
-                raise ValueError('Local image export failed')
+                raise ValueError("Local image export failed")
         finally:
             if process.poll() is None:
                 process.kill()
@@ -232,171 +320,382 @@ def export_local_image(target, archive):
 
 
 def archive_config_id(archive):
-    if not archive.is_file() or archive.is_symlink() or archive.stat().st_size > ARCHIVE_LIMIT:
-        raise ValueError('Invalid or oversized image archive')
-    with tarfile.open(archive, 'r:') as package:
+    if (
+        not archive.is_file()
+        or archive.is_symlink()
+        or archive.stat().st_size > ARCHIVE_LIMIT
+    ):
+        raise ValueError("Invalid or oversized image archive")
+    with tarfile.open(archive, "r:") as package:
         members = {}
         for member in package:
             path = PurePosixPath(member.name)
-            if (len(members) >= 512 or not member.name or path.is_absolute() or '..' in path.parts
-                    or '\\' in member.name or member.name in members
-                    or not (member.isfile() or member.isdir())):
-                raise ValueError('Unsafe or ambiguous archive member')
+            if (
+                len(members) >= 512
+                or not member.name
+                or path.is_absolute()
+                or ".." in path.parts
+                or "\\" in member.name
+                or member.name in members
+                or not (member.isfile() or member.isdir())
+            ):
+                raise ValueError("Unsafe or ambiguous archive member")
             members[member.name] = member
+
         def read_member(name, limit):
             member = members.get(name)
             if member is None or not member.isfile() or member.size > limit:
-                raise ValueError('Required image metadata missing or oversized')
+                raise ValueError("Required image metadata missing or oversized")
             return package.extractfile(member).read(limit + 1)
-        manifests = json.loads(read_member('manifest.json', 256 * 1024))
+
+        manifests = json.loads(read_member("manifest.json", 256 * 1024))
         if not isinstance(manifests, list) or len(manifests) != 1:
-            raise ValueError('Expected exactly one exported image manifest')
-        config_name = manifests[0].get('Config')
+            raise ValueError("Expected exactly one exported image manifest")
+        config_name = manifests[0].get("Config")
         if not isinstance(config_name, str):
-            raise ValueError('Exported image has no configuration')
+            raise ValueError("Exported image has no configuration")
         config_bytes = read_member(config_name, 1024 * 1024)
         config = json.loads(config_bytes)
-        if config.get('os') != 'linux' or config.get('architecture') != 'amd64':
-            raise ValueError('Selected local image must be Linux AMD64')
-        return 'sha256:' + hashlib.sha256(config_bytes).hexdigest()
+        if config.get("os") != "linux" or config.get("architecture") != "amd64":
+            raise ValueError("Selected local image must be Linux AMD64")
+        return "sha256:" + hashlib.sha256(config_bytes).hexdigest()
 
 
 def local_config_id(target):
-    if not re.fullmatch(r'sha256:[a-f0-9]{64}', target):
-        raise ValueError('Immutable local image required')
+    if not re.fullmatch(r"sha256:[a-f0-9]{64}", target):
+        raise ValueError("Immutable local image required")
     OUT.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='image-binding-', dir=OUT) as directory:
-        archive = Path(directory) / 'image.tar'
+    with tempfile.TemporaryDirectory(prefix="image-binding-", dir=OUT) as directory:
+        archive = Path(directory) / "image.tar"
         export_local_image(target, archive)
         return archive_config_id(archive)
 
 
 def stage_coverage(document, stage):
-    if stage == 'applicationImage':
-        runtime = (ROOT / 'Dockerfile').read_text().rsplit('FROM ', 1)[1]
-        expected = set(re.findall(r'\b(nginx|musl|musl-utils|zlib|pcre2|libssl3|libcrypto3)=([0-9][a-zA-Z0-9.+_~-]*)', runtime))
-        if {name for name, version in expected} != {'nginx', 'musl', 'musl-utils', 'zlib', 'pcre2', 'libssl3', 'libcrypto3'}:
-            raise ValueError('Pinned runtime package inventory missing')
-        actual = {(p.get('Name'), p.get('Version')) for r in document['Results']
-                  if r.get('Class') == 'os-pkgs' for p in r.get('Packages', [])}
+    if stage == "applicationImage":
+        runtime = (ROOT / "Dockerfile").read_text().rsplit("FROM ", 1)[1]
+        expected = set(
+            re.findall(
+                r"\b(nginx|musl|musl-utils|zlib|pcre2|libssl3|libcrypto3)"
+                r"=([0-9][a-zA-Z0-9.+_~-]*)",
+                runtime,
+            )
+        )
+        if {name for name, version in expected} != {
+            "nginx",
+            "musl",
+            "musl-utils",
+            "zlib",
+            "pcre2",
+            "libssl3",
+            "libcrypto3",
+        }:
+            raise ValueError("Pinned runtime package inventory missing")
+        actual = {
+            (p.get("Name"), p.get("Version"))
+            for r in document["Results"]
+            if r.get("Class") == "os-pkgs"
+            for p in r.get("Packages", [])
+        }
         if not expected <= actual:
-            raise ValueError('Complete runtime package coverage missing')
-    if stage in ('toolchainImage', 'builderImage'):
-        packages = [p for r in document['Results'] for p in r.get('Packages', [])]
-        toolchain = (ROOT / 'Dockerfile').read_text().split('FROM toolchain AS build', 1)[0]
-        node_versions = re.findall(r'\bnodejs=(24\.\d+\.\d+-r\d+)\b', toolchain)
-        if len(node_versions) != 1 or not any(p.get('Name') == 'nodejs' and p.get('Version') == node_versions[0] for p in packages) or not any(p.get('Name') == 'npm' and p.get('Version') == '11.17.0' and p.get('FilePath') == 'opt/npm/package.json' for p in packages):
-            raise ValueError('Complete toolchain package coverage missing')
-        cli = json.loads((ROOT / '.github/pipeline/build/container/npm-cli-lock.json').read_text())['packages']
-        expected_cli = {(name.rsplit('node_modules/', 1)[-1], item['version']) for name, item in cli.items() if name}
-        actual_cli = {(p.get('Name'), p.get('Version')) for p in packages if p.get('FilePath', '').startswith('opt/npm/')}
+            raise ValueError("Complete runtime package coverage missing")
+    if stage in ("toolchainImage", "builderImage"):
+        packages = [p for r in document["Results"] for p in r.get("Packages", [])]
+        toolchain = (
+            (ROOT / "Dockerfile").read_text().split("FROM toolchain AS build", 1)[0]
+        )
+        node_versions = re.findall(r"\bnodejs=(24\.\d+\.\d+-r\d+)\b", toolchain)
+        if (
+            len(node_versions) != 1
+            or not any(
+                p.get("Name") == "nodejs" and p.get("Version") == node_versions[0]
+                for p in packages
+            )
+            or not any(
+                p.get("Name") == "npm"
+                and p.get("Version") == "11.17.0"
+                and p.get("FilePath") == "opt/npm/package.json"
+                for p in packages
+            )
+        ):
+            raise ValueError("Complete toolchain package coverage missing")
+        cli = json.loads(
+            (ROOT / ".github/pipeline/build/container/npm-cli-lock.json").read_text()
+        )["packages"]
+        expected_cli = {
+            (name.rsplit("node_modules/", 1)[-1], item["version"])
+            for name, item in cli.items()
+            if name
+        }
+        actual_cli = {
+            (p.get("Name"), p.get("Version"))
+            for p in packages
+            if p.get("FilePath", "").startswith("opt/npm/")
+        }
         if not expected_cli <= actual_cli:
-            raise ValueError('Complete npm CLI dependency coverage missing')
-        if stage == 'builderImage':
-            canonical = json.loads((ROOT / 'package-lock.json').read_text())['packages']
-            expected = {(name.rsplit('node_modules/', 1)[-1], item['version']) for name, item in canonical.items() if name and all(not spec or ('!' + value) not in spec and (not any(not x.startswith('!') for x in spec) or value in spec) for spec, value in ((item.get('os', []), 'linux'), (item.get('cpu', []), 'x64'), (item.get('libc', []), 'musl')))}
-            actual = {(p.get('Name'), p.get('Version')) for p in packages if p.get('FilePath', '').startswith('build/node_modules/')}
+            raise ValueError("Complete npm CLI dependency coverage missing")
+        if stage == "builderImage":
+            canonical = json.loads((ROOT / "package-lock.json").read_text())["packages"]
+            expected = {
+                (name.rsplit("node_modules/", 1)[-1], item["version"])
+                for name, item in canonical.items()
+                if name
+                and all(
+                    not spec
+                    or ("!" + value) not in spec
+                    and (not any(not x.startswith("!") for x in spec) or value in spec)
+                    for spec, value in (
+                        (item.get("os", []), "linux"),
+                        (item.get("cpu", []), "x64"),
+                        (item.get("libc", []), "musl"),
+                    )
+                )
+            }
+            actual = {
+                (p.get("Name"), p.get("Version"))
+                for p in packages
+                if p.get("FilePath", "").startswith("build/node_modules/")
+            }
             if not expected <= actual:
-                raise ValueError('Complete builder dependency coverage missing')
+                raise ValueError("Complete builder dependency coverage missing")
 
 
 def load_misconfiguration_exceptions(path=MISCONFIGURATION_EXCEPTIONS, today=None):
-    """Reviewed trivy misconfiguration checks ignored for one named file until a date; fails closed on any malformed or expired entry."""
+    """Reviewed trivy misconfiguration checks ignored for one named file until a date;
+    fails closed on any malformed or expired entry."""
     import datetime
+
     today = today or datetime.date.today()
-    document = json.loads(path.read_text()) if path.exists() else {'version': 1, 'exceptions': []}
-    if document.get('version') != 1 or not isinstance(document.get('exceptions'), list):
-        raise ValueError('Misconfiguration exception policy is malformed')
+    document = (
+        json.loads(path.read_text())
+        if path.exists()
+        else {"version": 1, "exceptions": []}
+    )
+    if document.get("version") != 1 or not isinstance(document.get("exceptions"), list):
+        raise ValueError("Misconfiguration exception policy is malformed")
     result = {}
-    for item in document['exceptions']:
-        if not isinstance(item, dict) or set(item) != {'checkId', 'target', 'expiresAt', 'ticket', 'rationale'}:
-            raise ValueError('Misconfiguration exception needs exactly checkId, target, expiresAt, ticket and rationale')
-        if not re.fullmatch(r'AVD-[A-Z0-9]+-[0-9]{4}', item['checkId']) or not re.fullmatch(r'[A-Z]+-[0-9]+', item['ticket']) or len(item['rationale'].strip()) < 40:
-            raise ValueError('Misconfiguration exception needs an AVD check id, a ticket and a reviewed rationale')
-        target = PurePosixPath(item['target'])
-        if target.is_absolute() or '..' in target.parts or not (ROOT / target).is_file():
-            raise ValueError('Misconfiguration exception target must be a tracked file inside the repository')
-        expires = datetime.date.fromisoformat(item['expiresAt'])
+    for item in document["exceptions"]:
+        if not isinstance(item, dict) or set(item) != {
+            "checkId",
+            "target",
+            "expiresAt",
+            "ticket",
+            "rationale",
+        }:
+            raise ValueError(
+                (
+                    "Misconfiguration exception needs exactly checkId,"
+                    " target, expiresAt, ticket and rationale"
+                )
+            )
+        if (
+            not re.fullmatch(r"AVD-[A-Z0-9]+-[0-9]{4}", item["checkId"])
+            or not re.fullmatch(r"[A-Z]+-[0-9]+", item["ticket"])
+            or len(item["rationale"].strip()) < 40
+        ):
+            raise ValueError(
+                (
+                    "Misconfiguration exception needs an AVD check id, a"
+                    " ticket and a reviewed rationale"
+                )
+            )
+        target = PurePosixPath(item["target"])
+        if (
+            target.is_absolute()
+            or ".." in target.parts
+            or not (ROOT / target).is_file()
+        ):
+            raise ValueError(
+                (
+                    "Misconfiguration exception target must be a tracked file"
+                    " inside the repository"
+                )
+            )
+        expires = datetime.date.fromisoformat(item["expiresAt"])
         if today > expires:
-            raise ValueError('Misconfiguration exception expired; review it again or remove it')
-        if (item['checkId'], item['target']) in result:
-            raise ValueError('Duplicate misconfiguration exception')
-        result[(item['checkId'], item['target'])] = item
+            raise ValueError(
+                "Misconfiguration exception expired; review it again or remove it"
+            )
+        if (item["checkId"], item["target"]) in result:
+            raise ValueError("Duplicate misconfiguration exception")
+        result[(item["checkId"], item["target"])] = item
     return result
 
 
 def exceptions_exercised(document, exceptions):
-    """Every ignored check must appear as a suppressed finding on its target (`--show-suppressed`); a stale entry fails closed."""
+    """Every ignored check must appear as a suppressed finding on its target
+    (`--show-suppressed`); a stale entry fails closed."""
     for (check, target), item in exceptions.items():
-        result = next((r for r in document.get('Results', []) if r.get('Class') == 'config' and r.get('Target') == target), None)
-        suppressed = [m for m in (result or {}).get('ExperimentalModifiedFindings') or [] if m.get('Status') == 'ignored'
-                      and (m.get('Finding') or {}).get('ID') in (check, check.removeprefix('AVD-'))]
+        result = next(
+            (
+                r
+                for r in document.get("Results", [])
+                if r.get("Class") == "config" and r.get("Target") == target
+            ),
+            None,
+        )
+        suppressed = [
+            m
+            for m in (result or {}).get("ExperimentalModifiedFindings") or []
+            if m.get("Status") == "ignored"
+            and (m.get("Finding") or {}).get("ID")
+            in (check, check.removeprefix("AVD-"))
+        ]
         if not suppressed:
-            raise ValueError('Misconfiguration exception ' + check + ' for ' + target + ' was not exercised; remove it')
+            raise ValueError(
+                "Misconfiguration exception "
+                + check
+                + " for "
+                + target
+                + " was not exercised; remove it"
+            )
 
 
 def scan(kind, target=None, local=False, stage=None):
-    stage = stage or ('configuration' if kind != 'image' else ('applicationImage' if local else ('builderBase' if target.startswith('alpine:') else 'runtimeBase')))
-    print(json.dumps({'containerScanStage': stage}), flush=True)
+    stage = stage or (
+        "configuration"
+        if kind != "image"
+        else (
+            "applicationImage"
+            if local
+            else ("builderBase" if target.startswith("alpine:") else "runtimeBase")
+        )
+    )
+    print(json.dumps({"containerScanStage": stage}), flush=True)
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / 'trivy.yaml').write_text('{}\n')
-    exceptions = load_misconfiguration_exceptions() if kind != 'image' else {}
-    (OUT / 'ignore').write_text(''.join(check + ' exp:' + item['expiresAt'] + '\n' for (check, _), item in sorted(exceptions.items())))
-    report = OUT / (kind + '-' + hashlib.sha256((target or '.').encode()).hexdigest()[:12] + '.json')
+    (OUT / "trivy.yaml").write_text("{}\n")
+    exceptions = load_misconfiguration_exceptions() if kind != "image" else {}
+    (OUT / "ignore").write_text(
+        "".join(
+            check + " exp:" + item["expiresAt"] + "\n"
+            for (check, _), item in sorted(exceptions.items())
+        )
+    )
+    report = OUT / (
+        kind + "-" + hashlib.sha256((target or ".").encode()).hexdigest()[:12] + ".json"
+    )
     report.unlink(missing_ok=True)
-    common = ['--config', str(OUT / 'trivy.yaml'), '--ignorefile', str(OUT / 'ignore'),
-              '--format', 'json', '--output', str(report), '--exit-code', '0', '--timeout', '15m', '--quiet']
+    common = [
+        "--config",
+        str(OUT / "trivy.yaml"),
+        "--ignorefile",
+        str(OUT / "ignore"),
+        "--format",
+        "json",
+        "--output",
+        str(report),
+        "--exit-code",
+        "0",
+        "--timeout",
+        "15m",
+        "--quiet",
+    ]
     config_id = None
-    with tempfile.TemporaryDirectory(prefix='exact-image-', dir=OUT) as directory:
-        if kind == 'image' and local:
-            archive = Path(directory) / 'image.tar'
+    with tempfile.TemporaryDirectory(prefix="exact-image-", dir=OUT) as directory:
+        if kind == "image" and local:
+            archive = Path(directory) / "image.tar"
             export_local_image(target, archive)
             config_id = archive_config_id(archive)
-            args = ['image', '--input', str(archive), '--scanners', 'vuln,secret', '--list-all-pkgs', *common]
-        elif kind == 'image':
-            args = ['image', '--image-src', 'remote', '--platform', 'linux/amd64',
-                    '--scanners', 'vuln,secret', '--list-all-pkgs', *common, target]
+            args = [
+                "image",
+                "--input",
+                str(archive),
+                "--scanners",
+                "vuln,secret",
+                "--list-all-pkgs",
+                *common,
+            ]
+        elif kind == "image":
+            args = [
+                "image",
+                "--image-src",
+                "remote",
+                "--platform",
+                "linux/amd64",
+                "--scanners",
+                "vuln,secret",
+                "--list-all-pkgs",
+                *common,
+                target,
+            ]
         else:
-            args = ['fs', '--scanners', 'misconfig,secret', '--show-suppressed', '--skip-dirs', '.git,.codex-scratch,node_modules,dist,coverage', *common, '.']
-        clean_env = {k: v for k, v in os.environ.items() if not k.startswith('TRIVY_')}
-        result = subprocess.run([executable(), *args], cwd=ROOT, env=clean_env, capture_output=True, timeout=960)
-        (report.with_suffix('.log')).write_bytes(result.stdout + result.stderr)
+            args = [
+                "fs",
+                "--scanners",
+                "misconfig,secret",
+                "--show-suppressed",
+                "--skip-dirs",
+                ".git,.codex-scratch,node_modules,dist,coverage",
+                *common,
+                ".",
+            ]
+        clean_env = {k: v for k, v in os.environ.items() if not k.startswith("TRIVY_")}
+        result = subprocess.run(
+            [executable(), *args],
+            cwd=ROOT,
+            env=clean_env,
+            capture_output=True,
+            timeout=960,
+        )
+        (report.with_suffix(".log")).write_bytes(result.stdout + result.stderr)
         if result.returncode:
-            raise ValueError('Scanner failed; private diagnostics retained locally')
+            raise ValueError("Scanner failed; private diagnostics retained locally")
     document = json.loads(report.read_text())
     if exceptions:
         exceptions_exercised(document, exceptions)
     counts = report_gate(document, kind, stage=stage)
     stage_coverage(document, stage)
-    if kind == 'image':
+    if kind == "image":
         image_identity(document, target, config_id)
-    print(json.dumps({'scan': kind, 'counts': counts, 'ignoredChecks': sorted({check for check, _ in exceptions})}))
+    print(
+        json.dumps(
+            {
+                "scan": kind,
+                "counts": counts,
+                "ignoredChecks": sorted({check for check, _ in exceptions}),
+            }
+        )
+    )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('install', 'config', 'images'))
-    parser.add_argument('--image')
-    parser.add_argument('--toolchain')
-    parser.add_argument('--builder')
+    parser.add_argument("action", choices=("install", "config", "images"))
+    parser.add_argument("--image")
+    parser.add_argument("--toolchain")
+    parser.add_argument("--builder")
     args = parser.parse_args()
-    if args.action == 'install':
+    if args.action == "install":
         install()
-    elif args.action == 'config':
-        scan('config')
+    elif args.action == "config":
+        scan("config")
     else:
-        if any(not value or not re.fullmatch(r'sha256:[a-f0-9]{64}', value) for value in (args.image, args.toolchain, args.builder)):
-            raise ValueError('Immutable local image ID from build iidfile required')
-        for stage, image in zip(('builderBase', 'runtimeBase'), base_images((ROOT / 'Dockerfile').read_text())):
-            scan('image', image, stage=stage)
-        scan('image', args.toolchain, local=True, stage='toolchainImage')
-        scan('image', args.builder, local=True, stage='builderImage')
-        scan('image', args.image, local=True)
+        if any(
+            not value or not re.fullmatch(r"sha256:[a-f0-9]{64}", value)
+            for value in (args.image, args.toolchain, args.builder)
+        ):
+            raise ValueError("Immutable local image ID from build iidfile required")
+        for stage, image in zip(
+            ("builderBase", "runtimeBase"),
+            base_images((ROOT / "Dockerfile").read_text()),
+        ):
+            scan("image", image, stage=stage)
+        scan("image", args.toolchain, local=True, stage="toolchainImage")
+        scan("image", args.builder, local=True, stage="builderImage")
+        scan("image", args.image, local=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
-    except (ValueError, KeyError, TypeError, OSError, tarfile.TarError, subprocess.SubprocessError, json.JSONDecodeError) as error:
+    except (
+        ValueError,
+        KeyError,
+        TypeError,
+        OSError,
+        tarfile.TarError,
+        subprocess.SubprocessError,
+        json.JSONDecodeError,
+    ) as error:
         print(failure_message(error), file=sys.stderr)
         sys.exit(1)

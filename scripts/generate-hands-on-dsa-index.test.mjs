@@ -169,7 +169,13 @@ test('applies a complete ranking manifest as a compact problem projection', () =
   const ranked = applyHandsOnRankingPlan(groups, plan);
 
   const published = JSON.stringify(ranked);
-  for (const privateField of ['evidenceConfidence', 'rankingReasons', 'sourceSignals', 'editorialEvaluation', 'semanticFamily']) {
+  for (const privateField of [
+    'evidenceConfidence',
+    'rankingReasons',
+    'sourceSignals',
+    'editorialEvaluation',
+    'semanticFamily',
+  ]) {
     assert(!published.includes(privateField), `Private field leaked: ${privateField}`);
   }
   assert.deepEqual(ranked.ranking, {
@@ -180,15 +186,13 @@ test('applies a complete ranking manifest as a compact problem projection', () =
     lastReviewedAt: '2026-09-06',
   });
   assert.deepEqual(
-    ranked.groups[0].problems.map(
-      ({ id, interviewRank, studyOrder, tier, rankingVersion }) => ({
-        id,
-        interviewRank,
-        studyOrder,
-        tier,
-        rankingVersion,
-      }),
-    ),
+    ranked.groups[0].problems.map(({ id, interviewRank, studyOrder, tier, rankingVersion }) => ({
+      id,
+      interviewRank,
+      studyOrder,
+      tier,
+      rankingVersion,
+    })),
     [
       {
         id: 'alpha',
@@ -293,53 +297,64 @@ test('rejects excluded evidence sources and incomplete rank sequences', () => {
   assert.throws(() => applyHandsOnRankingPlan(groups, clashPlan), /duplicate interviewRank 1/);
 });
 
-test('an Approach-N problem shares its original\'s interview rank and keeps its own study order (DLV-965)', () => {
-  const groups = [{ id: 'one', problems: [{ id: 'alpha' }, { id: 'alpha-approach-2' }, { id: 'beta' }] }];
-  const entry = (problemId, interviewRank, studyOrder) => ({
-    problemId,
-    interviewRank,
-    studyOrder,
-    rankingVersion: 'candidate',
-    lastReviewedAt: '2026-09-06',
-    evidenceConfidence: 'low',
-    rankingReasons: ['Reason.'],
-    sourceSignals: [
-      { sourceId: 'owned', signalType: 'owned-editorial-rubric', observedAt: '2026-09-06', contribution: 'Rubric.' },
-    ],
-  });
-  const plan = {
-    schemaVersion: 'hands-on-dsa-ranking/v1',
-    rankingVersion: 'candidate',
-    status: 'candidate',
-    catalogTarget: 730,
-    publishedProblemCount: 3,
-    lastReviewedAt: '2026-09-06',
-    methodology: 'Synthetic test methodology.',
-    sourceRegistry: [
-      {
-        id: 'owned',
-        kind: 'owned-editorial',
-        includedInRanking: true,
-        accessPolicy: 'owned',
-        automationPolicy: 'allowed',
-        agePolicy: 'Refresh on release.',
-        limitations: 'Editorial.',
-        contribution: 'Rubric.',
-        description: 'Owned source.',
-      },
-    ],
-    problems: [entry('alpha', 1, 1), entry('alpha-approach-2', 1, 2), entry('beta', 2, 3)],
-  };
-  const ranked = applyHandsOnRankingPlan(groups, plan).groups[0].problems;
-  assert.deepEqual(
-    ranked.map(({ id, interviewRank, studyOrder }) => ({ id, interviewRank, studyOrder })),
-    [
-      { id: 'alpha', interviewRank: 1, studyOrder: 1 },
-      { id: 'alpha-approach-2', interviewRank: 1, studyOrder: 2 },
-      { id: 'beta', interviewRank: 2, studyOrder: 3 },
-    ],
-  );
-});
+test(
+  "an Approach-N problem shares its original's interview rank and keeps its own study " +
+    'order (DLV-965)',
+  () => {
+    const groups = [
+      { id: 'one', problems: [{ id: 'alpha' }, { id: 'alpha-approach-2' }, { id: 'beta' }] },
+    ];
+    const entry = (problemId, interviewRank, studyOrder) => ({
+      problemId,
+      interviewRank,
+      studyOrder,
+      rankingVersion: 'candidate',
+      lastReviewedAt: '2026-09-06',
+      evidenceConfidence: 'low',
+      rankingReasons: ['Reason.'],
+      sourceSignals: [
+        {
+          sourceId: 'owned',
+          signalType: 'owned-editorial-rubric',
+          observedAt: '2026-09-06',
+          contribution: 'Rubric.',
+        },
+      ],
+    });
+    const plan = {
+      schemaVersion: 'hands-on-dsa-ranking/v1',
+      rankingVersion: 'candidate',
+      status: 'candidate',
+      catalogTarget: 730,
+      publishedProblemCount: 3,
+      lastReviewedAt: '2026-09-06',
+      methodology: 'Synthetic test methodology.',
+      sourceRegistry: [
+        {
+          id: 'owned',
+          kind: 'owned-editorial',
+          includedInRanking: true,
+          accessPolicy: 'owned',
+          automationPolicy: 'allowed',
+          agePolicy: 'Refresh on release.',
+          limitations: 'Editorial.',
+          contribution: 'Rubric.',
+          description: 'Owned source.',
+        },
+      ],
+      problems: [entry('alpha', 1, 1), entry('alpha-approach-2', 1, 2), entry('beta', 2, 3)],
+    };
+    const ranked = applyHandsOnRankingPlan(groups, plan).groups[0].problems;
+    assert.deepEqual(
+      ranked.map(({ id, interviewRank, studyOrder }) => ({ id, interviewRank, studyOrder })),
+      [
+        { id: 'alpha', interviewRank: 1, studyOrder: 1 },
+        { id: 'alpha-approach-2', interviewRank: 1, studyOrder: 2 },
+        { id: 'beta', interviewRank: 2, studyOrder: 3 },
+      ],
+    );
+  },
+);
 
 test('applies unique names and a contiguous preparation order without changing group ids', () => {
   const groups = [
@@ -498,10 +513,23 @@ test('carries approach families as sibling locations only, without patterns or b
   const problems = new Map([
     [
       'grid-count',
-      { id: 'grid-count', approachFamily: { approach: 1, bestProblemId: 'grid-count', siblings: [sibling('grid-count-approach-3', 3), sibling('grid-count-approach-2', 2)] } },
+      {
+        id: 'grid-count',
+        approachFamily: {
+          approach: 1,
+          bestProblemId: 'grid-count',
+          siblings: [sibling('grid-count-approach-3', 3), sibling('grid-count-approach-2', 2)],
+        },
+      },
     ],
     ['plain', { id: 'plain' }],
-    ['broken', { id: 'broken', approachFamily: { approach: 1, bestProblemId: 'broken', siblings: [{ problemId: 'x' }] } }],
+    [
+      'broken',
+      {
+        id: 'broken',
+        approachFamily: { approach: 1, bestProblemId: 'broken', siblings: [{ problemId: 'x' }] },
+      },
+    ],
   ]);
   const families = approachFamilySummaries(problems);
   assert.deepEqual(Object.keys(families), ['grid-count']);

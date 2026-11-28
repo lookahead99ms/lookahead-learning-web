@@ -12,34 +12,34 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
   template: `<app-platform-header />
     <main id="main-content" class="admin-workspace">
       <app-author-admin-menu pageId="access-checks" />
-  <app-author-admin-menu pageId="access-checks" [documentationOnly]="true" />
+      <app-author-admin-menu pageId="access-checks" [documentationOnly]="true" />
       <div class="workspace-content">
-      <h1>Content access review</h1>
-      <p>
-        Author preview with synthetic metadata. These controls do not change your access or load a
-        protected lesson.
-      </p>
-      <nav aria-label="Preview states" style="display:flex;flex-wrap:wrap;gap:10px;margin:24px 0">
-        @for (state of states; track state) {
-          <a
-            class="action-chip"
-            routerLink="/admin/content-access"
-            [queryParams]="{ state }"
-            [attr.aria-current]="kind() === state ? 'page' : null"
-            >{{ state }}</a
-          >
+        <h1>Content access review</h1>
+        <p>
+          Author preview with synthetic metadata. These controls do not change your access or load a
+          protected lesson.
+        </p>
+        <nav aria-label="Preview states" style="display:flex;flex-wrap:wrap;gap:10px;margin:24px 0">
+          @for (state of states; track state) {
+            <a
+              class="action-chip"
+              routerLink="/admin/content-access"
+              [queryParams]="{ state }"
+              [attr.aria-current]="kind() === state ? 'page' : null"
+              >{{ state }}</a
+            >
+          }
+        </nav>
+        @for (state of [kind()]; track state) {
+          <app-content-recovery
+            [kind]="state"
+            [preview]="preview"
+            [destination]="destination()"
+            (retry)="retryPreview()"
+          />
         }
-      </nav>
-      @for (state of [kind()]; track state) {
-        <app-content-recovery
-          [kind]="state"
-          [preview]="preview"
-          [destination]="destination()"
-          (retry)="retryPreview()"
-        />
-      }
-      <p>{{ retried ? 'Retry requested. In a real lesson, this starts a fresh read.' : '' }}</p>
-      <a class="action-link" routerLink="/admin/operations">Open documentation</a>
+        <p>{{ retried ? 'Retry requested. In a real lesson, this starts a fresh read.' : '' }}</p>
+        <a class="action-link" routerLink="/admin/operations">Open documentation</a>
       </div>
     </main>`,
   styles: [

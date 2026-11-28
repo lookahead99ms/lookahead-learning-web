@@ -101,7 +101,7 @@ describe('Domain author-review API boundary', () => {
     });
     expect(receipt.recordId).toBe(eventId);
   });
-  it('preserves server event order when recorded timestamps disagree with sequence order', async () => {
+  it('keeps server event order when recorded timestamps disagree with sequence', async () => {
     const newest = { ...event(), recordedAt: '2026-09-19T11:00:00Z' };
     const earlier = {
       ...event(),

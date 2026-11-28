@@ -62,20 +62,26 @@ describe('Option B graphs: edge tones and node pointers', () => {
     expect(graphEdgeTone([], [], true)).toBeUndefined();
   });
 
-  it('lights the edge being followed, dashes the edges already followed and labels the current node', () => {
-    const step = kahnStep({ graph: { active: ['@course'], compare: ['@next_course'], done: [0] } });
-    const model = graphModel(graphView, step, 'python', kahnStory([step]));
-    expect(toneOf(model, '1>3')).toBe('compare');
-    expect(toneOf(model, '0>1')).toBe('done');
-    expect(toneOf(model, '0>2')).toBe('done');
-    // 2 -> 3 is not being followed: course is 1, not 2.
-    expect(toneOf(model, '2>3')).toBeUndefined();
-    expect(model.nodes.find((node) => node.text === '1')?.pointers).toEqual(['course']);
-    // The layout box keeps node 0 on the left edge and node 3 on the right edge.
-    const x = (text: string) => model.nodes.find((node) => node.text === text)!.x;
-    expect(x('0')).toBeLessThan(x('1'));
-    expect(x('3')).toBeGreaterThan(x('2'));
-  });
+  it(
+    'lights the edge being followed, dashes the edges already followed and labels the ' +
+      'current node',
+    () => {
+      const step = kahnStep({
+        graph: { active: ['@course'], compare: ['@next_course'], done: [0] },
+      });
+      const model = graphModel(graphView, step, 'python', kahnStory([step]));
+      expect(toneOf(model, '1>3')).toBe('compare');
+      expect(toneOf(model, '0>1')).toBe('done');
+      expect(toneOf(model, '0>2')).toBe('done');
+      // 2 -> 3 is not being followed: course is 1, not 2.
+      expect(toneOf(model, '2>3')).toBeUndefined();
+      expect(model.nodes.find((node) => node.text === '1')?.pointers).toEqual(['course']);
+      // The layout box keeps node 0 on the left edge and node 3 on the right edge.
+      const x = (text: string) => model.nodes.find((node) => node.text === text)!.x;
+      expect(x('0')).toBeLessThan(x('1'));
+      expect(x('3')).toBeGreaterThan(x('2'));
+    },
+  );
 
   it('renames pointer labels per language and skips a local that is not a node', () => {
     const step = kahnStep({});

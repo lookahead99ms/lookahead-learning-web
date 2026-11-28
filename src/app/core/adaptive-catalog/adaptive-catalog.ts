@@ -19,11 +19,7 @@ import { evenGridColumnVars, evenGridColumns } from '../even-grid';
 import { PageSidebarContextDirective } from '../page-sidebars/page-sidebar-context';
 import { withoutHiddenCourses } from '../../content/hidden-courses';
 import { CatalogCourseGroup } from '../../content/catalog-course-groups';
-import {
-  CatalogOverviewItem,
-  ContentPath,
-  highlightLearn,
-} from '../../content/content.models';
+import { CatalogOverviewItem, ContentPath, highlightLearn } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { AccessLevelsService, freeLessonsLabel } from '../../content/access-levels';
 
@@ -348,7 +344,8 @@ export class AdaptiveCatalog implements OnInit {
         const sticky = host.querySelector<HTMLElement>('.catalog-sticky-utility');
         const view = host.ownerDocument.defaultView;
         const stickyTop = sticky && view ? parseFloat(view.getComputedStyle(sticky).top) || 0 : 0;
-        element.style.scrollMarginTop = `${stickyTop + (sticky?.getBoundingClientRect().height ?? 0) + 12}px`;
+        element.style.scrollMarginTop =
+          stickyTop + (sticky?.getBoundingClientRect().height ?? 0) + 12 + 'px';
         element.querySelector<HTMLElement>('.catalog-path-title')?.focus({ preventScroll: true });
         element.scrollIntoView({
           behavior: view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches

@@ -16,7 +16,8 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 
 @Component({
   selector: 'app-pattern-lesson-shell',
-  imports: [LearningCode,
+  imports: [
+    LearningCode,
     RouterLink,
     InteractiveTheoryVisual,
     InterviewQuestionBankLink,
@@ -27,44 +28,66 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   template: `
     <article class="golden-lesson" aria-label="Pattern lesson">
       @if (lesson().learningFlow; as flow) {
-        <section id="pattern-start" class="lesson-section wide-section" aria-labelledby="pattern-start-heading">
+        <section
+          id="pattern-start"
+          class="lesson-section wide-section"
+          aria-labelledby="pattern-start-heading"
+        >
           <h2 id="pattern-start-heading">Before you start</h2>
           <p>{{ lesson().summary }}</p>
           <p>{{ lesson().beginnerGuide?.prerequisite }}</p>
         </section>
-        <section id="pattern-purpose" class="lesson-section wide-section" aria-labelledby="pattern-purpose-heading">
+        <section
+          id="pattern-purpose"
+          class="lesson-section wide-section"
+          aria-labelledby="pattern-purpose-heading"
+        >
           <h2 id="pattern-purpose-heading">Why this matters</h2>
           <p>{{ flow.whyItMatters }}</p>
           <h3>What you’ll learn</h3>
-          <ul>@for (outcome of lesson().learningOutcomes; track outcome) { <li>{{ outcome }}</li> }</ul>
-        </section>
-        @if (lesson().beginnerGuide; as guide) {
-          <section id="pattern-first-example" class="lesson-section wide-section" aria-labelledby="pattern-first-example-heading">
-            <h2 id="pattern-first-example-heading">{{ guide.exampleTitle }}</h2>
-            <pre class="intro-code"><code [appLearningCode]="guide.code" [codeLanguage]="guide.language"></code></pre>
-            <h3>Let's walk through it</h3>
-            <ol>@for (step of guide.walkthrough; track step) { <li [innerHTML]="step"></li> }</ol>
-          </section>
-        }
-      } @else {
-      <header class="lesson-intro">
-        <p>{{ lesson().summary }}</p>
-        <section aria-labelledby="lesson-outcomes-heading">
-          <span>After this lesson</span>
-          <h2 id="lesson-outcomes-heading">You will be able to</h2>
           <ul>
             @for (outcome of lesson().learningOutcomes; track outcome) {
               <li>{{ outcome }}</li>
             }
           </ul>
         </section>
-        <aside class="memory-anchor" aria-label="Memory anchor and interview retrieval cue">
-          <span>Memory anchor</span>
-          <strong>{{ lesson().memoryAnchor.phrase }}</strong>
-          <p>{{ lesson().memoryAnchor.mentalModel }}</p>
-          <p><b>Interview cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
-        </aside>
-      </header>
+        @if (lesson().beginnerGuide; as guide) {
+          <section
+            id="pattern-first-example"
+            class="lesson-section wide-section"
+            aria-labelledby="pattern-first-example-heading"
+          >
+            <h2 id="pattern-first-example-heading">{{ guide.exampleTitle }}</h2>
+            <pre
+              class="intro-code"
+            ><code [appLearningCode]="guide.code" [codeLanguage]="guide.language"></code></pre>
+            <h3>Let's walk through it</h3>
+            <ol>
+              @for (step of guide.walkthrough; track step) {
+                <li [innerHTML]="step"></li>
+              }
+            </ol>
+          </section>
+        }
+      } @else {
+        <header class="lesson-intro">
+          <p>{{ lesson().summary }}</p>
+          <section aria-labelledby="lesson-outcomes-heading">
+            <span>After this lesson</span>
+            <h2 id="lesson-outcomes-heading">You will be able to</h2>
+            <ul>
+              @for (outcome of lesson().learningOutcomes; track outcome) {
+                <li>{{ outcome }}</li>
+              }
+            </ul>
+          </section>
+          <aside class="memory-anchor" aria-label="Memory anchor and interview retrieval cue">
+            <span>Memory anchor</span>
+            <strong>{{ lesson().memoryAnchor.phrase }}</strong>
+            <p>{{ lesson().memoryAnchor.mentalModel }}</p>
+            <p><b>Interview cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
+          </aside>
+        </header>
       }
 
       <section id="pattern-what" class="lesson-section" aria-labelledby="pattern-what-heading">
@@ -249,7 +272,11 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         </div>
       </section>
 
-      <section id="pattern-remember" class="lesson-section takeaways" aria-labelledby="pattern-takeaways-heading">
+      <section
+        id="pattern-remember"
+        class="lesson-section takeaways"
+        aria-labelledby="pattern-takeaways-heading"
+      >
         <p class="section-label">Keep</p>
         <h2 id="pattern-takeaways-heading">What to remember</h2>
         <ul>
@@ -378,14 +405,24 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       </section>
 
       @if (lesson().learningFlow; as flow) {
-        <section id="pattern-independent-practice" class="lesson-section" aria-labelledby="pattern-independent-practice-heading">
+        <section
+          id="pattern-independent-practice"
+          class="lesson-section"
+          aria-labelledby="pattern-independent-practice-heading"
+        >
           <h2 id="pattern-independent-practice-heading">Try it yourself</h2>
           <p>{{ flow.practice.prompt }}</p>
-          <details><summary>Show a hint</summary><p>{{ flow.practice.hint }}</p></details>
-          <details><summary>Check your answer</summary><p>{{ flow.practice.answer }}</p></details>
+          <details
+            ><summary>Show a hint</summary><p>{{ flow.practice.hint }}</p></details
+          >
+          <details
+            ><summary>Check your answer</summary><p>{{ flow.practice.answer }}</p></details
+          >
           @if (lesson().beginnerGuide; as guide) {
             <h3>One more small change</h3><p>{{ guide.try }}</p>
-            <details><summary>Explain this change</summary><p>{{ guide.answer }}</p></details>
+            <details
+              ><summary>Explain this change</summary><p>{{ guide.answer }}</p></details
+            >
           }
         </section>
       }
@@ -398,7 +435,6 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         <p class="section-label"><span>13 / 14</span>Transfer</p>
         <app-pattern-problem-workbench [problems]="essentialProblems()" />
       </section>
-
 
       <section
         id="pattern-practice"
@@ -432,10 +468,24 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   `,
   styles: [
     `
-      .intro-code { overflow-x: auto; max-width: 100%; padding: 1rem; white-space: pre; background: var(--surface-muted); border: 1px solid var(--line); }
-      details { margin-block: 1rem; }
-      summary { cursor: pointer; }
-      summary:focus-visible { outline: 2px solid var(--accent-link); outline-offset: 3px; }
+      .intro-code {
+        overflow-x: auto;
+        max-width: 100%;
+        padding: 1rem;
+        white-space: pre;
+        background: var(--surface-muted);
+        border: 1px solid var(--line);
+      }
+      details {
+        margin-block: 1rem;
+      }
+      summary {
+        cursor: pointer;
+      }
+      summary:focus-visible {
+        outline: 2px solid var(--accent-link);
+        outline-offset: 3px;
+      }
       :host {
         display: block;
       }
@@ -464,7 +514,11 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         border: 1px solid var(--line);
         border-radius: 18px;
         background:
-          radial-gradient(circle at 92% 5%, color-mix(in srgb, var(--accent-secondary) 18%, transparent), transparent 29%),
+          radial-gradient(
+            circle at 92% 5%,
+            color-mix(in srgb, var(--accent-secondary) 18%, transparent),
+            transparent 29%
+          ),
           linear-gradient(135deg, var(--surface-accent), var(--surface));
         box-shadow: 0 12px 30px var(--shadow);
       }
@@ -932,7 +986,12 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .practice-section {
         border-top-color: var(--warning);
         background:
-          radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent-secondary) 17%, transparent), transparent 32%), var(--surface);
+          radial-gradient(
+            circle at 100% 0,
+            color-mix(in srgb, var(--accent-secondary) 17%, transparent),
+            transparent 32%
+          ),
+          var(--surface);
       }
       .practice-grid {
         display: grid;
@@ -955,7 +1014,6 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .practice-grid a:focus-visible {
         border-color: var(--warning);
         box-shadow: 0 8px 20px var(--shadow);
-
       }
       .practice-grid strong {
         margin: 5px 0;
@@ -1059,11 +1117,15 @@ export class PatternLessonShell {
   readonly lesson = input.required<PatternLesson>();
   protected readonly definitionParagraphs = computed(() => {
     const lesson = this.lesson();
-    return lesson.definition.body.filter(paragraph => !lesson.learningFlow || paragraph !== lesson.summary);
+    return lesson.definition.body.filter(
+      (paragraph) => !lesson.learningFlow || paragraph !== lesson.summary,
+    );
   });
   protected readonly motivationParagraphs = computed(() => {
     const lesson = this.lesson();
-    return lesson.motivation.body.filter(paragraph => !lesson.learningFlow || paragraph !== lesson.learningFlow.whyItMatters);
+    return lesson.motivation.body.filter(
+      (paragraph) => !lesson.learningFlow || paragraph !== lesson.learningFlow.whyItMatters,
+    );
   });
   readonly checks = input.required<ResolvedPatternCheck[]>();
   readonly practiceItems = input.required<InterviewQuestion[]>();

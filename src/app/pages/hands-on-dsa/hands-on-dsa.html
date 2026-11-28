@@ -69,7 +69,9 @@
             type="search"
             [value]="query()"
             [placeholder]="
-              patternNamesHidden() ? 'Try remove, palindrome, or matrix' : 'Try palindrome, window, or graph'
+              patternNamesHidden()
+                ? 'Try remove, palindrome, or matrix'
+                : 'Try palindrome, window, or graph'
             "
             (input)="updateQuery($any($event.target).value)"
           />
@@ -93,21 +95,21 @@
           </select>
         </label>
         @if (!grouped()) {
-        <label for="practice-pattern">
-          Practice pattern
-          <select
-            id="practice-pattern"
-            [value]="selectedGroup()?.id ?? ''"
-            (change)="updatePattern($any($event.target).value)"
-          >
-            <option value="" [selected]="!selectedGroup()">All patterns</option>
-            @for (group of groups(); track group.id) {
-              <option [value]="group.id" [selected]="selectedGroup()?.id === group.id">
-                {{ preparationOrderLabel(group.preparationOrder) }} · {{ group.title }}
-              </option>
-            }
-          </select>
-        </label>
+          <label for="practice-pattern">
+            Practice pattern
+            <select
+              id="practice-pattern"
+              [value]="selectedGroup()?.id ?? ''"
+              (change)="updatePattern($any($event.target).value)"
+            >
+              <option value="" [selected]="!selectedGroup()">All patterns</option>
+              @for (group of groups(); track group.id) {
+                <option [value]="group.id" [selected]="selectedGroup()?.id === group.id">
+                  {{ preparationOrderLabel(group.preparationOrder) }} · {{ group.title }}
+                </option>
+              }
+            </select>
+          </label>
         }
         <!-- The two view switches stay together and wrap as one unit. -->
         <div class="practice-switches">
@@ -194,11 +196,7 @@
         } @else if (previews()[problem.id]?.status === 'error') {
           <p class="problem-preview-status" role="alert">
             The preview could not be loaded.
-            <button
-              type="button"
-              class="problem-preview-retry"
-              (click)="loadPreview(problem)"
-            >
+            <button type="button" class="problem-preview-retry" (click)="loadPreview(problem)">
               Try again
             </button>
           </p>
@@ -215,92 +213,99 @@
 
       <ng-template #problemTable let-problems>
         <div class="problem-table-wrap">
-        <table class="problem-table" aria-label="Practice problem orders" role="table">
-          <thead role="rowgroup">
-            <tr role="row">
-              <!-- Column order (user, 2026-10-06): Learning order, Problem, Difficulty, Interview priority, Status. -->
-              @for (column of sortColumns; track column.id) {
-                <th
-                  scope="col"
-                  role="columnheader"
-                  [class.problem-title-column]="column.id === 'title'"
-                  [attr.data-column]="column.id"
-                  [attr.aria-sort]="columnSortDirection(column.id)"
-                >
-                  <button
-                    type="button"
-                    class="column-sort"
-                    [attr.data-sort-column]="column.id"
-                    [disabled]="column.id === 'difficulty' && difficulty() !== 'All'"
-                    [attr.aria-label]="columnSortLabel(column)"
-                    (click)="sortColumn(column.id)"
+          <table class="problem-table" aria-label="Practice problem orders" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                <!-- Column order (user, 2026-10-06): Learning order, Problem, Difficulty, Interview
+                     priority, Status. -->
+                @for (column of sortColumns; track column.id) {
+                  <th
+                    scope="col"
+                    role="columnheader"
+                    [class.problem-title-column]="column.id === 'title'"
+                    [attr.data-column]="column.id"
+                    [attr.aria-sort]="columnSortDirection(column.id)"
                   >
-                    {{ column.label }}<span aria-hidden="true">{{ columnSortArrow(column.id) }}</span>
-                  </button>
-                </th>
-              }
-              <th scope="col" role="columnheader" class="problem-status-column">Status</th>
-            </tr>
-          </thead>
-          <tbody role="rowgroup">
-            @for (problem of problems; track problem.id) {
-              @let previewOpen = openPreviewId() === problem.id;
-              <tr class="problem-table-row" role="row" [class.is-previewing]="previewOpen">
-                <td class="problem-learning-order" data-label="Learning order" role="cell">
-                  {{ problem.studyOrder ?? '—' }}
-                </td>
-                <td class="problem-title-cell" role="cell">
-                  <div class="problem-title-layout">
-                    <div class="problem-title-text">
-                      <a
-                        class="problem-link"
-                        [routerLink]="problem.route"
-                        [queryParams]="problemQueryParams(problem.patternId)"
-                        >{{ problem.title }}</a
-                      >
-                      @if (!patternNamesHidden()) {
-                        <span class="problem-pattern">{{ problem.patternTitle }}</span>
-                      }
-                    </div>
                     <button
                       type="button"
-                      class="problem-preview-toggle"
-                      [attr.aria-expanded]="previewOpen"
-                      [attr.aria-controls]="previewDomId(problem.id)"
-                      [attr.aria-label]="(previewOpen ? 'Hide preview of ' : 'Preview ') + problem.title"
-                      (click)="togglePreview(problem)"
+                      class="column-sort"
+                      [attr.data-sort-column]="column.id"
+                      [disabled]="column.id === 'difficulty' && difficulty() !== 'All'"
+                      [attr.aria-label]="columnSortLabel(column)"
+                      (click)="sortColumn(column.id)"
                     >
-                      {{ previewOpen ? 'Hide preview' : 'Preview' }}
+                      {{ column.label
+                      }}<span aria-hidden="true">{{ columnSortArrow(column.id) }}</span>
                     </button>
-                  </div>
-                </td>
-                <td class="problem-difficulty" data-label="Difficulty" role="cell">
-                  {{ problem.difficulty }}
-                </td>
-                <td class="problem-interview-order" data-label="Interview priority" role="cell">
-                  {{ problem.interviewRank ?? '—' }}
-                </td>
-                <td class="problem-status" role="cell">
-                  <app-practice-status-mark
-                    [status]="progress.displayStatus(problem.id)"
-                    [compact]="true"
-                    [markOnly]="true"
-                  />
-                </td>
+                  </th>
+                }
+                <th scope="col" role="columnheader" class="problem-status-column">Status</th>
               </tr>
-              @if (previewOpen) {
-                <tr class="problem-preview-row" role="row" [id]="previewDomId(problem.id)">
-                  <td colspan="5" role="cell">
-                    <ng-container
-                      [ngTemplateOutlet]="previewBody"
-                      [ngTemplateOutletContext]="{ $implicit: problem, patternId: problem.patternId }"
+            </thead>
+            <tbody role="rowgroup">
+              @for (problem of problems; track problem.id) {
+                @let previewOpen = openPreviewId() === problem.id;
+                <tr class="problem-table-row" role="row" [class.is-previewing]="previewOpen">
+                  <td class="problem-learning-order" data-label="Learning order" role="cell">
+                    {{ problem.studyOrder ?? '—' }}
+                  </td>
+                  <td class="problem-title-cell" role="cell">
+                    <div class="problem-title-layout">
+                      <div class="problem-title-text">
+                        <a
+                          class="problem-link"
+                          [routerLink]="problem.route"
+                          [queryParams]="problemQueryParams(problem.patternId)"
+                          >{{ problem.title }}</a
+                        >
+                        @if (!patternNamesHidden()) {
+                          <span class="problem-pattern">{{ problem.patternTitle }}</span>
+                        }
+                      </div>
+                      <button
+                        type="button"
+                        class="problem-preview-toggle"
+                        [attr.aria-expanded]="previewOpen"
+                        [attr.aria-controls]="previewDomId(problem.id)"
+                        [attr.aria-label]="
+                          (previewOpen ? 'Hide preview of ' : 'Preview ') + problem.title
+                        "
+                        (click)="togglePreview(problem)"
+                      >
+                        {{ previewOpen ? 'Hide preview' : 'Preview' }}
+                      </button>
+                    </div>
+                  </td>
+                  <td class="problem-difficulty" data-label="Difficulty" role="cell">
+                    {{ problem.difficulty }}
+                  </td>
+                  <td class="problem-interview-order" data-label="Interview priority" role="cell">
+                    {{ problem.interviewRank ?? '—' }}
+                  </td>
+                  <td class="problem-status" role="cell">
+                    <app-practice-status-mark
+                      [status]="progress.displayStatus(problem.id)"
+                      [compact]="true"
+                      [markOnly]="true"
                     />
                   </td>
                 </tr>
+                @if (previewOpen) {
+                  <tr class="problem-preview-row" role="row" [id]="previewDomId(problem.id)">
+                    <td colspan="5" role="cell">
+                      <ng-container
+                        [ngTemplateOutlet]="previewBody"
+                        [ngTemplateOutletContext]="{
+                          $implicit: problem,
+                          patternId: problem.patternId,
+                        }"
+                      />
+                    </td>
+                  </tr>
+                }
               }
-            }
-          </tbody>
-        </table>
+            </tbody>
+          </table>
         </div>
       </ng-template>
       @if (grouped()) {

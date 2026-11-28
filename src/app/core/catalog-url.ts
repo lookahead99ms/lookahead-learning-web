@@ -17,7 +17,8 @@ export function currentCatalogUrl(url: string): string {
 
 /**
  * Opens old `/look-ahead/...` addresses (and route arrays saved with `look-ahead`) on the matching
- * `/blaze/...` page at any depth, keeping the query and fragment. The address bar then shows `/blaze`.
+ * `/blaze/...` page at any depth, keeping the query and fragment. The address bar then shows
+ * `/blaze`.
  */
 @Injectable()
 export class CatalogUrlSerializer extends DefaultUrlSerializer {
@@ -33,7 +34,8 @@ export class CatalogUrlSerializer extends DefaultUrlSerializer {
 /**
  * Upgrades JSON saved in this browser before DLV-931 (study plans, drafts) from the old catalog id
  * `look-ahead` to `blaze`: topic ids (`look-ahead:system-design`), path values, page routes and
- * content paths. Storage keys keep their `look-ahead.` prefix (the platform name), so they still load.
+ * content paths. Storage keys keep their `look-ahead.` prefix (the platform name), so they still
+ * load.
  */
 export function upgradeLegacyCatalogJson(raw: string): string {
   return raw

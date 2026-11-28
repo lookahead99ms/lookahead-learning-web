@@ -90,7 +90,12 @@
 .option-order,
 .detail-order {
   color: var(--text-subtle);
-  font: 700 0.76rem/1 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font:
+    700 0.76rem/1 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
   font-variant-numeric: tabular-nums;
 }
 .option-name {
@@ -110,7 +115,12 @@
   min-width: 2ch;
   color: var(--text-subtle);
   text-align: end;
-  font: 600 0.76rem ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font:
+    600 0.76rem ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
   font-variant-numeric: tabular-nums;
 }
 .option-facts {

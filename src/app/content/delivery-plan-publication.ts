@@ -16,7 +16,9 @@ export function parseDeliveryPlanSource(text: string): DeliveryPlan {
   try {
     plan = JSON.parse(text);
   } catch {
-    throw new DeliveryPlanShapeError('The private delivery JSON is invalid. Repair it before saving.');
+    throw new DeliveryPlanShapeError(
+      'The private delivery JSON is invalid. Repair it before saving.',
+    );
   }
   const record = plan as Record<string, unknown> | null;
   if (

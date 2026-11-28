@@ -17,8 +17,16 @@ const GLOSSARY: Glossary = {
       match: ['shard', 'shards'],
       definition: 'One part of a data set split across databases.',
       lessons: [
-        { courseId: 'design-fundamentals', lessonId: 'design-fundamentals-sharding-partitioning-guide', title: 'Sharding' },
-        { courseId: 'design-fundamentals', lessonId: 'design-fundamentals-consistent-hashing-guide', title: 'Consistent Hashing' },
+        {
+          courseId: 'design-fundamentals',
+          lessonId: 'design-fundamentals-sharding-partitioning-guide',
+          title: 'Sharding',
+        },
+        {
+          courseId: 'design-fundamentals',
+          lessonId: 'design-fundamentals-consistent-hashing-guide',
+          title: 'Consistent Hashing',
+        },
       ],
     },
     {
@@ -27,8 +35,17 @@ const GLOSSARY: Glossary = {
       match: ['replica', 'replicas'],
       definition: 'A database server that holds a copy of the data.',
       lessons: [
-        { courseId: 'design-fundamentals', lessonId: 'design-fundamentals-replication-failover-guide', title: 'Replication' },
-        { path: 'grow', courseId: 'aws-cloud', lessonId: 'aws-cloud-storage-databases-guide', title: 'Storage and Databases' },
+        {
+          courseId: 'design-fundamentals',
+          lessonId: 'design-fundamentals-replication-failover-guide',
+          title: 'Replication',
+        },
+        {
+          path: 'grow',
+          courseId: 'aws-cloud',
+          lessonId: 'aws-cloud-storage-databases-guide',
+          title: 'Storage and Databases',
+        },
       ],
     },
   ],
@@ -39,7 +56,9 @@ const GLOSSARY: Glossary = {
   template: `
     <article [appGlossaryTerms]="path()" [glossaryLesson]="lesson()">
       <section id="first"><h2>Replicas and shards</h2><p [innerHTML]="html()"></p></section>
-      <section id="second"><p>Each shard has <code>replicas</code>.</p></section>
+      <section id="second"
+        ><p>Each shard has <code>replicas</code>.</p></section
+      >
     </article>
   `,
 })
@@ -115,7 +134,11 @@ describe('GlossaryTerms', () => {
     fixture.componentInstance.html.set('Only replicas now, and a shard.');
     await settle();
     await settle();
-    expect(marks().filter((mark) => mark.closest('#first')).map((mark) => mark.textContent)).toEqual(['replicas', 'shard']);
+    expect(
+      marks()
+        .filter((mark) => mark.closest('#first'))
+        .map((mark) => mark.textContent),
+    ).toEqual(['replicas', 'shard']);
   });
 
   it('never marks the terms the current lesson teaches', async () => {
@@ -134,7 +157,9 @@ describe('GlossaryTerms', () => {
     expect(tip.hidden).toBe(false);
     expect(tip.getAttribute('role')).toBe('tooltip');
     expect(tip.querySelector('.glossary-tip-term')!.textContent).toBe('Replica');
-    expect(tip.querySelector('.glossary-tip-text')!.textContent).toBe('A database server that holds a copy of the data.');
+    expect(tip.querySelector('.glossary-tip-text')!.textContent).toBe(
+      'A database server that holds a copy of the data.',
+    );
     expect(mark.getAttribute('aria-describedby')).toBe('glossary-tip');
     mark.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body }));
     expect(tip.hidden).toBe(true);
@@ -151,7 +176,7 @@ describe('GlossaryTerms', () => {
     expect(tip.hidden).toBe(true);
   });
 
-  it('keeps the tooltip while the pointer moves within the mark or the mark has focus', async () => {
+  it('keeps the tooltip while the pointer is within the mark or the mark has focus', async () => {
     await load();
     const [mark] = marks();
     mark.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
@@ -175,15 +200,22 @@ describe('GlossaryTerms', () => {
     const dialog = document.querySelector<HTMLDialogElement>('dialog.glossary-dialog')!;
     expect(dialog.hasAttribute('open')).toBe(true);
     expect(dialog.querySelector('#glossary-dialog-title')!.textContent).toBe('Shard');
-    expect(dialog.querySelector('.glossary-definition')!.textContent).toBe('One part of a data set split across databases.');
+    expect(dialog.querySelector('.glossary-definition')!.textContent).toBe(
+      'One part of a data set split across databases.',
+    );
     const links = Array.from(dialog.querySelectorAll<HTMLAnchorElement>('a.glossary-link'));
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Sharding', '/blaze/design-fundamentals/design-fundamentals-sharding-partitioning-guide'],
-      ['Consistent Hashing', '/blaze/design-fundamentals/design-fundamentals-consistent-hashing-guide'],
+      [
+        'Consistent Hashing',
+        '/blaze/design-fundamentals/design-fundamentals-consistent-hashing-guide',
+      ],
     ]);
     expect(document.activeElement).toBe(links[0]);
     links[1].click();
-    expect(navigate).toHaveBeenCalledWith('/blaze/design-fundamentals/design-fundamentals-consistent-hashing-guide');
+    expect(navigate).toHaveBeenCalledWith(
+      '/blaze/design-fundamentals/design-fundamentals-consistent-hashing-guide',
+    );
     expect(dialog.hasAttribute('open')).toBe(false);
     expect(document.activeElement).toBe(shard);
   });
@@ -193,7 +225,11 @@ describe('GlossaryTerms', () => {
     const [mark] = marks();
     mark.click();
     const dialog = document.querySelector<HTMLDialogElement>('dialog.glossary-dialog')!;
-    expect(Array.from(dialog.querySelectorAll<HTMLAnchorElement>('a.glossary-link')).map((link) => link.getAttribute('href'))).toEqual([
+    expect(
+      Array.from(dialog.querySelectorAll<HTMLAnchorElement>('a.glossary-link')).map((link) =>
+        link.getAttribute('href'),
+      ),
+    ).toEqual([
       '/blaze/design-fundamentals/design-fundamentals-replication-failover-guide',
       '/grow/aws-cloud/aws-cloud-storage-databases-guide',
     ]);
@@ -203,7 +239,9 @@ describe('GlossaryTerms', () => {
     expect(dialog.hasAttribute('open')).toBe(true);
     dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(dialog.hasAttribute('open')).toBe(false);
-    dialog.querySelector('.glossary-definition')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    dialog
+      .querySelector('.glossary-definition')!
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(navigate).not.toHaveBeenCalled();
   });
 
@@ -221,10 +259,14 @@ describe('GlossaryTerms', () => {
   });
 
   it('leaves the text alone when the path has no glossary', async () => {
-    http.expectOne('/content/blaze/glossary.json').flush('missing', { status: 404, statusText: 'Not Found' });
+    http
+      .expectOne('/content/blaze/glossary.json')
+      .flush('missing', { status: 404, statusText: 'Not Found' });
     await settle();
     expect(marks()).toEqual([]);
-    expect(fixture.nativeElement.querySelector('#first p')!.innerHTML).toBe('A cache, then <strong>replicas</strong>, then shards.');
+    expect(fixture.nativeElement.querySelector('#first p')!.innerHTML).toBe(
+      'A cache, then <strong>replicas</strong>, then shards.',
+    );
   });
 
   it('removes its tooltip and dialog when the host is destroyed', async () => {

@@ -12,7 +12,8 @@ describe('career Study Plan starting points', () => {
     );
     expect(result.selectedIds).toEqual([preset.topicIds[0]]);
     expect(result.unavailableIds).toEqual(preset.topicIds.slice(1));
-    // DLV-935: AI Builds is only in the two AI project plans, so this starting point has four topics.
+    // DLV-935: AI Builds is only in the two AI project plans, so this starting point has four
+    // topics.
     expect(preset.topicIds).toHaveLength(4);
   });
   it('does not invent access when none of a starting point is available', () => {

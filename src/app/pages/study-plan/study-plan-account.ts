@@ -17,7 +17,10 @@ import { isThemePreference, ThemePreference } from '../../core/platform-theme';
 const profileLinkKeys = ['github', 'linkedin', 'x', 'website'] as const;
 
 /** Maps Identity's profile view to the UI contract, dropping fields it does not recognize. */
-/** Cognito's own name for an account made through Google ("Google_1176…"): an internal id, never shown to the person. */
+/**
+ * Cognito's own name for an account made through Google ("Google_1176…"): an internal id, never
+ * shown to the person.
+ */
 export function isProviderUsername(username: string | null | undefined): boolean {
   return /^google_/i.test(username ?? '');
 }
@@ -28,10 +31,12 @@ function managedProfile(profile: ManagedAccountProfile): ManagedAccountProfile {
     username: profile.username,
   };
   if (isThemePreference(profile.themePreference)) result.themePreference = profile.themePreference;
-  // DLV-969: the method of this session as the Domain reports it. Only when it reports none does Cognito's own name
-  // for a Google account ("Google_<id>") stand in for Google.
-  if (profile.signInMethod === 'google' || profile.signInMethod === 'cognito') result.signInMethod = profile.signInMethod;
-  else if (!profile.signInMethod && isProviderUsername(profile.username)) result.signInMethod = 'google';
+  // DLV-969: the method of this session as the Domain reports it. Only when it reports none does
+  // Cognito's own name for a Google account ("Google_<id>") stand in for Google.
+  if (profile.signInMethod === 'google' || profile.signInMethod === 'cognito')
+    result.signInMethod = profile.signInMethod;
+  else if (!profile.signInMethod && isProviderUsername(profile.username))
+    result.signInMethod = 'google';
   if (typeof profile.email === 'string' && profile.email) result.email = profile.email;
   // DLV-969 account linking: every method of the account, only when the Domain reports them.
   const methods = readSignInMethods(profile.signInMethods);
@@ -39,7 +44,10 @@ function managedProfile(profile: ManagedAccountProfile): ManagedAccountProfile {
   const links = profile.links as Partial<Record<string, unknown>> | undefined;
   if (links && typeof links === 'object') {
     result.links = Object.fromEntries(
-      profileLinkKeys.map((key) => [key, typeof links[key] === 'string' && links[key] ? links[key] : null]),
+      profileLinkKeys.map((key) => [
+        key,
+        typeof links[key] === 'string' && links[key] ? links[key] : null,
+      ]),
     ) as unknown as ProfileLinks;
   }
   return result;
@@ -69,9 +77,15 @@ export interface SavedPlan {
   readyMade?: import('../../content/study-plan-ready-made').ReadyMadePins;
 }
 export interface StaffPermissions {
-  manageAccess: boolean; previewDocuments: boolean; deliveryRead: boolean;
-  deliveryCreate: boolean; deliveryReview: boolean; deliveryDone: boolean;
-  triageFeedback: boolean; fullCurriculum: boolean; feedbackRole: string;
+  manageAccess: boolean;
+  previewDocuments: boolean;
+  deliveryRead: boolean;
+  deliveryCreate: boolean;
+  deliveryReview: boolean;
+  deliveryDone: boolean;
+  triageFeedback: boolean;
+  fullCurriculum: boolean;
+  feedbackRole: string;
 }
 export interface StudyAccount {
   accountId: string;
@@ -100,7 +114,10 @@ export interface AccountRegistration {
 }
 export interface PlanLifecycle {
   state: 'unactivated' | 'active' | 'archived' | 'completed';
-  startDate?: string; endDateExclusive?: string; archiveDate?: string; configuredDailyMinutes?: number;
+  startDate?: string;
+  endDateExclusive?: string;
+  archiveDate?: string;
+  configuredDailyMinutes?: number;
 }
 export interface AccountPlan {
   lifecycle?: PlanLifecycle;
@@ -204,19 +221,23 @@ class AccountApiError extends Error {
 }
 
 /**
- * DLV-969 S37 (user, 2026-11-03): what the header last knew in this browser, your display name or signed out, so the
- * next page load can show it at once while the identity check runs. The check always replaces it, and it holds
- * nothing else: no account id, plans or progress.
+ * DLV-969 S37 (user, 2026-11-03): what the header last knew in this browser, your display name or
+ * signed out, so the next page load can show it at once while the identity check runs. The check
+ * always replaces it, and it holds nothing else: no account id, plans or progress.
  */
-export type HeaderHint = ({ signedIn: true; displayName: string } | { signedIn: false }) & { gateway?: boolean };
+export type HeaderHint = ({ signedIn: true; displayName: string } | { signedIn: false }) & {
+  gateway?: boolean;
+};
 const HEADER_HINT_KEY = 'lookahead.header-hint';
 export function readHeaderHint(): HeaderHint | null {
   try {
     const value = JSON.parse(globalThis.localStorage?.getItem(HEADER_HINT_KEY) ?? 'null');
     // Which address answered last time: through the Gateway (/bff) or not.
-    const gateway = typeof value?.gateway === 'boolean' ? { gateway: value.gateway as boolean } : {};
+    const gateway =
+      typeof value?.gateway === 'boolean' ? { gateway: value.gateway as boolean } : {};
     if (value?.signedIn === false) return { signedIn: false, ...gateway };
-    if (value?.signedIn === true && typeof value.displayName === 'string') return { signedIn: true, displayName: value.displayName.slice(0, 160), ...gateway };
+    if (value?.signedIn === true && typeof value.displayName === 'string')
+      return { signedIn: true, displayName: value.displayName.slice(0, 160), ...gateway };
   } catch {
     // Blocked or corrupt storage: no hint, the header waits as before.
   }
@@ -230,7 +251,9 @@ function writeHeaderHint(hint: HeaderHint): void {
   }
 }
 
-/** Account state stays in memory; the only thing kept in browser storage is the header hint above. */
+/**
+ * Account state stays in memory; the only thing kept in browser storage is the header hint above.
+ */
 @Injectable({ providedIn: 'root' })
 export class StudyPlanAccount implements AccountSettingsClient {
   readonly enabled = environment.accountPlansEnabled;
@@ -244,17 +267,27 @@ export class StudyPlanAccount implements AccountSettingsClient {
   readonly error = signal('');
   readonly errorStatus = signal<number | null>(null);
   readonly sessionExpired = signal(false);
-  /** False until the first identity check answers (signed in or not), so the header does not flash Sign in for a signed-in visitor. */
+  /**
+   * False until the first identity check answers (signed in or not), so the header does not flash
+   * Sign in for a signed-in visitor.
+   */
   readonly sessionKnown = signal(!this.enabled);
   readonly signInLimit = signal(false);
   readonly logoutRedirectPending = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
-  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean; managedLogin?: boolean; password?: boolean } | null>(
-    null,
-  );
+  readonly authOptions = signal<{
+    registration: boolean;
+    google: boolean;
+    oauth?: boolean;
+    managedLogin?: boolean;
+    password?: boolean;
+  } | null>(null);
   private csrf: { token: string; headerName: string } | null = null;
-  /** The header's state from the previous visit (DLV-969 S37); read once, never updated during this visit. */
+  /**
+   * The header's state from the previous visit (DLV-969 S37); read once, never updated during this
+   * visit.
+   */
   readonly headerHint = signal<HeaderHint | null>(this.enabled ? readHeaderHint() : null);
 
   constructor() {
@@ -263,10 +296,21 @@ export class StudyPlanAccount implements AccountSettingsClient {
       if (!this.enabled || !this.sessionKnown()) return;
       const account = this.account();
       const gateway = !!this.authOptions()?.oauth;
-      writeHeaderHint(account && !this.sessionExpired() ? { signedIn: true, displayName: account.displayName ?? '', gateway } : { signedIn: false, gateway });
+      writeHeaderHint(
+        account && !this.sessionExpired()
+          ? { signedIn: true, displayName: account.displayName ?? '', gateway }
+          : { signedIn: false, gateway },
+      );
     });
   }
-  private mutation: { path: string; method: 'POST' | 'DELETE'; body?: unknown; revision?: number; key: string; owner: string } | null = null;
+  private mutation: {
+    path: string;
+    method: 'POST' | 'DELETE';
+    body?: unknown;
+    revision?: number;
+    key: string;
+    owner: string;
+  } | null = null;
   private initialization: Promise<void> | null = null;
 
   async loadProfile(): Promise<ManagedAccountProfile> {
@@ -300,7 +344,10 @@ export class StudyPlanAccount implements AccountSettingsClient {
         {},
         true,
       );
-      if (profile?.accountId !== account.accountId || this.account()?.accountId !== account.accountId)
+      if (
+        profile?.accountId !== account.accountId ||
+        this.account()?.accountId !== account.accountId
+      )
         return null;
       return isThemePreference(profile.themePreference) ? profile.themePreference : null;
     } catch {
@@ -493,12 +540,14 @@ export class StudyPlanAccount implements AccountSettingsClient {
       const status = error instanceof AccountApiError ? error.status : 0;
       this.error.set(
         status === 409
-          ? 'We could not create an account with those details. If you already have an account, sign in.'
+          ? 'We could not create an account with those details. If you already have an ' +
+              'account, sign in.'
           : status === 422 || status === 400
             ? 'Check your name, email, matching passwords, and country selection.'
             : status === 429
               ? 'Too many attempts. Please wait a few minutes before trying again.'
-              : 'Registration could not be confirmed. Try signing in with your details before creating another account.',
+              : 'Registration could not be confirmed. Try signing in with your details ' +
+                'before creating another account.',
       );
       return false;
     } finally {
@@ -514,14 +563,20 @@ export class StudyPlanAccount implements AccountSettingsClient {
   private async restoreSession(): Promise<void> {
     this.busy.set(true);
     try {
-      // DLV-969 S37: ask who you are at once, at the address that answered last time, while the sign-in options load.
-      // If the options say the address changed, that early answer is dropped and the question asked again.
+      // DLV-969 S37: ask who you are at once, at the address that answered last time, while the
+      // sign-in options load. If the options say the address changed, that early answer is dropped
+      // and the question asked again.
       const options = this.loadAuthOptions();
       const guess = this.headerHint()?.gateway;
-      const early = guess === undefined ? null : this.request<StudyAccount>('/auth/me', {}, false, guess ? '/bff/api/v1' : '/api/v1');
+      const early =
+        guess === undefined
+          ? null
+          : this.request<StudyAccount>('/auth/me', {}, false, guess ? '/bff/api/v1' : '/api/v1');
       early?.catch(() => undefined); // a dropped early answer must not surface as an error
       await options;
-      const account = await (early && guess === !!this.authOptions()?.oauth ? early : this.request<StudyAccount>('/auth/me'));
+      const account = await (early && guess === !!this.authOptions()?.oauth
+        ? early
+        : this.request<StudyAccount>('/auth/me'));
       this.account.set(account);
       this.sessionKnown.set(true);
       if (this.authOptions()?.managedLogin) {
@@ -610,15 +665,24 @@ export class StudyPlanAccount implements AccountSettingsClient {
         // Refresh can replace the provider's stored ID token while OidcUser still
         // holds the original hint. Use Identity's existing session/CSRF logout.
         await this.refreshCsrf(true);
-        await this.request('/auth/logout', {
-          method: 'POST',
-          headers: this.csrfHeaders(),
-        }, true);
+        await this.request(
+          '/auth/logout',
+          {
+            method: 'POST',
+            headers: this.csrfHeaders(),
+          },
+          true,
+        );
       }
       this.clearAccount();
       if (this.authOptions()?.managedLogin && result?.logoutUrl) {
         const target = new URL(result.logoutUrl);
-        if (target.origin !== window.location.origin || target.pathname !== '/bff/logout/complete' || target.search || target.hash)
+        if (
+          target.origin !== window.location.origin ||
+          target.pathname !== '/bff/logout/complete' ||
+          target.search ||
+          target.hash
+        )
           throw new Error('Invalid logout destination');
         this.logoutRedirectPending.set(true);
         window.location.assign(target.href);
@@ -626,7 +690,11 @@ export class StudyPlanAccount implements AccountSettingsClient {
       return true;
     } catch (error) {
       this.logoutRedirectPending.set(false);
-      if (error instanceof AccountApiError && error.status === 401 && (!this.authOptions()?.oauth || this.authOptions()?.managedLogin)) {
+      if (
+        error instanceof AccountApiError &&
+        error.status === 401 &&
+        (!this.authOptions()?.oauth || this.authOptions()?.managedLogin)
+      ) {
         this.clearAccount();
         return true;
       }
@@ -703,9 +771,20 @@ export class StudyPlanAccount implements AccountSettingsClient {
   }
   async deletePlan(planId: string, revision: number): Promise<boolean> {
     const owner = this.account()?.accountId;
-    if (!owner || this.busy() || this.pending() || !this.plans().some((plan) => plan.planId === planId && plan.revision === revision))
+    if (
+      !owner ||
+      this.busy() ||
+      this.pending() ||
+      !this.plans().some((plan) => plan.planId === planId && plan.revision === revision)
+    )
       return false;
-    this.mutation = { path: '/plans/' + encodeURIComponent(planId), method: 'DELETE', revision, key: crypto.randomUUID(), owner };
+    this.mutation = {
+      path: '/plans/' + encodeURIComponent(planId),
+      method: 'DELETE',
+      revision,
+      key: crypto.randomUUID(),
+      owner,
+    };
     this.pending.set(true);
     await this.retry();
     return !this.pending();
@@ -743,13 +822,21 @@ export class StudyPlanAccount implements AccountSettingsClient {
             deferredContentIds: [],
           },
         })
-      : this.mutate('/plans', { ...body, startDate: startDate ?? new Date().toISOString().slice(0, 10) });
+      : this.mutate('/plans', {
+          ...body,
+          startDate: startDate ?? new Date().toISOString().slice(0, 10),
+        });
   }
-  lifecycle(state: 'active' | 'archived' | 'completed', startDate?: string): Promise<AccountPlan | null> {
+  lifecycle(
+    state: 'active' | 'archived' | 'completed',
+    startDate?: string,
+  ): Promise<AccountPlan | null> {
     const active = this.active();
     if (!active) return Promise.resolve(null);
     return this.mutate(`/plans/${active.planId}/lifecycle`, {
-      expectedRevision: active.revision, state, ...(state === 'active' ? { startDate } : {}),
+      expectedRevision: active.revision,
+      state,
+      ...(state === 'active' ? { startDate } : {}),
     });
   }
   rename(name: string): Promise<AccountPlan | null> {
@@ -788,11 +875,18 @@ export class StudyPlanAccount implements AccountSettingsClient {
     if (!owner || this.busy() || this.pending()) return null;
     if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8 * 1024 * 1024) {
       this.error.set(
-        'This plan is too large to save in one request. Choose a smaller focus or window; your existing saved plan is unchanged.',
+        'This plan is too large to save in one request. Choose a smaller focus or ' +
+          'window; your existing saved plan is unchanged.',
       );
       return null;
     }
-    this.mutation = { path, method: 'POST', body: structuredClone(body), key: crypto.randomUUID(), owner };
+    this.mutation = {
+      path,
+      method: 'POST',
+      body: structuredClone(body),
+      key: crypto.randomUUID(),
+      owner,
+    };
     this.pending.set(true);
     return this.retry();
   }
@@ -808,7 +902,9 @@ export class StudyPlanAccount implements AccountSettingsClient {
         method: mutation.method,
         headers: {
           ...this.csrfHeaders(),
-          ...(mutation.method === 'POST' ? { 'Content-Type': 'application/json' } : { 'If-Match': `"revision-${mutation.revision}"` }),
+          ...(mutation.method === 'POST'
+            ? { 'Content-Type': 'application/json' }
+            : { 'If-Match': `"revision-${mutation.revision}"` }),
           'Idempotency-Key': mutation.key,
         },
         ...(mutation.method === 'POST' ? { body: JSON.stringify(mutation.body) } : {}),
@@ -863,26 +959,38 @@ export class StudyPlanAccount implements AccountSettingsClient {
   apiPath(path: string): string {
     return (this.authOptions()?.oauth ? '/bff/api/v1' : '/api/v1') + path;
   }
-  private async request<T>(path: string, options: RequestInit = {}, identity = false, base?: string): Promise<T> {
-    const response = await this.transport(identity ? '/api/v1' + path : base ? base + path : this.apiPath(path), {
-      ...options,
-      headers: {
-        ...options.headers,
-        ...(path.startsWith('/plans') && this.account()
-          ? { 'X-LookAhead-Account': this.account()!.accountId }
-          : {}),
+  private async request<T>(
+    path: string,
+    options: RequestInit = {},
+    identity = false,
+    base?: string,
+  ): Promise<T> {
+    const response = await this.transport(
+      identity ? '/api/v1' + path : base ? base + path : this.apiPath(path),
+      {
+        ...options,
+        headers: {
+          ...options.headers,
+          ...(path.startsWith('/plans') && this.account()
+            ? { 'X-LookAhead-Account': this.account()!.accountId }
+            : {}),
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(10000),
       },
-      credentials: 'same-origin',
-      cache: 'no-store',
-      signal: AbortSignal.timeout(10000),
-    });
+    );
     if (!response.ok) {
       let code: string | undefined;
       let detail: string | undefined;
       try {
         const body = await response.json();
         if (typeof body?.code === 'string') code = body.code;
-        if (code === 'FREE_DELETE_LIMIT' && typeof body?.message === 'string' && body.message.length <= 240)
+        if (
+          code === 'FREE_DELETE_LIMIT' &&
+          typeof body?.message === 'string' &&
+          body.message.length <= 240
+        )
           detail = body.message;
       } catch {
         // Status-only responses remain valid errors; do not expose transport bodies.
@@ -898,7 +1006,8 @@ export class StudyPlanAccount implements AccountSettingsClient {
     if (status === 401 && !login) this.sessionExpired.set(true);
     this.error.set(
       code === 'FREE_DELETE_LIMIT'
-        ? (error as AccountApiError).detail ?? 'You have used three deletions in the last 21 days. Your plan is unchanged.'
+        ? ((error as AccountApiError).detail ??
+            'You have used three deletions in the last 21 days. Your plan is unchanged.')
         : code === 'FREE_ACTIVE_PLAN_LIMIT'
           ? 'You can keep two active free plans. Archive or delete one before saving another.'
           : code === 'FREE_LIFETIME_PLAN_LIMIT'
@@ -906,18 +1015,24 @@ export class StudyPlanAccount implements AccountSettingsClient {
             : code === 'COURSE_ACCESS_REQUIRED'
               ? 'Get course access before saving a plan with paid lessons.'
               : status === 401
-        ? login
-          ? 'Sign-in failed. Check your account credentials.'
-          : 'Your session expired. Discard the pending request and sign in again to reload saved work.'
-        : status === 409
-          ? 'This plan changed elsewhere. Reload the saved version before making another change.'
-          : status === 403
-            ? 'This change is not permitted with your current account access.'
-            : status === 413
-              ? 'This plan exceeds the account service request limit. Your existing saved plan is unchanged.'
-              : status === 400 || status === 422
-                ? 'The server could not accept this plan. Your previously saved plan is unchanged.'
-                : 'The account service could not confirm this request. Retry safely, or reload the saved version. Your browser plan is preserved.',
+                ? login
+                  ? 'Sign-in failed. Check your account credentials.'
+                  : 'Your session expired. Discard the pending request and sign in again ' +
+                    'to reload saved work.'
+                : status === 409
+                  ? 'This plan changed elsewhere. Reload the saved version before making ' +
+                    'another change.'
+                  : status === 403
+                    ? 'This change is not permitted with your current account access.'
+                    : status === 413
+                      ? 'This plan exceeds the account service request limit. Your ' +
+                        'existing saved plan is unchanged.'
+                      : status === 400 || status === 422
+                        ? 'The server could not accept this plan. Your previously saved ' +
+                          'plan is unchanged.'
+                        : 'The account service could not confirm this request. Retry ' +
+                          'safely, or reload the saved version. Your browser plan is ' +
+                          'preserved.',
     );
   }
 }

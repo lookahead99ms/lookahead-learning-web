@@ -62,17 +62,40 @@
         <section class="panel plan-lifecycle" aria-label="Plan schedule and status">
           <p>Plan status: {{ lifecycle.state }}</p>
           @if (lifecycle.startDate) {
-            <p>Starts {{ lifecycle.startDate }} · Ends before {{ lifecycle.endDateExclusive }} (UTC)</p>
+            <p
+              >Starts {{ lifecycle.startDate }} · Ends before
+              {{ lifecycle.endDateExclusive }} (UTC)</p
+            >
             <p>Archives {{ lifecycle.archiveDate }}. Progress and history are retained.</p>
           }
           @if (lifecycle.state !== 'active') {
-            <label>Start date (UTC) <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)" /></label>
+            <label
+              >Start date (UTC)
+              <input
+                type="date"
+                [value]="startDate()"
+                (input)="startDate.set($any($event.target).value)"
+            /></label>
             <p>Activation checks your current course access and other active plans.</p>
-            <div class="draft-actions"><button type="button" [disabled]="editsLocked() || !startDate()" (click)="changeLifecycle('active')">Activate plan</button></div>
+            <div class="draft-actions"
+              ><button
+                type="button"
+                [disabled]="editsLocked() || !startDate()"
+                (click)="changeLifecycle('active')"
+                >Activate plan</button
+              ></div
+            >
           } @else {
             <div class="draft-actions">
-              <button type="button" [disabled]="editsLocked()" (click)="changeLifecycle('completed')">Mark plan complete</button>
-              <button type="button" [disabled]="editsLocked()" (click)="changeLifecycle('archived')">Archive plan</button>
+              <button
+                type="button"
+                [disabled]="editsLocked()"
+                (click)="changeLifecycle('completed')"
+                >Mark plan complete</button
+              >
+              <button type="button" [disabled]="editsLocked()" (click)="changeLifecycle('archived')"
+                >Archive plan</button
+              >
             </div>
           }
         </section>
@@ -114,11 +137,16 @@
         @for (card of currentPlanCards(); track card.planId) {
           <article class="plan-card panel navigation-card">
             <div class="plan-card-heading">
-              <p class="eyebrow">{{ card.lifecycle?.state === 'archived' ? 'Archive' : 'Saved study plan' }}</p>
+              <p class="eyebrow">{{
+                card.lifecycle?.state === 'archived' ? 'Archive' : 'Saved study plan'
+              }}</p>
               <h3>{{ card.name }}</h3>
             </div>
             @if (card.accessNeeded) {
-              <p class="plan-card-access">Course access needed to open paid lessons. Your saved plan and progress remain here.</p>
+              <p class="plan-card-access"
+                >Course access needed to open paid lessons. Your saved plan and progress remain
+                here.</p
+              >
             }
             @if (card.loaded) {
               <section class="plan-card-focus" aria-label="Plan focus areas">
@@ -175,12 +203,25 @@
               class="primary"
               [disabled]="editsLocked()"
               data-card-primary
-              [attr.aria-label]="(card.lifecycle?.state === 'archived' || card.accessNeeded ? 'Review saved plan: ' : 'Continue plan: ') + card.name"
+              [attr.aria-label]="
+                (card.lifecycle?.state === 'archived' || card.accessNeeded
+                  ? 'Review saved plan: '
+                  : 'Continue plan: ') + card.name
+              "
               (click)="continuePlan(card.planId)"
             >
-              {{ card.lifecycle?.state === 'archived' || card.accessNeeded ? 'Review saved plan' : 'Continue plan' }}
+              {{
+                card.lifecycle?.state === 'archived' || card.accessNeeded
+                  ? 'Review saved plan'
+                  : 'Continue plan'
+              }}
             </button>
-            <button type="button" class="plan-card-delete" [disabled]="editsLocked()" (click)="askDeletePlan(card)">
+            <button
+              type="button"
+              class="plan-card-delete"
+              [disabled]="editsLocked()"
+              (click)="askDeletePlan(card)"
+            >
               Delete plan
             </button>
           </article>
@@ -200,8 +241,15 @@
                   }
                 </div>
                 <div class="plan-archive-actions">
-                  <button type="button" [disabled]="editsLocked()" (click)="continuePlan(card.planId)">Review saved plan</button>
-                  <button type="button" [disabled]="editsLocked()" (click)="askDeletePlan(card)">Delete plan</button>
+                  <button
+                    type="button"
+                    [disabled]="editsLocked()"
+                    (click)="continuePlan(card.planId)"
+                    >Review saved plan</button
+                  >
+                  <button type="button" [disabled]="editsLocked()" (click)="askDeletePlan(card)"
+                    >Delete plan</button
+                  >
                 </div>
               </article>
             }
@@ -213,18 +261,42 @@
       }
     </section>
   }
-  <dialog appScrollLock #deleteDialog class="plan-delete-dialog" aria-labelledby="delete-plan-heading" (cancel)="$event.preventDefault(); closeDeletePlan()">
+  <dialog
+    appScrollLock
+    #deleteDialog
+    class="plan-delete-dialog"
+    aria-labelledby="delete-plan-heading"
+    (cancel)="$event.preventDefault(); closeDeletePlan()"
+  >
     @if (deletingPlan(); as target) {
       <h2 id="delete-plan-heading">Delete {{ target.name || target.goal }}?</h2>
       <p>This removes the saved schedule and progress. This action cannot be undone.</p>
-      @if (accountStore.error()) { <p role="alert">{{ accountStore.error() }}</p> }
+      @if (accountStore.error()) {
+        <p role="alert">{{ accountStore.error() }}</p>
+      }
       <div class="plan-delete-actions">
         @if (accountStore.pending()) {
-          <button type="button" class="primary" [disabled]="accountStore.busy()" (click)="retryDeletePlan()">Retry the same request</button>
-          <button type="button" [disabled]="accountStore.busy()" (click)="discardDeleteRequest()">Discard pending request</button>
+          <button
+            type="button"
+            class="primary"
+            [disabled]="accountStore.busy()"
+            (click)="retryDeletePlan()"
+            >Retry the same request</button
+          >
+          <button type="button" [disabled]="accountStore.busy()" (click)="discardDeleteRequest()"
+            >Discard pending request</button
+          >
         } @else {
-          <button type="button" class="primary" [disabled]="accountStore.busy()" (click)="confirmDeletePlan()">Delete plan</button>
-          <button type="button" [disabled]="accountStore.busy()" (click)="closeDeletePlan()">Keep plan</button>
+          <button
+            type="button"
+            class="primary"
+            [disabled]="accountStore.busy()"
+            (click)="confirmDeletePlan()"
+            >Delete plan</button
+          >
+          <button type="button" [disabled]="accountStore.busy()" (click)="closeDeletePlan()"
+            >Keep plan</button
+          >
         }
       </div>
     }
@@ -323,7 +395,8 @@
             authoredPlanStep() === 'review'
               ? freeAccount()
                 ? 'See the courses in this plan and preview its schedule.'
-                : 'Confirm the selected courses, preview the schedule, or copy everything into a custom plan.'
+                : 'Confirm the selected courses, preview the schedule, or copy everything ' +
+                  'into a custom plan.'
               : 'Choose a path, a preparation window, and your available hours per day.'
           }}
         </p>
@@ -928,7 +1001,8 @@
   </div>
 </main>
 
-<dialog appScrollLock
+<dialog
+  appScrollLock
   #draftDialog
   class="plan-review-dialog draft-review-dialog"
   aria-labelledby="draft-heading"
@@ -1121,8 +1195,18 @@
         <p role="alert">{{ accountStore.error() }}</p>
       }
       @if (datedPlans() && !accountStore.active()) {
-        <label>Start date (UTC) <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)" [disabled]="editsLocked()" /></label>
-        <p>The saved dates reserve your selected courses and daily time. Opening a plan never extends its schedule.</p>
+        <label
+          >Start date (UTC)
+          <input
+            type="date"
+            [value]="startDate()"
+            (input)="startDate.set($any($event.target).value)"
+            [disabled]="editsLocked()"
+        /></label>
+        <p
+          >The saved dates reserve your selected courses and daily time. Opening a plan never
+          extends its schedule.</p
+        >
       }
       <div class="draft-actions">
         @if (accountStore.pending()) {
@@ -1160,7 +1244,8 @@
       @if (freeAccount()) {
         <p class="draft-save-note" role="status">
           @if (freeDraftSaveable()) {
-            Free accounts can keep two active free plans and make 15 free plans in total, including imports.
+            Free accounts can keep two active free plans and make 15 free plans in total, including
+            imports.
           } @else {
             This paid-plan sample is for preview. Get course access to save its full schedule.
           }
@@ -1175,7 +1260,8 @@
   }
 </dialog>
 
-<dialog appScrollLock
+<dialog
+  appScrollLock
   #recoveryDialog
   class="plan-review-dialog recovery-dialog"
   aria-labelledby="recovery-heading"
@@ -1429,7 +1515,8 @@
   }
 </dialog>
 
-<dialog appScrollLock
+<dialog
+  appScrollLock
   #scheduleDialog
   class="plan-review-dialog schedule-dialog"
   aria-labelledby="schedule-heading"

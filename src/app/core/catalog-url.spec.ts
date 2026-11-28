@@ -17,7 +17,14 @@ describe('legacy catalog URLs', () => {
   });
 
   it('leaves current paths, longer first segments and query values alone', () => {
-    for (const url of ['/', '/blaze/x', '/learn/java', '/look-ahead-x/y', '/search?q=/look-ahead/x', '/content/look-ahead/a.svg'])
+    for (const url of [
+      '/',
+      '/blaze/x',
+      '/learn/java',
+      '/look-ahead-x/y',
+      '/search?q=/look-ahead/x',
+      '/content/look-ahead/a.svg',
+    ])
       expect(currentCatalogUrl(url)).toBe(url);
   });
 
@@ -49,14 +56,22 @@ describe('legacy catalog URLs', () => {
   it('upgrades plans saved in the browser before the rename', () => {
     const saved = JSON.stringify({
       topics: ['look-ahead:system-design', 'learn:java'],
-      item: { path: 'look-ahead', route: ['/', 'look-ahead', 'design-systems'], href: '/look-ahead/design-systems/chat' },
+      item: {
+        path: 'look-ahead',
+        route: ['/', 'look-ahead', 'design-systems'],
+        href: '/look-ahead/design-systems/chat',
+      },
       detailRef: { href: '/content/look-ahead/design-systems/x.json' },
       index: '/content/indexes/look-ahead.json',
       note: 'kept: look-ahead-platform and look-ahead.study-plan.v1',
     });
     expect(JSON.parse(upgradeLegacyCatalogJson(saved))).toEqual({
       topics: ['blaze:system-design', 'learn:java'],
-      item: { path: 'blaze', route: ['/', 'blaze', 'design-systems'], href: '/blaze/design-systems/chat' },
+      item: {
+        path: 'blaze',
+        route: ['/', 'blaze', 'design-systems'],
+        href: '/blaze/design-systems/chat',
+      },
       detailRef: { href: '/content/blaze/design-systems/x.json' },
       index: '/content/indexes/blaze.json',
       note: 'kept: look-ahead-platform and look-ahead.study-plan.v1',

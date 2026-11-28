@@ -24,7 +24,11 @@ import {
 } from './walkthrough.model';
 
 let nextPlayerId = 0;
-const LANGUAGE_LABELS: Record<PatternLanguage, string> = { java: 'Java', python: 'Python', go: 'Go' };
+const LANGUAGE_LABELS: Record<PatternLanguage, string> = {
+  java: 'Java',
+  python: 'Python',
+  go: 'Go',
+};
 
 /**
  * Option B "Code beside" (user-approved, 2026-10-06): the one player of the Visual walkthrough.

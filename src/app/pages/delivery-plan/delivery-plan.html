@@ -2,1049 +2,1181 @@
 <main id="main-content" class="admin-workspace delivery-page">
   <app-author-admin-menu pageId="delivery" />
   <div class="workspace-content">
-  @if (!authorAccess()) {
-    <section class="delivery-state" role="status">
-      <h1>Admin access required</h1>
-      <p>Sign in with an account that has admin access to view the delivery plan.</p>
-    </section>
-  } @else if (plan(); as deliveryPlan) {
-    <header class="delivery-page-heading">
-      <div>
-        @if (workspace()) {
-          <a routerLink="/delivery-plan" class="delivery-back">Back to delivery plan</a>
-        }
-        <h1>{{ workspace() ? 'Work & decisions' : 'Delivery plan' }}</h1>
-      </div>
-      @if (!workspace()) {
-        <!-- DLV-995: the one action of the overview sits beside the title; the stage cards carry the current focus. -->
-        <a routerLink="/delivery-plan/work" class="editor-primary delivery-work-link">Open work & decisions</a>
-      }
-    </header>
-    @if (!workspace()) {
-    <!-- DLV-995: no completion percentage. Stage by stage, work in flight, what is next, what finished. -->
-    <section class="delivery-metrics delivery-glance" id="delivery-summary" aria-label="Delivery summary">
-      <div class="glance-card glance-stages">
-        <div class="glance-heading">
-          <h2>Where the plan stands</h2>
-          <p>Nine stages, each ending at a review gate. Open a stage to see its board.</p>
+    @if (!authorAccess()) {
+      <section class="delivery-state" role="status">
+        <h1>Admin access required</h1>
+        <p>Sign in with an account that has admin access to view the delivery plan.</p>
+      </section>
+    } @else if (plan(); as deliveryPlan) {
+      <header class="delivery-page-heading">
+        <div>
+          @if (workspace()) {
+            <a routerLink="/delivery-plan" class="delivery-back">Back to delivery plan</a>
+          }
+          <h1>{{ workspace() ? 'Work & decisions' : 'Delivery plan' }}</h1>
         </div>
-        <div class="stage-grid">
-          <div class="flow-cell glance-flow" [style.grid-column]="'span ' + flowSpan()">
+        @if (!workspace()) {
+          <!-- DLV-995: the one action of the overview sits beside the title; the stage cards carry
+               the current focus. -->
+          <a routerLink="/delivery-plan/work" class="editor-primary delivery-work-link"
+            >Open work & decisions</a
+          >
+        }
+      </header>
+      @if (!workspace()) {
+        <!-- DLV-995: no completion percentage. Stage by stage, work in flight, what is next, what
+             finished. -->
+        <section
+          class="delivery-metrics delivery-glance"
+          id="delivery-summary"
+          aria-label="Delivery summary"
+        >
+          <div class="glance-card glance-stages">
             <div class="glance-heading">
-              <h3>Work in flight</h3>
-              <p>Every ticket by column. Counts, not a score.</p>
+              <h2>Where the plan stands</h2>
+              <p>Nine stages, each ending at a review gate. Open a stage to see its board.</p>
             </div>
-            <div class="flow-bar" role="img" [attr.aria-label]="flowLabel()">
-              @for (entry of flow(); track entry.status.id) {
-                @if (entry.count) {
-                  <i [style.flex-grow]="entry.count" [style.background]="entry.status.color" [title]="entry.status.label + ': ' + entry.count"></i>
+            <div class="stage-grid">
+              <div class="flow-cell glance-flow" [style.grid-column]="'span ' + flowSpan()">
+                <div class="glance-heading">
+                  <h3>Work in flight</h3>
+                  <p>Every ticket by column. Counts, not a score.</p>
+                </div>
+                <div class="flow-bar" role="img" [attr.aria-label]="flowLabel()">
+                  @for (entry of flow(); track entry.status.id) {
+                    @if (entry.count) {
+                      <i
+                        [style.flex-grow]="entry.count"
+                        [style.background]="entry.status.color"
+                        [title]="entry.status.label + ': ' + entry.count"
+                      ></i>
+                    }
+                  }
+                </div>
+                <ul class="flow-legend">
+                  @for (entry of flow(); track entry.status.id) {
+                    <li
+                      ><i aria-hidden="true" [style.background]="entry.status.color"></i
+                      ><strong>{{ entry.count }}</strong
+                      ><span>{{ entry.status.label }}</span></li
+                    >
+                  }
+                  @if (blockedCount()) {
+                    <li class="flow-alert"
+                      ><strong>{{ blockedCount() }}</strong
+                      ><span>Blocked</span></li
+                    >
+                  }
+                </ul>
+              </div>
+              <ol class="stage-strip">
+                @for (entry of stageSummaries(); track entry.stage.id) {
+                  <li
+                    [attr.data-state]="entry.stage.state"
+                    [class.current]="entry.stage.id === deliveryPlan.currentStageId"
+                  >
+                    <a routerLink="/delivery-plan/work" [queryParams]="{ stage: entry.stage.id }">
+                      <span class="stage-number">{{
+                        entry.stage.order.toString().padStart(2, '0')
+                      }}</span>
+                      <strong>{{ entry.stage.title }}</strong>
+                      <small>
+                        {{ entry.done }} of {{ entry.total }} delivered
+                        @if (entry.stage.id === deliveryPlan.currentStageId) {
+                          <em>Active</em>
+                        }
+                      </small>
+                      <i aria-hidden="true"><b [style.width.%]="entry.percent"></b></i>
+                    </a>
+                  </li>
                 }
-              }
+              </ol>
             </div>
-            <ul class="flow-legend">
-              @for (entry of flow(); track entry.status.id) {
-                <li><i aria-hidden="true" [style.background]="entry.status.color"></i><strong>{{ entry.count }}</strong><span>{{ entry.status.label }}</span></li>
-              }
-              @if (blockedCount()) {
-                <li class="flow-alert"><strong>{{ blockedCount() }}</strong><span>Blocked</span></li>
+          </div>
+          <div class="glance-card glance-next">
+            <div class="glance-heading">
+              <h2>Up next</h2>
+              <p>Highest priority first, from In progress, Review and Ready.</p>
+            </div>
+            <ul class="glance-list">
+              @for (item of nextUp(); track item.id) {
+                <li>
+                  <a routerLink="/delivery-plan/work" [fragment]="item.id">
+                    <em class="glance-priority" [attr.data-priority]="item.priorityId">{{
+                      item.priorityId
+                    }}</em>
+                    <span
+                      ><b>{{ item.id }}</b> {{ item.title }}</span
+                    >
+                    <small [style.--status-color]="workflowFor(item)?.color"
+                      ><i aria-hidden="true"></i>{{ workflowFor(item)?.label }}</small
+                    >
+                  </a>
+                </li>
+              } @empty {
+                <li class="glance-empty"
+                  >Nothing is queued. Pull the next ticket from Backlog on the board.</li
+                >
               }
             </ul>
           </div>
-          <ol class="stage-strip">
-            @for (entry of stageSummaries(); track entry.stage.id) {
-              <li [attr.data-state]="entry.stage.state" [class.current]="entry.stage.id === deliveryPlan.currentStageId">
-                <a routerLink="/delivery-plan/work" [queryParams]="{ stage: entry.stage.id }">
-                  <span class="stage-number">{{ entry.stage.order.toString().padStart(2, '0') }}</span>
-                  <strong>{{ entry.stage.title }}</strong>
-                  <small>
-                    {{ entry.done }} of {{ entry.total }} delivered
-                    @if (entry.stage.id === deliveryPlan.currentStageId) { <em>Active</em> }
-                  </small>
-                  <i aria-hidden="true"><b [style.width.%]="entry.percent"></b></i>
-                </a>
-              </li>
-            }
-          </ol>
-        </div>
-      </div>
-      <div class="glance-card glance-next">
-        <div class="glance-heading">
-          <h2>Up next</h2>
-          <p>Highest priority first, from In progress, Review and Ready.</p>
-        </div>
-        <ul class="glance-list">
-          @for (item of nextUp(); track item.id) {
-            <li>
-              <a routerLink="/delivery-plan/work" [fragment]="item.id">
-                <em class="glance-priority" [attr.data-priority]="item.priorityId">{{ item.priorityId }}</em>
-                <span><b>{{ item.id }}</b> {{ item.title }}</span>
-                <small [style.--status-color]="workflowFor(item)?.color"><i aria-hidden="true"></i>{{ workflowFor(item)?.label }}</small>
-              </a>
-            </li>
-          } @empty {
-            <li class="glance-empty">Nothing is queued. Pull the next ticket from Backlog on the board.</li>
+          <div class="glance-card glance-recent">
+            <div class="glance-heading">
+              <h2>Finished recently</h2>
+              <p>The last tickets marked Done.</p>
+            </div>
+            <ul class="glance-list">
+              @for (item of recentlyDone(); track item.id) {
+                <li>
+                  <a routerLink="/delivery-plan/work" [fragment]="item.id">
+                    <span
+                      ><b>{{ item.id }}</b> {{ item.title }}</span
+                    >
+                    <small>{{ shortDate(item.updatedAt) }}</small>
+                  </a>
+                </li>
+              } @empty {
+                <li class="glance-empty">No ticket has been marked Done yet.</li>
+              }
+            </ul>
+          </div>
+        </section>
+        <div class="source-line">
+          <strong>{{ deliveryPlan.sourceLabel }}</strong>
+          @if (deliveryPlan.lastUpdated) {
+            <span>Updated {{ deliveryPlan.lastUpdated }}</span>
           }
-        </ul>
-      </div>
-      <div class="glance-card glance-recent">
-        <div class="glance-heading">
-          <h2>Finished recently</h2>
-          <p>The last tickets marked Done.</p>
         </div>
-        <ul class="glance-list">
-          @for (item of recentlyDone(); track item.id) {
-            <li>
-              <a routerLink="/delivery-plan/work" [fragment]="item.id">
-                <span><b>{{ item.id }}</b> {{ item.title }}</span>
-                <small>{{ shortDate(item.updatedAt) }}</small>
-              </a>
-            </li>
-          } @empty {
-            <li class="glance-empty">No ticket has been marked Done yet.</li>
-          }
-        </ul>
-      </div>
-    </section>
-    <div class="source-line">
-      <strong>{{ deliveryPlan.sourceLabel }}</strong>
-      @if (deliveryPlan.lastUpdated) { <span>Updated {{ deliveryPlan.lastUpdated }}</span> }
-    </div>
-    }
+      }
 
-    @if (workspace()) {
-    <section class="delivery-workspace" id="delivery-workspace">
-      <header class="workspace-toolbar">
-        <nav class="view-tabs" aria-label="Delivery views">
-          <button
-            type="button"
-            [attr.aria-pressed]="view() === 'board'"
-            [class.active]="view() === 'board'"
-            (click)="setView('board')"
-          >
-            Board
-          </button>
-          <button
-            type="button"
-            [attr.aria-pressed]="view() === 'backlog'"
-            [class.active]="view() === 'backlog'"
-            (click)="setView('backlog')"
-          >
-            Backlog
-          </button>
-          <button
-            type="button"
-            [attr.aria-pressed]="view() === 'all-tickets'"
-            [class.active]="view() === 'all-tickets'"
-            (click)="setView('all-tickets')"
-          >
-            All tickets
-          </button>
-          <button
-            type="button"
-            [attr.aria-pressed]="view() === 'roadmap'"
-            [class.active]="view() === 'roadmap'"
-            (click)="setView('roadmap')"
-          >
-            Roadmap
-          </button>
-          <button
-            type="button"
-            [attr.aria-pressed]="view() === 'decisions'"
-            [class.active]="view() === 'decisions'"
-            (click)="setView('decisions')"
-          >
-            Decisions
-          </button>
-        </nav>
-        <div class="editor-toolbar">
-          @if (editable()) {
-            <button
-              type="button"
-              class="editor-secondary"
-              [disabled]="saving()"
-              (click)="refreshPlan()"
-            >
-              Refresh board
-            </button>
-            <button
-              type="button"
-              class="editor-primary"
-              [disabled]="saving()"
-              [hidden]="!canEdit()" (click)="openEditor()"
-            >
-              + New work item
-            </button>
-          } @else if (dev()) {
-            <button
-              type="button"
-              class="editor-secondary"
-              [disabled]="saving()"
-              title="Reads the plan on DEV again and shows the version it found"
-              (click)="refreshPlan()"
-            >
-              Refresh board
-            </button>
-            @if (canSyncPlan()) {
-              <input
-                #planFile
-                type="file"
-                class="plan-file-input"
-                accept=".json,application/json"
-                aria-label="Plan file"
-                tabindex="-1"
-                (change)="uploadPlanFile($event)"
-              />
+      @if (workspace()) {
+        <section class="delivery-workspace" id="delivery-workspace">
+          <header class="workspace-toolbar">
+            <nav class="view-tabs" aria-label="Delivery views">
               <button
                 type="button"
-                class="editor-secondary upload-plan"
-                [disabled]="saving() || syncing()"
-                [attr.aria-busy]="syncing() && uploadStage() ? 'true' : null"
-                title="Sends your local delivery-plan.json to DEV and merges it at once"
-                (click)="planFile.click()"
+                [attr.aria-pressed]="view() === 'board'"
+                [class.active]="view() === 'board'"
+                (click)="setView('board')"
               >
-                @if (syncing() && uploadStage()) {
-                  <span class="busy-dot" aria-hidden="true"></span>
-                  {{ uploadStage() === 'reading' ? 'Reading file…' : uploadStage() === 'merging' ? 'Merging on DEV…' : 'Uploading…' }}
-                } @else {
-                  Upload plan file
+                Board
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'backlog'"
+                [class.active]="view() === 'backlog'"
+                (click)="setView('backlog')"
+              >
+                Backlog
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'all-tickets'"
+                [class.active]="view() === 'all-tickets'"
+                (click)="setView('all-tickets')"
+              >
+                All tickets
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'roadmap'"
+                [class.active]="view() === 'roadmap'"
+                (click)="setView('roadmap')"
+              >
+                Roadmap
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'decisions'"
+                [class.active]="view() === 'decisions'"
+                (click)="setView('decisions')"
+              >
+                Decisions
+              </button>
+            </nav>
+            <div class="editor-toolbar">
+              @if (editable()) {
+                <button
+                  type="button"
+                  class="editor-secondary"
+                  [disabled]="saving()"
+                  (click)="refreshPlan()"
+                >
+                  Refresh board
+                </button>
+                <button
+                  type="button"
+                  class="editor-primary"
+                  [disabled]="saving()"
+                  [hidden]="!canEdit()"
+                  (click)="openEditor()"
+                >
+                  + New work item
+                </button>
+              } @else if (dev()) {
+                <button
+                  type="button"
+                  class="editor-secondary"
+                  [disabled]="saving()"
+                  title="Reads the plan on DEV again and shows the version it found"
+                  (click)="refreshPlan()"
+                >
+                  Refresh board
+                </button>
+                @if (canSyncPlan()) {
+                  <input
+                    #planFile
+                    type="file"
+                    class="plan-file-input"
+                    accept=".json,application/json"
+                    aria-label="Plan file"
+                    tabindex="-1"
+                    (change)="uploadPlanFile($event)"
+                  />
+                  <button
+                    type="button"
+                    class="editor-secondary upload-plan"
+                    [disabled]="saving() || syncing()"
+                    [attr.aria-busy]="syncing() && uploadStage() ? 'true' : null"
+                    title="Sends your local delivery-plan.json to DEV and merges it at once"
+                    (click)="planFile.click()"
+                  >
+                    @if (syncing() && uploadStage()) {
+                      <span class="busy-dot" aria-hidden="true"></span>
+                      {{
+                        uploadStage() === 'reading'
+                          ? 'Reading file…'
+                          : uploadStage() === 'merging'
+                            ? 'Merging on DEV…'
+                            : 'Uploading…'
+                      }}
+                    } @else {
+                      Upload plan file
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    class="editor-secondary sync-inbox"
+                    [disabled]="saving() || syncing()"
+                    title="Merges a plan file already placed in delivery/inbox/ on DEV"
+                    (click)="syncPlanInbox()"
+                  >
+                    Sync plan inbox
+                  </button>
+                  <button
+                    type="button"
+                    class="editor-secondary download-plan"
+                    [disabled]="downloading()"
+                    [attr.title]="
+                      'Saves the plan as DEV holds it now, named by its version; edit that ' +
+                      'copy before the next upload'
+                    "
+                    (click)="downloadDevPlan()"
+                  >
+                    {{ downloading() ? 'Preparing…' : 'Download DEV plan' }}
+                  </button>
                 }
-              </button>
-              <button
-                type="button"
-                class="editor-secondary sync-inbox"
-                [disabled]="saving() || syncing()"
-                title="Merges a plan file already placed in delivery/inbox/ on DEV"
-                (click)="syncPlanInbox()"
-              >
-                Sync plan inbox
-              </button>
-              <button
-                type="button"
-                class="editor-secondary download-plan"
-                [disabled]="downloading()"
-                title="Saves the plan as DEV holds it now, named by its version; edit that copy before the next upload"
-                (click)="downloadDevPlan()"
-              >
-                {{ downloading() ? 'Preparing…' : 'Download DEV plan' }}
-              </button>
-            }
-            <button
-              type="button"
-              class="editor-primary"
-              [disabled]="saving()"
-              [hidden]="!canEdit()" (click)="openEditor()"
-            >
-              + New ticket
-            </button>
-          } @else if (published()) {
-            <p class="published-copy">Published copy, read-only; edit on the local workstation.</p>
-          } @else {
-            <p>
-              Read-only view. Start with <code>npm run start:private</code> to edit the private
-              JSON.
+                <button
+                  type="button"
+                  class="editor-primary"
+                  [disabled]="saving()"
+                  [hidden]="!canEdit()"
+                  (click)="openEditor()"
+                >
+                  + New ticket
+                </button>
+              } @else if (published()) {
+                <p class="published-copy"
+                  >Published copy, read-only; edit on the local workstation.</p
+                >
+              } @else {
+                <p>
+                  Read-only view. Start with <code>npm run start:private</code> to edit the private
+                  JSON.
+                </p>
+              }
+            </div>
+          </header>
+          @if (editable()) {
+            <p class="refresh-help">
+              Local editing enabled. Saved changes appear automatically every 5 seconds. Use Refresh
+              board to check now.
+            </p>
+          } @else if (dev()) {
+            <p class="refresh-help">
+              @if (canEdit()) {
+                Editing the plan on DEV. Saves go to DEV at once; local edits reach it through the
+                inbox sync.
+              } @else {
+                The plan on DEV, read-only for your role.
+              }
+              @if (canSyncPlan()) {
+                Upload plan file sends your local delivery-plan.json to DEV and merges it at once;
+                Sync plan inbox merges a file already placed in delivery/inbox/.
+              }
             </p>
           }
-        </div>
-      </header>
-      @if (editable()) {
-        <p class="refresh-help">
-          Local editing enabled. Saved changes appear automatically every 5 seconds. Use Refresh
-          board to check now.
-        </p>
-      } @else if (dev()) {
-        <p class="refresh-help">
-          @if (canEdit()) {
-            Editing the plan on DEV. Saves go to DEV at once; local edits reach it through the inbox sync.
-          } @else {
-            The plan on DEV, read-only for your role.
+          @if (planNotice()) {
+            <p class="plan-notice" role="status">{{ planNotice() }}</p>
           }
-          @if (canSyncPlan()) {
-            Upload plan file sends your local delivery-plan.json to DEV and merges it at once; Sync plan inbox merges a file already placed in delivery/inbox/.
-          }
-        </p>
-      }
-      @if (planNotice()) {
-        <p class="plan-notice" role="status">{{ planNotice() }}</p>
-      }
-      <p class="save-notice" role="status" aria-live="polite">
-        {{ saving() ? 'Saving to private JSON...' : notice() }}
-      </p>
-
-      @if (workView()) {
-        <header class="work-view-heading">
-          <h2>
-            {{
-              view() === 'backlog' ? 'Backlog' : view() === 'all-tickets' ? 'All tickets' : 'Board'
-            }}
-          </h2>
-          <p>
-            @if (view() === 'backlog') {
-              Work not yet ready to start, across all stages. Open a ticket to read or edit it.
-            } @else if (view() === 'all-tickets') {
-              Every ticket, including completed work. Use the filters to narrow this list.
-            } @else {
-              Work grouped by status. Start with the current stage, or use Backlog and All tickets
-              to look further ahead.
-            }
+          <p class="save-notice" role="status" aria-live="polite">
+            {{ saving() ? 'Saving to private JSON...' : notice() }}
           </p>
-        </header>
-        <section class="board-controls" aria-label="Filter delivery work">
-          <label class="board-search">
-            <span>Find a ticket</span>
-            <input
-              type="search"
-              [value]="query()"
-              placeholder="Ticket number, title, or keyword..."
-              (input)="updateQuery($any($event.target).value)"
-            />
-          </label>
-          <label>
-            <span>Stage</span>
-            <select [ngModel]="stageFilter()" (ngModelChange)="setStageFilter($event)">
-              <option value="current">Current stage</option>
-              <option value="all">All stages</option>
-              @for (stage of deliveryPlan.stages; track stage.id) {
-                <option [value]="stage.id">{{ stage.order }} · {{ stage.title }}</option>
-              }
-            </select>
-          </label>
-          <label>
-            <span>Priority</span>
-            <select [ngModel]="priorityFilter()" (ngModelChange)="setPriorityFilter($event)">
-              <option value="all">All priorities</option>
-              @for (priority of deliveryPlan.priorities; track priority.id) {
-                <option [value]="priority.id">{{ priority.id }} · {{ priority.label }}</option>
-              }
-            </select>
-          </label>
-          <label>
-            <span>Work type</span>
-            <select [ngModel]="typeFilter()" (ngModelChange)="setTypeFilter($event)">
-              <option value="all">All work types</option>
-              @for (type of workItemTypes; track type.id) {
-                <option [value]="type.id">{{ type.label }}</option>
-              }
-            </select>
-          </label>
-          <button class="clear-filters" type="button" (click)="resetView()">Clear filters</button>
-        </section>
 
-        <details class="interruption-policy">
-          <summary>
-            <span>Interruption policy</span>
-            <strong>{{ deliveryPlan.interruptionPolicy.title }}</strong>
-            <small>Open to decide whether a new defect interrupts the active stage</small>
-          </summary>
-          <div>
-            <p>{{ deliveryPlan.interruptionPolicy.principle }}</p>
-            <ol>
-              @for (rule of deliveryPlan.interruptionPolicy.rules; track rule.priorityId) {
-                <li>
-                  <b [attr.data-priority]="rule.priorityId">{{ rule.priorityId }}</b>
-                  <span
-                    ><strong>{{ rule.action }}</strong
-                    ><small>{{ rule.examples.join(' · ') }}</small></span
-                  >
-                </li>
-              }
-            </ol>
-          </div>
-        </details>
-
-        <p class="result-count" aria-live="polite">
-          Showing {{ filteredItems().length }} of {{ deliveryPlan.workItems.length }} work items
-        </p>
-
-        @if (view() === 'board') {
-          <div class="delivery-board" role="region" aria-label="Delivery board" tabindex="0">
-            @for (status of deliveryPlan.workflow; track status.id) {
-              <section
-                class="board-column"
-                [style.--status-color]="status.color"
-                [class.drop-target]="dropTarget() === status.id"
-                (dragover)="dragOver($event, status.id)"
-                (drop)="dropItem($event, status.id)"
-              >
-                <header>
-                  <div>
-                    <i aria-hidden="true"></i><strong>{{ status.label }}</strong>
-                  </div>
-                  <span>{{ itemsForStatus(status.id).length }}</span>
-                </header>
-                <p>{{ status.description }}</p>
-                @if (status.wipLimit) {
-                  <small class="wip-limit" [class.exceeded]="columnExceedsLimit(status)">
-                    WIP {{ totalForStatus(status.id) }}/{{ status.wipLimit }} (all stages)
-                  </small>
+          @if (workView()) {
+            <header class="work-view-heading">
+              <h2>
+                {{
+                  view() === 'backlog'
+                    ? 'Backlog'
+                    : view() === 'all-tickets'
+                      ? 'All tickets'
+                      : 'Board'
+                }}
+              </h2>
+              <p>
+                @if (view() === 'backlog') {
+                  Work not yet ready to start, across all stages. Open a ticket to read or edit it.
+                } @else if (view() === 'all-tickets') {
+                  Every ticket, including completed work. Use the filters to narrow this list.
+                } @else {
+                  Work grouped by status. Start with the current stage, or use Backlog and All
+                  tickets to look further ahead.
                 }
-                <div class="work-item-list">
-                  @for (item of itemsForStatus(status.id); track item.id) {
-                    <div
-                      class="work-item-container"
-                      [id]="'ticket-' + item.id"
-                      [class.dragging]="draggedItemId() === item.id"
-                      [class.highlighted]="highlightedId() === item.id"
-                    >
-                      <button
-                        class="work-item-card"
-                        type="button"
-                        [attr.draggable]="canDrag(item)"
-                        (dragstart)="startDrag($event, item)"
-                        (dragend)="endDrag()"
-                        [class.blocked]="item.blockedBy.length"
-                        [style.--priority-color]="priorityFor(item)?.color"
-                        (click)="openWorkItem(item)"
+              </p>
+            </header>
+            <section class="board-controls" aria-label="Filter delivery work">
+              <label class="board-search">
+                <span>Find a ticket</span>
+                <input
+                  type="search"
+                  [value]="query()"
+                  placeholder="Ticket number, title, or keyword..."
+                  (input)="updateQuery($any($event.target).value)"
+                />
+              </label>
+              <label>
+                <span>Stage</span>
+                <select [ngModel]="stageFilter()" (ngModelChange)="setStageFilter($event)">
+                  <option value="current">Current stage</option>
+                  <option value="all">All stages</option>
+                  @for (stage of deliveryPlan.stages; track stage.id) {
+                    <option [value]="stage.id">{{ stage.order }} · {{ stage.title }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                <span>Priority</span>
+                <select [ngModel]="priorityFilter()" (ngModelChange)="setPriorityFilter($event)">
+                  <option value="all">All priorities</option>
+                  @for (priority of deliveryPlan.priorities; track priority.id) {
+                    <option [value]="priority.id">{{ priority.id }} · {{ priority.label }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                <span>Work type</span>
+                <select [ngModel]="typeFilter()" (ngModelChange)="setTypeFilter($event)">
+                  <option value="all">All work types</option>
+                  @for (type of workItemTypes; track type.id) {
+                    <option [value]="type.id">{{ type.label }}</option>
+                  }
+                </select>
+              </label>
+              <button class="clear-filters" type="button" (click)="resetView()"
+                >Clear filters</button
+              >
+            </section>
+
+            <details class="interruption-policy">
+              <summary>
+                <span>Interruption policy</span>
+                <strong>{{ deliveryPlan.interruptionPolicy.title }}</strong>
+                <small>Open to decide whether a new defect interrupts the active stage</small>
+              </summary>
+              <div>
+                <p>{{ deliveryPlan.interruptionPolicy.principle }}</p>
+                <ol>
+                  @for (rule of deliveryPlan.interruptionPolicy.rules; track rule.priorityId) {
+                    <li>
+                      <b [attr.data-priority]="rule.priorityId">{{ rule.priorityId }}</b>
+                      <span
+                        ><strong>{{ rule.action }}</strong
+                        ><small>{{ rule.examples.join(' · ') }}</small></span
                       >
-                        <span class="work-item-meta">
-                          <b>{{ item.id }}</b
-                          ><i>{{ typeLabel(item.type) }}</i>
-                        </span>
-                        <strong>{{ item.title }}</strong>
-                        <small>{{ stageFor(item)?.title }}</small>
-                        <span class="work-labels">
-                          @for (label of item.labels; track label; let index = $index) {
-                            @if (index < 3) {
-                              <i>{{ label }}</i>
-                            }
-                          }
-                        </span>
-                        <span class="card-footer">
-                          <b [attr.data-priority]="item.priorityId">{{ item.priorityId }}</b>
-                          @if (item.pendingLocal) {
-                            <em class="conflict-mark">Local edit pending</em>
-                          } @else if (item.blockedBy.length) {
-                            <em>Blocked</em>
-                          } @else {
-                            <em>{{ item.acceptanceCriteria.length }} acceptance checks</em>
-                          }
-                        </span>
-                      </button>
-                      @if (writable() && canMoveAnywhere(item)) {
-                        <label class="quick-move">
-                          <span>Move to</span>
-                          <select
-                            [attr.aria-label]="'Move ' + item.id + ' to workflow column'"
-                            [value]="item.statusId"
-                            [disabled]="saving()"
-                            (change)="moveFromSelect(item, $event)"
+                    </li>
+                  }
+                </ol>
+              </div>
+            </details>
+
+            <p class="result-count" aria-live="polite">
+              Showing {{ filteredItems().length }} of {{ deliveryPlan.workItems.length }} work items
+            </p>
+
+            @if (view() === 'board') {
+              <div class="delivery-board" role="region" aria-label="Delivery board" tabindex="0">
+                @for (status of deliveryPlan.workflow; track status.id) {
+                  <section
+                    class="board-column"
+                    [style.--status-color]="status.color"
+                    [class.drop-target]="dropTarget() === status.id"
+                    (dragover)="dragOver($event, status.id)"
+                    (drop)="dropItem($event, status.id)"
+                  >
+                    <header>
+                      <div>
+                        <i aria-hidden="true"></i><strong>{{ status.label }}</strong>
+                      </div>
+                      <span>{{ itemsForStatus(status.id).length }}</span>
+                    </header>
+                    <p>{{ status.description }}</p>
+                    @if (status.wipLimit) {
+                      <small class="wip-limit" [class.exceeded]="columnExceedsLimit(status)">
+                        WIP {{ totalForStatus(status.id) }}/{{ status.wipLimit }} (all stages)
+                      </small>
+                    }
+                    <div class="work-item-list">
+                      @for (item of itemsForStatus(status.id); track item.id) {
+                        <div
+                          class="work-item-container"
+                          [id]="'ticket-' + item.id"
+                          [class.dragging]="draggedItemId() === item.id"
+                          [class.highlighted]="highlightedId() === item.id"
+                        >
+                          <button
+                            class="work-item-card"
+                            type="button"
+                            [attr.draggable]="canDrag(item)"
+                            (dragstart)="startDrag($event, item)"
+                            (dragend)="endDrag()"
+                            [class.blocked]="item.blockedBy.length"
+                            [style.--priority-color]="priorityFor(item)?.color"
+                            (click)="openWorkItem(item)"
                           >
-                            @for (destination of deliveryPlan.workflow; track destination.id) {
-                              <option
-                                [value]="destination.id"
-                                [selected]="destination.id === item.statusId"
-                                [disabled]="!canMove(item, destination.id)"
+                            <span class="work-item-meta">
+                              <b>{{ item.id }}</b
+                              ><i>{{ typeLabel(item.type) }}</i>
+                            </span>
+                            <strong>{{ item.title }}</strong>
+                            <small>{{ stageFor(item)?.title }}</small>
+                            <span class="work-labels">
+                              @for (label of item.labels; track label; let index = $index) {
+                                @if (index < 3) {
+                                  <i>{{ label }}</i>
+                                }
+                              }
+                            </span>
+                            <span class="card-footer">
+                              <b [attr.data-priority]="item.priorityId">{{ item.priorityId }}</b>
+                              @if (item.pendingLocal) {
+                                <em class="conflict-mark">Local edit pending</em>
+                              } @else if (item.blockedBy.length) {
+                                <em>Blocked</em>
+                              } @else {
+                                <em>{{ item.acceptanceCriteria.length }} acceptance checks</em>
+                              }
+                            </span>
+                          </button>
+                          @if (writable() && canMoveAnywhere(item)) {
+                            <label class="quick-move">
+                              <span>Move to</span>
+                              <select
+                                [attr.aria-label]="'Move ' + item.id + ' to workflow column'"
+                                [value]="item.statusId"
+                                [disabled]="saving()"
+                                (change)="moveFromSelect(item, $event)"
                               >
-                                {{ destination.label }}
-                              </option>
-                            }
-                          </select>
-                        </label>
+                                @for (destination of deliveryPlan.workflow; track destination.id) {
+                                  <option
+                                    [value]="destination.id"
+                                    [selected]="destination.id === item.statusId"
+                                    [disabled]="!canMove(item, destination.id)"
+                                  >
+                                    {{ destination.label }}
+                                  </option>
+                                }
+                              </select>
+                            </label>
+                          }
+                        </div>
+                      } @empty {
+                        <div class="empty-column">
+                          <span>Clear</span><small>No matching work</small>
+                        </div>
                       }
                     </div>
-                  } @empty {
-                    <div class="empty-column">
-                      <span>Clear</span><small>No matching work</small>
+                  </section>
+                }
+              </div>
+            } @else {
+              <ul
+                class="ticket-results"
+                [attr.aria-label]="view() === 'backlog' ? 'Backlog tickets' : 'All tickets'"
+              >
+                @for (item of filteredItems(); track item.id) {
+                  <li [id]="'ticket-' + item.id" [class.highlighted]="highlightedId() === item.id">
+                    <button type="button" class="ticket-row" (click)="openWorkItem(item)">
+                      <span class="ticket-identity"
+                        ><b>{{ item.id }}</b
+                        ><small>{{ typeLabel(item.type) }}</small></span
+                      >
+                      <span class="ticket-copy">
+                        <strong>{{ item.title }}</strong>
+                        <span>{{ item.summary }}</span>
+                        <small>{{ stageFor(item)?.title }}</small>
+                      </span>
+                      <span class="ticket-state">
+                        <b>{{ workflowFor(item)?.label }}</b>
+                        <small>{{ item.priorityId }} · {{ priorityFor(item)?.label }}</small>
+                        @if (item.blockedBy.length) {
+                          <em>Blocked</em>
+                        }
+                        <span>Open ticket &rarr;</span>
+                      </span>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="ticket-empty">
+                    No tickets match these filters. Use Clear filters to start again.
+                  </li>
+                }
+              </ul>
+            }
+          }
+
+          @if (view() === 'roadmap') {
+            <section class="roadmap-view" aria-labelledby="roadmap-heading">
+              <header>
+                <span>Living sequence</span>
+                <h2 id="roadmap-heading">Stages can grow without changing the page</h2>
+                <p>Each stage is data-driven and ends at an explicit review gate.</p>
+              </header>
+              <ol class="roadmap-stage-list">
+                @for (stage of deliveryPlan.stages; track stage.id) {
+                  <li [attr.data-state]="stage.state">
+                    <div class="stage-marker">
+                      <span>{{ stage.order.toString().padStart(2, '0') }}</span>
                     </div>
+                    <article>
+                      <header>
+                        <div>
+                          <small>{{ stageStateLabel(stage.state) }}</small>
+                          <h3>{{ stage.title }}</h3>
+                        </div>
+                        <strong>{{ stageProgress(stage.id) }}%</strong>
+                      </header>
+                      <p>{{ stage.goal }}</p>
+                      <div class="stage-progress" aria-hidden="true">
+                        <i [style.width.%]="stageProgress(stage.id)"></i>
+                      </div>
+                      <footer>
+                        <span
+                          >{{ completedForStage(stage.id) }}/{{
+                            itemsForStage(stage.id).length
+                          }}
+                          delivered</span
+                        >
+                        <span><b>Review gate:</b> {{ stage.reviewGate }}</span>
+                        <button type="button" (click)="selectStage(stage.id)"
+                          >Open stage board</button
+                        >
+                      </footer>
+                    </article>
+                  </li>
+                }
+              </ol>
+
+              <section class="delivery-sequence" aria-labelledby="delivery-sequence-heading">
+                <header>
+                  <span>Focused delivery days</span>
+                  <h2 id="delivery-sequence-heading">{{ deliveryPlan.deliverySequence.title }}</h2>
+                  <p>{{ deliveryPlan.deliverySequence.note }}</p>
+                </header>
+                <div class="delivery-window-list">
+                  @for (window of deliveryPlan.deliverySequence.windows; track window.id) {
+                    <article class="delivery-window">
+                      <header>
+                        <span>{{ window.dayRange }}</span>
+                        <h3>{{ window.title }}</h3>
+                      </header>
+                      <ol>
+                        @for (checkpoint of window.checkpoints; track checkpoint.id) {
+                          <li [class.review-stop]="checkpoint.reviewStop">
+                            <span>{{ checkpoint.day }}</span>
+                            <p>{{ checkpoint.outcome }}</p>
+                            @if (checkpoint.reviewStop) {
+                              <strong>Review stop</strong>
+                            }
+                          </li>
+                        }
+                      </ol>
+                    </article>
+                  }
+                </div>
+              </section>
+            </section>
+          }
+
+          @if (view() === 'decisions') {
+            <section class="decisions-view" aria-labelledby="decisions-heading">
+              <header>
+                <span>Architecture decision log</span>
+                <h2 id="decisions-heading">Remember why the plan changed</h2>
+                <p
+                  >Decisions remain visible with their rationale, consequences, and review
+                  trigger.</p
+                >
+              </header>
+              <div class="decision-grid">
+                @for (decision of deliveryPlan.decisions; track decision.id) {
+                  <article class="decision-card" [attr.data-state]="decision.state">
+                    <header>
+                      <span>{{ decision.id }}</span>
+                      <b>{{ decisionStateLabel(decision.state) }}</b>
+                    </header>
+                    <h3>{{ decision.title }}</h3>
+                    <p>{{ decision.decision }}</p>
+                    <dl>
+                      <div>
+                        <dt>Why</dt>
+                        <dd>{{ decision.rationale }}</dd>
+                      </div>
+                      <div>
+                        <dt>Revisit when</dt>
+                        <dd>{{ decision.revisitWhen }}</dd>
+                      </div>
+                    </dl>
+                    @if (decision.relatedWorkItemIds.length) {
+                      <footer>
+                        @for (itemId of decision.relatedWorkItemIds; track itemId) {
+                          <button type="button" (click)="openRelatedWorkItem(itemId)">
+                            {{ itemId }}
+                          </button>
+                        }
+                      </footer>
+                    }
+                  </article>
+                }
+              </div>
+            </section>
+          }
+        </section>
+      }
+      <dialog
+        appScrollLock
+        #workItemDialog
+        class="work-item-dialog"
+        (close)="selectedWorkItem.set(null)"
+        (pointerdown)="rememberDialogPointerStart($event)"
+        (click)="dismissDialogBackdrop($event)"
+      >
+        @if (selectedWorkItem(); as item) {
+          <div class="dialog-shell">
+            <header class="dialog-header">
+              <div>
+                <span>{{ item.id }} · {{ typeLabel(item.type) }}</span>
+                <h2>{{ item.title }}</h2>
+              </div>
+              <button type="button" aria-label="Close work item" (click)="closeWorkItem()">
+                &#215;
+              </button>
+            </header>
+            <div class="dialog-status-strip">
+              <span
+                ><i [style.background]="priorityFor(item)?.color"></i>{{ item.priorityId }}
+                {{ priorityFor(item)?.label }}</span
+              >
+              <span>{{ workflowFor(item)?.label }}</span>
+              <span>{{ stageFor(item)?.title }}</span>
+              @if (item.blockedBy.length) {
+                <strong>Blocked</strong>
+              }
+            </div>
+            @if (item.origin; as origin) {
+              <p class="ticket-origin">
+                <a routerLink="/admin/feedback" [fragment]="origin.id">
+                  {{ originLabel(origin) }}
+                </a>
+              </p>
+            }
+            @if (item.pendingLocal) {
+              <section class="conflict-banner" role="alert" aria-label="Unmerged local edit">
+                <h3>A local edit of this ticket was not merged</h3>
+                <p>
+                  The ticket changed on DEV and locally since the same version. DEV is shown; the
+                  fields below differ.
+                </p>
+                <dl class="conflict-diff">
+                  @for (row of conflictFields(item); track row.field) {
+                    <div>
+                      <dt>{{ row.field }}</dt>
+                      <dd>
+                        <span class="diff-dev"><b>DEV</b> {{ row.dev || '—' }}</span>
+                        <span class="diff-local"><b>Local</b> {{ row.local || '—' }}</span>
+                      </dd>
+                    </div>
+                  } @empty {
+                    <div>
+                      <dt>No field differs</dt>
+                      <dd>Both versions read the same; Keep DEV clears this notice.</dd>
+                    </div>
+                  }
+                </dl>
+                @if (dev() && canEdit(item)) {
+                  <div class="conflict-actions">
+                    <button
+                      type="button"
+                      class="editor-primary"
+                      [disabled]="saving()"
+                      (click)="resolveConflict(item, 'dev')"
+                    >
+                      Keep DEV
+                    </button>
+                    <button
+                      type="button"
+                      class="editor-secondary"
+                      [disabled]="saving()"
+                      (click)="resolveConflict(item, 'local')"
+                    >
+                      Take local
+                    </button>
+                  </div>
+                }
+              </section>
+            }
+            <section>
+              <h3>Outcome</h3>
+              <p>{{ item.summary }}</p>
+            </section>
+            <section>
+              <h3>Acceptance criteria</h3>
+              <ul>
+                @for (criterion of item.acceptanceCriteria; track criterion) {
+                  <li>{{ criterion }}</li>
+                }
+              </ul>
+            </section>
+            @if (item.dependencies.length || item.blockedBy.length) {
+              <section class="relationship-grid">
+                @if (item.dependencies.length) {
+                  <div>
+                    <h3>Depends on</h3>
+                    <p>{{ item.dependencies.join(', ') }}</p>
+                  </div>
+                }
+                @if (item.blockedBy.length) {
+                  <div>
+                    <h3>Blocked by</h3>
+                    <p>{{ item.blockedBy.join(', ') }}</p>
+                  </div>
+                }
+              </section>
+            }
+            @if (item.reviewRoutes?.length) {
+              <section>
+                <h3>Review routes</h3>
+                <div class="review-routes">
+                  @for (route of item.reviewRoutes; track route) {
+                    <a [href]="route">{{ route }}</a>
                   }
                 </div>
               </section>
             }
-          </div>
-        } @else {
-          <ul
-            class="ticket-results"
-            [attr.aria-label]="view() === 'backlog' ? 'Backlog tickets' : 'All tickets'"
-          >
-            @for (item of filteredItems(); track item.id) {
-              <li [id]="'ticket-' + item.id" [class.highlighted]="highlightedId() === item.id">
-                <button type="button" class="ticket-row" (click)="openWorkItem(item)">
-                  <span class="ticket-identity"
-                    ><b>{{ item.id }}</b
-                    ><small>{{ typeLabel(item.type) }}</small></span
-                  >
-                  <span class="ticket-copy">
-                    <strong>{{ item.title }}</strong>
-                    <span>{{ item.summary }}</span>
-                    <small>{{ stageFor(item)?.title }}</small>
-                  </span>
-                  <span class="ticket-state">
-                    <b>{{ workflowFor(item)?.label }}</b>
-                    <small>{{ item.priorityId }} · {{ priorityFor(item)?.label }}</small>
-                    @if (item.blockedBy.length) {
-                      <em>Blocked</em>
-                    }
-                    <span>Open ticket &rarr;</span>
-                  </span>
+            @if (item.evidence?.length) {
+              <section class="evidence-section" aria-label="Work item evidence">
+                <h3>Evidence</h3>
+                <p>
+                  Read the formatted report or download its original Markdown. Reports stay private.
+                </p>
+                <ul>
+                  @for (report of item.evidence; track report.id) {
+                    <li>
+                      <strong>{{ report.title }}</strong>
+                      @if (editable()) {
+                        <div class="review-routes">
+                          <a
+                            [href]="evidenceUrl(item.id, report.id)"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            >View report (new tab)</a
+                          >
+                          <a [href]="evidenceUrl(item.id, report.id) + '?download=1'"
+                            >Download .md</a
+                          >
+                        </div>
+                      } @else if (published()) {
+                        <p>Published copy, read-only; open this report on the local workstation.</p>
+                      } @else if (dev()) {
+                        <p>Open this report on the local workstation.</p>
+                      } @else {
+                        <p>Start the private local app to open this report.</p>
+                      }
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+            @if (item.notes?.length) {
+              <section>
+                <h3>Notes</h3>
+                <ul>
+                  @for (note of item.notes; track note) {
+                    <li>{{ note }}</li>
+                  }
+                </ul>
+              </section>
+            }
+            <footer class="dialog-footer">
+              <span>{{ updatedLine(item) }}</span>
+              @if (editable()) {
+                <button
+                  type="button"
+                  class="editor-primary"
+                  [disabled]="saving()"
+                  [hidden]="!canEdit(item)"
+                  (click)="openEditor(item)"
+                >
+                  Edit work item
                 </button>
-              </li>
-            } @empty {
-              <li class="ticket-empty">
-                No tickets match these filters. Use Clear filters to start again.
-              </li>
-            }
-          </ul>
+              } @else if (dev() && canEdit(item)) {
+                <button
+                  type="button"
+                  class="editor-primary"
+                  [disabled]="saving()"
+                  (click)="openEditor(item)"
+                >
+                  Edit ticket
+                </button>
+              } @else {
+                <strong>Read-only plan</strong>
+              }
+            </footer>
+          </div>
         }
-      }
-
-      @if (view() === 'roadmap') {
-        <section class="roadmap-view" aria-labelledby="roadmap-heading">
-          <header>
-            <span>Living sequence</span>
-            <h2 id="roadmap-heading">Stages can grow without changing the page</h2>
-            <p>Each stage is data-driven and ends at an explicit review gate.</p>
-          </header>
-          <ol class="roadmap-stage-list">
-            @for (stage of deliveryPlan.stages; track stage.id) {
-              <li [attr.data-state]="stage.state">
-                <div class="stage-marker">
-                  <span>{{ stage.order.toString().padStart(2, '0') }}</span>
-                </div>
-                <article>
-                  <header>
-                    <div>
-                      <small>{{ stageStateLabel(stage.state) }}</small>
-                      <h3>{{ stage.title }}</h3>
-                    </div>
-                    <strong>{{ stageProgress(stage.id) }}%</strong>
-                  </header>
-                  <p>{{ stage.goal }}</p>
-                  <div class="stage-progress" aria-hidden="true">
-                    <i [style.width.%]="stageProgress(stage.id)"></i>
-                  </div>
-                  <footer>
-                    <span
-                      >{{ completedForStage(stage.id) }}/{{
-                        itemsForStage(stage.id).length
-                      }}
-                      delivered</span
-                    >
-                    <span><b>Review gate:</b> {{ stage.reviewGate }}</span>
-                    <button type="button" (click)="selectStage(stage.id)">Open stage board</button>
-                  </footer>
-                </article>
-              </li>
-            }
-          </ol>
-
-          <section class="delivery-sequence" aria-labelledby="delivery-sequence-heading">
-            <header>
-              <span>Focused delivery days</span>
-              <h2 id="delivery-sequence-heading">{{ deliveryPlan.deliverySequence.title }}</h2>
-              <p>{{ deliveryPlan.deliverySequence.note }}</p>
-            </header>
-            <div class="delivery-window-list">
-              @for (window of deliveryPlan.deliverySequence.windows; track window.id) {
-                <article class="delivery-window">
-                  <header>
-                    <span>{{ window.dayRange }}</span>
-                    <h3>{{ window.title }}</h3>
-                  </header>
-                  <ol>
-                    @for (checkpoint of window.checkpoints; track checkpoint.id) {
-                      <li [class.review-stop]="checkpoint.reviewStop">
-                        <span>{{ checkpoint.day }}</span>
-                        <p>{{ checkpoint.outcome }}</p>
-                        @if (checkpoint.reviewStop) {
-                          <strong>Review stop</strong>
-                        }
-                      </li>
-                    }
-                  </ol>
-                </article>
-              }
-            </div>
-          </section>
-        </section>
-      }
-
-      @if (view() === 'decisions') {
-        <section class="decisions-view" aria-labelledby="decisions-heading">
-          <header>
-            <span>Architecture decision log</span>
-            <h2 id="decisions-heading">Remember why the plan changed</h2>
-            <p>Decisions remain visible with their rationale, consequences, and review trigger.</p>
-          </header>
-          <div class="decision-grid">
-            @for (decision of deliveryPlan.decisions; track decision.id) {
-              <article class="decision-card" [attr.data-state]="decision.state">
-                <header>
-                  <span>{{ decision.id }}</span>
-                  <b>{{ decisionStateLabel(decision.state) }}</b>
-                </header>
-                <h3>{{ decision.title }}</h3>
-                <p>{{ decision.decision }}</p>
-                <dl>
-                  <div>
-                    <dt>Why</dt>
-                    <dd>{{ decision.rationale }}</dd>
-                  </div>
-                  <div>
-                    <dt>Revisit when</dt>
-                    <dd>{{ decision.revisitWhen }}</dd>
-                  </div>
-                </dl>
-                @if (decision.relatedWorkItemIds.length) {
-                  <footer>
-                    @for (itemId of decision.relatedWorkItemIds; track itemId) {
-                      <button type="button" (click)="openRelatedWorkItem(itemId)">
-                        {{ itemId }}
-                      </button>
-                    }
-                  </footer>
-                }
-              </article>
-            }
-          </div>
-        </section>
-      }
-    </section>
-
-    }
-    <dialog appScrollLock
-      #workItemDialog
-      class="work-item-dialog"
-      (close)="selectedWorkItem.set(null)"
-      (pointerdown)="rememberDialogPointerStart($event)"
-      (click)="dismissDialogBackdrop($event)"
-    >
-      @if (selectedWorkItem(); as item) {
-        <div class="dialog-shell">
-          <header class="dialog-header">
-            <div>
-              <span>{{ item.id }} · {{ typeLabel(item.type) }}</span>
-              <h2>{{ item.title }}</h2>
-            </div>
-            <button type="button" aria-label="Close work item" (click)="closeWorkItem()">
-              &#215;
-            </button>
-          </header>
-          <div class="dialog-status-strip">
-            <span
-              ><i [style.background]="priorityFor(item)?.color"></i>{{ item.priorityId }}
-              {{ priorityFor(item)?.label }}</span
-            >
-            <span>{{ workflowFor(item)?.label }}</span>
-            <span>{{ stageFor(item)?.title }}</span>
-            @if (item.blockedBy.length) {
-              <strong>Blocked</strong>
-            }
-          </div>
-          @if (item.origin; as origin) {
-            <p class="ticket-origin">
-              <a routerLink="/admin/feedback" [fragment]="origin.id">
-                {{ originLabel(origin) }}
-              </a>
-            </p>
-          }
-          @if (item.pendingLocal) {
-            <section class="conflict-banner" role="alert" aria-label="Unmerged local edit">
-              <h3>A local edit of this ticket was not merged</h3>
-              <p>
-                The ticket changed on DEV and locally since the same version. DEV is shown; the
-                fields below differ.
-              </p>
-              <dl class="conflict-diff">
-                @for (row of conflictFields(item); track row.field) {
-                  <div>
-                    <dt>{{ row.field }}</dt>
-                    <dd>
-                      <span class="diff-dev"><b>DEV</b> {{ row.dev || '—' }}</span>
-                      <span class="diff-local"><b>Local</b> {{ row.local || '—' }}</span>
-                    </dd>
-                  </div>
-                } @empty {
-                  <div>
-                    <dt>No field differs</dt>
-                    <dd>Both versions read the same; Keep DEV clears this notice.</dd>
-                  </div>
-                }
-              </dl>
-              @if (dev() && canEdit(item)) {
-                <div class="conflict-actions">
-                  <button
-                    type="button"
-                    class="editor-primary"
-                    [disabled]="saving()"
-                    (click)="resolveConflict(item, 'dev')"
-                  >
-                    Keep DEV
-                  </button>
-                  <button
-                    type="button"
-                    class="editor-secondary"
-                    [disabled]="saving()"
-                    (click)="resolveConflict(item, 'local')"
-                  >
-                    Take local
-                  </button>
-                </div>
-              }
-            </section>
-          }
-          <section>
-            <h3>Outcome</h3>
-            <p>{{ item.summary }}</p>
-          </section>
-          <section>
-            <h3>Acceptance criteria</h3>
-            <ul>
-              @for (criterion of item.acceptanceCriteria; track criterion) {
-                <li>{{ criterion }}</li>
-              }
-            </ul>
-          </section>
-          @if (item.dependencies.length || item.blockedBy.length) {
-            <section class="relationship-grid">
-              @if (item.dependencies.length) {
-                <div>
-                  <h3>Depends on</h3>
-                  <p>{{ item.dependencies.join(', ') }}</p>
-                </div>
-              }
-              @if (item.blockedBy.length) {
-                <div>
-                  <h3>Blocked by</h3>
-                  <p>{{ item.blockedBy.join(', ') }}</p>
-                </div>
-              }
-            </section>
-          }
-          @if (item.reviewRoutes?.length) {
-            <section>
-              <h3>Review routes</h3>
-              <div class="review-routes">
-                @for (route of item.reviewRoutes; track route) {
-                  <a [href]="route">{{ route }}</a>
-                }
+      </dialog>
+      <dialog
+        appScrollLock
+        #editorDialog
+        class="work-item-dialog editor-dialog"
+        aria-labelledby="editor-title"
+        (cancel)="cancelEditor($event)"
+        (pointerdown)="rememberDialogPointerStart($event)"
+        (click)="dismissDialogBackdrop($event, true)"
+      >
+        @if (draft; as form) {
+          <form class="dialog-shell" (ngSubmit)="saveDraft()">
+            <header class="dialog-header">
+              <div>
+                <span>{{ draftId ?? 'ID assigned on save' }}</span>
+                <h2 id="editor-title">
+                  {{
+                    dev()
+                      ? draftId
+                        ? 'Edit ticket'
+                        : 'New ticket'
+                      : draftId
+                        ? 'Edit work item'
+                        : 'New work item'
+                  }}
+                </h2>
               </div>
-            </section>
-          }
-          @if (item.evidence?.length) {
-            <section class="evidence-section" aria-label="Work item evidence">
-              <h3>Evidence</h3>
-              <p>
-                Read the formatted report or download its original Markdown. Reports stay private.
-              </p>
-              <ul>
-                @for (report of item.evidence; track report.id) {
-                  <li>
-                    <strong>{{ report.title }}</strong>
-                    @if (editable()) {
-                      <div class="review-routes">
-                        <a
-                          [href]="evidenceUrl(item.id, report.id)"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          >View report (new tab)</a
-                        >
-                        <a [href]="evidenceUrl(item.id, report.id) + '?download=1'">Download .md</a>
-                      </div>
-                    } @else if (published()) {
-                      <p>Published copy, read-only; open this report on the local workstation.</p>
-                    } @else if (dev()) {
-                      <p>Open this report on the local workstation.</p>
-                    } @else {
-                      <p>Start the private local app to open this report.</p>
-                    }
-                  </li>
-                }
-              </ul>
-            </section>
-          }
-          @if (item.notes?.length) {
-            <section>
-              <h3>Notes</h3>
-              <ul>
-                @for (note of item.notes; track note) {
-                  <li>{{ note }}</li>
-                }
-              </ul>
-            </section>
-          }
-          <footer class="dialog-footer">
-            <span>{{ updatedLine(item) }}</span>
-            @if (editable()) {
               <button
                 type="button"
-                class="editor-primary"
+                aria-label="Close editor"
                 [disabled]="saving()"
-                [hidden]="!canEdit(item)" (click)="openEditor(item)"
+                (click)="closeEditor()"
               >
-                Edit work item
+                &#215;
               </button>
-            } @else if (dev() && canEdit(item)) {
-              <button type="button" class="editor-primary" [disabled]="saving()" (click)="openEditor(item)">
-                Edit ticket
-              </button>
-            } @else {
-              <strong>Read-only plan</strong>
-            }
-          </footer>
-        </div>
-      }
-    </dialog>
-    <dialog appScrollLock
-      #editorDialog
-      class="work-item-dialog editor-dialog"
-      aria-labelledby="editor-title"
-      (cancel)="cancelEditor($event)"
-      (pointerdown)="rememberDialogPointerStart($event)"
-      (click)="dismissDialogBackdrop($event, true)"
-    >
-      @if (draft; as form) {
-        <form class="dialog-shell" (ngSubmit)="saveDraft()">
-          <header class="dialog-header">
-            <div>
-              <span>{{ draftId ?? 'ID assigned on save' }}</span>
-              <h2 id="editor-title">
-                {{ dev() ? (draftId ? 'Edit ticket' : 'New ticket') : draftId ? 'Edit work item' : 'New work item' }}
-              </h2>
-            </div>
-            <button
-              type="button"
-              aria-label="Close editor"
-              [disabled]="saving()"
-              (click)="closeEditor()"
-            >
-              &#215;
-            </button>
-          </header>
-          <p class="editor-help">
-            @if (dev()) {
-              Saves go to the plan on DEV. Workflow columns track progress; delivery stages group
-              the scope.
-            } @else {
-              Saves update the private delivery-plan JSON, not Git. Workflow columns track progress;
-              delivery stages group the scope.
-            }
-          </p>
-          <fieldset class="editor-fields" [disabled]="saving()">
-            <label class="full-width"
-              >Title
-              <input name="title" [(ngModel)]="form.title" required maxlength="200" autofocus
-            /></label>
-            <label class="full-width"
-              >Outcome / description
-              <textarea
-                name="summary"
-                [(ngModel)]="form.summary"
-                required
-                maxlength="10000"
-                rows="4"
-              ></textarea>
-            </label>
-            <label
-              >Work type
-              <select name="type" [(ngModel)]="form.type">
-                @for (type of workItemTypes; track type.id) {
-                  <option [value]="type.id">{{ type.label }}</option>
-                }
-              </select></label
-            >
-            <label
-              >Priority
-              <select name="priority" [(ngModel)]="form.priorityId">
-                @for (priority of deliveryPlan.priorities; track priority.id) {
-                  <option [value]="priority.id">{{ priority.id }} · {{ priority.label }}</option>
-                }
-              </select></label
-            >
-            <label
-              >Delivery stage
-              <select name="stage" [(ngModel)]="form.stageId">
-                @for (stage of deliveryPlan.stages; track stage.id) {
-                  <option [value]="stage.id">{{ stage.order }} · {{ stage.title }}</option>
-                }
-              </select></label
-            >
-            @if (!dev() || draftId) {
-              <label
-                >Workflow column
-                <select name="status" [(ngModel)]="form.statusId">
-                  @for (status of deliveryPlan.workflow; track status.id) {
-                    <option [value]="status.id" [disabled]="!statusAllowed(status.id)">{{ status.label }}</option>
-                  }
-                </select></label
-              >
-            }
-            @if (!dev()) {
+            </header>
+            <p class="editor-help">
+              @if (dev()) {
+                Saves go to the plan on DEV. Workflow columns track progress; delivery stages group
+                the scope.
+              } @else {
+                Saves update the private delivery-plan JSON, not Git. Workflow columns track
+                progress; delivery stages group the scope.
+              }
+            </p>
+            <fieldset class="editor-fields" [disabled]="saving()">
               <label class="full-width"
-                >Acceptance criteria
-                <small>One testable outcome per line. At least one required.</small>
+                >Title
+                <input name="title" [(ngModel)]="form.title" required maxlength="200" autofocus
+              /></label>
+              <label class="full-width"
+                >Outcome / description
                 <textarea
-                  name="criteria"
-                  [(ngModel)]="form.acceptanceCriteria"
+                  name="summary"
+                  [(ngModel)]="form.summary"
                   required
+                  maxlength="10000"
                   rows="4"
                 ></textarea>
               </label>
-            }
-            @if (!dev() || draftId) {
-              <label class="full-width"
-                >Labels <small>Separate labels with commas.</small
-                ><input name="labels" [(ngModel)]="form.labels"
-              /></label>
-            }
-            @if (!dev()) {
               <label
-                >Depends on <small>Existing IDs, separated by commas.</small
-                ><input name="dependencies" [(ngModel)]="form.dependencies"
-              /></label>
+                >Work type
+                <select name="type" [(ngModel)]="form.type">
+                  @for (type of workItemTypes; track type.id) {
+                    <option [value]="type.id">{{ type.label }}</option>
+                  }
+                </select></label
+              >
               <label
-                >Blocked by <small>Existing IDs, separated by commas.</small
-                ><input name="blockers" [(ngModel)]="form.blockedBy"
-              /></label>
-            }
-            @if (!dev() || draftId) {
-              <label class="full-width"
-                >Notes <small>One note per line.</small
-                ><textarea name="notes" [(ngModel)]="form.notes" rows="3"></textarea>
-              </label>
-            }
-          </fieldset>
-          @if (saveError()) {
-            <div class="editor-error" role="alert">
-              <p>{{ saveError() }}</p>
-              @if (conflict()) {
-                <p>
-                  Your text is still in this form. You can keep editing or load the latest saved
-                  version.
-                </p>
-                <button type="button" class="editor-secondary" (click)="reloadDraft()">
-                  {{
-                    draftId
-                      ? 'Discard draft and load latest item'
-                      : 'Refresh revision and keep new item'
-                  }}
-                </button>
-              }
-            </div>
-          }
-          @if (discardRequested()) {
-            <div class="editor-error" role="alert">
-              <p>Discard your unsaved changes?</p>
-              <button type="button" class="editor-secondary" (click)="discardRequested.set(false)">
-                Keep editing
-              </button>
-              <button type="button" class="editor-secondary" (click)="closeEditor(true)">
-                Discard changes
-              </button>
-            </div>
-          }
-          <footer class="editor-actions">
-            <button
-              type="button"
-              class="editor-secondary"
-              [disabled]="saving()"
-              (click)="closeEditor()"
-            >
-              Cancel
-            </button>
-            <button type="submit" class="editor-primary" [disabled]="saving() || conflict()">
-              {{ saving() ? 'Saving...' : dev() ? 'Save ticket' : 'Save work item' }}
-            </button>
-          </footer>
-        </form>
-      }
-    </dialog>
-    <dialog appScrollLock
-      #uploadResultDialog
-      class="work-item-dialog upload-result-dialog"
-      (close)="uploadResult.set(null)"
-      (pointerdown)="rememberDialogPointerStart($event)"
-      (click)="dismissDialogBackdrop($event)"
-    >
-      @if (uploadResult(); as result) {
-        <div class="dialog-shell upload-result">
-          <header class="dialog-header">
-            <div>
-              <span>{{ result.source === 'upload' ? 'Upload plan file' : 'Sync plan inbox' }}</span>
-              <h2 id="upload-result-heading">Merged into DEV plan version {{ result.versionAfter }}</h2>
-            </div>
-            <button type="button" class="upload-result-close" aria-label="Close upload result" (click)="dismissUploadResult()">
-              &#215;
-            </button>
-          </header>
-          <div class="upload-result-body">
-            @if (result.fileName) {
-              <p class="upload-result-fact">
-                <strong>File sent:</strong>&ngsp;<code>{{ result.fileName }}</code>&ngsp;· {{ fileSize(result.fileSize) }}
-                @if (result.localVersion !== null) {
-                  · local version {{ result.localVersion }}, edited from DEV version {{ result.localBaseVersion ?? result.localVersion }}
-                }
-              </p>
-            }
-            <p class="upload-result-fact">
-              <strong>DEV plan:</strong>
-              @if (result.versionBefore !== null) {
-                version {{ result.versionBefore }} → <strong>{{ result.versionAfter }}</strong>
-              } @else {
-                now version <strong>{{ result.versionAfter }}</strong>
-              }
-              · {{ result.at }}
-            </p>
-            <ul class="upload-result-counts" aria-label="Merge counts">
-              <li class="count-conflicts" [class.zero]="!result.counts.conflicts"><strong>{{ result.counts.conflicts }}</strong> conflict{{ result.counts.conflicts === 1 ? '' : 's' }}</li>
-              <li class="count-added" [class.zero]="!result.counts.added"><strong>{{ result.counts.added }}</strong> added</li>
-              <li class="count-taken" [class.zero]="!result.counts.takenLocal"><strong>{{ result.counts.takenLocal }}</strong> updated from your file</li>
-              <li class="count-kept" [class.zero]="!result.counts.keptDev"><strong>{{ result.counts.keptDev }}</strong> kept from DEV</li>
-              <li class="count-unchanged"><strong>{{ result.counts.unchanged }}</strong> unchanged</li>
-              @if (result.counts.deletedOnDev) {
-                <li class="count-deleted"><strong>{{ result.counts.deletedOnDev }}</strong> deleted on DEV</li>
-              }
-            </ul>
-            @if (result.rows.length) {
-              <div class="table-scroll">
-                <table class="upload-result-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Ticket</th>
-                      <th scope="col">Title</th>
-                      <th scope="col">What happened</th>
-                      <th scope="col">What it means</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (row of result.rows; track row.id) {
-                      <tr [class]="'outcome-' + row.outcome">
-                        <td>
-                          @if (row.onDev) {
-                            <a routerLink="/delivery-plan/work" [fragment]="row.id" (click)="dismissUploadResult()">{{ row.id }}</a>
-                          } @else {
-                            {{ row.id }}
-                          }
-                        </td>
-                        <td>{{ row.title }}</td>
-                        <td><span class="outcome-pill">{{ row.label }}</span></td>
-                        <td>{{ row.hint }}</td>
-                      </tr>
+                >Priority
+                <select name="priority" [(ngModel)]="form.priorityId">
+                  @for (priority of deliveryPlan.priorities; track priority.id) {
+                    <option [value]="priority.id">{{ priority.id }} · {{ priority.label }}</option>
+                  }
+                </select></label
+              >
+              <label
+                >Delivery stage
+                <select name="stage" [(ngModel)]="form.stageId">
+                  @for (stage of deliveryPlan.stages; track stage.id) {
+                    <option [value]="stage.id">{{ stage.order }} · {{ stage.title }}</option>
+                  }
+                </select></label
+              >
+              @if (!dev() || draftId) {
+                <label
+                  >Workflow column
+                  <select name="status" [(ngModel)]="form.statusId">
+                    @for (status of deliveryPlan.workflow; track status.id) {
+                      <option [value]="status.id" [disabled]="!statusAllowed(status.id)">{{
+                        status.label
+                      }}</option>
                     }
-                  </tbody>
-                </table>
+                  </select></label
+                >
+              }
+              @if (!dev()) {
+                <label class="full-width"
+                  >Acceptance criteria
+                  <small>One testable outcome per line. At least one required.</small>
+                  <textarea
+                    name="criteria"
+                    [(ngModel)]="form.acceptanceCriteria"
+                    required
+                    rows="4"
+                  ></textarea>
+                </label>
+              }
+              @if (!dev() || draftId) {
+                <label class="full-width"
+                  >Labels <small>Separate labels with commas.</small
+                  ><input name="labels" [(ngModel)]="form.labels"
+                /></label>
+              }
+              @if (!dev()) {
+                <label
+                  >Depends on <small>Existing IDs, separated by commas.</small
+                  ><input name="dependencies" [(ngModel)]="form.dependencies"
+                /></label>
+                <label
+                  >Blocked by <small>Existing IDs, separated by commas.</small
+                  ><input name="blockers" [(ngModel)]="form.blockedBy"
+                /></label>
+              }
+              @if (!dev() || draftId) {
+                <label class="full-width"
+                  >Notes <small>One note per line.</small
+                  ><textarea name="notes" [(ngModel)]="form.notes" rows="3"></textarea>
+                </label>
+              }
+            </fieldset>
+            @if (saveError()) {
+              <div class="editor-error" role="alert">
+                <p>{{ saveError() }}</p>
+                @if (conflict()) {
+                  <p>
+                    Your text is still in this form. You can keep editing or load the latest saved
+                    version.
+                  </p>
+                  <button type="button" class="editor-secondary" (click)="reloadDraft()">
+                    {{
+                      draftId
+                        ? 'Discard draft and load latest item'
+                        : 'Refresh revision and keep new item'
+                    }}
+                  </button>
+                }
               </div>
-            } @else if (result.detailed) {
-              <p class="upload-result-fact">Nothing to change: every ticket in the file already matches DEV.</p>
-            } @else {
-              <p class="upload-result-fact">This DEV answered with counts only; deploy the current Domain to see the tickets.</p>
             }
+            @if (discardRequested()) {
+              <div class="editor-error" role="alert">
+                <p>Discard your unsaved changes?</p>
+                <button
+                  type="button"
+                  class="editor-secondary"
+                  (click)="discardRequested.set(false)"
+                >
+                  Keep editing
+                </button>
+                <button type="button" class="editor-secondary" (click)="closeEditor(true)">
+                  Discard changes
+                </button>
+              </div>
+            }
+            <footer class="editor-actions">
+              <button
+                type="button"
+                class="editor-secondary"
+                [disabled]="saving()"
+                (click)="closeEditor()"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="editor-primary" [disabled]="saving() || conflict()">
+                {{ saving() ? 'Saving...' : dev() ? 'Save ticket' : 'Save work item' }}
+              </button>
+            </footer>
+          </form>
+        }
+      </dialog>
+      <dialog
+        appScrollLock
+        #uploadResultDialog
+        class="work-item-dialog upload-result-dialog"
+        (close)="uploadResult.set(null)"
+        (pointerdown)="rememberDialogPointerStart($event)"
+        (click)="dismissDialogBackdrop($event)"
+      >
+        @if (uploadResult(); as result) {
+          <div class="dialog-shell upload-result">
+            <header class="dialog-header">
+              <div>
+                <span>{{
+                  result.source === 'upload' ? 'Upload plan file' : 'Sync plan inbox'
+                }}</span>
+                <h2 id="upload-result-heading"
+                  >Merged into DEV plan version {{ result.versionAfter }}</h2
+                >
+              </div>
+              <button
+                type="button"
+                class="upload-result-close"
+                aria-label="Close upload result"
+                (click)="dismissUploadResult()"
+              >
+                &#215;
+              </button>
+            </header>
+            <div class="upload-result-body">
+              @if (result.fileName) {
+                <p class="upload-result-fact">
+                  <strong>File sent:</strong>&ngsp;<code>{{ result.fileName }}</code
+                  >&ngsp;· {{ fileSize(result.fileSize) }}
+                  @if (result.localVersion !== null) {
+                    · local version {{ result.localVersion }}, edited from DEV version
+                    {{ result.localBaseVersion ?? result.localVersion }}
+                  }
+                </p>
+              }
+              <p class="upload-result-fact">
+                <strong>DEV plan:</strong>
+                @if (result.versionBefore !== null) {
+                  version {{ result.versionBefore }} → <strong>{{ result.versionAfter }}</strong>
+                } @else {
+                  now version <strong>{{ result.versionAfter }}</strong>
+                }
+                · {{ result.at }}
+              </p>
+              <ul class="upload-result-counts" aria-label="Merge counts">
+                <li class="count-conflicts" [class.zero]="!result.counts.conflicts"
+                  ><strong>{{ result.counts.conflicts }}</strong> conflict{{
+                    result.counts.conflicts === 1 ? '' : 's'
+                  }}</li
+                >
+                <li class="count-added" [class.zero]="!result.counts.added"
+                  ><strong>{{ result.counts.added }}</strong> added</li
+                >
+                <li class="count-taken" [class.zero]="!result.counts.takenLocal"
+                  ><strong>{{ result.counts.takenLocal }}</strong> updated from your file</li
+                >
+                <li class="count-kept" [class.zero]="!result.counts.keptDev"
+                  ><strong>{{ result.counts.keptDev }}</strong> kept from DEV</li
+                >
+                <li class="count-unchanged"
+                  ><strong>{{ result.counts.unchanged }}</strong> unchanged</li
+                >
+                @if (result.counts.deletedOnDev) {
+                  <li class="count-deleted"
+                    ><strong>{{ result.counts.deletedOnDev }}</strong> deleted on DEV</li
+                  >
+                }
+              </ul>
+              @if (result.rows.length) {
+                <div class="table-scroll">
+                  <table class="upload-result-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Ticket</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">What happened</th>
+                        <th scope="col">What it means</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of result.rows; track row.id) {
+                        <tr [class]="'outcome-' + row.outcome">
+                          <td>
+                            @if (row.onDev) {
+                              <a
+                                routerLink="/delivery-plan/work"
+                                [fragment]="row.id"
+                                (click)="dismissUploadResult()"
+                                >{{ row.id }}</a
+                              >
+                            } @else {
+                              {{ row.id }}
+                            }
+                          </td>
+                          <td>{{ row.title }}</td>
+                          <td
+                            ><span class="outcome-pill">{{ row.label }}</span></td
+                          >
+                          <td>{{ row.hint }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else if (result.detailed) {
+                <p class="upload-result-fact"
+                  >Nothing to change: every ticket in the file already matches DEV.</p
+                >
+              } @else {
+                <p class="upload-result-fact"
+                  >This DEV answered with counts only; deploy the current Domain to see the
+                  tickets.</p
+                >
+              }
+            </div>
+            <footer class="dialog-footer">
+              <button
+                type="button"
+                class="editor-secondary"
+                [disabled]="downloading()"
+                (click)="downloadDevPlan()"
+              >
+                Download DEV plan (version {{ result.versionAfter }})
+              </button>
+              <button type="button" class="editor-primary" (click)="dismissUploadResult()"
+                >Close</button
+              >
+            </footer>
           </div>
-          <footer class="dialog-footer">
-            <button type="button" class="editor-secondary" [disabled]="downloading()" (click)="downloadDevPlan()">
-              Download DEV plan (version {{ result.versionAfter }})
-            </button>
-            <button type="button" class="editor-primary" (click)="dismissUploadResult()">Close</button>
-          </footer>
-        </div>
-      }
-    </dialog>
-  } @else if (error()) {
-    <section class="delivery-state error" role="alert">
-      <span>Plan unavailable</span>
-      <h1>{{ errorTitle() }}</h1>
-      <p>{{ error() }}</p>
-    </section>
-  } @else {
-    <section class="delivery-state" aria-live="polite"><p>Loading delivery plan...</p></section>
-  }
+        }
+      </dialog>
+    } @else if (error()) {
+      <section class="delivery-state error" role="alert">
+        <span>Plan unavailable</span>
+        <h1>{{ errorTitle() }}</h1>
+        <p>{{ error() }}</p>
+      </section>
+    } @else {
+      <section class="delivery-state" aria-live="polite"><p>Loading delivery plan...</p></section>
+    }
   </div>
 </main>

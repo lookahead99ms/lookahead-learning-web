@@ -25,38 +25,46 @@ export const PURCHASE_STEPS: readonly PurchaseStep[] = [
   {
     title: 'See the plans',
     detail:
-      'Everyone can see prices: the plans section on the home page (before the Essence), “What you’re missing” on Start free, “See pricing” (opens the home page plans) or “See plans” on a locked lesson, and “Choose a plan” in Manage account. The header has no pricing link.',
+      'Everyone can see prices: the plans section on the home page (before the ' +
+      'Essence), “What you’re missing” on Start free, “See pricing” (opens the home page ' +
+      'plans) or “See plans” on a locked lesson, and “Choose a plan” in Manage account. ' +
+      'The header has no pricing link.',
     built: true,
     link: { label: 'Open Pricing', href: '/pricing' },
   },
   {
     title: 'Sign in, then choose a plan',
     detail:
-      'Buying needs an account: a signed-out visitor’s “Choose …” asks them to sign in or create an account, then brings them back. Offers with undecided terms have no button.',
+      'Buying needs an account: a signed-out visitor’s “Choose …” asks them to sign in ' +
+      'or create an account, then brings them back. Offers with undecided terms have no ' +
+      'button.',
     built: true,
     link: { label: 'See the Choose buttons', href: '/pricing' },
   },
   {
     title: 'Course Pass: pick 1–3 courses',
-    detail: 'Not designed yet: the Course Pass length is still undecided, so there is no course picker.',
+    detail:
+      'Not designed yet: the Course Pass length is still undecided, so there is no course picker.',
     built: false,
   },
   {
     title: 'Confirm a local mock payment',
-    detail:
-      'Local mock checkout is connected. No real Stripe requests or charges are made.',
+    detail: 'Local mock checkout is connected. No real Stripe requests or charges are made.',
     built: true,
   },
   {
     title: 'The server records the purchase and opens the courses',
     detail:
-      'Local server stores purchases and opens catalog access atomically after mock payment success. Existing staff grants remain separate.',
+      'Local server stores purchases and opens catalog access atomically after mock ' +
+      'payment success. Existing staff grants remain separate.',
     built: true,
   },
   {
     title: 'See it in Manage account, with Renew and Upgrade',
     detail:
-      'Built in the web app: each purchase shows what it includes, price paid, discount, dates and “Expires … · Manual renewal”. Manage Account reads server purchase records; the preview below is labelled sample data.',
+      'Built in the web app: each purchase shows what it includes, price paid, ' +
+      'discount, dates and “Expires … · Manual renewal”. Manage Account reads server ' +
+      'purchase records; the preview below is labelled sample data.',
     built: true,
     link: { label: 'Open Manage account', href: '/account' },
   },
@@ -110,20 +118,14 @@ const SAMPLE_RECORDS: readonly AccessRecord[] = [
 @Component({
   host: { class: 'admin-surface' },
   selector: 'app-admin-plans',
-  imports: [
-    PlatformHeader,
-    RouterLink,
-    AuthorAdminMenu,
-    AuthorWorkspaceNav,
-    AccountAccessRecords,
-  ],
+  imports: [PlatformHeader, RouterLink, AuthorAdminMenu, AuthorWorkspaceNav, AccountAccessRecords],
   templateUrl: './admin-plans.html',
   styleUrl: './admin-plans.css',
 })
 export class AdminPlansPage {
   protected readonly steps = PURCHASE_STEPS;
-  protected readonly api=inject(MembershipApi);
-  protected readonly rows = computed(()=>planCatalogRows(this.api.plans()));
+  protected readonly api = inject(MembershipApi);
+  protected readonly rows = computed(() => planCatalogRows(this.api.plans()));
   protected readonly rules = PLAN_RULES;
   protected readonly sampleRecords = SAMPLE_RECORDS.map((record) => accessRecordView(record)!);
   protected readonly outline: readonly AuthorOutlineItem[] = [

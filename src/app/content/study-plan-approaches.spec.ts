@@ -21,7 +21,11 @@ const sibling = {
   courseId: 'sample-course',
   questionId: 'grid-count-approach-2-route',
 };
-const self = { problemId: 'grid-count', title: 'Grid Count (Approach-1)', route: ['/', 'learn', 'sample-course', 'grid-count-route'] };
+const self = {
+  problemId: 'grid-count',
+  title: 'Grid Count (Approach-1)',
+  route: ['/', 'learn', 'sample-course', 'grid-count-route'],
+};
 
 describe('study plan approach families (DLV-962)', () => {
   const store = new Map<string, string>();
@@ -57,19 +61,33 @@ describe('study plan approach families (DLV-962)', () => {
       ['grid-count-approach-2', 2],
       ['grid-count-approach-3', 3],
     ]);
-    expect(members[1].route).toEqual(['/', 'learn', 'sample-course', 'grid-count-approach-2-route']);
+    expect(members[1].route).toEqual([
+      '/',
+      'learn',
+      'sample-course',
+      'grid-count-approach-2-route',
+    ]);
     expect(Object.keys(members[0]).sort()).toEqual(['approach', 'problemId', 'route', 'title']);
   });
 
   it('is empty for a problem without a family or with unusable siblings', () => {
     expect(planApproachMembers(self, null)).toEqual([]);
     expect(planApproachMembers(self, { approach: 1, siblings: [] })).toEqual([]);
-    expect(planApproachMembers(self, { approach: 1, siblings: [{ ...sibling, questionId: '' }] })).toEqual([]);
-    expect(planApproachMembers(self, { approach: 1, siblings: [{ ...sibling, problemId: 'grid-count' }] })).toEqual([]);
+    expect(
+      planApproachMembers(self, { approach: 1, siblings: [{ ...sibling, questionId: '' }] }),
+    ).toEqual([]);
+    expect(
+      planApproachMembers(self, {
+        approach: 1,
+        siblings: [{ ...sibling, problemId: 'grid-count' }],
+      }),
+    ).toEqual([]);
   });
 
   it('counts the plan problem as complete when any approach is complete', () => {
-    const families = new Map([['grid-count', planApproachMembers(self, { approach: 1, siblings: [sibling] })]]);
+    const families = new Map([
+      ['grid-count', planApproachMembers(self, { approach: 1, siblings: [sibling] })],
+    ]);
     expect([...approachCompletedIds(new Set(['grid-count-approach-2']), families)]).toEqual([
       'grid-count-approach-2',
       'grid-count',
@@ -80,8 +98,12 @@ describe('study plan approach families (DLV-962)', () => {
 
   it('remembers the chosen approach per plan item and survives broken storage', () => {
     rememberApproachChoice('local:browser', 'item-1', 'grid-count-approach-2');
-    expect(readApproachChoices()[approachChoiceKey('local:browser', 'item-1')]).toBe('grid-count-approach-2');
-    expect(rememberApproachChoice('local:browser', 'item-1', 'grid-count-approach-2')).toEqual(readApproachChoices());
+    expect(readApproachChoices()[approachChoiceKey('local:browser', 'item-1')]).toBe(
+      'grid-count-approach-2',
+    );
+    expect(rememberApproachChoice('local:browser', 'item-1', 'grid-count-approach-2')).toEqual(
+      readApproachChoices(),
+    );
     store.set(APPROACH_CHOICE_KEY, '[1]');
     expect(readApproachChoices()).toEqual({});
     store.set(APPROACH_CHOICE_KEY, '{bad');
@@ -89,12 +111,16 @@ describe('study plan approach families (DLV-962)', () => {
     store.set(APPROACH_CHOICE_KEY, JSON.stringify({ a: 'x', b: 3 }));
     expect(readApproachChoices()).toEqual({ a: 'x' });
     failWrites = true;
-    expect(rememberApproachChoice('local:browser', 'item-2', 'grid-count')['local:browser|item-2']).toBe('grid-count');
+    expect(
+      rememberApproachChoice('local:browser', 'item-2', 'grid-count')['local:browser|item-2'],
+    ).toBe('grid-count');
   });
 
   function service(content: Record<string, unknown>) {
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [{ provide: ContentService, useValue: content as never }] });
+    TestBed.configureTestingModule({
+      providers: [{ provide: ContentService, useValue: content as never }],
+    });
     return TestBed.inject(StudyPlanApproaches);
   }
 
@@ -102,10 +128,17 @@ describe('study plan approach families (DLV-962)', () => {
     const getDsaProblem = vi.fn();
     const approaches = service({
       getHandsOnDsaIndex: () =>
-        of({ approachFamilies: { 'grid-count': { approach: 1, bestProblemId: 'grid-count', siblings: [sibling] } } } as never),
+        of({
+          approachFamilies: {
+            'grid-count': { approach: 1, bestProblemId: 'grid-count', siblings: [sibling] },
+          },
+        } as never),
       getDsaProblem,
     });
-    await approaches.resolve([self, { problemId: 'plain', title: 'Plain', route: ['/', 'learn', 'x', 'plain'] }], []);
+    await approaches.resolve(
+      [self, { problemId: 'plain', title: 'Plain', route: ['/', 'learn', 'x', 'plain'] }],
+      [],
+    );
     expect([...approaches.families().keys()]).toEqual(['grid-count']);
     expect(getDsaProblem).not.toHaveBeenCalled();
     await approaches.resolve([self]);
@@ -117,15 +150,25 @@ describe('study plan approach families (DLV-962)', () => {
   it('falls back to the visible problems details when the index predates families', async () => {
     const getDsaProblem = vi.fn((id: string) =>
       id === 'grid-count'
-        ? of({ approachFamily: { approach: 1, bestProblemId: 'grid-count', siblings: [sibling] } } as never)
+        ? of({
+            approachFamily: { approach: 1, bestProblemId: 'grid-count', siblings: [sibling] },
+          } as never)
         : throwError(() => new Error('missing')),
     );
-    const approaches = service({ getHandsOnDsaIndex: () => of({ groups: [] } as never), getDsaProblem });
+    const approaches = service({
+      getHandsOnDsaIndex: () => of({ groups: [] } as never),
+      getDsaProblem,
+    });
     const hidden = { problemId: 'hidden', title: 'Hidden', route: ['/', 'learn', 'x', 'hidden'] };
     const broken = { problemId: 'broken', title: 'Broken', route: ['/', 'learn', 'x', 'broken'] };
     await approaches.resolve([self, hidden, broken], [self, broken]);
     expect(getDsaProblem.mock.calls.map(([id]) => id)).toEqual(['grid-count', 'broken']);
-    expect(approaches.families().get('grid-count')?.map(({ approach }) => approach)).toEqual([1, 2]);
+    expect(
+      approaches
+        .families()
+        .get('grid-count')
+        ?.map(({ approach }) => approach),
+    ).toEqual([1, 2]);
   });
 
   it('treats an unavailable index like an old one', async () => {

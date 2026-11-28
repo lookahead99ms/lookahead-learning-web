@@ -96,19 +96,22 @@ describe('StudyPlanPage', () => {
     }).compileComponents();
   });
 
-  it('uses the explicit activation date and blocks lifecycle changes while edits are locked', async () => {
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    const store = TestBed.inject(StudyPlanAccount);
-    const mutation = vi.spyOn(store, 'lifecycle').mockResolvedValue(null);
-    vi.spyOn(page, 'editsLocked').mockReturnValue(false);
-    page.startDate.set('2026-10-14');
-    await page.changeLifecycle('active');
-    expect(mutation).toHaveBeenCalledWith('active', '2026-10-14');
-    vi.mocked(page.editsLocked).mockReturnValue(true);
-    await page.changeLifecycle('archived');
-    expect(mutation).toHaveBeenCalledTimes(1);
-  });
+  it(
+    'uses the explicit activation date and blocks lifecycle changes while edits are ' + 'locked',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      const store = TestBed.inject(StudyPlanAccount);
+      const mutation = vi.spyOn(store, 'lifecycle').mockResolvedValue(null);
+      vi.spyOn(page, 'editsLocked').mockReturnValue(false);
+      page.startDate.set('2026-10-14');
+      await page.changeLifecycle('active');
+      expect(mutation).toHaveBeenCalledWith('active', '2026-10-14');
+      vi.mocked(page.editsLocked).mockReturnValue(true);
+      await page.changeLifecycle('archived');
+      expect(mutation).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('updates the suggested name until edited and preserves the entire custom name', async () => {
     const harness = await RouterTestingHarness.create();
@@ -147,64 +150,67 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('[aria-label="Rename plan"]')).not.toBeNull();
   });
 
-  it('keeps Study Desk browsing independent from saved progress and records the activity day', async () => {
-    TestBed.overrideProvider(ContentService, {
-      useValue: {
-        ...service,
-        getSearchIndex: () =>
-          of([
-            document('first-lesson', 'core-java', 'free'),
-            document('second-lesson', 'core-java', 'free'),
-          ]),
-      },
-    });
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl(
-      '/study-plan?days=7&hours=1&approach=learning',
-      StudyPlanPage,
-    );
-    await page.generatePlan();
-    await page.saveDraft();
-    harness.detectChanges();
-    const root = harness.routeNativeElement!;
-    const before = JSON.stringify(page.saved());
-    const snapshot = JSON.stringify(page.saved().snapshot);
-    const resumeId = page.deskResume().assignment.id;
-    const items = root.querySelectorAll<HTMLButtonElement>('app-study-desk .item-link');
-    expect(items.length).toBe(2);
-    items[1].click();
-    harness.detectChanges();
-    await harness.fixture.whenStable();
-    expect(JSON.stringify(page.saved())).toBe(before);
-    expect(page.deskResume().assignment.id).toBe(resumeId);
-    const selectedId = root
-      .querySelector('.activity-card.current')!
-      .getAttribute('data-desk-activity');
-    const selectedEntry = page
-      .deskEntries()
-      .find((entry: any) => entry.assignment.id === selectedId);
-    expect(page.selectedDay()).toBe(selectedEntry.query.day);
-    root.querySelector<HTMLButtonElement>(`[data-desk-action="complete-${selectedId}"]`)!.click();
-    harness.detectChanges();
-    expect(page.saved().completedIds).toContain(selectedId);
-    expect(page.saved().studyLog.at(-1).day).toBe(selectedEntry.query.day);
-    expect(JSON.stringify(page.saved().snapshot)).toBe(snapshot);
-    const savedProgress = JSON.stringify(page.saved());
-    await harness.navigateByUrl('/exit', PlannerExit);
-    const restored: any = await harness.navigateByUrl(
-      `/study-plan?plan=browser&day=${selectedEntry.query.day}&activity=${selectedId}`,
-      StudyPlanPage,
-    );
-    harness.detectChanges();
-    expect(JSON.stringify(restored.saved())).toBe(savedProgress);
-    expect(
-      harness
-        .routeNativeElement!.querySelector('.activity-card.current')!
-        .getAttribute('data-desk-activity'),
-    ).toBe(selectedId);
-  });
+  it(
+    'keeps Study Desk browsing independent from saved progress and records the activity ' + 'day',
+    async () => {
+      TestBed.overrideProvider(ContentService, {
+        useValue: {
+          ...service,
+          getSearchIndex: () =>
+            of([
+              document('first-lesson', 'core-java', 'free'),
+              document('second-lesson', 'core-java', 'free'),
+            ]),
+        },
+      });
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl(
+        '/study-plan?days=7&hours=1&approach=learning',
+        StudyPlanPage,
+      );
+      await page.generatePlan();
+      await page.saveDraft();
+      harness.detectChanges();
+      const root = harness.routeNativeElement!;
+      const before = JSON.stringify(page.saved());
+      const snapshot = JSON.stringify(page.saved().snapshot);
+      const resumeId = page.deskResume().assignment.id;
+      const items = root.querySelectorAll<HTMLButtonElement>('app-study-desk .item-link');
+      expect(items.length).toBe(2);
+      items[1].click();
+      harness.detectChanges();
+      await harness.fixture.whenStable();
+      expect(JSON.stringify(page.saved())).toBe(before);
+      expect(page.deskResume().assignment.id).toBe(resumeId);
+      const selectedId = root
+        .querySelector('.activity-card.current')!
+        .getAttribute('data-desk-activity');
+      const selectedEntry = page
+        .deskEntries()
+        .find((entry: any) => entry.assignment.id === selectedId);
+      expect(page.selectedDay()).toBe(selectedEntry.query.day);
+      root.querySelector<HTMLButtonElement>(`[data-desk-action="complete-${selectedId}"]`)!.click();
+      harness.detectChanges();
+      expect(page.saved().completedIds).toContain(selectedId);
+      expect(page.saved().studyLog.at(-1).day).toBe(selectedEntry.query.day);
+      expect(JSON.stringify(page.saved().snapshot)).toBe(snapshot);
+      const savedProgress = JSON.stringify(page.saved());
+      await harness.navigateByUrl('/exit', PlannerExit);
+      const restored: any = await harness.navigateByUrl(
+        `/study-plan?plan=browser&day=${selectedEntry.query.day}&activity=${selectedId}`,
+        StudyPlanPage,
+      );
+      harness.detectChanges();
+      expect(JSON.stringify(restored.saved())).toBe(savedProgress);
+      expect(
+        harness
+          .routeNativeElement!.querySelector('.activity-card.current')!
+          .getAttribute('data-desk-activity'),
+      ).toBe(selectedId);
+    },
+  );
 
-  it('shows a scroll cue only while review content remains and keeps the draft temporary', async () => {
+  it('shows a scroll cue only while review content remains; draft stays temporary', async () => {
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
     await page.generatePlan();
@@ -340,63 +346,67 @@ describe('StudyPlanPage', () => {
     return { page, harness, account: TestBed.inject(StudyPlanAccount) };
   }
 
-  it('dismisses only a backdrop click while preserving the draft, selections, saved work and opener focus', async () => {
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
-    await page.goToWizardStep('review');
-    harness.detectChanges();
-    const opener = [
-      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('button'),
-    ].find((button) => button.textContent?.includes('Review complete schedule'))!;
-    opener.focus();
-    await page.generatePlan();
-    harness.detectChanges();
-    const dialog =
-      harness.routeNativeElement!.querySelector<HTMLDialogElement>('.draft-review-dialog')!;
-    Object.defineProperty(dialog, 'close', { configurable: true, value: vi.fn() });
-    vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
-      left: 100,
-      right: 700,
-      top: 100,
-      bottom: 700,
-    } as DOMRect);
-    const draft = page.draft();
-    const selected = [...page.selectedTopicIds()];
-    const save = vi.spyOn(TestBed.inject(StudyPlanAccount), 'save');
-    const persist = vi.spyOn(window.localStorage, 'setItem');
-    const clickAt = (target: Element, x: number, y: number) => {
-      target.dispatchEvent(
-        new MouseEvent('pointerdown', { bubbles: true, clientX: x, clientY: y }),
+  it(
+    'dismisses only a backdrop click while preserving the draft, selections, saved work ' +
+      'and opener focus',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
+      await page.goToWizardStep('review');
+      harness.detectChanges();
+      const opener = [
+        ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('button'),
+      ].find((button) => button.textContent?.includes('Review complete schedule'))!;
+      opener.focus();
+      await page.generatePlan();
+      harness.detectChanges();
+      const dialog =
+        harness.routeNativeElement!.querySelector<HTMLDialogElement>('.draft-review-dialog')!;
+      Object.defineProperty(dialog, 'close', { configurable: true, value: vi.fn() });
+      vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+        left: 100,
+        right: 700,
+        top: 100,
+        bottom: 700,
+      } as DOMRect);
+      const draft = page.draft();
+      const selected = [...page.selectedTopicIds()];
+      const save = vi.spyOn(TestBed.inject(StudyPlanAccount), 'save');
+      const persist = vi.spyOn(window.localStorage, 'setItem');
+      const clickAt = (target: Element, x: number, y: number) => {
+        target.dispatchEvent(
+          new MouseEvent('pointerdown', { bubbles: true, clientX: x, clientY: y }),
+        );
+        target.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
+      };
+      clickAt(dialog.querySelector('.draft-scroll-body')!, 200, 200);
+      clickAt(dialog, 110, 110); // Padding inside the dialog is not the backdrop.
+      expect(dialog.close).not.toHaveBeenCalled();
+      dialog.dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, clientX: 200, clientY: 200 }),
       );
-      target.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
-    };
-    clickAt(dialog.querySelector('.draft-scroll-body')!, 200, 200);
-    clickAt(dialog, 110, 110); // Padding inside the dialog is not the backdrop.
-    expect(dialog.close).not.toHaveBeenCalled();
-    dialog.dispatchEvent(
-      new MouseEvent('pointerdown', { bubbles: true, clientX: 200, clientY: 200 }),
-    );
-    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 20, clientY: 20 }));
-    expect(dialog.close).not.toHaveBeenCalled(); // Dragging out must not dismiss.
-    clickAt(dialog, 20, 20);
-    expect(dialog.close).toHaveBeenCalledOnce();
-    expect(page.draft()).toBe(draft);
-    expect([...page.selectedTopicIds()]).toEqual(selected);
-    expect(page.days()).toBe(7);
-    expect(page.dailyHours()).toBe(1);
-    expect(page.saved()).toBeNull();
-    expect(save).not.toHaveBeenCalled();
-    expect(persist).not.toHaveBeenCalled();
-    expect(dialog.ownerDocument.activeElement).toBe(opener);
-    const cancel = new Event('cancel', { cancelable: true });
-    dialog.dispatchEvent(cancel);
-    expect(cancel.defaultPrevented).toBe(true);
-    expect(page.draft()).toBe(draft);
-    page.goal.set('Revised direction');
-    await page.generatePlan();
-    expect(page.draft().goal).toBe('Revised direction');
-    expect(page.saved()).toBeNull();
-  });
+      dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 20, clientY: 20 }));
+      expect(dialog.close).not.toHaveBeenCalled(); // Dragging out must not dismiss.
+      clickAt(dialog, 20, 20);
+      expect(dialog.close).toHaveBeenCalledOnce();
+      expect(page.draft()).toBe(draft);
+      expect([...page.selectedTopicIds()]).toEqual(selected);
+      expect(page.days()).toBe(7);
+      expect(page.dailyHours()).toBe(1);
+      expect(page.saved()).toBeNull();
+      expect(save).not.toHaveBeenCalled();
+      expect(persist).not.toHaveBeenCalled();
+      expect(dialog.ownerDocument.activeElement).toBe(opener);
+      const cancel = new Event('cancel', { cancelable: true });
+      dialog.dispatchEvent(cancel);
+      expect(cancel.defaultPrevented).toBe(true);
+      expect(page.draft()).toBe(draft);
+      page.goal.set('Revised direction');
+      await page.generatePlan();
+      expect(page.draft().goal).toBe('Revised direction');
+      expect(page.saved()).toBeNull();
+    },
+  );
 
   it('keeps saved progress and the draft intact during dismissal and saving locks', async () => {
     const { page, harness, account } = await adjustmentPage();
@@ -426,31 +436,35 @@ describe('StudyPlanPage', () => {
   });
 
   for (const method of ['Close', 'Escape']) {
-    it(`${method} closes the review without declining or changing saved work, including after reload`, async () => {
-      const { page, harness } = await adjustmentPage();
-      const before = JSON.stringify(page.saved());
-      page.reviewAdjustment();
-      harness.detectChanges();
-      const dialog = harness.routeNativeElement!.querySelector('.recovery-dialog')!;
-      if (method === 'Escape') dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
-      else
-        [...dialog.querySelectorAll('button')]
-          .find((button) => button.textContent?.trim() === 'Close adjustments')!
-          .click();
-      harness.detectChanges();
-      expect(page.recoveryPreview()).toBeNull();
-      expect(page.adjustmentNotice()).toBe(true);
-      expect(page.visibleStatus()).not.toContain('Plan retained');
-      expect(JSON.stringify(page.saved())).toBe(before);
-      expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
-      await harness.navigateByUrl('/exit', PlannerExit);
-      const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
-      harness.detectChanges();
-      expect(restored.adjustmentNotice()).toBe(true);
-    });
+    it(
+      `${method} closes the review without declining or changing saved work, including ` +
+        `after reload`,
+      async () => {
+        const { page, harness } = await adjustmentPage();
+        const before = JSON.stringify(page.saved());
+        page.reviewAdjustment();
+        harness.detectChanges();
+        const dialog = harness.routeNativeElement!.querySelector('.recovery-dialog')!;
+        if (method === 'Escape') dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+        else
+          [...dialog.querySelectorAll('button')]
+            .find((button) => button.textContent?.trim() === 'Close adjustments')!
+            .click();
+        harness.detectChanges();
+        expect(page.recoveryPreview()).toBeNull();
+        expect(page.adjustmentNotice()).toBe(true);
+        expect(page.visibleStatus()).not.toContain('Plan retained');
+        expect(JSON.stringify(page.saved())).toBe(before);
+        expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
+        await harness.navigateByUrl('/exit', PlannerExit);
+        const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
+        harness.detectChanges();
+        expect(restored.adjustmentNotice()).toBe(true);
+      },
+    );
   }
 
-  it('does not retain a stale proposal or announce an earlier decision for a changed plan', async () => {
+  it('keeps no stale proposal and announces no earlier decision for a changed plan', async () => {
     const { page } = await adjustmentPage();
     page.reviewAdjustment();
     const original = page.saved();
@@ -464,7 +478,7 @@ describe('StudyPlanPage', () => {
     expect(page.visibleStatus()).toBe('');
   });
 
-  it('keeps plan adjustment actions at the top without restoring the removed notice panel', async () => {
+  it('keeps plan adjustment actions at the top without the removed notice panel', async () => {
     const { page, harness, account } = await adjustmentPage();
     Object.defineProperty(account, 'enabled', { value: true });
     page.accountMode.set(true);
@@ -596,7 +610,7 @@ describe('StudyPlanPage', () => {
     expect(page.authorScenarioStatus()).toContain('does not contain');
   });
 
-  it('renders every owned card without selecting a plan or inferring progress from dates', async () => {
+  it('renders every owned card without selecting a plan or inferring progress', async () => {
     const { page, harness, account } = await adjustmentPage();
     page.accountMode.set(true);
     account.account.set({ accountId: 'a', username: 'a', displayName: 'A', topicGrants: [] });
@@ -658,8 +672,12 @@ describe('StudyPlanPage', () => {
       'Continue plan: Plan 0',
     );
     expect(cards[0].textContent).not.toContain('Course access needed');
-    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain('Plan 1');
-    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain('Course access needed');
+    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain(
+      'Plan 1',
+    );
+    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain(
+      'Course access needed',
+    );
     const disclosure = focus.querySelector('summary') as HTMLElement;
     disclosure.click();
     harness.detectChanges();
@@ -672,7 +690,9 @@ describe('StudyPlanPage', () => {
     });
     page.askDeletePlan(account.plans()[0]);
     harness.detectChanges();
-    expect(harness.routeNativeElement!.querySelector('.plan-delete-dialog')?.textContent).toContain('cannot be undone');
+    expect(harness.routeNativeElement!.querySelector('.plan-delete-dialog')?.textContent).toContain(
+      'cannot be undone',
+    );
     await page.confirmDeletePlan();
     expect(deletion).toHaveBeenCalledWith('p0', 1);
     expect(account.plans()).toHaveLength(4);
@@ -720,39 +740,43 @@ describe('StudyPlanPage', () => {
     page.closeRecovery();
   });
 
-  it('offers only a temporary adjustment on entry and remembers Keep current plan across reload', async () => {
-    const { page, harness } = await adjustmentPage();
-    const before = JSON.stringify(page.saved());
-    expect(page.adjustmentNotice()).toBe(true);
-    expect(harness.routeNativeElement!.querySelector('dialog[open]')).toBeNull();
-    page.reviewAdjustment();
-    harness.detectChanges();
-    expect(page.recoveryPreview().moved).toContainEqual({
-      assignmentId: 'java',
-      fromDay: 3,
-      toDay: 6,
-    });
-    expect(harness.routeNativeElement!.textContent).toContain('Day 3 to day 6');
-    expect(JSON.stringify(page.saved())).toBe(before);
-    page.keepCurrentPlan();
-    expect(page.adjustmentNotice()).toBe(false);
-    expect(page.visibleStatus()).toContain('Plan retained');
-    expect(globalThis.document.activeElement?.id).toBe('desk-day-heading');
-    expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
-    await harness.navigateByUrl('/exit', PlannerExit);
-    const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
-    harness.detectChanges();
-    expect(restored.saved()).not.toBeNull();
-    expect(restored.adjustmentNotice()).toBe(false);
-    expect(harness.routeNativeElement!.querySelector('.plan-level-actions')).not.toBeNull();
-    restored.saved.set({ ...restored.saved(), revision: restored.saved().revision + 1 });
-    expect(restored.adjustmentNotice()).toBe(true);
-    restored.dismissAdjustment();
-    restored.saved.set({ ...restored.saved(), revision: restored.saved().revision - 1 });
-    expect(restored.adjustmentNotice()).toBe(false);
-  });
+  it(
+    'offers only a temporary adjustment on entry and remembers Keep current plan across ' +
+      'reload',
+    async () => {
+      const { page, harness } = await adjustmentPage();
+      const before = JSON.stringify(page.saved());
+      expect(page.adjustmentNotice()).toBe(true);
+      expect(harness.routeNativeElement!.querySelector('dialog[open]')).toBeNull();
+      page.reviewAdjustment();
+      harness.detectChanges();
+      expect(page.recoveryPreview().moved).toContainEqual({
+        assignmentId: 'java',
+        fromDay: 3,
+        toDay: 6,
+      });
+      expect(harness.routeNativeElement!.textContent).toContain('Day 3 to day 6');
+      expect(JSON.stringify(page.saved())).toBe(before);
+      page.keepCurrentPlan();
+      expect(page.adjustmentNotice()).toBe(false);
+      expect(page.visibleStatus()).toContain('Plan retained');
+      expect(globalThis.document.activeElement?.id).toBe('desk-day-heading');
+      expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
+      await harness.navigateByUrl('/exit', PlannerExit);
+      const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
+      harness.detectChanges();
+      expect(restored.saved()).not.toBeNull();
+      expect(restored.adjustmentNotice()).toBe(false);
+      expect(harness.routeNativeElement!.querySelector('.plan-level-actions')).not.toBeNull();
+      restored.saved.set({ ...restored.saved(), revision: restored.saved().revision + 1 });
+      expect(restored.adjustmentNotice()).toBe(true);
+      restored.dismissAdjustment();
+      restored.saved.set({ ...restored.saved(), revision: restored.saved().revision - 1 });
+      expect(restored.adjustmentNotice()).toBe(false);
+    },
+  );
 
-  it('isolates dismissal by owner and plan and invalidates a review after progress changes', async () => {
+  it('isolates dismissal by owner and plan; a progress change invalidates a review', async () => {
     const { page, account } = await adjustmentPage();
     page.accountMode.set(true);
     account.account.set({
@@ -784,129 +808,139 @@ describe('StudyPlanPage', () => {
     expect(page.status()).toContain('Review a fresh adjustment');
   });
 
-  it('applies a reviewed local adjustment once and preserves the current plan on storage failure', async () => {
-    const { page } = await adjustmentPage();
-    page.reviewAdjustment();
-    const before = JSON.stringify(page.saved());
-    const persist = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
-      throw new Error('full');
-    });
-    await page.confirmRecovery();
-    expect(JSON.stringify(page.saved())).toBe(before);
-    expect(page.recoveryPreview()).not.toBeNull();
-    expect(page.status()).not.toContain('Plan updated');
-    persist.mockRestore();
-    const revision = page.saved().revision;
-    await page.confirmRecovery();
-    await page.confirmRecovery();
-    expect(page.saved().revision).toBe(revision + 1);
-    expect(
-      page
-        .saved()
-        .snapshot.days[5].assignments.some((a: any) => a.id === 'java' && a.minutes === 50),
-    ).toBe(true);
-    expect(page.saved().completedIds).toEqual(['execution']);
-    expect(page.status()).toContain('Plan updated');
-    expect(JSON.parse(localStorage.getItem('look-ahead.study-plan.v1')!).revision).toBe(
-      revision + 1,
-    );
-  });
-
-  it('keeps an uncertain account proposal and blocks conflict retry until reload and review', async () => {
-    const { page, account } = await adjustmentPage();
-    page.accountMode.set(true);
-    account.account.set({
-      accountId: 'a',
-      username: 'a',
-      displayName: 'A',
-      topicGrants: ['learn:core-java'],
-    });
-    page.reviewAdjustment();
-    const before = JSON.stringify(page.saved());
-    const proposal = page.recoveryPreview();
-    const save = vi.spyOn(account, 'save').mockImplementation(async () => {
-      account.pending.set(true);
-      account.errorStatus.set(409);
-      account.error.set('Changed elsewhere');
-      return null;
-    });
-    const retry = vi.spyOn(account, 'retry').mockResolvedValue(null);
-    await page.confirmRecovery();
-    await page.confirmRecovery();
-    await page.retryAccountSave();
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(retry).not.toHaveBeenCalled();
-    expect(JSON.stringify(page.saved())).toBe(before);
-    expect(page.recoveryPreview()).toBe(proposal);
-    expect(page.status()).not.toContain('Plan updated');
-    account.discardPending();
-    page.reviewAdjustment();
-    await page.confirmRecovery();
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(page.adjustmentStale()).toBe(true);
-  });
-
-  it('waits for the account acknowledgement before refreshing the plan or reporting success', async () => {
-    const { page, account } = await adjustmentPage();
-    page.accountMode.set(true);
-    account.account.set({
-      accountId: 'a',
-      username: 'a',
-      displayName: 'A',
-      topicGrants: ['learn:core-java'],
-    });
-    page.reviewAdjustment();
-    const original = page.saved(),
-      proposed = page.recoveryPreview().snapshot;
-    let acknowledge!: (value: any) => void;
-    const save = vi.spyOn(account, 'save').mockImplementation(() => {
-      account.busy.set(true);
-      return new Promise((resolve) => {
-        acknowledge = resolve;
+  it(
+    'applies a reviewed local adjustment once and preserves the current plan on storage ' +
+      'failure',
+    async () => {
+      const { page } = await adjustmentPage();
+      page.reviewAdjustment();
+      const before = JSON.stringify(page.saved());
+      const persist = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('full');
       });
-    });
-    const applying = page.confirmRecovery();
-    await page.confirmRecovery();
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(page.saved()).toBe(original);
-    expect(page.status()).not.toContain('Plan updated');
-    account.busy.set(false);
-    acknowledge({
-      planId: 'plan-a',
-      versionId: 'v2',
-      revision: original.revision + 1,
-      goal: original.goal,
-      snapshot: proposed,
-      provenance: {
-        algorithmVersion: proposed.schedulingVersion ?? null,
-        catalogVersion: null,
-        rankingVersion: null,
-      },
-      progress: {
-        completedContentIds: ['execution'],
-        completedSessionIds: ['execution'],
-        attemptedContentIds: [],
-        needsReviewContentIds: [],
-        notes: {},
-        sessionOutcomes: {},
-        studyLog: [],
-      },
-      recovery: {
-        strategy: 'fixed-window',
-        elapsedDays: 3,
-        deadlineDays: 7,
-        deferredContentIds: [],
-        deferredSessions: [],
-      },
-      createdAt: '2026-09-11T12:00:00Z',
-      updatedAt: '2026-09-11T13:00:00Z',
-    });
-    await applying;
-    expect(page.saved().revision).toBe(original.revision + 1);
-    expect(page.saved().snapshot).toEqual(proposed);
-    expect(page.status()).toBe('Plan updated. Your adjustment is saved.');
-    expect(page.recoveryPreview()).toBeNull();
-  });
+      await page.confirmRecovery();
+      expect(JSON.stringify(page.saved())).toBe(before);
+      expect(page.recoveryPreview()).not.toBeNull();
+      expect(page.status()).not.toContain('Plan updated');
+      persist.mockRestore();
+      const revision = page.saved().revision;
+      await page.confirmRecovery();
+      await page.confirmRecovery();
+      expect(page.saved().revision).toBe(revision + 1);
+      expect(
+        page
+          .saved()
+          .snapshot.days[5].assignments.some((a: any) => a.id === 'java' && a.minutes === 50),
+      ).toBe(true);
+      expect(page.saved().completedIds).toEqual(['execution']);
+      expect(page.status()).toContain('Plan updated');
+      expect(JSON.parse(localStorage.getItem('look-ahead.study-plan.v1')!).revision).toBe(
+        revision + 1,
+      );
+    },
+  );
+
+  it(
+    'keeps an uncertain account proposal and blocks conflict retry until reload and ' + 'review',
+    async () => {
+      const { page, account } = await adjustmentPage();
+      page.accountMode.set(true);
+      account.account.set({
+        accountId: 'a',
+        username: 'a',
+        displayName: 'A',
+        topicGrants: ['learn:core-java'],
+      });
+      page.reviewAdjustment();
+      const before = JSON.stringify(page.saved());
+      const proposal = page.recoveryPreview();
+      const save = vi.spyOn(account, 'save').mockImplementation(async () => {
+        account.pending.set(true);
+        account.errorStatus.set(409);
+        account.error.set('Changed elsewhere');
+        return null;
+      });
+      const retry = vi.spyOn(account, 'retry').mockResolvedValue(null);
+      await page.confirmRecovery();
+      await page.confirmRecovery();
+      await page.retryAccountSave();
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(retry).not.toHaveBeenCalled();
+      expect(JSON.stringify(page.saved())).toBe(before);
+      expect(page.recoveryPreview()).toBe(proposal);
+      expect(page.status()).not.toContain('Plan updated');
+      account.discardPending();
+      page.reviewAdjustment();
+      await page.confirmRecovery();
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(page.adjustmentStale()).toBe(true);
+    },
+  );
+
+  it(
+    'waits for the account acknowledgement before refreshing the plan or reporting ' + 'success',
+    async () => {
+      const { page, account } = await adjustmentPage();
+      page.accountMode.set(true);
+      account.account.set({
+        accountId: 'a',
+        username: 'a',
+        displayName: 'A',
+        topicGrants: ['learn:core-java'],
+      });
+      page.reviewAdjustment();
+      const original = page.saved(),
+        proposed = page.recoveryPreview().snapshot;
+      let acknowledge!: (value: any) => void;
+      const save = vi.spyOn(account, 'save').mockImplementation(() => {
+        account.busy.set(true);
+        return new Promise((resolve) => {
+          acknowledge = resolve;
+        });
+      });
+      const applying = page.confirmRecovery();
+      await page.confirmRecovery();
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(page.saved()).toBe(original);
+      expect(page.status()).not.toContain('Plan updated');
+      account.busy.set(false);
+      acknowledge({
+        planId: 'plan-a',
+        versionId: 'v2',
+        revision: original.revision + 1,
+        goal: original.goal,
+        snapshot: proposed,
+        provenance: {
+          algorithmVersion: proposed.schedulingVersion ?? null,
+          catalogVersion: null,
+          rankingVersion: null,
+        },
+        progress: {
+          completedContentIds: ['execution'],
+          completedSessionIds: ['execution'],
+          attemptedContentIds: [],
+          needsReviewContentIds: [],
+          notes: {},
+          sessionOutcomes: {},
+          studyLog: [],
+        },
+        recovery: {
+          strategy: 'fixed-window',
+          elapsedDays: 3,
+          deadlineDays: 7,
+          deferredContentIds: [],
+          deferredSessions: [],
+        },
+        createdAt: '2026-09-11T12:00:00Z',
+        updatedAt: '2026-09-11T13:00:00Z',
+      });
+      await applying;
+      expect(page.saved().revision).toBe(original.revision + 1);
+      expect(page.saved().snapshot).toEqual(proposed);
+      expect(page.status()).toBe('Plan updated. Your adjustment is saved.');
+      expect(page.recoveryPreview()).toBeNull();
+    },
+  );
 
   it('does not suggest during loading, access failure or an unavailable account', async () => {
     const { page, account } = await adjustmentPage();
@@ -949,17 +983,29 @@ describe('StudyPlanPage', () => {
       .join('\n')
       .replace(/\s+/g, ' ');
     expect(css).toMatch(
-      /\.study-plan-page\[[^\]]+\] \{[^}]*max-width: var\(--page-max-browse\);[^}]*padding: 48px var\(--page-gutter\) 64px;/,
+      new RegExp(
+        '\\.study-plan-page\\[[^\\]]+\\] \\{[^}]*max-width: var\\(--page-max-browse\\);' +
+          '[^}]*padding: 48px var\\(--page-gutter\\) 64px;',
+      ),
     );
     expect(css).not.toMatch(/\.study-plan-page\[[^\]]+\] \{[^}]*4vw/);
     expect(css).toMatch(
-      /\.builder-step\[[^\]]+\] \.offering-checklist\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 15rem\), 1fr\)\);/,
+      new RegExp(
+        '\\.builder-step\\[[^\\]]+\\] \\.offering-checklist\\[[^\\]]+\\] ' +
+          '\\{[^}]*grid-template-columns: repeat\\(auto-fill, minmax\\(min\\(100%, 15rem\\), ' +
+          '1fr\\)\\);',
+      ),
     );
     expect(css).toMatch(
-      /\.plan-card-grid\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 22rem\), 1fr\)\);/,
+      new RegExp(
+        '\\.plan-card-grid\\[[^\\]]+\\] \\{[^}]*grid-template-columns: repeat\\(auto-fill, ' +
+          'minmax\\(min\\(100%, 22rem\\), 1fr\\)\\);',
+      ),
     );
     // DLV-803 balance review: the title is sized to stay on one line so the form starts on screen.
-    expect(css).toMatch(/h1\[[^\]]+\] \{[^}]*font-size: clamp\(2rem, 1\.5rem \+ 1\.2vw, 2\.75rem\);/);
+    expect(css).toMatch(
+      /h1\[[^\]]+\] \{[^}]*font-size: clamp\(2rem, 1\.5rem \+ 1\.2vw, 2\.75rem\);/,
+    );
     expect(css).toMatch(/\.plan-type-card\[[^\]]+\] strong\[[^\]]+\] \{[^}]*font-size: clamp\(/);
     const fluidType = [...css.matchAll(/font-size: clamp\(([^;]+)\);/g)].map((match) => match[1]);
     expect(fluidType.length).toBeGreaterThanOrEqual(10);
@@ -991,10 +1037,13 @@ describe('StudyPlanPage', () => {
     const guidance = [...header.querySelectorAll(':scope > p')];
     expect(guidance).toHaveLength(1);
     expect(guidance[0].textContent!.replace(/\s+/g, ' ').trim()).toBe(
-      'Choose one part at a time. Your selections remain a temporary draft until you review the schedule and save it.',
+      'Choose one part at a time. Your selections remain a temporary draft until you ' +
+        'review the schedule and save it.',
     );
     const stepHeading = root.querySelector('.builder-step .builder-step-heading')!;
-    expect(stepHeading.querySelector('h3#wizard-step-heading')!.textContent!.trim()).toBe('Plan setup');
+    expect(stepHeading.querySelector('h3#wizard-step-heading')!.textContent!.trim()).toBe(
+      'Plan setup',
+    );
     expect(stepHeading.querySelector('p')!.textContent!.trim()).toBe(
       'Start with the outcome and time you can realistically protect.',
     );
@@ -1005,19 +1054,25 @@ describe('StudyPlanPage', () => {
     const current = root.querySelector('.builder-progress [aria-current="step"]')!;
     expect(current.querySelector('span')!.textContent!.trim()).toBe('Step 1');
     expect(current.querySelector('strong')!.textContent!.trim()).toBe('Setup');
-    // The heading order stays h1 > h2 > h3, so the step heading must render smaller than the card's.
+    // The heading order stays h1 > h2 > h3, so the step heading must render smaller than the
+    // card's.
     const css = [...window.document.querySelectorAll('style')]
       .map((style) => style.textContent ?? '')
       .filter((text) => /\.builder-step\[/.test(text))
       .join('\n')
       .replace(/\s+/g, ' ');
     expect(css).toMatch(
-      /\.builder-step\[[^\]]+\] h3\[[^\]]+\] \{[^}]*font-size: clamp\(1\.125rem, 0\.95rem \+ 0\.4vw, 1\.375rem\);/,
+      new RegExp(
+        '\\.builder-step\\[[^\\]]+\\] h3\\[[^\\]]+\\] \\{[^}]*font-size: clamp\\(1\\.125rem, ' +
+          '0\\.95rem \\+ 0\\.4vw, 1\\.375rem\\);',
+      ),
     );
-    expect(css).toMatch(/\.builder-title-row\[[^\]]+\] > button\[[^\]]+\] \{[^}]*min-height: 44px;/);
+    expect(css).toMatch(
+      /\.builder-title-row\[[^\]]+\] > button\[[^\]]+\] \{[^}]*min-height: 44px;/,
+    );
   });
 
-  it('opens every later step with its heading and line, without a repeated step count', async () => {
+  it('opens every later step with its heading and line, no repeated step count', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
@@ -1060,7 +1115,7 @@ describe('StudyPlanPage', () => {
     focus.mockRestore();
   });
 
-  it('keeps waiting work out of the selected-day grid until it is explicitly recorded', async () => {
+  it('keeps waiting work out of the selected-day grid until explicitly recorded', async () => {
     TestBed.overrideProvider(ContentService, {
       useValue: {
         ...service,
@@ -1119,36 +1174,40 @@ describe('StudyPlanPage', () => {
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
   });
 
-  it('pins its snapshot, saves completion explicitly, and preserves work during recovery and replanning', async () => {
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    harness.detectChanges();
-    let saved = JSON.parse(window.localStorage.getItem('look-ahead.study-plan.v1')!);
-    expect(saved.rankingVersion).toBe('rank-v1');
-    expect(saved.completedIds).toEqual([]);
-    const assignment = saved.snapshot.days[0].assignments[0];
-    (page as any).toggleCompletion(assignment);
-    (page as any).shiftSchedule();
-    saved = JSON.parse(window.localStorage.getItem('look-ahead.study-plan.v1')!);
-    expect(saved.completedIds).toEqual(['available-lesson']);
-    expect(saved.shiftedDays).toBe(0);
-    expect(saved.snapshot.config.days).toBe(31);
-    expect(saved.snapshot.days[0].assignments[0].id).toBe('available-lesson');
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    saved = JSON.parse(window.localStorage.getItem('look-ahead.study-plan.v1')!);
-    expect(saved.revision).toBe(3);
-    expect(saved.completedIds).toEqual(['available-lesson']);
-    expect(saved.history).toHaveLength(3);
-    expect(
-      saved.snapshot.days
-        .flatMap((day: any) => day.assignments)
-        .some((item: any) => item.id === 'restricted-lesson'),
-    ).toBe(false);
-  });
+  it(
+    'pins its snapshot, saves completion explicitly, and preserves work during recovery ' +
+      'and replanning',
+    async () => {
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      harness.detectChanges();
+      let saved = JSON.parse(window.localStorage.getItem('look-ahead.study-plan.v1')!);
+      expect(saved.rankingVersion).toBe('rank-v1');
+      expect(saved.completedIds).toEqual([]);
+      const assignment = saved.snapshot.days[0].assignments[0];
+      (page as any).toggleCompletion(assignment);
+      (page as any).shiftSchedule();
+      saved = JSON.parse(window.localStorage.getItem('look-ahead.study-plan.v1')!);
+      expect(saved.completedIds).toEqual(['available-lesson']);
+      expect(saved.shiftedDays).toBe(0);
+      expect(saved.snapshot.config.days).toBe(31);
+      expect(saved.snapshot.days[0].assignments[0].id).toBe('available-lesson');
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      saved = JSON.parse(window.localStorage.getItem('look-ahead.study-plan.v1')!);
+      expect(saved.revision).toBe(3);
+      expect(saved.completedIds).toEqual(['available-lesson']);
+      expect(saved.history).toHaveLength(3);
+      expect(
+        saved.snapshot.days
+          .flatMap((day: any) => day.assignments)
+          .some((item: any) => item.id === 'restricted-lesson'),
+      ).toBe(false);
+    },
+  );
 
   it('uses trusted access changes while keeping history on access loss', async () => {
     const accessStatus = signal<'ready' | 'loading' | 'error'>('loading');
@@ -1174,7 +1233,7 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.textContent).toContain('Access could not be checked');
   });
 
-  it('keeps an active snapshot when a new ranking arrives, and resumes browser progress', async () => {
+  it('keeps an active snapshot when a new ranking arrives, resuming browser progress', async () => {
     const index = new BehaviorSubject({
       groups: [],
       ranking: { status: 'released', rankingVersion: 'rank-v1' },
@@ -1217,248 +1276,276 @@ describe('StudyPlanPage', () => {
     ]);
   });
 
-  it('projects Hands-on DSA onto real canonical problems without duplicating source courses', async () => {
-    const tool: SearchDocument = {
-      ...document('tool:learn:hands-on-dsa', 'hands-on-dsa', 'free'),
-      canonicalContentId: undefined,
-      discoveryKind: 'tool',
-      contentType: 'guide',
-      courseTitle: 'Hands-on DSA Practice',
-    };
-    const problem: SearchDocument = {
-      ...document('canonical-array', 'algorithmic-patterns', 'free'),
-      contentType: 'dsa-problem',
-      discoveryKind: 'practice',
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: {
-        ...service,
-        getSearchIndex: () => of([tool, problem]),
-        getHandsOnDsaIndex: () =>
-          of({
-            groups: [{ problems: [{ id: 'canonical-array', studyOrder: 1 }] }],
-            ranking: { status: 'released', rankingVersion: 'rank-v1' },
-          }),
-      },
-    });
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = await harness.navigateByUrl(
-      '/study-plan?topics=learn:hands-on-dsa',
-      StudyPlanPage,
-    );
-    await (page as any).goToWizardStep('learn');
-    harness.detectChanges();
-    const handsOn = [...harness.routeNativeElement!.querySelectorAll('label.offering')].find(
-      (label) => label.textContent?.includes('Hands-on DSA Practice'),
-    )!;
-    expect(handsOn.querySelector('input')!.disabled).toBe(false);
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    expect((page as any).plan().uniqueNewItems).toBe(1);
-    expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
-  });
-
-  it('offers every approach of a family item and completes the item with either one (DLV-962)', async () => {
-    const problem: SearchDocument = {
-      ...document('grid-count', 'algorithmic-patterns', 'free'),
-      contentType: 'dsa-problem',
-      discoveryKind: 'practice',
-    };
-    const index = (families?: object) => ({
-      groups: [{ problems: [{ id: 'grid-count', studyOrder: 1 }] }],
-      ranking: { status: 'released', rankingVersion: 'rank-v1' },
-      ...(families ? { approachFamilies: families } : {}),
-    });
-    const families = {
-      'grid-count': {
-        approach: 1,
-        bestProblemId: 'grid-count',
-        siblings: [
-          {
-            problemId: 'grid-count-approach-2',
-            approach: 2,
-            title: 'grid-count (Approach-2)',
-            path: 'learn',
-            courseId: 'algorithmic-patterns',
-            questionId: 'grid-count-approach-2-route',
-          },
-        ],
-      },
-    };
-    const build = async (withFamilies: boolean) => {
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          { provide: ACCOUNT_FETCH, useValue: async () => new Response(null, { status: 401 }) },
-          {
-            provide: StudyPlanAccount,
-            useFactory: () => {
-              const account = new StudyPlanAccount();
-              Object.defineProperty(account, 'enabled', { value: false, configurable: true });
-              return account;
-            },
-          },
-          provideRouter([
-            { path: 'study-plan', component: StudyPlanPage },
-            { path: 'exit', component: PlannerExit },
-          ]),
-          {
-            provide: ContentService,
-            useValue: {
-              ...service,
-              getSearchIndex: () => of([problem]),
-              getHandsOnDsaIndex: () => of(index(withFamilies ? families : undefined)),
-            },
-          },
-          provideHttpClient(),
-          provideHttpClientTesting(),
-        ],
+  it(
+    'projects Hands-on DSA onto real canonical problems without duplicating source ' + 'courses',
+    async () => {
+      const tool: SearchDocument = {
+        ...document('tool:learn:hands-on-dsa', 'hands-on-dsa', 'free'),
+        canonicalContentId: undefined,
+        discoveryKind: 'tool',
+        contentType: 'guide',
+        courseTitle: 'Hands-on DSA Practice',
+      };
+      const problem: SearchDocument = {
+        ...document('canonical-array', 'algorithmic-patterns', 'free'),
+        contentType: 'dsa-problem',
+        discoveryKind: 'practice',
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: {
+          ...service,
+          getSearchIndex: () => of([tool, problem]),
+          getHandsOnDsaIndex: () =>
+            of({
+              groups: [{ problems: [{ id: 'canonical-array', studyOrder: 1 }] }],
+              ranking: { status: 'released', rankingVersion: 'rank-v1' },
+            }),
+        },
       });
-      window.localStorage.clear();
       await TestBed.inject(StudyPlanAccount).initialize();
       const harness = await RouterTestingHarness.create();
-      const page: any = await harness.navigateByUrl(
-        '/study-plan?topics=learn:algorithmic-patterns&days=7&hours=1',
+      const page = await harness.navigateByUrl(
+        '/study-plan?topics=learn:hands-on-dsa',
         StudyPlanPage,
       );
-      await page.generatePlan();
-      await page.saveDraft();
+      await (page as any).goToWizardStep('learn');
       harness.detectChanges();
-      await new Promise((resolve) => setTimeout(resolve));
-      harness.detectChanges();
-      return { harness, page };
-    };
-    // The plan itself never changes: same items, minutes and order with or without families.
-    const plain = await build(false);
-    const plainDays = JSON.stringify(plain.page.plan().days);
-    expect(plain.page.deskEntries()[0].approaches).toBeUndefined();
-    const { harness, page } = await build(true);
-    expect(JSON.stringify(page.plan().days)).toBe(plainDays);
+      const handsOn = [...harness.routeNativeElement!.querySelectorAll('label.offering')].find(
+        (label) => label.textContent?.includes('Hands-on DSA Practice'),
+      )!;
+      expect(handsOn.querySelector('input')!.disabled).toBe(false);
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      expect((page as any).plan().uniqueNewItems).toBe(1);
+      expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
+    },
+  );
 
-    const item = page.plan().days[0].assignments[0];
-    const entry = () => page.deskEntries().find((candidate: any) => candidate.assignment.id === item.id);
-    expect(entry().approaches.map((option: any) => [option.approach, option.chosen])).toEqual([
-      [1, true],
-      [2, false],
-    ]);
-    const segments = [
-      ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.approach-switch a.segment'),
-    ];
-    expect(segments.map((link) => link.textContent?.trim())).toEqual(['Approach 1', 'Approach 2']);
-    expect(segments[1].getAttribute('href')).toBe(
-      `/learn/algorithmic-patterns/grid-count-approach-2-route?plan=browser&day=1&activity=${item.id}`,
-    );
+  it(
+    'offers every approach of a family item and completes the item with either one ' + '(DLV-962)',
+    async () => {
+      const problem: SearchDocument = {
+        ...document('grid-count', 'algorithmic-patterns', 'free'),
+        contentType: 'dsa-problem',
+        discoveryKind: 'practice',
+      };
+      const index = (families?: object) => ({
+        groups: [{ problems: [{ id: 'grid-count', studyOrder: 1 }] }],
+        ranking: { status: 'released', rankingVersion: 'rank-v1' },
+        ...(families ? { approachFamilies: families } : {}),
+      });
+      const families = {
+        'grid-count': {
+          approach: 1,
+          bestProblemId: 'grid-count',
+          siblings: [
+            {
+              problemId: 'grid-count-approach-2',
+              approach: 2,
+              title: 'grid-count (Approach-2)',
+              path: 'learn',
+              courseId: 'algorithmic-patterns',
+              questionId: 'grid-count-approach-2-route',
+            },
+          ],
+        },
+      };
+      const build = async (withFamilies: boolean) => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            { provide: ACCOUNT_FETCH, useValue: async () => new Response(null, { status: 401 }) },
+            {
+              provide: StudyPlanAccount,
+              useFactory: () => {
+                const account = new StudyPlanAccount();
+                Object.defineProperty(account, 'enabled', { value: false, configurable: true });
+                return account;
+              },
+            },
+            provideRouter([
+              { path: 'study-plan', component: StudyPlanPage },
+              { path: 'exit', component: PlannerExit },
+            ]),
+            {
+              provide: ContentService,
+              useValue: {
+                ...service,
+                getSearchIndex: () => of([problem]),
+                getHandsOnDsaIndex: () => of(index(withFamilies ? families : undefined)),
+              },
+            },
+            provideHttpClient(),
+            provideHttpClientTesting(),
+          ],
+        });
+        window.localStorage.clear();
+        await TestBed.inject(StudyPlanAccount).initialize();
+        const harness = await RouterTestingHarness.create();
+        const page: any = await harness.navigateByUrl(
+          '/study-plan?topics=learn:algorithmic-patterns&days=7&hours=1',
+          StudyPlanPage,
+        );
+        await page.generatePlan();
+        await page.saveDraft();
+        harness.detectChanges();
+        await new Promise((resolve) => setTimeout(resolve));
+        harness.detectChanges();
+        return { harness, page };
+      };
+      // The plan itself never changes: same items, minutes and order with or without families.
+      const plain = await build(false);
+      const plainDays = JSON.stringify(plain.page.plan().days);
+      expect(plain.page.deskEntries()[0].approaches).toBeUndefined();
+      const { harness, page } = await build(true);
+      expect(JSON.stringify(page.plan().days)).toBe(plainDays);
 
-    // The learner picks Approach 2 and completes the plan item: the item is complete.
-    page.chooseDeskApproach({ entry: entry(), problemId: 'grid-count-approach-2' });
-    expect(entry().route).toEqual(['/', 'learn', 'algorithmic-patterns', 'grid-count-approach-2-route']);
-    page.toggleCompletion(item);
-    harness.detectChanges();
-    expect(entry().completed).toBe(true);
-    expect(entry().usedApproach).toBe(2);
-    expect(page.completion().done).toBe(1);
-    expect(harness.routeNativeElement!.textContent).toContain('Completed with Approach 2.');
-
-    // A completion recorded against the sibling problem counts for the plan's problem.
-    page.saved.set({ ...page.saved(), completedIds: ['grid-count-approach-2'] });
-    expect(page.completedIds().has('grid-count')).toBe(true);
-    expect(page.completedIds().has(item.id)).toBe(false);
-  });
-
-  it('waits for the released DSA ordering and supports retry without changing an existing plan', async () => {
-    const ranking = new Subject<any>();
-    const problem = {
-      ...document('canonical-array', 'algorithmic-patterns', 'free'),
-      contentType: 'dsa-problem',
-      discoveryKind: 'practice',
-    };
-    const getIndex = vi
-      .fn()
-      .mockReturnValueOnce(ranking)
-      .mockReturnValue(
-        of({
-          groups: [{ problems: [{ id: 'canonical-array', studyOrder: 1 }] }],
-          ranking: { status: 'released', rankingVersion: 'rank-v2' },
-        }),
+      const item = page.plan().days[0].assignments[0];
+      const entry = () =>
+        page.deskEntries().find((candidate: any) => candidate.assignment.id === item.id);
+      expect(entry().approaches.map((option: any) => [option.approach, option.chosen])).toEqual([
+        [1, true],
+        [2, false],
+      ]);
+      const segments = [
+        ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>(
+          '.approach-switch a.segment',
+        ),
+      ];
+      expect(segments.map((link) => link.textContent?.trim())).toEqual([
+        'Approach 1',
+        'Approach 2',
+      ]);
+      expect(segments[1].getAttribute('href')).toBe(
+        `/learn/algorithmic-patterns/grid-count-approach-2-route?plan=browser&day=1` +
+          `&activity=${item.id}`,
       );
-    TestBed.overrideProvider(ContentService, {
-      useValue: { ...service, getSearchIndex: () => of([problem]), getHandsOnDsaIndex: getIndex },
-    });
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = await harness.navigateByUrl(
-      '/study-plan?topics=learn:algorithmic-patterns',
-      StudyPlanPage,
-    );
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    expect((page as any).saved()).toBeNull();
-    expect((page as any).canGenerate()).toBe(false);
-    ranking.error(new Error('offline'));
-    await (page as any).goToWizardStep('review');
-    harness.detectChanges();
-    expect(harness.routeNativeElement!.textContent).toContain('Retry DSA order');
-    (page as any).loadRanking();
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    expect((page as any).saved().rankingVersion).toBe('rank-v2');
-    expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
-  });
 
-  it('rejects an incomplete released order for selected DSA instead of silently using fallback order', async () => {
-    const problem = {
-      ...document('missing-rank', 'algorithmic-patterns', 'free'),
-      contentType: 'dsa-problem',
-      discoveryKind: 'practice',
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: { ...service, getSearchIndex: () => of([problem]) },
-    });
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = await harness.navigateByUrl(
-      '/study-plan?topics=learn:algorithmic-patterns',
-      StudyPlanPage,
-    );
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    expect((page as any).saved()).toBeNull();
-    expect((page as any).rankingStatus()).toBe('error');
-  });
+      // The learner picks Approach 2 and completes the plan item: the item is complete.
+      page.chooseDeskApproach({ entry: entry(), problemId: 'grid-count-approach-2' });
+      expect(entry().route).toEqual([
+        '/',
+        'learn',
+        'algorithmic-patterns',
+        'grid-count-approach-2-route',
+      ]);
+      page.toggleCompletion(item);
+      harness.detectChanges();
+      expect(entry().completed).toBe(true);
+      expect(entry().usedApproach).toBe(2);
+      expect(page.completion().done).toBe(1);
+      expect(harness.routeNativeElement!.textContent).toContain('Completed with Approach 2.');
 
-  it('requires explicit source completion for recall and prerequisite completion for practice', async () => {
-    const lesson = document('lesson', 'core-java', 'free');
-    const practice = {
-      ...document('practice', 'core-java', 'free'),
-      contentType: 'q-and-a',
-      studyPrerequisiteIds: ['lesson'],
-      discoveryKind: 'practice',
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
-    });
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = await harness.navigateByUrl(
-      '/study-plan?topics=learn:core-java&hours=2',
-      StudyPlanPage,
-    );
-    await (page as any).generatePlan();
-    await (page as any).saveDraft();
-    const assignments = (page as any).plan().days.flatMap((day: any) => day.assignments);
-    const recall = assignments.find(
-      (item: any) => item.kind === 'review' && item.sourceContentId === 'lesson',
-    );
-    const exercise = assignments.find((item: any) => item.id === 'practice');
-    expect((page as any).canOpen(recall)).toBe(false);
-    expect((page as any).canOpen(exercise)).toBe(false);
-    (page as any).toggleCompletion(assignments.find((item: any) => item.id === 'lesson'));
-    expect((page as any).canOpen(recall)).toBe(true);
-    expect((page as any).canOpen(exercise)).toBe(true);
-  });
+      // A completion recorded against the sibling problem counts for the plan's problem.
+      page.saved.set({ ...page.saved(), completedIds: ['grid-count-approach-2'] });
+      expect(page.completedIds().has('grid-count')).toBe(true);
+      expect(page.completedIds().has(item.id)).toBe(false);
+    },
+  );
 
-  it('recommends overdue originals first and anchors recall to the actual completion day', async () => {
+  it(
+    'waits for the released DSA ordering and supports retry without changing an existing ' + 'plan',
+    async () => {
+      const ranking = new Subject<any>();
+      const problem = {
+        ...document('canonical-array', 'algorithmic-patterns', 'free'),
+        contentType: 'dsa-problem',
+        discoveryKind: 'practice',
+      };
+      const getIndex = vi
+        .fn()
+        .mockReturnValueOnce(ranking)
+        .mockReturnValue(
+          of({
+            groups: [{ problems: [{ id: 'canonical-array', studyOrder: 1 }] }],
+            ranking: { status: 'released', rankingVersion: 'rank-v2' },
+          }),
+        );
+      TestBed.overrideProvider(ContentService, {
+        useValue: { ...service, getSearchIndex: () => of([problem]), getHandsOnDsaIndex: getIndex },
+      });
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page = await harness.navigateByUrl(
+        '/study-plan?topics=learn:algorithmic-patterns',
+        StudyPlanPage,
+      );
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      expect((page as any).saved()).toBeNull();
+      expect((page as any).canGenerate()).toBe(false);
+      ranking.error(new Error('offline'));
+      await (page as any).goToWizardStep('review');
+      harness.detectChanges();
+      expect(harness.routeNativeElement!.textContent).toContain('Retry DSA order');
+      (page as any).loadRanking();
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      expect((page as any).saved().rankingVersion).toBe('rank-v2');
+      expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
+    },
+  );
+
+  it(
+    'rejects an incomplete released order for selected DSA instead of silently using ' +
+      'fallback order',
+    async () => {
+      const problem = {
+        ...document('missing-rank', 'algorithmic-patterns', 'free'),
+        contentType: 'dsa-problem',
+        discoveryKind: 'practice',
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: { ...service, getSearchIndex: () => of([problem]) },
+      });
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page = await harness.navigateByUrl(
+        '/study-plan?topics=learn:algorithmic-patterns',
+        StudyPlanPage,
+      );
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      expect((page as any).saved()).toBeNull();
+      expect((page as any).rankingStatus()).toBe('error');
+    },
+  );
+
+  it(
+    'requires explicit source completion for recall and prerequisite completion for ' + 'practice',
+    async () => {
+      const lesson = document('lesson', 'core-java', 'free');
+      const practice = {
+        ...document('practice', 'core-java', 'free'),
+        contentType: 'q-and-a',
+        studyPrerequisiteIds: ['lesson'],
+        discoveryKind: 'practice',
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
+      });
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page = await harness.navigateByUrl(
+        '/study-plan?topics=learn:core-java&hours=2',
+        StudyPlanPage,
+      );
+      await (page as any).generatePlan();
+      await (page as any).saveDraft();
+      const assignments = (page as any).plan().days.flatMap((day: any) => day.assignments);
+      const recall = assignments.find(
+        (item: any) => item.kind === 'review' && item.sourceContentId === 'lesson',
+      );
+      const exercise = assignments.find((item: any) => item.id === 'practice');
+      expect((page as any).canOpen(recall)).toBe(false);
+      expect((page as any).canOpen(exercise)).toBe(false);
+      (page as any).toggleCompletion(assignments.find((item: any) => item.id === 'lesson'));
+      expect((page as any).canOpen(recall)).toBe(true);
+      expect((page as any).canOpen(exercise)).toBe(true);
+    },
+  );
+
+  it('recommends overdue originals first and anchors recall to the completion day', async () => {
     const lesson = document('recall-source', 'core-java', 'free');
     const next = document('current-lesson', 'core-java', 'free');
     TestBed.overrideProvider(ContentService, {
@@ -1521,7 +1608,7 @@ describe('StudyPlanPage', () => {
     expect(page.dailyQueue().selected[0].kind).toBe('review');
   });
 
-  it('recommends one recall per source before learning while preserving other due sessions', async () => {
+  it('recommends one recall per source before learning, keeping other due sessions', async () => {
     const docs = ['completed-source', 'unfinished-source', 'current-source'].map((id) =>
       document(id, 'core-java', 'free'),
     );
@@ -1794,94 +1881,101 @@ describe('StudyPlanPage', () => {
       ),
     ).toBe(true);
   });
-  it('keeps revision attempts separate from canonical completion and restores the same sprint', async () => {
-    const lesson = document('foundation', 'core-java', 'free');
-    const practice = {
-      ...document('exercise', 'core-java', 'free'),
-      contentType: 'q-and-a',
-      discoveryKind: 'practice',
-      studyRelatedLessonIds: ['foundation'],
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
-    });
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    let page: any = await harness.navigateByUrl(
-      '/study-plan?days=7&hours=1&topics=learn:core-java&approach=interview',
-      StudyPlanPage,
-    );
-    await page.generatePlan();
-    await page.saveDraft();
-    const original = JSON.stringify(page.plan());
-    const exercise = page
-      .plan()
-      .days.flatMap((d: any) => d.assignments)
-      .find((a: any) => a.kind === 'new' && a.sourceContentId === 'exercise');
-    const recall = page
-      .plan()
-      .days.flatMap((d: any) => d.assignments)
-      .find((a: any) => a.kind === 'review' && a.sourceContentId === 'exercise');
-    expect(exercise.timebox).toBe(true);
-    expect(page.canOpen(exercise)).toBe(true);
-    expect(page.canOpen(recall)).toBe(false);
-    page.recordOutcome(exercise, 'needs-review');
-    harness.detectChanges();
-    const noteField = harness.routeNativeElement!.querySelector<HTMLTextAreaElement>(
-      `[data-desk-activity="${exercise.id}"] textarea`,
-    )!;
-    noteField.value = 'Check duplicate-key behavior.';
-    noteField.dispatchEvent(new Event('blur'));
-    expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
-    expect(page.completedIds().has('exercise')).toBe(false);
-    expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
-    expect(page.canOpen(recall)).toBe(true);
-    page.shiftSchedule();
-    expect(page.plan().config.days).toBe(8);
-    expect(page.plan().days.slice(0, 7)).toEqual(JSON.parse(original).days);
-    const extended = JSON.stringify(page.plan());
-    await harness.navigateByUrl('/exit');
-    page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    expect(page.plan().days).toEqual(JSON.parse(extended).days);
-    expect(page.plan().config.days).toBe(8);
-    expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
-    expect(page.saved().rankingVersion).toBe('rank-v1');
-    expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
-    page.recordOutcome(exercise, 'completed');
-    expect(page.completedIds().has('exercise')).toBe(true);
-    expect(page.saved().needsReviewContentIds).toEqual([]);
-  });
+  it(
+    'keeps revision attempts separate from canonical completion and restores the same ' + 'sprint',
+    async () => {
+      const lesson = document('foundation', 'core-java', 'free');
+      const practice = {
+        ...document('exercise', 'core-java', 'free'),
+        contentType: 'q-and-a',
+        discoveryKind: 'practice',
+        studyRelatedLessonIds: ['foundation'],
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
+      });
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      let page: any = await harness.navigateByUrl(
+        '/study-plan?days=7&hours=1&topics=learn:core-java&approach=interview',
+        StudyPlanPage,
+      );
+      await page.generatePlan();
+      await page.saveDraft();
+      const original = JSON.stringify(page.plan());
+      const exercise = page
+        .plan()
+        .days.flatMap((d: any) => d.assignments)
+        .find((a: any) => a.kind === 'new' && a.sourceContentId === 'exercise');
+      const recall = page
+        .plan()
+        .days.flatMap((d: any) => d.assignments)
+        .find((a: any) => a.kind === 'review' && a.sourceContentId === 'exercise');
+      expect(exercise.timebox).toBe(true);
+      expect(page.canOpen(exercise)).toBe(true);
+      expect(page.canOpen(recall)).toBe(false);
+      page.recordOutcome(exercise, 'needs-review');
+      harness.detectChanges();
+      const noteField = harness.routeNativeElement!.querySelector<HTMLTextAreaElement>(
+        `[data-desk-activity="${exercise.id}"] textarea`,
+      )!;
+      noteField.value = 'Check duplicate-key behavior.';
+      noteField.dispatchEvent(new Event('blur'));
+      expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
+      expect(page.completedIds().has('exercise')).toBe(false);
+      expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
+      expect(page.canOpen(recall)).toBe(true);
+      page.shiftSchedule();
+      expect(page.plan().config.days).toBe(8);
+      expect(page.plan().days.slice(0, 7)).toEqual(JSON.parse(original).days);
+      const extended = JSON.stringify(page.plan());
+      await harness.navigateByUrl('/exit');
+      page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      expect(page.plan().days).toEqual(JSON.parse(extended).days);
+      expect(page.plan().config.days).toBe(8);
+      expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
+      expect(page.saved().rankingVersion).toBe('rank-v1');
+      expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
+      page.recordOutcome(exercise, 'completed');
+      expect(page.completedIds().has('exercise')).toBe(true);
+      expect(page.saved().needsReviewContentIds).toEqual([]);
+    },
+  );
 
-  it('requires explicit learning completion for a novice and keeps related refresh separate from a hard prerequisite', async () => {
-    const lesson = document('foundation', 'core-java', 'free');
-    const practice = {
-      ...document('exercise', 'core-java', 'free'),
-      contentType: 'q-and-a',
-      discoveryKind: 'practice',
-      studyRelatedLessonIds: ['foundation'],
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
-    });
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl(
-      '/study-plan?days=7&topics=learn:core-java&approach=interview',
-      StudyPlanPage,
-    );
-    page.setFamiliarity('learn:core-java', 'new');
-    await page.generatePlan();
-    await page.saveDraft();
-    const items = page.plan().days.flatMap((d: any) => d.assignments);
-    const foundation = items.find(
-      (a: any) => a.kind === 'new' && a.sourceContentId === 'foundation',
-    );
-    const exercise = items.find((a: any) => a.kind === 'new' && a.sourceContentId === 'exercise');
-    expect(page.canOpen(exercise)).toBe(false);
-    page.toggleCompletion(foundation);
-    expect(page.completedIds().has('foundation')).toBe(true);
-    expect(page.canOpen(exercise)).toBe(true);
-  });
+  it(
+    'requires explicit learning completion for a novice and keeps related refresh ' +
+      'separate from a hard prerequisite',
+    async () => {
+      const lesson = document('foundation', 'core-java', 'free');
+      const practice = {
+        ...document('exercise', 'core-java', 'free'),
+        contentType: 'q-and-a',
+        discoveryKind: 'practice',
+        studyRelatedLessonIds: ['foundation'],
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
+      });
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl(
+        '/study-plan?days=7&topics=learn:core-java&approach=interview',
+        StudyPlanPage,
+      );
+      page.setFamiliarity('learn:core-java', 'new');
+      await page.generatePlan();
+      await page.saveDraft();
+      const items = page.plan().days.flatMap((d: any) => d.assignments);
+      const foundation = items.find(
+        (a: any) => a.kind === 'new' && a.sourceContentId === 'foundation',
+      );
+      const exercise = items.find((a: any) => a.kind === 'new' && a.sourceContentId === 'exercise');
+      expect(page.canOpen(exercise)).toBe(false);
+      page.toggleCompletion(foundation);
+      expect(page.completedIds().has('foundation')).toBe(true);
+      expect(page.canOpen(exercise)).toBe(true);
+    },
+  );
   it('saves account review notes on blur without requiring a change event', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
@@ -1905,56 +1999,63 @@ describe('StudyPlanPage', () => {
     ]);
   });
 
-  it('restores the in-memory anonymous plan after logout when browser storage is unavailable', async () => {
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = (await harness.navigateByUrl('/study-plan', StudyPlanPage)) as any;
-    Object.defineProperty(window, 'localStorage', {
-      configurable: true,
-      get: () => {
-        throw new Error('Storage unavailable');
-      },
-    });
-    await page.generatePlan();
-    await page.saveDraft();
-    const original = page.saved();
-    expect(original).not.toBeNull();
-    const accounts = TestBed.inject(StudyPlanAccount);
-    vi.spyOn(accounts, 'login').mockImplementation(async () => {
-      accounts.account.set({
-        accountId: 'synthetic-a',
-        username: 'synthetic-a',
-        displayName: 'Synthetic A',
-        topicGrants: ['learn:core-java'],
+  it(
+    'restores the in-memory anonymous plan after logout when browser storage is ' + 'unavailable',
+    async () => {
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page = (await harness.navigateByUrl('/study-plan', StudyPlanPage)) as any;
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get: () => {
+          throw new Error('Storage unavailable');
+        },
       });
-      return true;
-    });
-    await page.login();
-    expect(page.saved()).toBeNull();
-    vi.spyOn(accounts, 'logout').mockImplementation(async () => {
-      accounts.account.set(null);
-      return true;
-    });
-    await page.logout();
-    expect(page.saved()).toEqual(original);
-    expect(page.accountMode()).toBe(false);
-  });
+      await page.generatePlan();
+      await page.saveDraft();
+      const original = page.saved();
+      expect(original).not.toBeNull();
+      const accounts = TestBed.inject(StudyPlanAccount);
+      vi.spyOn(accounts, 'login').mockImplementation(async () => {
+        accounts.account.set({
+          accountId: 'synthetic-a',
+          username: 'synthetic-a',
+          displayName: 'Synthetic A',
+          topicGrants: ['learn:core-java'],
+        });
+        return true;
+      });
+      await page.login();
+      expect(page.saved()).toBeNull();
+      vi.spyOn(accounts, 'logout').mockImplementation(async () => {
+        accounts.account.set(null);
+        return true;
+      });
+      await page.logout();
+      expect(page.saved()).toEqual(original);
+      expect(page.accountMode()).toBe(false);
+    },
+  );
 
-  it('keeps session completion identifiers out of a generated plan’s canonical completion inputs', async () => {
-    await TestBed.inject(StudyPlanAccount).initialize();
-    const harness = await RouterTestingHarness.create();
-    const page = (await harness.navigateByUrl('/study-plan', StudyPlanPage)) as any;
-    await page.generatePlan();
-    await page.saveDraft();
-    page.saved.update((saved: any) => ({
-      ...saved,
-      completedIds: ['available-lesson', 'available-lesson:review:v2:3'],
-    }));
-    await page.generatePlan();
-    await page.saveDraft();
-    expect(page.plan().config.completedContentIds).toEqual(['available-lesson']);
-  });
-  it('keeps generation temporary until save and the weekly schedule closed by default', async () => {
+  it(
+    'keeps session completion identifiers out of a generated plan’s canonical completion ' +
+      'inputs',
+    async () => {
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page = (await harness.navigateByUrl('/study-plan', StudyPlanPage)) as any;
+      await page.generatePlan();
+      await page.saveDraft();
+      page.saved.update((saved: any) => ({
+        ...saved,
+        completedIds: ['available-lesson', 'available-lesson:review:v2:3'],
+      }));
+      await page.generatePlan();
+      await page.saveDraft();
+      expect(page.plan().config.completedContentIds).toEqual(['available-lesson']);
+    },
+  );
+  it('keeps generation temporary until save, weekly schedule closed by default', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
@@ -2122,95 +2223,99 @@ describe('StudyPlanPage', () => {
     },
   );
 
-  it('shows Create for an empty signed-in account, then Progress only after loading its saved plan', async () => {
-    const accounts = TestBed.inject(StudyPlanAccount);
-    const harness = await RouterTestingHarness.create();
-    const local: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    await local.generatePlan();
-    await local.saveDraft();
-    const saved = local.saved();
-    await harness.navigateByUrl('/exit', PlannerExit);
-    Object.defineProperty(accounts, 'enabled', { value: true });
-    accounts.account.set({
-      accountId: 'synthetic',
-      username: 'synthetic',
-      displayName: 'Synthetic',
-      topicGrants: [],
-    });
-    vi.spyOn(accounts, 'initialize').mockResolvedValue();
-    let page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    await Promise.resolve();
-    harness.detectChanges();
-    expect(page.setupVisible()).toBe(true);
-    expect(page.progressVisible()).toBe(false);
-    expect(page.saved()).toBeNull();
-    await harness.navigateByUrl('/exit', PlannerExit);
-    accounts.active.set({
-      planId: 'owned',
-      versionId: 'v1',
-      revision: 1,
-      goal: saved.goal,
-      snapshot: saved.snapshot,
-      provenance: {
-        algorithmVersion: null,
-        catalogVersion: null,
-        rankingVersion: saved.rankingVersion,
-      },
-      progress: {
-        completedContentIds: [],
-        completedSessionIds: [],
-        attemptedContentIds: [],
-        needsReviewContentIds: [],
-        notes: {},
-        sessionOutcomes: {},
-      },
-      recovery: { strategy: 'none', elapsedDays: 0, deadlineDays: 30, deferredContentIds: [] },
-      createdAt: '',
-      updatedAt: '',
-    });
-    accounts.plans.set([{ planId: 'owned', goal: saved.goal, revision: 1, updatedAt: '' }]);
-    page = await harness.navigateByUrl('/study-plan?day=8', StudyPlanPage);
-    await Promise.resolve();
-    harness.detectChanges();
-    expect(page.progressVisible()).toBe(true);
-    expect(page.setupVisible()).toBe(false);
-    expect(page.selectedDay()).toBe(8);
-    await harness.navigateByUrl('/exit', PlannerExit);
-    accounts.plans.update((plans) => [
-      ...plans,
-      { planId: 'owned-two', goal: 'Second plan', revision: 1, updatedAt: '' },
-    ]);
-    page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    await Promise.resolve();
-    harness.detectChanges();
-    expect(page.dashboardVisible()).toBe(true);
-    expect(page.progressVisible()).toBe(false);
-    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
-    page = await harness.navigateByUrl(
-      '/study-plan?create=1&creation=custom&builderStep=review',
-      StudyPlanPage,
-    );
-    await Promise.resolve();
-    harness.detectChanges();
-    expect(page.dashboardVisible()).toBe(false);
-    expect(page.creationMode()).toBe('custom');
-    page = await harness.navigateByUrl('/study-plan?view=plans', StudyPlanPage);
-    await Promise.resolve();
-    harness.detectChanges();
-    expect(page.dashboardVisible()).toBe(true);
-    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
-    await harness.navigateByUrl('/exit', PlannerExit);
-    page = await harness.navigateByUrl('/study-plan?plan=owned&day=8', StudyPlanPage);
-    await Promise.resolve();
-    harness.detectChanges();
-    expect(page.progressVisible()).toBe(true);
-    expect(page.dashboardVisible()).toBe(false);
-    expect(page.selectedDay()).toBe(8);
-    accounts.sessionExpired.set(true);
-    harness.detectChanges();
-    expect(page.progressVisible()).toBe(false);
-    expect(harness.routeNativeElement!.querySelector('.active-heading')).toBeNull();
-  });
+  it(
+    'shows Create for an empty signed-in account, then Progress only after loading its ' +
+      'saved plan',
+    async () => {
+      const accounts = TestBed.inject(StudyPlanAccount);
+      const harness = await RouterTestingHarness.create();
+      const local: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await local.generatePlan();
+      await local.saveDraft();
+      const saved = local.saved();
+      await harness.navigateByUrl('/exit', PlannerExit);
+      Object.defineProperty(accounts, 'enabled', { value: true });
+      accounts.account.set({
+        accountId: 'synthetic',
+        username: 'synthetic',
+        displayName: 'Synthetic',
+        topicGrants: [],
+      });
+      vi.spyOn(accounts, 'initialize').mockResolvedValue();
+      let page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.setupVisible()).toBe(true);
+      expect(page.progressVisible()).toBe(false);
+      expect(page.saved()).toBeNull();
+      await harness.navigateByUrl('/exit', PlannerExit);
+      accounts.active.set({
+        planId: 'owned',
+        versionId: 'v1',
+        revision: 1,
+        goal: saved.goal,
+        snapshot: saved.snapshot,
+        provenance: {
+          algorithmVersion: null,
+          catalogVersion: null,
+          rankingVersion: saved.rankingVersion,
+        },
+        progress: {
+          completedContentIds: [],
+          completedSessionIds: [],
+          attemptedContentIds: [],
+          needsReviewContentIds: [],
+          notes: {},
+          sessionOutcomes: {},
+        },
+        recovery: { strategy: 'none', elapsedDays: 0, deadlineDays: 30, deferredContentIds: [] },
+        createdAt: '',
+        updatedAt: '',
+      });
+      accounts.plans.set([{ planId: 'owned', goal: saved.goal, revision: 1, updatedAt: '' }]);
+      page = await harness.navigateByUrl('/study-plan?day=8', StudyPlanPage);
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.progressVisible()).toBe(true);
+      expect(page.setupVisible()).toBe(false);
+      expect(page.selectedDay()).toBe(8);
+      await harness.navigateByUrl('/exit', PlannerExit);
+      accounts.plans.update((plans) => [
+        ...plans,
+        { planId: 'owned-two', goal: 'Second plan', revision: 1, updatedAt: '' },
+      ]);
+      page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.dashboardVisible()).toBe(true);
+      expect(page.progressVisible()).toBe(false);
+      expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
+      page = await harness.navigateByUrl(
+        '/study-plan?create=1&creation=custom&builderStep=review',
+        StudyPlanPage,
+      );
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.dashboardVisible()).toBe(false);
+      expect(page.creationMode()).toBe('custom');
+      page = await harness.navigateByUrl('/study-plan?view=plans', StudyPlanPage);
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.dashboardVisible()).toBe(true);
+      expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
+      await harness.navigateByUrl('/exit', PlannerExit);
+      page = await harness.navigateByUrl('/study-plan?plan=owned&day=8', StudyPlanPage);
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.progressVisible()).toBe(true);
+      expect(page.dashboardVisible()).toBe(false);
+      expect(page.selectedDay()).toBe(8);
+      accounts.sessionExpired.set(true);
+      harness.detectChanges();
+      expect(page.progressVisible()).toBe(false);
+      expect(harness.routeNativeElement!.querySelector('.active-heading')).toBeNull();
+    },
+  );
 
   it('shows the selected week and bounds pagination including a partial final week', async () => {
     const harness = await RouterTestingHarness.create();
@@ -2260,25 +2365,28 @@ describe('StudyPlanPage', () => {
     expect(page.selectedDay()).toBe(2);
   });
 
-  it('does not auto-open author dialogs for an ordinary account with forged query parameters', async () => {
-    const accounts = TestBed.inject(StudyPlanAccount);
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl('/study-plan?authorView=draft', StudyPlanPage);
-    accounts.account.set({
-      accountId: 'ordinary',
-      username: 'author@lookahead.test',
-      displayName: 'Author',
-      topicGrants: [],
-    });
-    page.accountReady.set(true);
-    const generate = vi.spyOn(page, 'generatePlan');
-    page.queueAuthorView();
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    expect(generate).not.toHaveBeenCalled();
-    expect(page.draft()).toBeNull();
-  });
+  it(
+    'does not auto-open author dialogs for an ordinary account with forged query ' + 'parameters',
+    async () => {
+      const accounts = TestBed.inject(StudyPlanAccount);
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl('/study-plan?authorView=draft', StudyPlanPage);
+      accounts.account.set({
+        accountId: 'ordinary',
+        username: 'author@lookahead.test',
+        displayName: 'Author',
+        topicGrants: [],
+      });
+      page.accountReady.set(true);
+      const generate = vi.spyOn(page, 'generatePlan');
+      page.queueAuthorView();
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      expect(generate).not.toHaveBeenCalled();
+      expect(page.draft()).toBeNull();
+    },
+  );
 
-  it('restores sign-in draft selections without saving or importing a plan automatically', async () => {
+  it('restores sign-in draft selections without saving or importing a plan', async () => {
     const accounts = TestBed.inject(StudyPlanAccount);
     Object.defineProperty(accounts, 'enabled', { value: true });
     vi.spyOn(accounts, 'initialize').mockResolvedValue();
@@ -2315,7 +2423,7 @@ describe('StudyPlanPage', () => {
     sessionStorage.removeItem('look-ahead.study-plan-draft-intent.v1');
   });
 
-  it('walks through five draft-only steps, retains choices and reviews before generating', async () => {
+  it('walks through five draft-only steps, keeps choices, reviews before generating', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl(
@@ -2392,7 +2500,7 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.draft-review-dialog')).not.toBeNull();
   });
 
-  it('keeps the wizard step in browser history and restores unsaved setup after remount', async () => {
+  it('keeps the wizard step in browser history, restoring unsaved setup on remount', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const router = TestBed.inject(Router);
     const harness = await RouterTestingHarness.create();
@@ -2446,368 +2554,376 @@ describe('StudyPlanPage', () => {
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
   });
 
-  it('offers authored and custom entry points and copies an authored review into the custom builder', async () => {
-    const crossPathDocuments: SearchDocument[] = [
-      { ...document('java-lesson', 'core-java', 'free'), courseTitle: 'Core Java' },
-      {
-        ...document('spring-lesson', 'spring-boot', 'free'),
-        path: 'grow',
-        courseTitle: 'Spring Boot',
-        route: ['/', 'grow', 'spring-boot', 'spring-lesson'],
-      },
-      {
-        ...document('design-lesson', 'resilience-production', 'free'),
-        path: 'blaze',
-        courseTitle: 'System Design',
-        route: ['/', 'blaze', 'resilience-production', 'design-lesson'],
-      },
-    ];
-    const variant = {
-      templateId: 'backend-d30-h2',
-      templateVersion: 'template-v1',
-      durationDays: 30,
-      dailyHours: 2,
-      intensive: false,
-      intendedUse: 'Backend interview preparation',
-      href: '/content/study-plans/templates/backend-d30-h2.json',
-      sha256: 'sha-test',
-      scheduledMinutes: 900,
-      selectedContentCount: 3,
-      availableContentCount: 3,
-      topicIds: ['learn:core-java', 'grow:spring-boot', 'blaze:resilience-production'],
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: {
-        ...service,
-        getSearchIndex: () => of(crossPathDocuments),
-        getReadyMadeStudyPlans: () =>
-          of({
-            schemaVersion: 'study-plan-picker/v1',
-            catalogVersion: 'picker-v1',
-            availabilityUnit: 'hours-per-day',
-            durationOptions: [30],
-            pendingOptions: [],
-            paths: [
-              {
-                id: 'backend',
-                title: 'Backend interview path',
-                summary: 'A reviewed path across the platform.',
-                roleLevel: 'Engineer',
-                startingKnowledge: ['Can write production code.'],
-                outcomes: ['Explain implementation and architecture decisions.'],
-                uncoveredScope: ['Does not cover every published course.'],
-                topics: [
-                  { id: 'learn:core-java', title: 'Core Java' },
-                  { id: 'grow:spring-boot', title: 'Spring Boot' },
-                  { id: 'blaze:resilience-production', title: 'System Design' },
-                ],
-                recommendedVariantId: variant.templateId,
-                variants: [variant],
-              },
-            ],
-          }),
-      },
-    });
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl(
-      '/study-plan?create=1&creation=choice',
-      StudyPlanPage,
-    );
-    harness.detectChanges();
-    const chooser = harness.routeNativeElement!.querySelector('.plan-type-panel')!;
-    const choices = [...chooser.querySelectorAll<HTMLButtonElement>('.plan-type-card')];
-    expect(choices).toHaveLength(2);
-    expect(choices.map((choice) => choice.textContent)).toEqual([
-      expect.stringContaining('Authored'),
-      expect.stringContaining('Custom'),
-    ]);
-    expect(
-      choices.map((choice) => choice.querySelector('app-card-scene')?.getAttribute('src')),
-    ).toEqual(['/assets/scenes/study-plan/authored.svg', '/assets/scenes/study-plan/custom.svg']);
-    for (const choice of choices) {
-      expect(choice.querySelector('app-card-scene')?.getAttribute('aria-hidden')).toBe('true');
-    }
-
-    await page.selectCreationMode('authored');
-    page.chooseReadyMadePath('backend');
-    page.chooseReadyMadeDays('30');
-    page.chooseReadyMadeHours('2');
-    await page.reviewAuthoredPlan();
-    harness.detectChanges();
-
-    const review = harness.routeNativeElement!.querySelector('.authored-plan-review')!;
-    const pathGroups = [...review.querySelectorAll<HTMLElement>('.authored-path-review section')];
-    expect(pathGroups.map((group) => group.textContent)).toEqual([
-      expect.stringContaining('Core Java'),
-      expect.stringContaining('Spring Boot'),
-      expect.stringContaining('System Design'),
-    ]);
-    expect(TestBed.inject(Router).url).toContain('authoredStep=review');
-    expect(page.saved()).toBeNull();
-    expect(page.draft()).toBeNull();
-
-    const save = vi.spyOn(TestBed.inject(StudyPlanAccount), 'save');
-    await page.customizeAuthoredPlan();
-    harness.detectChanges();
-
-    expect(page.creationMode()).toBe('custom');
-    expect(page.wizardStep()).toBe('learn');
-    expect(page.goal()).toBe('Backend interview path');
-    expect(page.days()).toBe(30);
-    expect(page.dailyHours()).toBe(2);
-    expect([...page.selectedTopicIds()]).toEqual([
-      'learn:core-java',
-      'grow:spring-boot',
-      'blaze:resilience-production',
-    ]);
-    expect(TestBed.inject(Router).url).toContain('creation=custom');
-    expect(TestBed.inject(Router).url).toContain('builderStep=learn');
-    expect(save).not.toHaveBeenCalled();
-    expect(page.saved()).toBeNull();
-  });
-
-  it('loads an authored variant through three dependent controls and keeps it temporary until save', async () => {
-    const variant = {
-      templateId: 'java-d7-h1',
-      templateVersion: 'template-v1',
-      durationDays: 7,
-      dailyHours: 1,
-      intensive: false,
-      intendedUse: 'Interview revision and targeted gaps',
-      href: '/content/study-plans/templates/java-d7-h1.json',
-      sha256: 'sha-test',
-      scheduledMinutes: 20,
-      selectedContentCount: 1,
-      availableContentCount: 1,
-      topicIds: ['learn:core-java'],
-    };
-    const catalog = {
-      schemaVersion: 'study-plan-picker/v1',
-      catalogVersion: 'picker-v1',
-      availabilityUnit: 'hours-per-day',
-      durationOptions: [7, 21],
-      pendingOptions: [],
-      paths: [
+  it(
+    'offers authored and custom entry points and copies an authored review into the ' +
+      'custom builder',
+    async () => {
+      const crossPathDocuments: SearchDocument[] = [
+        { ...document('java-lesson', 'core-java', 'free'), courseTitle: 'Core Java' },
         {
-          id: 'java',
-          title: 'Java preparation',
-          summary: 'Focused Java revision.',
-          roleLevel: 'Engineer',
-          startingKnowledge: ['Can read Java.'],
-          outcomes: ['Explain one Java contract.'],
-          uncoveredScope: ['Does not cover every Java course.'],
-          topics: [
-            { id: 'learn:core-java', title: 'Core Java' },
-            { id: 'learn:modern-java', title: 'Modern Java' },
-          ],
-          recommendedVariantId: variant.templateId,
-          variants: [
-            variant,
-            { ...variant, templateId: 'java-d7-h6', dailyHours: 6, intensive: true },
-            { ...variant, templateId: 'java-d7-h9', dailyHours: 9, intensive: true },
-            { ...variant, templateId: 'java-d21-h1', durationDays: 21 },
-          ],
+          ...document('spring-lesson', 'spring-boot', 'free'),
+          path: 'grow',
+          courseTitle: 'Spring Boot',
+          route: ['/', 'grow', 'spring-boot', 'spring-lesson'],
         },
-      ],
-    };
-    const days = Array.from({ length: 7 }, (_, index) => ({
-      day: index + 1,
-      phase: index ? 'open' : 'revision',
-      sessions:
-        index === 0
-          ? [
-              {
-                id: 'refresh-1',
-                kind: 'review',
-                activity: 'Refresh',
-                contentId: 'available-lesson',
-                minutes: 20,
-                instructions: 'Recall the lesson.',
-                prerequisiteIds: [],
-                requiredSessionIds: [],
-                review: {
-                  basis: 'declared-familiarity',
-                  sourceSessionId: null,
-                  sourceDay: null,
-                  dueDay: 1,
+        {
+          ...document('design-lesson', 'resilience-production', 'free'),
+          path: 'blaze',
+          courseTitle: 'System Design',
+          route: ['/', 'blaze', 'resilience-production', 'design-lesson'],
+        },
+      ];
+      const variant = {
+        templateId: 'backend-d30-h2',
+        templateVersion: 'template-v1',
+        durationDays: 30,
+        dailyHours: 2,
+        intensive: false,
+        intendedUse: 'Backend interview preparation',
+        href: '/content/study-plans/templates/backend-d30-h2.json',
+        sha256: 'sha-test',
+        scheduledMinutes: 900,
+        selectedContentCount: 3,
+        availableContentCount: 3,
+        topicIds: ['learn:core-java', 'grow:spring-boot', 'blaze:resilience-production'],
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: {
+          ...service,
+          getSearchIndex: () => of(crossPathDocuments),
+          getReadyMadeStudyPlans: () =>
+            of({
+              schemaVersion: 'study-plan-picker/v1',
+              catalogVersion: 'picker-v1',
+              availabilityUnit: 'hours-per-day',
+              durationOptions: [30],
+              pendingOptions: [],
+              paths: [
+                {
+                  id: 'backend',
+                  title: 'Backend interview path',
+                  summary: 'A reviewed path across the platform.',
+                  roleLevel: 'Engineer',
+                  startingKnowledge: ['Can write production code.'],
+                  outcomes: ['Explain implementation and architecture decisions.'],
+                  uncoveredScope: ['Does not cover every published course.'],
+                  topics: [
+                    { id: 'learn:core-java', title: 'Core Java' },
+                    { id: 'grow:spring-boot', title: 'Spring Boot' },
+                    { id: 'blaze:resilience-production', title: 'System Design' },
+                  ],
+                  recommendedVariantId: variant.templateId,
+                  variants: [variant],
                 },
-              },
-            ]
-          : [],
-      scheduledMinutes: index ? 0 : 20,
-      focusedMinutes: index ? 0 : 20,
-      recoveryMinutes: 0,
-      unallocatedMinutes: index ? 60 : 40,
-    }));
-    const template = {
-      schemaVersion: 'study-plan-template/v1',
-      templateId: variant.templateId,
-      templateVersion: variant.templateVersion,
-      pathId: 'java',
-      durationDays: 7,
-      dailyHours: 1,
-      availabilityUnit: 'hours-per-day',
-      intensive: false,
-      intendedUse: variant.intendedUse,
-      provenance: {
-        algorithmVersion: 'ready-made-schedule/v1',
-        catalogVersion: 'content-v1',
-        rankingVersion: null,
-        blueprintVersion: 'blueprint-v1',
-        sourceContentVersion: 'source-v1',
-      },
-      startingKnowledge: [],
-      assumedPrerequisiteIds: [],
-      topicIds: ['learn:core-java'],
-      references: [
-        {
-          contentId: 'available-lesson',
-          topicId: 'learn:core-java',
-          title: 'Available lesson',
-          courseTitle: 'Core Java',
-          contentType: 'theory',
-          route: ['/', 'learn', 'core-java', 'available-lesson'],
-          contentVersion: 'v1',
-          prerequisiteIds: [],
+              ],
+            }),
         },
-      ],
-      days,
-      coverage: {
+      });
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl(
+        '/study-plan?create=1&creation=choice',
+        StudyPlanPage,
+      );
+      harness.detectChanges();
+      const chooser = harness.routeNativeElement!.querySelector('.plan-type-panel')!;
+      const choices = [...chooser.querySelectorAll<HTMLButtonElement>('.plan-type-card')];
+      expect(choices).toHaveLength(2);
+      expect(choices.map((choice) => choice.textContent)).toEqual([
+        expect.stringContaining('Authored'),
+        expect.stringContaining('Custom'),
+      ]);
+      expect(
+        choices.map((choice) => choice.querySelector('app-card-scene')?.getAttribute('src')),
+      ).toEqual(['/assets/scenes/study-plan/authored.svg', '/assets/scenes/study-plan/custom.svg']);
+      for (const choice of choices) {
+        expect(choice.querySelector('app-card-scene')?.getAttribute('aria-hidden')).toBe('true');
+      }
+
+      await page.selectCreationMode('authored');
+      page.chooseReadyMadePath('backend');
+      page.chooseReadyMadeDays('30');
+      page.chooseReadyMadeHours('2');
+      await page.reviewAuthoredPlan();
+      harness.detectChanges();
+
+      const review = harness.routeNativeElement!.querySelector('.authored-plan-review')!;
+      const pathGroups = [...review.querySelectorAll<HTMLElement>('.authored-path-review section')];
+      expect(pathGroups.map((group) => group.textContent)).toEqual([
+        expect.stringContaining('Core Java'),
+        expect.stringContaining('Spring Boot'),
+        expect.stringContaining('System Design'),
+      ]);
+      expect(TestBed.inject(Router).url).toContain('authoredStep=review');
+      expect(page.saved()).toBeNull();
+      expect(page.draft()).toBeNull();
+
+      const save = vi.spyOn(TestBed.inject(StudyPlanAccount), 'save');
+      await page.customizeAuthoredPlan();
+      harness.detectChanges();
+
+      expect(page.creationMode()).toBe('custom');
+      expect(page.wizardStep()).toBe('learn');
+      expect(page.goal()).toBe('Backend interview path');
+      expect(page.days()).toBe(30);
+      expect(page.dailyHours()).toBe(2);
+      expect([...page.selectedTopicIds()]).toEqual([
+        'learn:core-java',
+        'grow:spring-boot',
+        'blaze:resilience-production',
+      ]);
+      expect(TestBed.inject(Router).url).toContain('creation=custom');
+      expect(TestBed.inject(Router).url).toContain('builderStep=learn');
+      expect(save).not.toHaveBeenCalled();
+      expect(page.saved()).toBeNull();
+    },
+  );
+
+  it(
+    'loads an authored variant through three dependent controls and keeps it temporary ' +
+      'until save',
+    async () => {
+      const variant = {
+        templateId: 'java-d7-h1',
+        templateVersion: 'template-v1',
+        durationDays: 7,
+        dailyHours: 1,
+        intensive: false,
+        intendedUse: 'Interview revision and targeted gaps',
+        href: '/content/study-plans/templates/java-d7-h1.json',
+        sha256: 'sha-test',
+        scheduledMinutes: 20,
         selectedContentCount: 1,
         availableContentCount: 1,
-        scheduledMinutes: 20,
-        unallocatedMinutes: 400,
-        uncoveredContentIds: [],
-        uncoveredScope: [],
-      },
-      futureReviews: [
-        {
-          ...days[0].sessions[0],
-          id: 'recall-after-window',
-          activity: 'Recall',
-          requiredSessionIds: ['refresh-1'],
-          review: {
-            basis: 'scheduled-session',
-            sourceSessionId: 'refresh-1',
-            sourceDay: 1,
-            dueDay: 10,
+        topicIds: ['learn:core-java'],
+      };
+      const catalog = {
+        schemaVersion: 'study-plan-picker/v1',
+        catalogVersion: 'picker-v1',
+        availabilityUnit: 'hours-per-day',
+        durationOptions: [7, 21],
+        pendingOptions: [],
+        paths: [
+          {
+            id: 'java',
+            title: 'Java preparation',
+            summary: 'Focused Java revision.',
+            roleLevel: 'Engineer',
+            startingKnowledge: ['Can read Java.'],
+            outcomes: ['Explain one Java contract.'],
+            uncoveredScope: ['Does not cover every Java course.'],
+            topics: [
+              { id: 'learn:core-java', title: 'Core Java' },
+              { id: 'learn:modern-java', title: 'Modern Java' },
+            ],
+            recommendedVariantId: variant.templateId,
+            variants: [
+              variant,
+              { ...variant, templateId: 'java-d7-h6', dailyHours: 6, intensive: true },
+              { ...variant, templateId: 'java-d7-h9', dailyHours: 9, intensive: true },
+              { ...variant, templateId: 'java-d21-h1', durationDays: 21 },
+            ],
           },
-        },
-      ],
-    };
-    TestBed.overrideProvider(ContentService, {
-      useValue: {
-        ...service,
-        getReadyMadeStudyPlans: () => of(catalog),
-        getReadyMadeStudyPlan: () => of(template),
-      },
-    });
-    const harness = await RouterTestingHarness.create();
-    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    await page.selectCreationMode('authored');
-    harness.detectChanges();
-    expect(
-      harness.routeNativeElement!.querySelectorAll('.ready-made-controls select'),
-    ).toHaveLength(3);
-    page.chooseReadyMadePath('java');
-    page.chooseReadyMadeDays('7');
-    expect(page.selectedReadyMadeHours()).toBeNull();
-    page.chooseReadyMadeHours('9');
-    expect(page.readyMadeMessage()).toContain('intensive daily schedule');
-    page.chooseReadyMadeHours('6');
-    expect(page.readyMadeMessage()).toContain('intensive daily schedule');
-    page.chooseReadyMadeDays('21');
-    expect(page.selectedReadyMadeHours()).toBeNull();
-    expect(page.readyMadeMessage()).toContain('Choose hours per day again');
-    page.chooseReadyMadeDays('7');
-    page.chooseReadyMadeHours('1');
-    expect(page.readyMadeSelectedCourses()).toEqual([
-      { id: 'learn:core-java', title: 'Core Java' },
-    ]);
-    page.previewReadyMadePlan();
-    harness.detectChanges();
-    expect(page.draft().goal).toBe('Java preparation');
-    expect(page.draft().readyMade).toMatchObject({
-      templateId: 'java-d7-h1',
-      templateVersion: 'template-v1',
-      templateSha256: 'sha-test',
-      pickerCatalogVersion: 'picker-v1',
-      adapterVersion: 'ready-made-to-study-plan/v1',
-    });
-    expect(page.saved()).toBeNull();
-    expect(localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
-    const preview = harness.routeNativeElement!.querySelector('.plan-review-dialog')!;
-    expect(preview.textContent).toContain('1 hour available a day');
-    expect(preview.querySelector('.authored-review-summary')!.textContent).toContain(
-      'Selected courses: Core Java',
-    );
-    expect(page.authoredDraftSummary()).toMatchObject({
-      focusedMinutes: 20,
-      recoveryMinutes: 0,
-      unallocatedMinutes: 400,
-    });
-    expect(preview.querySelector('.authored-future-reviews')!.textContent).toContain('Day 10');
-    expect(preview.textContent).toContain('Assumes prior familiarity');
-    await page.saveDraft();
-    expect(page.saved().completedIds).toEqual([]);
-    expect(page.saved().snapshot.schedulingVersion).toBe('ready-made-schedule/v1');
-    expect(page.saved().readyMade.templateId).toBe('java-d7-h1');
-    expect(page.saved().snapshot.template).toEqual(template);
-    harness.detectChanges();
-    expect(page.dailyQueue().selected.map((item: any) => item.id)).toEqual(['refresh-1']);
-    expect(page.weekAllocation()).toMatchObject({
-      total: 20,
-      understand: 0,
-      recall: 20,
-      practice: 0,
-    });
-    const refresh = page.dailyQueue().selected[0];
-    page.toggleCompletion(refresh);
-    expect(page.saved().completedIds).toEqual(['refresh-1']);
-    expect(page.saved().snapshot.template).toEqual(template);
-    expect(page.dailyQueue().selected).toEqual([]);
-
-    const original = page.saved();
-    const practice = {
-      ...refresh,
-      id: 'practice',
-      templateKind: 'practice',
-      activity: 'Practice',
-      reviewBasis: undefined,
-      requiredSessionId: 'refresh-1',
-      requiredSessionIds: ['refresh-1', 'second'],
-    };
-    const second = {
-      ...refresh,
-      id: 'second',
-      kind: 'new',
-      templateKind: 'new',
-      activity: 'Understand',
-      reviewBasis: undefined,
-    };
-    page.saved.set({
-      ...original,
-      completedIds: ['refresh-1', 'available-lesson'],
-      snapshot: {
-        ...original.snapshot,
-        days: [
-          { ...original.snapshot.days[0], assignments: [refresh, second, practice] },
-          ...original.snapshot.days.slice(1),
         ],
-      },
-    });
-    expect(page.canOpen(practice)).toBe(false);
-    page.saved.set({ ...page.saved(), completedIds: ['refresh-1'] });
-    page.toggleCompletion(second);
-    expect(page.saved().completedIds).toContain('second');
-    expect(page.saved().completedIds).toContain('available-lesson');
-    expect(page.canOpen(practice)).toBe(true);
-    expect(
-      page.currentDaySections().find((section: any) => section.id === 'current').assignments,
-    ).toContainEqual(practice);
-  });
+      };
+      const days = Array.from({ length: 7 }, (_, index) => ({
+        day: index + 1,
+        phase: index ? 'open' : 'revision',
+        sessions:
+          index === 0
+            ? [
+                {
+                  id: 'refresh-1',
+                  kind: 'review',
+                  activity: 'Refresh',
+                  contentId: 'available-lesson',
+                  minutes: 20,
+                  instructions: 'Recall the lesson.',
+                  prerequisiteIds: [],
+                  requiredSessionIds: [],
+                  review: {
+                    basis: 'declared-familiarity',
+                    sourceSessionId: null,
+                    sourceDay: null,
+                    dueDay: 1,
+                  },
+                },
+              ]
+            : [],
+        scheduledMinutes: index ? 0 : 20,
+        focusedMinutes: index ? 0 : 20,
+        recoveryMinutes: 0,
+        unallocatedMinutes: index ? 60 : 40,
+      }));
+      const template = {
+        schemaVersion: 'study-plan-template/v1',
+        templateId: variant.templateId,
+        templateVersion: variant.templateVersion,
+        pathId: 'java',
+        durationDays: 7,
+        dailyHours: 1,
+        availabilityUnit: 'hours-per-day',
+        intensive: false,
+        intendedUse: variant.intendedUse,
+        provenance: {
+          algorithmVersion: 'ready-made-schedule/v1',
+          catalogVersion: 'content-v1',
+          rankingVersion: null,
+          blueprintVersion: 'blueprint-v1',
+          sourceContentVersion: 'source-v1',
+        },
+        startingKnowledge: [],
+        assumedPrerequisiteIds: [],
+        topicIds: ['learn:core-java'],
+        references: [
+          {
+            contentId: 'available-lesson',
+            topicId: 'learn:core-java',
+            title: 'Available lesson',
+            courseTitle: 'Core Java',
+            contentType: 'theory',
+            route: ['/', 'learn', 'core-java', 'available-lesson'],
+            contentVersion: 'v1',
+            prerequisiteIds: [],
+          },
+        ],
+        days,
+        coverage: {
+          selectedContentCount: 1,
+          availableContentCount: 1,
+          scheduledMinutes: 20,
+          unallocatedMinutes: 400,
+          uncoveredContentIds: [],
+          uncoveredScope: [],
+        },
+        futureReviews: [
+          {
+            ...days[0].sessions[0],
+            id: 'recall-after-window',
+            activity: 'Recall',
+            requiredSessionIds: ['refresh-1'],
+            review: {
+              basis: 'scheduled-session',
+              sourceSessionId: 'refresh-1',
+              sourceDay: 1,
+              dueDay: 10,
+            },
+          },
+        ],
+      };
+      TestBed.overrideProvider(ContentService, {
+        useValue: {
+          ...service,
+          getReadyMadeStudyPlans: () => of(catalog),
+          getReadyMadeStudyPlan: () => of(template),
+        },
+      });
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await page.selectCreationMode('authored');
+      harness.detectChanges();
+      expect(
+        harness.routeNativeElement!.querySelectorAll('.ready-made-controls select'),
+      ).toHaveLength(3);
+      page.chooseReadyMadePath('java');
+      page.chooseReadyMadeDays('7');
+      expect(page.selectedReadyMadeHours()).toBeNull();
+      page.chooseReadyMadeHours('9');
+      expect(page.readyMadeMessage()).toContain('intensive daily schedule');
+      page.chooseReadyMadeHours('6');
+      expect(page.readyMadeMessage()).toContain('intensive daily schedule');
+      page.chooseReadyMadeDays('21');
+      expect(page.selectedReadyMadeHours()).toBeNull();
+      expect(page.readyMadeMessage()).toContain('Choose hours per day again');
+      page.chooseReadyMadeDays('7');
+      page.chooseReadyMadeHours('1');
+      expect(page.readyMadeSelectedCourses()).toEqual([
+        { id: 'learn:core-java', title: 'Core Java' },
+      ]);
+      page.previewReadyMadePlan();
+      harness.detectChanges();
+      expect(page.draft().goal).toBe('Java preparation');
+      expect(page.draft().readyMade).toMatchObject({
+        templateId: 'java-d7-h1',
+        templateVersion: 'template-v1',
+        templateSha256: 'sha-test',
+        pickerCatalogVersion: 'picker-v1',
+        adapterVersion: 'ready-made-to-study-plan/v1',
+      });
+      expect(page.saved()).toBeNull();
+      expect(localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+      const preview = harness.routeNativeElement!.querySelector('.plan-review-dialog')!;
+      expect(preview.textContent).toContain('1 hour available a day');
+      expect(preview.querySelector('.authored-review-summary')!.textContent).toContain(
+        'Selected courses: Core Java',
+      );
+      expect(page.authoredDraftSummary()).toMatchObject({
+        focusedMinutes: 20,
+        recoveryMinutes: 0,
+        unallocatedMinutes: 400,
+      });
+      expect(preview.querySelector('.authored-future-reviews')!.textContent).toContain('Day 10');
+      expect(preview.textContent).toContain('Assumes prior familiarity');
+      await page.saveDraft();
+      expect(page.saved().completedIds).toEqual([]);
+      expect(page.saved().snapshot.schedulingVersion).toBe('ready-made-schedule/v1');
+      expect(page.saved().readyMade.templateId).toBe('java-d7-h1');
+      expect(page.saved().snapshot.template).toEqual(template);
+      harness.detectChanges();
+      expect(page.dailyQueue().selected.map((item: any) => item.id)).toEqual(['refresh-1']);
+      expect(page.weekAllocation()).toMatchObject({
+        total: 20,
+        understand: 0,
+        recall: 20,
+        practice: 0,
+      });
+      const refresh = page.dailyQueue().selected[0];
+      page.toggleCompletion(refresh);
+      expect(page.saved().completedIds).toEqual(['refresh-1']);
+      expect(page.saved().snapshot.template).toEqual(template);
+      expect(page.dailyQueue().selected).toEqual([]);
 
-  it('preserves an authored draft and prevents account save when adoption is unavailable', async () => {
+      const original = page.saved();
+      const practice = {
+        ...refresh,
+        id: 'practice',
+        templateKind: 'practice',
+        activity: 'Practice',
+        reviewBasis: undefined,
+        requiredSessionId: 'refresh-1',
+        requiredSessionIds: ['refresh-1', 'second'],
+      };
+      const second = {
+        ...refresh,
+        id: 'second',
+        kind: 'new',
+        templateKind: 'new',
+        activity: 'Understand',
+        reviewBasis: undefined,
+      };
+      page.saved.set({
+        ...original,
+        completedIds: ['refresh-1', 'available-lesson'],
+        snapshot: {
+          ...original.snapshot,
+          days: [
+            { ...original.snapshot.days[0], assignments: [refresh, second, practice] },
+            ...original.snapshot.days.slice(1),
+          ],
+        },
+      });
+      expect(page.canOpen(practice)).toBe(false);
+      page.saved.set({ ...page.saved(), completedIds: ['refresh-1'] });
+      page.toggleCompletion(second);
+      expect(page.saved().completedIds).toContain('second');
+      expect(page.saved().completedIds).toContain('available-lesson');
+      expect(page.canOpen(practice)).toBe(true);
+      expect(
+        page.currentDaySections().find((section: any) => section.id === 'current').assignments,
+      ).toContainEqual(practice);
+    },
+  );
+
+  it('keeps an authored draft and blocks account save when adoption is unavailable', async () => {
     const accounts = TestBed.inject(StudyPlanAccount);
     await accounts.initialize();
     const harness = await RouterTestingHarness.create();
@@ -2834,7 +2950,7 @@ describe('StudyPlanPage', () => {
     expect(accounts.error()).toContain('Your draft is preserved');
   });
 
-  it('shows catalog and access failures without replacing or truncating the current draft', async () => {
+  it('shows catalog and access failures without replacing or cutting the draft', async () => {
     TestBed.overrideProvider(ContentService, {
       useValue: {
         ...service,
@@ -2848,7 +2964,10 @@ describe('StudyPlanPage', () => {
     expect(page.readyMadeStatus()).toBe('error');
     expect(harness.routeNativeElement!.textContent).toContain('could not be loaded');
     // Said once, in the alert that carries the retry button.
-    expect(harness.routeNativeElement!.textContent!.split('Ready-made plans could not be loaded').length - 1).toBe(1);
+    expect(
+      harness.routeNativeElement!.textContent!.split('Ready-made plans could not be loaded')
+        .length - 1,
+    ).toBe(1);
     expect(harness.routeNativeElement!.querySelectorAll('[role="alert"]').length).toBe(1);
     expect(harness.routeNativeElement!.textContent).toContain('Choose a preparation path');
     expect(page.saved()).toBeNull();
@@ -2952,7 +3071,7 @@ describe('StudyPlanPage', () => {
       expect(root().querySelector('.intro')!.classList).toContain('creation-intro');
     });
 
-    it('pre-selects the free starter plan and keeps every other plan visible but marked', async () => {
+    it('pre-selects the free starter plan and keeps other plans visible but marked', async () => {
       const { page, root } = await open([]);
       expect(page.freeAccount()).toBe(true);
       expect(page.readyMadePaths().map((path: { id: string }) => path.id)).toEqual([
@@ -2976,46 +3095,55 @@ describe('StudyPlanPage', () => {
       expect(root().querySelector('.free-preview-note a[href="/account"]')).not.toBeNull();
     });
 
-    it('lets a free account look inside a paid plan at one week and one hour, but never save', async () => {
-      const { harness, page, save, template, root } = await open([]);
-      page.chooseReadyMadePath('java');
-      page.chooseReadyMadeDays('21');
-      page.chooseReadyMadeHours('2');
-      expect([page.selectedReadyMadeDays(), page.selectedReadyMadeHours()]).toEqual([7, 1]);
-      expect(page.readyMadeVariant()?.templateId).toBe('java-d7-h1');
-      page.previewReadyMadePlan();
-      harness.detectChanges();
-      expect(template).not.toHaveBeenCalled();
-      expect(page.draft()?.snapshot.config.days).toBe(7);
-      expect(page.draft()?.snapshot.config.dailyHours).toBe(1);
-      expect(page.draft()?.readyMade).toBeUndefined();
-      expect(root().textContent).not.toContain('Customize this plan');
-      await page.saveDraft();
-      expect(save).not.toHaveBeenCalled();
-      expect(page.saved()).toBeNull();
-      const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
-      expect(dialog.querySelector('a.primary-link')?.textContent?.trim()).toBe(
-        'Get course access to save',
-      );
-      expect(dialog.textContent).not.toContain('Save to my account');
-    });
+    it(
+      'lets a free account look inside a paid plan at one week and one hour, but never ' + 'save',
+      async () => {
+        const { harness, page, save, template, root } = await open([]);
+        page.chooseReadyMadePath('java');
+        page.chooseReadyMadeDays('21');
+        page.chooseReadyMadeHours('2');
+        expect([page.selectedReadyMadeDays(), page.selectedReadyMadeHours()]).toEqual([7, 1]);
+        expect(page.readyMadeVariant()?.templateId).toBe('java-d7-h1');
+        page.previewReadyMadePlan();
+        harness.detectChanges();
+        expect(template).not.toHaveBeenCalled();
+        expect(page.draft()?.snapshot.config.days).toBe(7);
+        expect(page.draft()?.snapshot.config.dailyHours).toBe(1);
+        expect(page.draft()?.readyMade).toBeUndefined();
+        expect(root().textContent).not.toContain('Customize this plan');
+        await page.saveDraft();
+        expect(save).not.toHaveBeenCalled();
+        expect(page.saved()).toBeNull();
+        const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
+        expect(dialog.querySelector('a.primary-link')?.textContent?.trim()).toBe(
+          'Get course access to save',
+        );
+        expect(dialog.textContent).not.toContain('Save to my account');
+      },
+    );
 
-    it('offers account saving for the free starter and sends the free draft through the account API', async () => {
-      const { harness, page, save, root } = await open([]);
-      save.mockResolvedValue(null);
-      page.chooseReadyMadePath('free-starter');
-      page.previewReadyMadePlan();
-      harness.detectChanges();
-      expect(page.freeDraftSaveable()).toBe(true);
-      const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
-      expect(dialog.textContent).toContain('Save to my account');
-      expect(dialog.textContent).toContain('15 free plans in total');
-      await page.saveDraft();
-      expect(save).toHaveBeenCalledOnce();
-      expect(save.mock.calls[0][0].readyMade).toBeUndefined();
-      expect(page.draft()).not.toBeNull();
-      expect(root().querySelector('.free-preview-note')?.textContent).toContain('two active free plans');
-    });
+    it(
+      'offers account saving for the free starter and sends the free draft through the ' +
+        'account API',
+      async () => {
+        const { harness, page, save, root } = await open([]);
+        save.mockResolvedValue(null);
+        page.chooseReadyMadePath('free-starter');
+        page.previewReadyMadePlan();
+        harness.detectChanges();
+        expect(page.freeDraftSaveable()).toBe(true);
+        const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
+        expect(dialog.textContent).toContain('Save to my account');
+        expect(dialog.textContent).toContain('15 free plans in total');
+        await page.saveDraft();
+        expect(save).toHaveBeenCalledOnce();
+        expect(save.mock.calls[0][0].readyMade).toBeUndefined();
+        expect(page.draft()).not.toBeNull();
+        expect(root().querySelector('.free-preview-note')?.textContent).toContain(
+          'two active free plans',
+        );
+      },
+    );
 
     it('keeps the custom builder at the free starter selection', async () => {
       const { page } = await open([]);

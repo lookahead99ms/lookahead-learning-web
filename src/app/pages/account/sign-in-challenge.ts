@@ -80,9 +80,7 @@ export class SignInChallengePage implements OnDestroy {
       if (this.destroyed) return;
       if (result.oauth) {
         window.location.assign(
-          this.oauthContinuation
-            ? '/api/v1/auth/continue'
-            : gatewayLoginUrl(this.returnTo),
+          this.oauthContinuation ? '/api/v1/auth/continue' : gatewayLoginUrl(this.returnTo),
         );
       } else {
         await this.router.navigateByUrl(this.returnTo);
@@ -119,7 +117,8 @@ export class SignInChallengePage implements OnDestroy {
           ? 'The active sign-ins changed. Refresh the list and choose again.'
           : kind === 'rate-limited'
             ? 'Too many attempts. Wait a few minutes before trying again.'
-            : 'We could not confirm this request. Refresh the list to check its status before trying again.',
+            : 'We could not confirm this request. Refresh the list to check its status ' +
+              'before trying again.',
     );
     if (kind === 'expired') {
       this.challenge.set(null);

@@ -169,41 +169,48 @@
   <p class="status" role="status" aria-live="polite">{{ status() }}</p>
   @if (reauthenticationRequired()) {
     @if (managedLogin()) {
-      <a #managedReauthentication class="primary-action" href="/bff/login?reauthenticate=true&amp;returnTo=%2Faccount">Confirm identity through secure sign-in</a>
+      <a
+        #managedReauthentication
+        class="primary-action"
+        href="/bff/login?reauthenticate=true&amp;returnTo=%2Faccount"
+        >Confirm identity through secure sign-in</a
+      >
       <p>Return here to review and submit your change again.</p>
     } @else {
-    <form (submit)="$event.preventDefault(); reauthenticate()" aria-label="Confirm your identity">
-      <label for="sign-in-current-password">Current password</label>
-      <div class="password-input">
-        <input
-          #passwordInput
-          id="sign-in-current-password"
-          name="currentSignInPassword"
-          autocomplete="current-password"
-          [type]="passwordVisible() ? 'text' : 'password'"
-          [value]="currentPassword()"
-          (input)="currentPassword.set($any($event.target).value)"
-          required
-          [disabled]="pending()"
-        />
-        <button
-          type="button"
-          (click)="passwordVisible.set(!passwordVisible())"
-          aria-controls="sign-in-current-password"
-          [attr.aria-label]="passwordVisible() ? 'Hide current password' : 'Show current password'"
-          [disabled]="pending()"
-        >
-          {{ passwordVisible() ? 'Hide' : 'Show' }}
-        </button>
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="primary-action" [disabled]="pending() || !currentPassword()">
-          {{ pending() ? 'Confirming…' : 'Confirm identity' }}
-        </button>
-        <button type="button" (click)="cancel()" [disabled]="pending()">Cancel</button>
-      </div>
-      <p>Confirmation keeps this sign-in. You will review and submit your change again.</p>
-    </form>
+      <form (submit)="$event.preventDefault(); reauthenticate()" aria-label="Confirm your identity">
+        <label for="sign-in-current-password">Current password</label>
+        <div class="password-input">
+          <input
+            #passwordInput
+            id="sign-in-current-password"
+            name="currentSignInPassword"
+            autocomplete="current-password"
+            [type]="passwordVisible() ? 'text' : 'password'"
+            [value]="currentPassword()"
+            (input)="currentPassword.set($any($event.target).value)"
+            required
+            [disabled]="pending()"
+          />
+          <button
+            type="button"
+            (click)="passwordVisible.set(!passwordVisible())"
+            aria-controls="sign-in-current-password"
+            [attr.aria-label]="
+              passwordVisible() ? 'Hide current password' : 'Show current password'
+            "
+            [disabled]="pending()"
+          >
+            {{ passwordVisible() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="primary-action" [disabled]="pending() || !currentPassword()">
+            {{ pending() ? 'Confirming…' : 'Confirm identity' }}
+          </button>
+          <button type="button" (click)="cancel()" [disabled]="pending()">Cancel</button>
+        </div>
+        <p>Confirmation keeps this sign-in. You will review and submit your change again.</p>
+      </form>
     }
   }
 </section>

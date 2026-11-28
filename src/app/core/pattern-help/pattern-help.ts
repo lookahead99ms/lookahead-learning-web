@@ -1,5 +1,16 @@
 import { htmlText } from '../html-text';
-import { Component, ElementRef, Injector, afterNextRender, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom, switchMap } from 'rxjs';
 import { ContentService } from '../../content/content.service';
@@ -12,24 +23,37 @@ interface Signal {
   check: string;
 }
 
-/** Where the explorer's signals live: the Recognize the Pattern lesson's map section (content, not code). */
-const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'algorithmic-pattern-foundations' };
+/**
+ * Where the explorer's signals live: the Recognize the Pattern lesson's map section (content, not
+ * code).
+ */
+const MAP_SOURCE = {
+  path: 'learn',
+  course: 'algorithmic-patterns',
+  lesson: 'algorithmic-pattern-foundations',
+};
 
 /**
- * "Help me recognize the pattern" on a Hands-On DSA problem (user review, 2026-10-05). The learner picks a
- * signal from the problem and sees the patterns that fit, when each fits and what to check first; nothing is
- * chosen for them. "Show this problem's pattern" reveals the answer one click away. Opening, choosing or
- * revealing never changes progress.
+ * "Help me recognize the pattern" on a Hands-On DSA problem (user review, 2026-10-05). The learner
+ * picks a signal from the problem and sees the patterns that fit, when each fits and what to check
+ * first; nothing is chosen for them. "Show this problem's pattern" reveals the answer one click
+ * away. Opening, choosing or revealing never changes progress.
  *
- * After "Show the pattern" (user, 2026-10-16) the answer is one compact row: the pattern's name once
- * and a small secondary "Learn more" button that opens its lesson in a new tab. The page behind the
- * dialog does not scroll while it is open (shared ScrollLock).
+ * After "Show the pattern" (user, 2026-10-16) the answer is one compact row: the pattern's name
+ * once and a small secondary "Learn more" button that opens its lesson in a new tab. The page
+ * behind the dialog does not scroll while it is open (shared ScrollLock).
  */
 @Component({
   selector: 'app-pattern-help',
   imports: [RouterLink, ScrollLock],
   template: `
-    <dialog #dialog appScrollLock class="pattern-help" aria-labelledby="pattern-help-title" (close)="closed.emit()">
+    <dialog
+      #dialog
+      appScrollLock
+      class="pattern-help"
+      aria-labelledby="pattern-help-title"
+      (close)="closed.emit()"
+    >
       <div class="shell">
         <div class="head">
           <div>
@@ -47,11 +71,19 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
             @if (signals().length) {
               <div class="chips" role="group" aria-label="Signals">
                 @for (item of signals(); track item.key) {
-                  <button type="button" class="chip" [attr.aria-pressed]="picked()?.key === item.key" (click)="pick(item)">{{ item.key }}</button>
+                  <button
+                    type="button"
+                    class="chip"
+                    [attr.aria-pressed]="picked()?.key === item.key"
+                    (click)="pick(item)"
+                    >{{ item.key }}</button
+                  >
                 }
               </div>
             } @else if (loadFailed()) {
-              <p class="muted">The signals did not load. You can still show this problem's pattern below.</p>
+              <p class="muted"
+                >The signals did not load. You can still show this problem's pattern below.</p
+              >
             } @else {
               <p class="muted">Loading the signals…</p>
             }
@@ -60,12 +92,18 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
                 <h4>{{ item.intro }}</h4>
                 <ul class="cands">
                   @for (candidate of item.candidates; track candidate.unit) {
-                    <li><strong>{{ units()[candidate.unit - 1] }}</strong><span>{{ candidate.when }}</span></li>
+                    <li
+                      ><strong>{{ units()[candidate.unit - 1] }}</strong
+                      ><span>{{ candidate.when }}</span></li
+                    >
                   }
                 </ul>
                 <p class="muted"><strong>Check first.</strong> {{ item.check }}</p>
               } @else {
-                <p class="muted">Pick the signal that matches the problem. You get the patterns that fit, when each one fits, and what to check before you choose. Nothing is picked for you.</p>
+                <p class="muted"
+                  >Pick the signal that matches the problem. You get the patterns that fit, when
+                  each one fits, and what to check before you choose. Nothing is picked for you.</p
+                >
               }
             </div>
           </section>
@@ -73,10 +111,19 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
             <h3>2. Or show this problem's pattern</h3>
             @if (revealedNow()) {
               <p #answer class="answer" tabindex="-1">
-                <span class="answer-name"><span class="visually-hidden">This problem's pattern: </span>{{ patternName() }}</span>
-                <a class="lesson-link" [routerLink]="lessonRoute()" [queryParams]="lessonQuery()" target="_blank" rel="noopener"
+                <span class="answer-name"
+                  ><span class="visually-hidden">This problem's pattern: </span
+                  >{{ patternName() }}</span
+                >
+                <a
+                  class="lesson-link"
+                  [routerLink]="lessonRoute()"
+                  [queryParams]="lessonQuery()"
+                  target="_blank"
+                  rel="noopener"
                   >Learn more<span class="visually-hidden"> about {{ patternName() }}</span
-                  ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
+                  ><svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
                   ><span class="visually-hidden"> (opens in a new tab)</span></a
                 >
               </p>
@@ -84,7 +131,9 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
               <button type="button" class="reveal" (click)="reveal()">Show the pattern</button>
             }
           </section>
-          <p class="note">Opening this, choosing a signal or showing the pattern doesn't change your progress.</p>
+          <p class="note"
+            >Opening this, choosing a signal or showing the pattern doesn't change your progress.</p
+          >
         </div>
       </div>
     </dialog>
@@ -387,7 +436,8 @@ export class PatternHelp {
     if (this.loaded) return;
     this.loaded = true;
     try {
-      // The lesson's own detail record: the published snapshot serves lessons one by one, not as module files.
+      // The lesson's own detail record: the published snapshot serves lessons one by one, not as
+      // module files.
       const lesson = await firstValueFrom(
         this.content.getCourseOutline(MAP_SOURCE.path, MAP_SOURCE.course).pipe(
           switchMap((course) => {

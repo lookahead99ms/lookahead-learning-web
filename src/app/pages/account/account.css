@@ -99,7 +99,9 @@
   font-weight: 600;
   line-height: 1.4;
   text-decoration: none;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 .menu-icon {
   flex: none;
@@ -151,8 +153,16 @@
   border: 1px solid var(--line);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--accent-strong) 20%, transparent), transparent 42%),
-    linear-gradient(115deg, color-mix(in srgb, var(--accent-strong) 10%, var(--surface)), var(--surface) 70%);
+    radial-gradient(
+      circle at 92% 0%,
+      color-mix(in srgb, var(--accent-strong) 20%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--accent-strong) 10%, var(--surface)),
+      var(--surface) 70%
+    );
 }
 .hero-art {
   position: absolute;
@@ -583,7 +593,8 @@ a:not([class*='action']) {
   letter-spacing: 0.3em;
   font-variant-numeric: tabular-nums;
 }
-/* DLV-969: every signed-out account screen is one card in two halves: the Look Ahead panel stays, the form changes. */
+/* DLV-969: every signed-out account screen is one card in two halves: the Look Ahead panel stays,
+   the form changes. */
 .account-page.auth-page {
   max-width: 1040px;
 }

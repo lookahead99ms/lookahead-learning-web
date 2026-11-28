@@ -45,7 +45,9 @@ export class GlossaryTerms {
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly terms = signal<GlossaryTerm[]>([]);
-  private readonly matcher = computed(() => buildGlossaryMatcher(this.terms(), this.glossaryLesson()));
+  private readonly matcher = computed(() =>
+    buildGlossaryMatcher(this.terms(), this.glossaryLesson()),
+  );
   private observer: MutationObserver | null = null;
   private scheduled = false;
   private tip: HTMLElement | null = null;
@@ -111,7 +113,9 @@ export class GlossaryTerms {
   }
 
   private termAt(target: EventTarget | null): HTMLElement | null {
-    return target instanceof Element ? target.closest<HTMLElement>(`.${GLOSSARY_TERM_CLASS}`) : null;
+    return target instanceof Element
+      ? target.closest<HTMLElement>(`.${GLOSSARY_TERM_CLASS}`)
+      : null;
   }
 
   private termFor(mark: HTMLElement): GlossaryTerm | undefined {
@@ -168,7 +172,9 @@ export class GlossaryTerms {
     tip.setAttribute('role', 'tooltip');
     tip.hidden = true;
     tip.innerHTML =
-      '<strong class="glossary-tip-term"></strong><span class="glossary-tip-text"></span><span class="glossary-tip-hint">Click to open the lessons</span>';
+      '<strong class="glossary-tip-term"></strong><span ' +
+      'class="glossary-tip-text"></span><span class="glossary-tip-hint">Click to open ' +
+      'the lessons</span>';
     this.document.body.append(tip);
     this.tip = tip;
     return tip;
@@ -197,7 +203,8 @@ export class GlossaryTerms {
     const maxLeft = Math.max(VIEWPORT_GUTTER_PX, view.innerWidth - width - VIEWPORT_GUTTER_PX);
     const left = Math.min(Math.max(anchor.left, VIEWPORT_GUTTER_PX), maxLeft);
     let top = anchor.bottom + TIP_GAP_PX;
-    if (top + height > view.innerHeight - VIEWPORT_GUTTER_PX) top = Math.max(VIEWPORT_GUTTER_PX, anchor.top - height - TIP_GAP_PX);
+    if (top + height > view.innerHeight - VIEWPORT_GUTTER_PX)
+      top = Math.max(VIEWPORT_GUTTER_PX, anchor.top - height - TIP_GAP_PX);
     tip.style.left = `${Math.round(left)}px`;
     tip.style.top = `${Math.round(top)}px`;
   }
@@ -216,10 +223,12 @@ export class GlossaryTerms {
     dialog.setAttribute('aria-labelledby', 'glossary-dialog-title');
     dialog.innerHTML = [
       '<div class="glossary-dialog-shell">',
-      '<div class="glossary-dialog-head"><div><p class="glossary-eyebrow">Glossary</p><h2 id="glossary-dialog-title"></h2></div>',
+      '<div class="glossary-dialog-head"><div><p ' +
+        'class="glossary-eyebrow">Glossary</p><h2 id="glossary-dialog-title"></h2></div>',
       '<button type="button" class="glossary-close">Close</button></div>',
       '<div class="glossary-dialog-body"><p class="glossary-definition"></p>',
-      '<p class="glossary-read">Read a lesson about this:</p><div class="glossary-links"></div></div>',
+      '<p class="glossary-read">Read a lesson about this:</p><div ' +
+        'class="glossary-links"></div></div>',
       '</div>',
     ].join('');
     dialog.addEventListener('click', (event) => {
@@ -264,7 +273,10 @@ export class GlossaryTerms {
     this.dialogFor = mark;
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
-    (dialog.querySelector<HTMLElement>('a.glossary-link') ?? dialog.querySelector<HTMLElement>('.glossary-close'))?.focus();
+    (
+      dialog.querySelector<HTMLElement>('a.glossary-link') ??
+      dialog.querySelector<HTMLElement>('.glossary-close')
+    )?.focus();
   }
 
   private closeDialog(): void {

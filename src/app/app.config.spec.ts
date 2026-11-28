@@ -12,7 +12,7 @@ class ScrollFixture {}
 class ScrollRoot {}
 
 describe('Application navigation scroll policy', () => {
-  it('starts forward navigation at the top and restores previous position on browser Back', async () => {
+  it('starts forward navigation at the top and restores the position on browser Back', async () => {
     let position: [number, number] = [0, 0];
     const viewport = {
       setHistoryScrollRestoration: vi.fn(),

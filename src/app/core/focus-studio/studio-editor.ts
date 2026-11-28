@@ -213,7 +213,8 @@ export class StudioEditor {
     } catch (error) {
       if (!this.destroyRef.destroyed)
         this.status.set(
-          `Not formatted: ${error instanceof Error ? error.message : 'Formatter failed.'} Draft kept unchanged.`,
+          `Not formatted: ${error instanceof Error ? error.message : 'Formatter failed.'} ` +
+            `Draft kept unchanged.`,
         );
     } finally {
       worker.terminate();

@@ -7,7 +7,8 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
     id: 'backend-engineering',
     title: 'Backend Engineering',
     description:
-      'Build Java, Node.js, Go, and Python services with explicit API, data, and persistence contracts.',
+      'Build Java, Node.js, Go, and Python services with explicit API, data, and ' +
+      'persistence contracts.',
     courseIds: [
       'advanced-java',
       'spring-framework',
@@ -43,7 +44,8 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
     id: 'ai-engineering',
     title: 'AI Engineering',
     description:
-      'Build bounded AI capabilities with explicit evidence, evaluation, security, and operational ownership.',
+      'Build bounded AI capabilities with explicit evidence, evaluation, security, and ' +
+      'operational ownership.',
     courseIds: ['ai-assisted-development', 'ai-code-verification'],
   },
   {

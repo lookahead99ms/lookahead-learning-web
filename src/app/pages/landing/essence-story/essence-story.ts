@@ -4,11 +4,12 @@ import { EssenceSteps } from '../essence-steps/essence-steps';
 import { KEY_SENTENCE, KeyCycle, WordmarkKey } from '../wordmark-key/wordmark-key';
 
 /**
- * The Essence of Look Ahead (user, 2026-10-16/17): the wordmark explains itself and joins, the three
- * statements draw in, then the arrow climbs the steps from the obstacle to "Look ahead".
+ * The Essence of Look Ahead (user, 2026-10-16/17): the wordmark explains itself and joins, the
+ * three statements draw in, then the arrow climbs the steps from the obstacle to "Look ahead".
  *
- * The host is the `<section>` itself (`<section appEssenceStory>`), so the homepage keeps exactly the
- * DOM it had before this was a component, and `/welcome` shows the same section on its own (DLV-969).
+ * The host is the `<section>` itself (`<section appEssenceStory>`), so the homepage keeps exactly
+ * the DOM it had before this was a component, and `/welcome` shows the same section on its own
+ * (DLV-969).
  */
 @Component({
   selector: 'section[appEssenceStory]',
@@ -40,7 +41,10 @@ export class EssenceStory {
   protected readonly sentenceLines = KEY_SENTENCE;
   /** Loop rounds so far; each sends the stairs' arrow up again after the wordmark's light. */
   protected readonly loop = signal(0);
-  /** Start on page load instead of waiting for most of the card to scroll into view (/welcome; the homepage keeps waiting). */
+  /**
+   * Start on page load instead of waiting for most of the card to scroll into view (/welcome; the
+   * homepage keeps waiting).
+   */
   readonly autoplay = input(false);
 
   /** The Essence starts again from the first letter. */
@@ -53,7 +57,9 @@ export class EssenceStory {
     this.loop.set(0);
   }
 
-  /** The wordmark is whole: its sentence settles below the steps, and the statements and steps play. */
+  /**
+   * The wordmark is whole: its sentence settles below the steps, and the statements and steps play.
+   */
   protected finished(): void {
     this.wordmarkDone.set(true);
     this.sentence.set(true);

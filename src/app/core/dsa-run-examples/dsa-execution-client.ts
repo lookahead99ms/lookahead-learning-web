@@ -214,7 +214,8 @@ export class DsaExecutionClient {
           response.status,
           messages[response.status] ?? 'The execution service could not complete this request.',
         );
-      // Bound bytes before decoding/parsing; compiler output must never become unbounded page content.
+      // Bound bytes before decoding/parsing; compiler output must never become unbounded page
+      // content.
       const reader = response.body?.getReader();
       if (!reader) throw this.invalid();
       const chunks: Uint8Array[] = [];
@@ -245,7 +246,8 @@ export class DsaExecutionClient {
       throw new ExecutionError(
         0,
         method === 'POST'
-          ? 'Submission could not be confirmed. It may still run until its server deadline; do not immediately resubmit.'
+          ? 'Submission could not be confirmed. It may still run until its server ' +
+              'deadline; do not immediately resubmit.'
           : 'The runner could not be reached. Your code remains in the editor.',
       );
     } finally {

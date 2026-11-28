@@ -44,7 +44,8 @@ export class ActiveSignIns implements OnDestroy {
   protected readonly currentPassword = signal('');
   protected readonly passwordVisible = signal(false);
   private readonly passwordInput = viewChild<ElementRef<HTMLInputElement>>('passwordInput');
-  private readonly managedReauthentication = viewChild<ElementRef<HTMLAnchorElement>>('managedReauthentication');
+  private readonly managedReauthentication =
+    viewChild<ElementRef<HTMLAnchorElement>>('managedReauthentication');
   private trigger: HTMLButtonElement | null = null;
   private deferredFocus: (() => HTMLElement | null | undefined) | null = null;
   private readonly heading = viewChild<ElementRef<HTMLElement>>('heading');
@@ -218,7 +219,11 @@ export class ActiveSignIns implements OnDestroy {
         this.error.set(this.message(error));
         if (error instanceof SignInManagementError && error.kind === 'reauthentication-required') {
           this.reauthenticationRequired.set(true);
-          this.focus(() => this.managedLogin() ? this.managedReauthentication()?.nativeElement : this.passwordInput()?.nativeElement);
+          this.focus(() =>
+            this.managedLogin()
+              ? this.managedReauthentication()?.nativeElement
+              : this.passwordInput()?.nativeElement,
+          );
         } else {
           this.focus(() => this.errorElement()?.nativeElement);
         }
@@ -238,9 +243,15 @@ export class ActiveSignIns implements OnDestroy {
       case 'expired':
         return 'Your sign-in expired. Sign in again to manage active sign-ins.';
       case 'reauthentication-required':
-        return this.managedLogin() ? 'Confirm your identity through secure sign-in, then review this change again.' : 'Confirm your current password before making this change. Your current sign-in stays active.';
+        return this.managedLogin()
+          ? 'Confirm your identity through secure sign-in, then review this change again.'
+          : 'Confirm your current password before making this change. Your current ' +
+              'sign-in stays active.';
       case 'reauthentication-rejected':
-        return 'We could not confirm your password. Re-enter it to try again. Your current sign-in stays active.';
+        return (
+          'We could not confirm your password. Re-enter it to try again. Your current ' +
+          'sign-in stays active.'
+        );
       case 'invalid-label':
         return 'We could not use that label. Your draft is still here; check it and try again.';
       case 'changed':
@@ -248,7 +259,10 @@ export class ActiveSignIns implements OnDestroy {
       case 'rate-limited':
         return 'Too many attempts. Wait a few minutes, then try again.';
       case 'unavailable':
-        return 'Active sign-ins are unavailable. Your draft is still here. Try again when the service is available.';
+        return (
+          'Active sign-ins are unavailable. Your draft is still here. Try again when the ' +
+          'service is available.'
+        );
       default:
         return 'We could not confirm the result. Refresh the list to check before trying again.';
     }

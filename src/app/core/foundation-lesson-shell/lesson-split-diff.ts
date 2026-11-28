@@ -21,7 +21,10 @@ export interface PairDiffFile {
   renamed: boolean;
   /** The fix deletes the file: every line shows as removed. */
   deleted: boolean;
-  /** The fix leaves this file alone (only on the broken side, or the same name and lines on both): shown folded. */
+  /**
+   * The fix leaves this file alone (only on the broken side, or the same name and lines on both):
+   * shown folded.
+   */
   unchanged: boolean;
   removed: number;
   added: number;
@@ -29,7 +32,10 @@ export interface PairDiffFile {
 
 /** A Debug pair shown as a split diff: the broken program on the left, the fix on the right. */
 export interface PairDiff {
-  /** Java | Python | Go pairs: the tabs that switch the diff (one choice for the page); null for file pairs. */
+  /**
+   * Java | Python | Go pairs: the tabs that switch the diff (one choice for the page); null for
+   * file pairs.
+   */
   languages: LanguageTab[] | null;
   files: PairDiffFile[];
   brokenOutput: TheoryOutput | null;
@@ -39,11 +45,12 @@ export interface PairDiff {
 const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
 
 /**
- * A Debug pair as a split diff, as a code review shows it: rows aligned from the same first line, removed lines
- * red (−) on the broken side, added lines green (+) on the fixed side, each side's console below it. In a narrow
- * column CSS order puts the whole broken side first, then the fix. The host is the lesson's `div.split-diff`
- * (its id, role and label are set where it is placed, next to the language tabs). Code blocks, tables and
- * consoles are the lesson's own blocks, passed in as templates.
+ * A Debug pair as a split diff, as a code review shows it: rows aligned from the same first line,
+ * removed lines red (−) on the broken side, added lines green (+) on the fixed side, each side's
+ * console below it. In a narrow column CSS order puts the whole broken side first, then the fix.
+ * The host is the lesson's `div.split-diff` (its id, role and label are set where it is placed,
+ * next to the language tabs). Code blocks, tables and consoles are the lesson's own blocks, passed
+ * in as templates.
  */
 @Component({
   selector: 'div[appLessonSplitDiff]',
@@ -67,31 +74,59 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
     @for (file of diff().files; track file.label) {
       @if (file.unchanged && diff().files.length > 1) {
         <details class="d-shared d-l">
-          <summary><span>{{ file.label }}</span> <small>Not changed by the fix</small></summary>
-          <ng-container [ngTemplateOutlet]="codeBlock()" [ngTemplateOutletContext]="{ $implicit: file.broken ?? file.fixed }" />
+          <summary
+            ><span>{{ file.label }}</span> <small>Not changed by the fix</small></summary
+          >
+          <ng-container
+            [ngTemplateOutlet]="codeBlock()"
+            [ngTemplateOutletContext]="{ $implicit: file.broken ?? file.fixed }"
+          />
         </details>
       } @else {
         <div class="d-file d-l">
           @if (file.broken; as code) {
             <span>{{ code.title }}</span>
-            <div><small>{{ languageLabel(code.language) }}</small><app-code-copy-button [code]="code.source" /></div>
+            <div
+              ><small>{{ languageLabel(code.language) }}</small
+              ><app-code-copy-button [code]="code.source"
+            /></div>
           } @else {
             <span class="d-file-none">No file before the fix</span>
           }
         </div>
         <div class="d-file d-r">
           @if (file.fixed; as code) {
-            <span>{{ code.title }}@if (file.removed || file.added) {<small class="d-count" [attr.aria-label]="file.added + ' lines added, ' + file.removed + ' removed'"><b class="d-count-add">+{{ file.added }}</b><b class="d-count-del">−{{ file.removed }}</b></small>} @else if (file.renamed) {<small class="d-count">renamed</small>}</span>
-            <div><small>{{ languageLabel(code.language) }}</small><app-code-copy-button [code]="code.source" /></div>
+            <!-- prettier-ignore -->
+            <span>{{ code.title }}@if (file.removed || file.added) {<small class="d-count"
+              [attr.aria-label]="file.added + ' lines added, ' + file.removed + ' removed'"><b
+              class="d-count-add">+{{ file.added }}</b><b class="d-count-del">−{{ file.removed
+              }}</b></small>} @else if (file.renamed) {<small
+              class="d-count">renamed</small>}</span>
+            <div
+              ><small>{{ languageLabel(code.language) }}</small
+              ><app-code-copy-button [code]="code.source"
+            /></div>
           } @else if (file.deleted) {
-            <span class="d-file-none">Deleted by the fix<small class="d-count" [attr.aria-label]="file.removed + ' lines removed'"><b class="d-count-del">−{{ file.removed }}</b></small></span>
+            <span class="d-file-none"
+              >Deleted by the fix<small
+                class="d-count"
+                [attr.aria-label]="file.removed + ' lines removed'"
+                ><b class="d-count-del">−{{ file.removed }}</b></small
+              ></span
+            >
           } @else {
             <span class="d-file-none">Unchanged</span>
           }
         </div>
         @for (row of file.rows; track $index) {
-          <ng-container [ngTemplateOutlet]="diffCell" [ngTemplateOutletContext]="{ $implicit: row.left, side: 'l', language: file.language }" />
-          <ng-container [ngTemplateOutlet]="diffCell" [ngTemplateOutletContext]="{ $implicit: row.right, side: 'r', language: file.language }" />
+          <ng-container
+            [ngTemplateOutlet]="diffCell"
+            [ngTemplateOutletContext]="{ $implicit: row.left, side: 'l', language: file.language }"
+          />
+          <ng-container
+            [ngTemplateOutlet]="diffCell"
+            [ngTemplateOutletContext]="{ $implicit: row.right, side: 'r', language: file.language }"
+          />
         }
         <div class="d-end d-l" aria-hidden="true"></div>
         <div class="d-end d-r" aria-hidden="true"></div>
@@ -99,18 +134,30 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
     }
     <div class="d-out d-l">
       @if (pair().broken.table; as table) {
-        <ng-container [ngTemplateOutlet]="lessonTable()" [ngTemplateOutletContext]="{ $implicit: table }" />
+        <ng-container
+          [ngTemplateOutlet]="lessonTable()"
+          [ngTemplateOutletContext]="{ $implicit: table }"
+        />
       }
       @if (diff().brokenOutput; as output) {
-        <ng-container [ngTemplateOutlet]="runConsole()" [ngTemplateOutletContext]="{ $implicit: output }" />
+        <ng-container
+          [ngTemplateOutlet]="runConsole()"
+          [ngTemplateOutletContext]="{ $implicit: output }"
+        />
       }
     </div>
     <div class="d-out d-r">
       @if (pair().fixed.table; as table) {
-        <ng-container [ngTemplateOutlet]="lessonTable()" [ngTemplateOutletContext]="{ $implicit: table }" />
+        <ng-container
+          [ngTemplateOutlet]="lessonTable()"
+          [ngTemplateOutletContext]="{ $implicit: table }"
+        />
       }
       @if (diff().fixedOutput; as output) {
-        <ng-container [ngTemplateOutlet]="runConsole()" [ngTemplateOutletContext]="{ $implicit: output }" />
+        <ng-container
+          [ngTemplateOutlet]="runConsole()"
+          [ngTemplateOutletContext]="{ $implicit: output }"
+        />
       }
     </div>
     <ng-template #diffCell let-cell let-side="side" let-language="language">
@@ -119,9 +166,17 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
           <span class="d-num" aria-hidden="true">{{ cell.line }}</span>
           <span class="d-mark" aria-hidden="true">{{ diffMark(cell.kind) }}</span>
           @if (cell.kind !== 'same') {
-            <span class="visually-hidden">{{ cell.kind === 'del' ? 'Removed line ' + cell.line + ': ' : 'Added line ' + cell.line + ': ' }}</span>
+            <span class="visually-hidden">{{
+              cell.kind === 'del'
+                ? 'Removed line ' + cell.line + ': '
+                : 'Added line ' + cell.line + ': '
+            }}</span>
           }
-          <code class="d-code" [appLearningCode]="cell.text || ' '" [codeLanguage]="language"></code>
+          <code
+            class="d-code"
+            [appLearningCode]="cell.text || ' '"
+            [codeLanguage]="language"
+          ></code>
         </div>
       } @else {
         <div class="d-row" [class]="'d-row d-' + side + ' d-fill'" aria-hidden="true"></div>
@@ -130,8 +185,8 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
   `,
   styles: [
     `
-      /* One grid: heads, then per file a title row and aligned rows, then consoles. The code panel is dark
-         in both themes, so the row colors are fixed. */
+      /* One grid: heads, then per file a title row and aligned rows, then consoles. The code panel
+         is dark in both themes, so the row colors are fixed. */
       :host {
         --diff-del-bg: #4a1d27;
         --diff-add-bg: #17402d;
@@ -250,7 +305,11 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
         color: var(--diff-add-mark);
       }
       :host .d-fill {
-        background: repeating-linear-gradient(135deg, var(--code-bg) 0 6px, var(--diff-fill) 6px 12px);
+        background: repeating-linear-gradient(
+          135deg,
+          var(--code-bg) 0 6px,
+          var(--diff-fill) 6px 12px
+        );
       }
       :host .d-end {
         height: 10px;
@@ -297,7 +356,8 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
           display: none;
         }
       }
-      /* The lesson parts the diff shares with the rest of the reader: labels, prose and screen-reader text. */
+      /* The lesson parts the diff shares with the rest of the reader: labels, prose and
+         screen-reader text. */
       :host-context(.system .lesson-section) p {
         max-width: var(--reading-width);
         line-height: 1.8;
@@ -352,7 +412,8 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
         font-size: 0.95rem;
         line-height: 1.6;
       }
-      /* The lesson's code block (a folded file) and table, drawn from the lesson's own templates. */
+      /* The lesson's code block (a folded file) and table, drawn from the lesson's own templates.
+      */
       .system :host(.split-diff) .d-shared ::ng-deep .foundation-code {
         margin-top: 0.5rem;
       }
@@ -368,7 +429,10 @@ export class LessonSplitDiff {
   /** Column labels, e.g. "What broke" and "The fix", or the section's own pair labels. */
   readonly brokenLabel = input.required<string>();
   readonly fixedLabel = input.required<string>();
-  /** The lesson's code block, table and run console, so the diff draws them exactly as the lesson does. */
+  /**
+   * The lesson's code block, table and run console, so the diff draws them exactly as the lesson
+   * does.
+   */
   readonly codeBlock = input.required<TemplateRef<unknown>>();
   readonly lessonTable = input.required<TemplateRef<unknown>>();
   readonly runConsole = input.required<TemplateRef<unknown>>();

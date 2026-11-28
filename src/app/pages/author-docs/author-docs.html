@@ -6,7 +6,11 @@
       <app-author-workspace-nav [tabbed]="true" [pageTitle]="group.label" pageId="docs">
         <p description class="reader">{{ group.reader }}</p>
       </app-author-workspace-nav>
-      <nav class="page-grid" [attr.aria-label]="group.label + ' pages'" [style.--group-accent]="group.accent">
+      <nav
+        class="page-grid"
+        [attr.aria-label]="group.label + ' pages'"
+        [style.--group-accent]="group.accent"
+      >
         @for (page of group.pages; track page.id) {
           <a [routerLink]="page.href">
             <span class="page-icon" aria-hidden="true">{{ page.icon }}</span>

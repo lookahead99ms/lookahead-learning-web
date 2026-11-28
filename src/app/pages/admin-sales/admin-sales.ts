@@ -23,13 +23,7 @@ import {
 @Component({
   host: { class: 'admin-surface' },
   selector: 'app-admin-sales',
-  imports: [
-    PlatformHeader,
-    FormsModule,
-    RouterLink,
-    AuthorAdminMenu,
-    AuthorWorkspaceNav,
-  ],
+  imports: [PlatformHeader, FormsModule, RouterLink, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-sales.html',
   styleUrl: './admin-sales.css',
 })
@@ -56,13 +50,16 @@ export class AdminSalesPage {
   /** One row per plan: its catalog price and the price being previewed, in dollars. */
   protected readonly priceRows = computed(() => {
     const overrides = this.sales.priceOverrides();
-    return this.sales.plans().filter((plan) => plan.id !== 'free').map((plan) => ({
-      id: plan.id,
-      name: plan.name,
-      group: plan.group === 'promo' ? 'Sale' : 'Regular',
-      catalog: priceLabel(plan),
-      preview: overrides[plan.id] !== undefined ? (overrides[plan.id]! / 100).toFixed(2) : '',
-    }));
+    return this.sales
+      .plans()
+      .filter((plan) => plan.id !== 'free')
+      .map((plan) => ({
+        id: plan.id,
+        name: plan.name,
+        group: plan.group === 'promo' ? 'Sale' : 'Regular',
+        catalog: priceLabel(plan),
+        preview: overrides[plan.id] !== undefined ? (overrides[plan.id]! / 100).toFixed(2) : '',
+      }));
   });
 
   protected chooseTemplate(id: SaleTemplateId): void {
@@ -81,11 +78,27 @@ export class AdminSalesPage {
       this.notice.set('Choose at least one sale plan.');
       return;
     }
-    try { await this.sales.startSale(this.selectedTemplate, this.greeting, this.includedPlans(),this.startsAt,this.endsAt); this.notice.set('Sale saved on the local server.'); } catch(error) { this.notice.set(error instanceof Error?error.message:'Sale unavailable.'); }
+    try {
+      await this.sales.startSale(
+        this.selectedTemplate,
+        this.greeting,
+        this.includedPlans(),
+        this.startsAt,
+        this.endsAt,
+      );
+      this.notice.set('Sale saved on the local server.');
+    } catch (error) {
+      this.notice.set(error instanceof Error ? error.message : 'Sale unavailable.');
+    }
   }
 
   protected async stopSale(): Promise<void> {
-    try { await this.sales.stopSale(); this.notice.set('Sale stopped on the local server.'); } catch(error) { this.notice.set(error instanceof Error?error.message:'Sale unavailable.'); }
+    try {
+      await this.sales.stopSale();
+      this.notice.set('Sale stopped on the local server.');
+    } catch (error) {
+      this.notice.set(error instanceof Error ? error.message : 'Sale unavailable.');
+    }
   }
 
   /** Dollars as typed ("59.99"); empty clears the preview for that plan. */
@@ -99,7 +112,12 @@ export class AdminSalesPage {
       this.notice.set('Enter a price such as 59.99.');
       return;
     }
-    try { await this.sales.setPrice(id, Math.round(Number(trimmed) * 100)); this.notice.set('Price updated for new purchases only.'); } catch(error) { this.notice.set(error instanceof Error?error.message:'Price unavailable.'); }
+    try {
+      await this.sales.setPrice(id, Math.round(Number(trimmed) * 100));
+      this.notice.set('Price updated for new purchases only.');
+    } catch (error) {
+      this.notice.set(error instanceof Error ? error.message : 'Price unavailable.');
+    }
   }
 
   protected resetPrices(): void {

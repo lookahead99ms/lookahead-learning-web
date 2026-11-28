@@ -113,7 +113,9 @@ test('compares source-derived loading profiles without presenting browser measur
     ),
     {
       interpretation:
-        'A source-derived comparison of application payload bodies. It is not a browser waterfall, heap snapshot, latency measurement, or compressed transfer observation.',
+        'A source-derived comparison of application payload bodies. It is not a browser ' +
+        'waterfall, heap snapshot, latency measurement, or compressed transfer ' +
+        'observation.',
       requestReduction: 18,
       sourceByteReduction: 750,
       sourceByteReductionPercent: 75,
@@ -207,18 +209,21 @@ test('requires an explicit source and validates sampling limits and arguments', 
   ]);
 });
 
-test('private reports cannot be written into the public checkout, including trailing-slash roots', () => {
-  assert.throws(() => requirePrivateOutput('/workspace/web/report.json', '/workspace/web/'));
-  assert.throws(() => requirePrivateOutput('/workspace/web', '/workspace/web/'));
-  assert.throws(() =>
-    requirePrivateOutput('/workspace/content/../web/report.json', '/workspace/web'),
-  );
-  assert.equal(
-    requirePrivateOutput('/workspace/content/report.json', '/workspace/web/'),
-    '/workspace/content/report.json',
-  );
-  assert.equal(
-    requirePrivateOutput('/workspace/web-private/report.json', '/workspace/web/'),
-    '/workspace/web-private/report.json',
-  );
-});
+test(
+  'private reports cannot be written into the public checkout, including trailing-slash ' + 'roots',
+  () => {
+    assert.throws(() => requirePrivateOutput('/workspace/web/report.json', '/workspace/web/'));
+    assert.throws(() => requirePrivateOutput('/workspace/web', '/workspace/web/'));
+    assert.throws(() =>
+      requirePrivateOutput('/workspace/content/../web/report.json', '/workspace/web'),
+    );
+    assert.equal(
+      requirePrivateOutput('/workspace/content/report.json', '/workspace/web/'),
+      '/workspace/content/report.json',
+    );
+    assert.equal(
+      requirePrivateOutput('/workspace/web-private/report.json', '/workspace/web/'),
+      '/workspace/web-private/report.json',
+    );
+  },
+);

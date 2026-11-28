@@ -67,7 +67,10 @@ export class DeliveryPlanPage implements OnInit {
   protected readonly workspace = signal(false);
   private readonly accounts = inject(StudyPlanAccount);
   protected readonly authorAccess = computed(
-    () => (this.accounts.account()?.permissions?.deliveryRead ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
+    () =>
+      (this.accounts.account()?.permissions?.deliveryRead ??
+        this.accounts.account()?.authorPreview === true) &&
+      !this.accounts.sessionExpired(),
   );
   private readonly content = inject(ContentService);
   private readonly editor = inject(DeliveryEditorService);
@@ -80,7 +83,8 @@ export class DeliveryPlanPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly workItemDialog = viewChild<ElementRef<HTMLDialogElement>>('workItemDialog');
-  private readonly uploadResultDialog = viewChild<ElementRef<HTMLDialogElement>>('uploadResultDialog');
+  private readonly uploadResultDialog =
+    viewChild<ElementRef<HTMLDialogElement>>('uploadResultDialog');
   private readonly editorDialog = viewChild<ElementRef<HTMLDialogElement>>('editorDialog');
   private revision = '';
   private draftRevision = '';
@@ -92,26 +96,33 @@ export class DeliveryPlanPage implements OnInit {
   /** The board shows the published staff copy; every editing control stays off. */
   protected readonly published = signal(false);
   /**
-   * DLV-971 runtime stores (owner, 2026-11-06): the board shows the plan the Domain serves on DEV. Owner and admins
-   * edit it in place with the plan's version; readers (reviewers, co-authors) see it read-only.
+   * DLV-971 runtime stores (owner, 2026-11-06): the board shows the plan the Domain serves on DEV.
+   * Owner and admins edit it in place with the plan's version; readers (reviewers, co-authors) see
+   * it read-only.
    */
   protected readonly dev = signal(false);
   /** The plan's version on DEV, sent back as `expectedVersion` with every write. */
   private version = 0;
   /** The local editor or the DEV plan: the controls that write are shown. */
   protected readonly writable = computed(() => this.editable() || this.dev());
-  /** One line above the board when the DEV plan is not there yet and the published copy stands in. */
+  /**
+   * One line above the board when the DEV plan is not there yet and the published copy stands in.
+   */
   protected readonly planNotice = signal('');
-  /** The ticket a /delivery-plan#<id> link asked for: scrolled to and marked once the plan is in. */
+  /**
+   * The ticket a /delivery-plan#<id> link asked for: scrolled to and marked once the plan is in.
+   */
   protected readonly highlightedId = signal<string | null>(null);
   protected readonly saving = signal(false);
   /**
-   * DLV-971 inbox sync (owner, 2026-11-07): the owner and co-authors push their local delivery-plan.json to DEV
-   * (Upload plan file) or merge one already placed in `delivery/inbox/` (Sync plan inbox). Legacy accounts without
-   * `permissions` but with authorPreview count as the owner.
+   * DLV-971 inbox sync (owner, 2026-11-07): the owner and co-authors push their local
+   * delivery-plan.json to DEV (Upload plan file) or merge one already placed in `delivery/inbox/`
+   * (Sync plan inbox). Legacy accounts without `permissions` but with authorPreview count as the
+   * owner.
    */
   protected readonly canSyncPlan = computed(() => {
-    const account = this.accounts.account(), permissions = account?.permissions;
+    const account = this.accounts.account(),
+      permissions = account?.permissions;
     if (!permissions) return account?.authorPreview === true;
     return permissions.manageAccess || permissions.feedbackRole === 'co-author';
   });
@@ -191,9 +202,9 @@ export class DeliveryPlanPage implements OnInit {
     () => this.plan()?.workItems.filter((item) => item.statusId === 'in-progress').length ?? 0,
   );
   /**
-   * DLV-995 (owner, 2026-11-09): the overview no longer shows a completion percentage. Done ÷ every ticket ever
-   * written mixed September ideas with merged epics and misled; the summary now says where each stage stands,
-   * what is in flight, what is up next and what finished recently.
+   * DLV-995 (owner, 2026-11-09): the overview no longer shows a completion percentage. Done ÷ every
+   * ticket ever written mixed September ideas with merged epics and misled; the summary now says
+   * where each stage stands, what is in flight, what is up next and what finished recently.
    */
   protected readonly stageSummaries = computed(() => {
     const plan = this.plan();
@@ -201,15 +212,26 @@ export class DeliveryPlanPage implements OnInit {
     return plan.stages.map((stage) => {
       const items = plan.workItems.filter((item) => item.stageId === stage.id);
       const done = items.filter((item) => item.statusId === 'done').length;
-      return { stage, total: items.length, done, percent: items.length ? (done / items.length) * 100 : 0 };
+      return {
+        stage,
+        total: items.length,
+        done,
+        percent: items.length ? (done / items.length) * 100 : 0,
+      };
     });
   });
-  /** The work-in-flight cell fills the rest of the last stage row in the four-column grid (a full row when it is full). */
+  /**
+   * The work-in-flight cell fills the rest of the last stage row in the four-column grid (a full
+   * row when it is full).
+   */
   protected readonly flowSpan = computed(() => {
     const remainder = (this.plan()?.stages.length ?? 0) % 4;
     return remainder ? 4 - remainder : 4;
   });
-  /** Tickets per workflow column for the work-in-flight bar, Done first so the bar grows from the left (owner, 2026-11-09). */
+  /**
+   * Tickets per workflow column for the work-in-flight bar, Done first so the bar grows from the
+   * left (owner, 2026-11-09).
+   */
   protected readonly flow = computed(() => {
     const plan = this.plan();
     return [...(plan?.workflow ?? [])].reverse().map((status) => ({
@@ -218,9 +240,14 @@ export class DeliveryPlanPage implements OnInit {
     }));
   });
   protected readonly flowLabel = computed(() =>
-    this.flow().map((entry) => `${entry.status.label} ${entry.count}`).join(', '),
+    this.flow()
+      .map((entry) => `${entry.status.label} ${entry.count}`)
+      .join(', '),
   );
-  /** The six highest-priority tickets that are in progress, in review or ready; P0 first, then column order. */
+  /**
+   * The six highest-priority tickets that are in progress, in review or ready; P0 first, then
+   * column order.
+   */
   protected readonly nextUp = computed(() => {
     const plan = this.plan();
     if (!plan) return [];
@@ -260,7 +287,8 @@ export class DeliveryPlanPage implements OnInit {
     if (!this.authorAccess()) return;
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       // Preserve existing filtered/view bookmarks while the plain route becomes the overview.
-      const workspace = this.route.snapshot.routeConfig?.path === 'delivery-plan/work' ||
+      const workspace =
+        this.route.snapshot.routeConfig?.path === 'delivery-plan/work' ||
         ['view', 'q', 'stage', 'priority', 'type'].some((key) => params.has(key)) ||
         this.route.snapshot.fragment === 'delivery-workspace';
       if (this.workspace() && !workspace) {
@@ -320,7 +348,8 @@ export class DeliveryPlanPage implements OnInit {
               });
           } else {
             this.error.set(
-              'The local editor could not read the private plan. Check its JSON and the server terminal before saving.',
+              'The local editor could not read the private plan. Check its JSON and the ' +
+                'server terminal before saving.',
             );
           }
         },
@@ -328,8 +357,9 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   /**
-   * The protected build: on DEV the Domain serves the plan from the assets bucket; until the owner uploads the first
-   * one (404 DELIVERY_PLAN_MISSING), and outside DEV, the published copy stands in.
+   * The protected build: on DEV the Domain serves the plan from the assets bucket; until the owner
+   * uploads the first one (404 DELIVERY_PLAN_MISSING), and outside DEV, the published copy stands
+   * in.
    */
   private async loadDevOrPublishedCopy(): Promise<void> {
     if (await this.onDev()) {
@@ -346,21 +376,28 @@ export class DeliveryPlanPage implements OnInit {
             error instanceof DeliveryPlanApiError && error.status === 401
               ? 'Sign in again to read the delivery plan on DEV.'
               : error instanceof DeliveryPlanApiError && error.status === 403
-                ? 'Your role cannot read the delivery plan on DEV. Ask an owner or admin for delivery access.'
+                ? 'Your role cannot read the delivery plan on DEV. Ask an owner or admin ' +
+                  'for delivery access.'
                 : 'The plan on DEV could not be loaded. Try again.',
           );
           return;
         }
-        this.planNotice.set('The plan on DEV has not been uploaded yet; showing the published copy.');
+        this.planNotice.set(
+          'The plan on DEV has not been uploaded yet; showing the published copy.',
+        );
       }
     }
     this.loadPublishedCopy();
   }
 
-  /** True behind the DEV gate; waits briefly for the first `/dev/session` answer on a direct link. */
+  /**
+   * True behind the DEV gate; waits briefly for the first `/dev/session` answer on a direct link.
+   */
   private async onDev(): Promise<boolean> {
     if (!this.devSession.known())
-      await firstValueFrom(this.devKnown.pipe(filter(Boolean), timeout(3000))).catch(() => undefined);
+      await firstValueFrom(this.devKnown.pipe(filter(Boolean), timeout(3000))).catch(
+        () => undefined,
+      );
     return this.devSession.gated() || !!this.devSession.status();
   }
 
@@ -380,7 +417,10 @@ export class DeliveryPlanPage implements OnInit {
       ? plan.workItems.map((item) => (item.id === result.item.id ? result.item : item))
       : [...plan.workItems, result.item];
     this.version = result.version;
-    this.acceptSnapshot({ plan: { ...plan, version: result.version, workItems }, revision: `dev-${result.version}` });
+    this.acceptSnapshot({
+      plan: { ...plan, version: result.version, workItems },
+      revision: `dev-${result.version}`,
+    });
   }
 
   private async reloadDevPlan(quiet = false): Promise<void> {
@@ -394,8 +434,14 @@ export class DeliveryPlanPage implements OnInit {
       // Say what was read (user, 2026-11-07: an unchanged board looked like a dead button).
       if (!quiet) {
         const checked = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const found = `DEV plan version ${plan.version ?? 0}, ${plan.workItems.length} items, checked ${checked}.`;
-        this.notice.set(changed ? `Board refreshed from DEV. ${found}` : `Board is up to date. Nothing new to sync: ${found}`);
+        const found =
+          `DEV plan version ${plan.version ?? 0}, ${plan.workItems.length} items, ` +
+          `checked ${checked}.`;
+        this.notice.set(
+          changed
+            ? `Board refreshed from DEV. ${found}`
+            : `Board is up to date. Nothing new to sync: ${found}`,
+        );
       }
     } catch {
       this.notice.set('The plan on DEV could not be refreshed. Current data is retained.');
@@ -405,8 +451,9 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   /**
-   * Upload plan file: the chosen delivery-plan.json goes to DEV as written and is merged at once; the board then reads
-   * the plan again. The input is cleared afterwards so the same file can be picked again after a fix.
+   * Upload plan file: the chosen delivery-plan.json goes to DEV as written and is merged at once;
+   * the board then reads the plan again. The input is cleared afterwards so the same file can be
+   * picked again after a fix.
    */
   protected async uploadPlanFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -422,11 +469,18 @@ export class DeliveryPlanPage implements OnInit {
       const result = await this.devPlan.uploadInbox(text);
       if (result.synced) {
         this.uploadStage.set('merging');
-        this.notice.set(`Plan file uploaded and merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
+        this.notice.set(
+          `Plan file uploaded and merged into DEV plan ` +
+            `version ${result.version}: ${this.mergeCounts(result)}.`,
+        );
         await this.reloadDevPlan(true);
-        this.showUploadResult(this.describeMerge(result, 'upload', { name: file.name, size: file.size, ...local }));
+        this.showUploadResult(
+          this.describeMerge(result, 'upload', { name: file.name, size: file.size, ...local }),
+        );
       } else {
-        this.notice.set(`Plan file uploaded but not merged: ${result.reason ?? 'no reason given'}.`);
+        this.notice.set(
+          `Plan file uploaded but not merged: ${result.reason ?? 'no reason given'}.`,
+        );
       }
     } catch (error) {
       this.notice.set(`The plan file could not be uploaded: ${this.syncFailure(error)}.`);
@@ -437,18 +491,26 @@ export class DeliveryPlanPage implements OnInit {
     }
   }
 
-  /** Sync plan inbox: merges a plan file already placed in `delivery/inbox/` on DEV, then reads the plan again. */
+  /**
+   * Sync plan inbox: merges a plan file already placed in `delivery/inbox/` on DEV, then reads the
+   * plan again.
+   */
   protected async syncPlanInbox(): Promise<void> {
     if (!this.dev() || !this.canSyncPlan() || this.saving() || this.syncing()) return;
     this.syncing.set(true);
     try {
       const result = await this.devPlan.syncInbox();
       if (result.synced) {
-        this.notice.set(`Sync plan inbox: merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
+        this.notice.set(
+          `Sync plan inbox: merged into DEV plan ` +
+            `version ${result.version}: ${this.mergeCounts(result)}.`,
+        );
         await this.reloadDevPlan(true);
         this.showUploadResult(this.describeMerge(result, 'inbox', null));
       } else {
-        this.notice.set(`Sync plan inbox: nothing to sync (${result.reason ?? 'no reason given'}).`);
+        this.notice.set(
+          `Sync plan inbox: nothing to sync (${result.reason ?? 'no reason given'}).`,
+        );
       }
     } catch (error) {
       this.notice.set(`Sync plan inbox failed: ${this.syncFailure(error)}.`);
@@ -460,30 +522,80 @@ export class DeliveryPlanPage implements OnInit {
   /** "2 added, 1 taken from local, 0 kept from DEV, 0 conflict(s)" from a merge's counts. */
   private mergeCounts(result: DeliveryInboxSync): string {
     const counts = result.counts ?? { added: 0, takenLocal: 0, keptDev: 0, conflicts: 0 };
-    return `${counts.added} added, ${counts.takenLocal} taken from local, ${counts.keptDev} kept from DEV, ${counts.conflicts} conflict(s)`;
+    return (
+      `${counts.added} added, ${counts.takenLocal} taken from local, ${counts.keptDev} ` +
+      `kept from DEV, ${counts.conflicts} conflict(s)`
+    );
   }
 
   /**
-   * DLV-1007 (owner, 2026-11-22): the merge as a table the owner can read: the file that was sent, the DEV version it
-   * moved, and one row per ticket the merge touched (conflicts first, each pointing at the ticket where Keep DEV or
-   * Take local is chosen). Titles come from the plan just reloaded; a ticket deleted on DEV keeps the title from the file.
+   * DLV-1007 (owner, 2026-11-22): the merge as a table the owner can read: the file that was sent,
+   * the DEV version it moved, and one row per ticket the merge touched (conflicts first, each
+   * pointing at the ticket where Keep DEV or Take local is chosen). Titles come from the plan just
+   * reloaded; a ticket deleted on DEV keeps the title from the file.
    */
-  private describeMerge(result: DeliveryInboxSync, source: 'upload' | 'inbox', file: LocalPlanFile | null): UploadResult {
-    const counts = result.counts ?? { added: 0, takenLocal: 0, keptDev: 0, conflicts: 0, unchanged: 0, deletedOnDev: 0 };
-    const details: DeliveryInboxDetails = result.details ?? { added: [], takenLocal: [], keptDev: [], conflicts: [], unchanged: [], deletedOnDev: [] };
-    const onDev = new Map((this.plan()?.workItems ?? []).map((item) => [item.id, item.title] as const));
+  private describeMerge(
+    result: DeliveryInboxSync,
+    source: 'upload' | 'inbox',
+    file: LocalPlanFile | null,
+  ): UploadResult {
+    const counts = result.counts ?? {
+      added: 0,
+      takenLocal: 0,
+      keptDev: 0,
+      conflicts: 0,
+      unchanged: 0,
+      deletedOnDev: 0,
+    };
+    const details: DeliveryInboxDetails = result.details ?? {
+      added: [],
+      takenLocal: [],
+      keptDev: [],
+      conflicts: [],
+      unchanged: [],
+      deletedOnDev: [],
+    };
+    const onDev = new Map(
+      (this.plan()?.workItems ?? []).map((item) => [item.id, item.title] as const),
+    );
     const title = (id: string) => onDev.get(id) ?? file?.titles.get(id) ?? '';
     const rows: UploadResultRow[] = [];
     const outcomes: [UploadOutcome, string[], string, string][] = [
-      ['conflicts', details.conflicts, 'Conflict: changed on DEV and in your file', 'Open the ticket and choose Keep DEV or Take local'],
+      [
+        'conflicts',
+        details.conflicts,
+        'Conflict: changed on DEV and in your file',
+        'Open the ticket and choose Keep DEV or Take local',
+      ],
       ['added', details.added, 'Added from your file', 'New on DEV'],
-      ['takenLocal', details.takenLocal, 'Updated from your file', 'Your version replaced the DEV ticket'],
-      ['keptDev', details.keptDev, 'DEV version kept', 'DEV changed it after your copy; your file had no change for it'],
-      ['deletedOnDev', details.deletedOnDev, 'Not restored', 'Deleted on DEV after your copy was taken'],
+      [
+        'takenLocal',
+        details.takenLocal,
+        'Updated from your file',
+        'Your version replaced the DEV ticket',
+      ],
+      [
+        'keptDev',
+        details.keptDev,
+        'DEV version kept',
+        'DEV changed it after your copy; your file had no change for it',
+      ],
+      [
+        'deletedOnDev',
+        details.deletedOnDev,
+        'Not restored',
+        'Deleted on DEV after your copy was taken',
+      ],
     ];
     for (const [outcome, ids, label, hint] of outcomes)
-      for (const id of ids) rows.push({ id, title: title(id), outcome, label, hint, onDev: onDev.has(id) });
-    const listed = details.added.length + details.takenLocal.length + details.keptDev.length + details.conflicts.length + details.deletedOnDev.length;
+      for (const id of ids)
+        rows.push({ id, title: title(id), outcome, label, hint, onDev: onDev.has(id) });
+    const listed =
+      details.added.length +
+      details.takenLocal.length +
+      details.keptDev.length +
+      details.conflicts.length +
+      details.deletedOnDev.length;
     return {
       source,
       fileName: file?.name ?? null,
@@ -499,7 +611,10 @@ export class DeliveryPlanPage implements OnInit {
     };
   }
 
-  /** The result opens as a dialog over the board (owner, 2026-11-22), so the page underneath stays where it was. */
+  /**
+   * The result opens as a dialog over the board (owner, 2026-11-22), so the page underneath stays
+   * where it was.
+   */
   private showUploadResult(result: UploadResult): void {
     this.uploadResult.set(result);
     queueMicrotask(() => {
@@ -521,8 +636,8 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   /**
-   * Download DEV plan: the plan as DEV holds it now, as a file named by its version, so a local copy can start from it
-   * (an upload must be edited from the DEV version or an archived one).
+   * Download DEV plan: the plan as DEV holds it now, as a file named by its version, so a local
+   * copy can start from it (an upload must be edited from the DEV version or an archived one).
    */
   protected async downloadDevPlan(): Promise<void> {
     if (!this.dev() || this.downloading()) return;
@@ -530,7 +645,9 @@ export class DeliveryPlanPage implements OnInit {
     try {
       const plan = await this.devPlan.load();
       const name = `delivery-plan-dev-v${plan.version ?? 0}.json`;
-      const url = URL.createObjectURL(new Blob([JSON.stringify(plan, null, 2) + '\n'], { type: 'application/json' }));
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(plan, null, 2) + '\n'], { type: 'application/json' }),
+      );
       try {
         const anchor = document.createElement('a');
         anchor.href = url;
@@ -540,7 +657,10 @@ export class DeliveryPlanPage implements OnInit {
       } finally {
         URL.revokeObjectURL(url);
       }
-      this.notice.set(`Downloaded ${name}: DEV plan version ${plan.version ?? 0}, ${plan.workItems.length} tickets.`);
+      this.notice.set(
+        `Downloaded ${name}: DEV plan ` +
+          `version ${plan.version ?? 0}, ${plan.workItems.length} tickets.`,
+      );
     } catch (error) {
       this.notice.set(`The DEV plan could not be downloaded: ${this.syncFailure(error)}.`);
     } finally {
@@ -548,11 +668,17 @@ export class DeliveryPlanPage implements OnInit {
     }
   }
 
-  /** The Domain's message, else its error code, else what the browser said; the sentence's own full stop follows. */
+  /**
+   * The Domain's message, else its error code, else what the browser said; the sentence's own full
+   * stop follows.
+   */
   private syncFailure(error: unknown): string {
-    const text = error instanceof DeliveryPlanApiError
-      ? error.message || error.code || `request failed (${error.status})`
-      : error instanceof Error && error.message ? error.message : 'unknown error';
+    const text =
+      error instanceof DeliveryPlanApiError
+        ? error.message || error.code || `request failed (${error.status})`
+        : error instanceof Error && error.message
+          ? error.message
+          : 'unknown error';
     return text.replace(/\.$/, '');
   }
 
@@ -573,12 +699,14 @@ export class DeliveryPlanPage implements OnInit {
             this.error.set(
               error.status === 401
                 ? 'Sign in again to read the published delivery plan.'
-                : 'Your role cannot read the published delivery plan. Ask an owner or admin for staff documents access.',
+                : 'Your role cannot read the published delivery plan. Ask an owner or ' +
+                    'admin for staff documents access.',
             );
             return;
           }
           this.error.set(
-            'The published delivery plan could not be loaded. Check the latest Content release and try again.',
+            'The published delivery plan could not be loaded. Check the latest Content ' +
+              'release and try again.',
           );
         },
       });
@@ -604,12 +732,17 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   /**
-   * A ticket pill on Support tickets and feedback links to /delivery-plan#<ticketId>: once the plan is in, All tickets opens with the
-   * filters cleared, and the ticket is scrolled to and marked.
+   * A ticket pill on Support tickets and feedback links to /delivery-plan#<ticketId>: once the plan
+   * is in, All tickets opens with the filters cleared, and the ticket is scrolled to and marked.
    */
   private revealRequestedTicket(): void {
     const requested = this.route.snapshot.fragment;
-    if (!requested || this.highlightedId() || !this.plan()?.workItems.some((item) => item.id === requested)) return;
+    if (
+      !requested ||
+      this.highlightedId() ||
+      !this.plan()?.workItems.some((item) => item.id === requested)
+    )
+      return;
     this.highlightedId.set(requested);
     this.workspace.set(true);
     this.view.set('all-tickets');
@@ -647,23 +780,31 @@ export class DeliveryPlanPage implements OnInit {
         error: () => {
           this.refreshPending = false;
           this.notice.set(
-            'Cannot reach the local editor. Current data is retained; unsaved changes are not on disk.',
+            'Cannot reach the local editor. Current data is retained; unsaved changes ' +
+              'are not on disk.',
           );
         },
       });
   }
 
   protected evidenceUrl(itemId: string, evidenceId: string): string {
-    return `/__local/delivery/evidence/${encodeURIComponent(itemId)}/${encodeURIComponent(evidenceId)}`;
+    return (
+      `/__local/delivery/evidence/${encodeURIComponent(itemId)}/` +
+      `${encodeURIComponent(evidenceId)}`
+    );
   }
 
   protected canEdit(item?: DeliveryWorkItem): boolean {
-    const account = this.accounts.account(), permissions = account?.permissions;
+    const account = this.accounts.account(),
+      permissions = account?.permissions;
     if (!permissions) return account?.authorPreview === true;
-    // On DEV the roles that create tickets also edit their cards (owner and admins); readers stay read-only.
+    // On DEV the roles that create tickets also edit their cards (owner and admins); readers stay
+    // read-only.
     return permissions.manageAccess || ((!item || this.dev()) && permissions.deliveryCreate);
   }
-  /** Whether this account may move the item to at least one other column; decides the move controls. */
+  /**
+   * Whether this account may move the item to at least one other column; decides the move controls.
+   */
   protected canMoveAnywhere(item: DeliveryWorkItem): boolean {
     return (this.plan()?.workflow ?? []).some(
       (status) => status.id !== item.statusId && this.canMove(item, status.id),
@@ -672,14 +813,19 @@ export class DeliveryPlanPage implements OnInit {
   protected canDrag(item: DeliveryWorkItem): boolean {
     return this.writable() && !this.saving() && this.canMoveAnywhere(item);
   }
-  /** In the DEV editor the status select offers the item's own status and the moves this account may make. */
+  /**
+   * In the DEV editor the status select offers the item's own status and the moves this account may
+   * make.
+   */
   protected statusAllowed(statusId: string): boolean {
     if (!this.dev()) return true;
     const item = this.plan()?.workItems.find((candidate) => candidate.id === this.draftId);
     return !item || item.statusId === statusId || this.canMove(item, statusId);
   }
   protected originLabel(origin: DeliveryOrigin): string {
-    return origin.kind === 'request' ? `From learner request ${origin.id}` : `From review ${origin.id}`;
+    return origin.kind === 'request'
+      ? `From learner request ${origin.id}`
+      : `From review ${origin.id}`;
   }
   /** "updated on DEV · 6 Nov" for a stamped ticket; the plain date line for one without stamps. */
   protected updatedLine(item: DeliveryWorkItem): string {
@@ -691,10 +837,13 @@ export class DeliveryPlanPage implements OnInit {
     return `updated ${item.updatedIn === 'dev' ? 'on DEV' : 'locally'} · ${day}`;
   }
   /** The fields where the unmerged local edit differs from the ticket on DEV. */
-  protected conflictFields(item: DeliveryWorkItem): { field: string; dev: string; local: string }[] {
+  protected conflictFields(
+    item: DeliveryWorkItem,
+  ): { field: string; dev: string; local: string }[] {
     const local = item.pendingLocal;
     if (!local) return [];
-    const show = (value: unknown): string => (Array.isArray(value) ? value.join(', ') : String(value ?? ''));
+    const show = (value: unknown): string =>
+      Array.isArray(value) ? value.join(', ') : String(value ?? '');
     const fields: [keyof DeliveryWorkItem, string][] = [
       ['title', 'Title'],
       ['summary', 'Outcome'],
@@ -712,7 +861,10 @@ export class DeliveryPlanPage implements OnInit {
       .filter(([key]) => show(item[key]) !== show(local[key]))
       .map(([key, field]) => ({ field, dev: show(item[key]), local: show(local[key]) }));
   }
-  /** Keep DEV drops the local edit; Take local replaces the ticket with it. Either way the conflict is cleared. */
+  /**
+   * Keep DEV drops the local edit; Take local replaces the ticket with it. Either way the conflict
+   * is cleared.
+   */
   protected async resolveConflict(item: DeliveryWorkItem, keep: 'dev' | 'local'): Promise<void> {
     if (!this.authorAccess() || !this.dev() || this.saving() || !this.canEdit(item)) return;
     this.saving.set(true);
@@ -738,10 +890,15 @@ export class DeliveryPlanPage implements OnInit {
     }
   }
   protected canMove(item: DeliveryWorkItem, next: string): boolean {
-    const account = this.accounts.account(), permissions = account?.permissions;
+    const account = this.accounts.account(),
+      permissions = account?.permissions;
     if (!permissions) return account?.authorPreview === true;
-    return permissions.manageAccess || (next === 'done' ? permissions.deliveryDone && item.statusId === 'review'
-      : permissions.deliveryReview && item.statusId !== 'done' && next === 'review');
+    return (
+      permissions.manageAccess ||
+      (next === 'done'
+        ? permissions.deliveryDone && item.statusId === 'review'
+        : permissions.deliveryReview && item.statusId !== 'done' && next === 'review')
+    );
   }
   protected openEditor(item?: DeliveryWorkItem): void {
     if (!this.writable() || this.saving() || !this.canEdit(item)) return;
@@ -899,8 +1056,9 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   /**
-   * The DEV form edits title, outcome, status, priority, stage, labels and notes; the fields it does not show keep the
-   * ticket's stored values. A 409 means the plan moved on: it is reloaded and the draft stays for a second Save.
+   * The DEV form edits title, outcome, status, priority, stage, labels and notes; the fields it
+   * does not show keep the ticket's stored values. A 409 means the plan moved on: it is reloaded
+   * and the draft stays for a second Save.
    */
   private async saveDevDraft(input: DeliveryWorkItemInput): Promise<void> {
     const id = this.draftId;
@@ -940,7 +1098,17 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   private async moveDevItem(item: DeliveryWorkItem, statusId: string): Promise<void> {
-    const { title, summary, type, stageId, priorityId, labels, acceptanceCriteria, dependencies, blockedBy } = item;
+    const {
+      title,
+      summary,
+      type,
+      stageId,
+      priorityId,
+      labels,
+      acceptanceCriteria,
+      dependencies,
+      blockedBy,
+    } = item;
     this.saving.set(true);
     this.writeGeneration++;
     try {
@@ -958,7 +1126,8 @@ export class DeliveryPlanPage implements OnInit {
         notes: item.notes ?? [],
       });
       this.applyWrite(result);
-      const label = this.plan()?.workflow.find((status) => status.id === statusId)?.label ?? statusId;
+      const label =
+        this.plan()?.workflow.find((status) => status.id === statusId)?.label ?? statusId;
       this.notice.set(`${item.id} moved to ${label} on DEV.`);
     } catch (error) {
       if (error instanceof DeliveryPlanApiError && error.versionConflict) {
@@ -975,7 +1144,13 @@ export class DeliveryPlanPage implements OnInit {
 
   protected moveItem(item: DeliveryWorkItem, statusId: string): void {
     if (!this.authorAccess()) return;
-    if (!this.writable() || this.saving() || item.statusId === statusId || !this.canMove(item, statusId)) return;
+    if (
+      !this.writable() ||
+      this.saving() ||
+      item.statusId === statusId ||
+      !this.canMove(item, statusId)
+    )
+      return;
     if (this.dev()) {
       void this.moveDevItem(item, statusId);
       return;
@@ -1017,7 +1192,9 @@ export class DeliveryPlanPage implements OnInit {
           this.acceptSnapshot(snapshot);
           this.saving.set(false);
           this.notice.set(
-            `${item.id} moved to ${snapshot.plan.workflow.find((status) => status.id === statusId)?.label} and saved.`,
+            `${item.id} moved ` +
+              `to ${snapshot.plan.workflow.find((status) => status.id === statusId)?.label} ` +
+              `and saved.`,
           );
         },
         error: (error: HttpErrorResponse) => {
@@ -1211,9 +1388,12 @@ export class DeliveryPlanPage implements OnInit {
       // Same-page controls update the URL without triggering the app-wide scroll-to-top.
       scroll: 'manual',
       queryParams: {
-        // The legacy root needs an explicit board marker so clearing filters does not open the overview.
-        view: this.view() === 'board' && this.route.snapshot.routeConfig?.path === 'delivery-plan/work'
-          ? null : this.view(),
+        // The legacy root needs an explicit board marker so clearing filters does not open the
+        // overview.
+        view:
+          this.view() === 'board' && this.route.snapshot.routeConfig?.path === 'delivery-plan/work'
+            ? null
+            : this.view(),
         q: this.query().trim() || null,
         stage: this.stageFilter() === this.defaultStageFilter() ? null : this.stageFilter(),
         priority: this.priorityFilter() === 'all' ? null : this.priorityFilter(),
@@ -1262,15 +1442,24 @@ interface LocalPlanFile {
   titles: Map<string, string>;
 }
 
-/** The version, base version and ticket titles of the chosen file; a file that is not a plan gives nulls and no titles. */
+/**
+ * The version, base version and ticket titles of the chosen file; a file that is not a plan gives
+ * nulls and no titles.
+ */
 function parseLocalPlan(text: string): Omit<LocalPlanFile, 'name' | 'size'> {
   try {
-    const parsed = JSON.parse(text) as { version?: unknown; baseVersion?: unknown; workItems?: unknown };
-    const number = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : null);
+    const parsed = JSON.parse(text) as {
+      version?: unknown;
+      baseVersion?: unknown;
+      workItems?: unknown;
+    };
+    const number = (value: unknown) =>
+      typeof value === 'number' && Number.isFinite(value) ? value : null;
     const titles = new Map<string, string>();
     if (Array.isArray(parsed.workItems))
       for (const item of parsed.workItems as { id?: unknown; title?: unknown }[])
-        if (typeof item?.id === 'string') titles.set(item.id, typeof item.title === 'string' ? item.title : '');
+        if (typeof item?.id === 'string')
+          titles.set(item.id, typeof item.title === 'string' ? item.title : '');
     return { version: number(parsed.version), baseVersion: number(parsed.baseVersion), titles };
   } catch {
     return { version: null, baseVersion: null, titles: new Map() };

@@ -33,7 +33,12 @@ export function locatorFixture(): Record<string, unknown> {
         { id: 'generics', order: 2, title: 'Generics', description: '' },
       ],
       sections: [
-        { id: 'practice', title: 'Practice set', description: 'Practice the basics.', moduleIds: [] },
+        {
+          id: 'practice',
+          title: 'Practice set',
+          description: 'Practice the basics.',
+          moduleIds: [],
+        },
       ],
       learningUnits: [
         {
@@ -41,7 +46,10 @@ export function locatorFixture(): Record<string, unknown> {
           title: 'Java Platform',
           description: 'How a Java file becomes a running program.',
           theoryModuleId: 'java-platform',
-          card: { scene: '/assets/scenes/units/learn/core-java/java-platform.svg', summary: protectedBodyFixture },
+          card: {
+            scene: '/assets/scenes/units/learn/core-java/java-platform.svg',
+            summary: protectedBodyFixture,
+          },
         },
         {
           id: 'generics',
@@ -54,7 +62,11 @@ export function locatorFixture(): Record<string, unknown> {
       ],
     },
     modules: [
-      { moduleId: 'java-platform', href: '/content/learn/core-java/modules/java-platform.json', version: 'v1' },
+      {
+        moduleId: 'java-platform',
+        href: '/content/learn/core-java/modules/java-platform.json',
+        version: 'v1',
+      },
     ],
     items: [
       {
@@ -81,7 +93,11 @@ export function locatorFixture(): Record<string, unknown> {
         order: 1,
         title: 'Is Java compiled or interpreted?',
         contentType: 'q-and-a',
-        detailRef: { kind: 'content-item', href: '/content/learn/core-java/modules/generics.json', version: 'v1' },
+        detailRef: {
+          kind: 'content-item',
+          href: '/content/learn/core-java/modules/generics.json',
+          version: 'v1',
+        },
       },
     ],
   };

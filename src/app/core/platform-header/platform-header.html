@@ -1,18 +1,23 @@
-<header
-  class="content-header platform-header"
-  [class.with-search]="showSearch"
->
-  <!-- DLV-969 (user, 2026-11-03): leaving DEV belongs to the environment, so it hangs off the DEV mark; Sign out in the
-       account menu only switches accounts (for example to a test account) and stays inside DEV. -->
+<header class="content-header platform-header" [class.with-search]="showSearch">
+  <!-- DLV-969 (user, 2026-11-03): leaving DEV belongs to the environment, so it hangs off the DEV
+       mark; Sign out in the account menu only switches accounts (for example to a test account) and
+       stays inside DEV. -->
   <div class="brand-area">
     @if (beforeAdmission()) {
-      <!-- DLV-969 (owner, 2026-11-03): before admission the logo leads nowhere; the platform is behind the gate. -->
+      <!-- DLV-969 (owner, 2026-11-03): before admission the logo leads nowhere; the platform is
+           behind the gate. -->
       <span class="brand" role="img" aria-label="Look Ahead">
-        <app-platform-brand aria-hidden="true" [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null" />
+        <app-platform-brand
+          aria-hidden="true"
+          [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null"
+        />
       </span>
     } @else {
       <a class="brand" routerLink="/" aria-label="Look Ahead home">
-        <app-platform-brand aria-hidden="true" [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null" />
+        <app-platform-brand
+          aria-hidden="true"
+          [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null"
+        />
       </a>
     }
     @if (devSession.status()) {
@@ -25,10 +30,17 @@
           [attr.aria-expanded]="devPanelOpen()"
           (click)="toggleDevPanel()"
         >
-          DEV<span class="dev-environment-chevron" aria-hidden="true">{{ devPanelOpen() ? '▴' : '▾' }}</span>
+          DEV<span class="dev-environment-chevron" aria-hidden="true">{{
+            devPanelOpen() ? '▴' : '▾'
+          }}</span>
         </button>
         @if (devPanelOpen()) {
-          <div id="dev-environment-panel" class="dev-environment-panel" role="group" aria-label="DEV environment">
+          <div
+            id="dev-environment-panel"
+            class="dev-environment-panel"
+            role="group"
+            aria-label="DEV environment"
+          >
             <p class="dev-environment-title">Look Ahead DEV</p>
             <p>Our internal preview for invited members.</p>
             <button
@@ -42,7 +54,8 @@
               {{ devSession.leaving() ? 'Exiting…' : 'Exit DEV environment' }}
             </button>
             <p id="dev-exit-note" class="dev-environment-note">
-              Signs you out of DEV and returns you to its gate. To see DEV as a test account, use Switch to a test account in your account menu.
+              Signs you out of DEV and returns you to its gate. To see DEV as a test account, use
+              Switch to a test account in your account menu.
             </p>
             @if (devSession.error()) {
               <p class="dev-environment-error" role="alert">{{ devSession.error() }}</p>
@@ -200,8 +213,9 @@
     }
 
     @if (exitDevOffered()) {
-      <!-- DLV-971 (owner, 2026-11-06): a person waiting for the owner's approval is not left sitting at the Welcome page;
-           Exit DEV signs them out of DEV and returns to its gate, so the browser is free for the next sign-in. -->
+      <!-- DLV-971 (owner, 2026-11-06): a person waiting for the owner's approval is not left
+           sitting at the Welcome page; Exit DEV signs them out of DEV and returns to its gate, so
+           the browser is free for the next sign-in. -->
       <div class="dev-exit-inline">
         <button
           type="button"
@@ -209,7 +223,10 @@
           [disabled]="devSession.leaving()"
           [attr.aria-busy]="devSession.leaving()"
           (click)="devSession.leave()"
-          appHeaderHint="Signs you out of DEV and returns you to its gate. Sign in again once the owner has approved you."
+          [appHeaderHint]="
+            'Signs you out of DEV and returns you to its gate. Sign in again once the owner ' +
+            'has approved you.'
+          "
         >
           {{ devSession.leaving() ? 'Exiting…' : 'Exit DEV' }}
         </button>
@@ -219,16 +236,22 @@
       </div>
     }
     @if (!accounts.sessionKnown() && !onAuthenticationPage()) {
-      <!-- DLV-969 S37 (user, 2026-11-03): while the identity check runs, show what this browser last knew at once: your
-           name, or Sign in. The check replaces it. Without a hint, hold the slot invisibly as before (no flash). -->
+      <!-- DLV-969 S37 (user, 2026-11-03): while the identity check runs, show what this browser
+           last knew at once: your name, or Sign in. The check replaces it. Without a hint, hold the
+           slot invisibly as before (no flash). -->
       @if (rememberedLabel(); as label) {
         <span class="avatar-trigger-btn session-remembered" aria-hidden="true">
           <span class="account-trigger-name">{{ label }}</span>
           <span class="avatar-chevron" aria-hidden="true">▾</span>
         </span>
       } @else if (accounts.headerHint()?.signedIn === false) {
-        <a class="sign-in-button" routerLink="/sign-in" [queryParams]="{ returnTo: accountReturn() }"
-          appHeaderHint="Sign in to save progress and plans to your account.">Sign in</a>
+        <a
+          class="sign-in-button"
+          routerLink="/sign-in"
+          [queryParams]="{ returnTo: accountReturn() }"
+          appHeaderHint="Sign in to save progress and plans to your account."
+          >Sign in</a
+        >
       } @else {
         <span class="sign-in-button session-pending" aria-hidden="true">Sign in</span>
       }
@@ -250,7 +273,11 @@
           "
           aria-controls="account-menu"
           [attr.aria-expanded]="profileMenuOpen()"
-          [appHeaderHint]="beforeAdmission() ? 'Your account: sign out to use a different account.' : 'Your account: study plan, settings, support and sign out.'"
+          [appHeaderHint]="
+            beforeAdmission()
+              ? 'Your account: sign out to use a different account.'
+              : 'Your account: study plan, settings, support and sign out.'
+          "
           (click)="toggleProfileMenu()"
         >
           <span class="account-trigger-name">{{ accountLabel() }}</span>
@@ -267,19 +294,22 @@
                 <p class="user-display-email">
                   {{
                     testSessions.active()
-                      ? (testSessions.status()?.holderName ? 'Test account · you are ' + testSessions.status()?.holderName : 'Test account')
+                      ? testSessions.status()?.holderName
+                        ? 'Test account · you are ' + testSessions.status()?.holderName
+                        : 'Test account'
                       : beforeAdmission()
-                      ? 'Sign out to use a different account.'
-                      : accounts.account()
-                      ? 'Your study plans and progress'
-                      : accounts.enabled
-                        ? 'Sign in to save account progress.'
-                        : 'Your study plan is saved on this browser.'
+                        ? 'Sign out to use a different account.'
+                        : accounts.account()
+                          ? 'Your study plans and progress'
+                          : accounts.enabled
+                            ? 'Sign in to save account progress.'
+                            : 'Your study plan is saved on this browser.'
                   }}
                 </p>
               </div>
             </div>
-            <!-- DLV-969 (owner, 2026-11-03): before admission the menu leads nowhere; Sign out stays to switch accounts. -->
+            <!-- DLV-969 (owner, 2026-11-03): before admission the menu leads nowhere; Sign out
+                 stays to switch accounts. -->
             @if (!beforeAdmission()) {
               <div class="menu-divider"></div>
               <nav class="dropdown-links-list" aria-label="Account links">
@@ -327,14 +357,20 @@
               }
             }
             @if (canSwitchAccount() && !beforeAdmission()) {
-              <!-- DLV-969 (owner, 2026-11-04): anyone signed in to DEV looks at it through a test account without signing out;
-                   the Domain lists only the accounts their role may use. -->
+              <!-- DLV-969 (owner, 2026-11-04): anyone signed in to DEV looks at it through a test
+                   account without signing out; the Domain lists only the accounts their role may
+                   use. -->
               <div class="menu-divider"></div>
               <div class="dropdown-links-list" role="group" aria-label="Test accounts">
-                <button type="button" class="dropdown-item-link test-switch" (click)="openTestAccounts()"
+                <button
+                  type="button"
+                  class="dropdown-item-link test-switch"
+                  (click)="openTestAccounts()"
                   ><span class="item-icon" aria-hidden="true">🔁</span
                   ><span class="item-text"
-                    ><span class="item-label">{{ testSessions.active() ? 'Switch test account' : 'Switch to a test account' }}</span
+                    ><span class="item-label">{{
+                      testSessions.active() ? 'Switch test account' : 'Switch to a test account'
+                    }}</span
                     ><small>See DEV as another test account</small></span
                   ></button
                 >
@@ -350,29 +386,36 @@
                   (click)="testSessions.back()"
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 5 5v1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                      d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 5 5v1"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                   <span>{{ testSessions.returning() ? 'Going back…' : 'Back to my account' }}</span>
                 </button>
               } @else {
-              <button
-                class="account-sign-out"
-                type="button"
-                [disabled]="signingOut() || accounts.busy() || accounts.pending()"
-                [attr.aria-busy]="signingOut()"
-                (click)="signOut()"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <path
-                    d="M12 3v8m-5-6a8 8 0 1 0 10 0"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
-                <span>{{ signingOut() ? 'Signing out…' : 'Sign out' }}</span>
-              </button>
+                <button
+                  class="account-sign-out"
+                  type="button"
+                  [disabled]="signingOut() || accounts.busy() || accounts.pending()"
+                  [attr.aria-busy]="signingOut()"
+                  (click)="signOut()"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path
+                      d="M12 3v8m-5-6a8 8 0 1 0 10 0"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <span>{{ signingOut() ? 'Signing out…' : 'Sign out' }}</span>
+                </button>
               }
               @if (signOutError()) {
                 <p class="account-sign-out-error" role="alert">{{ signOutError() }}</p>
@@ -384,8 +427,8 @@
     }
   </div>
 </header>
-<!-- DLV-969 (owner, 2026-11-04): which test account is in use stays in view under the header. Both load only when
-     needed, so nobody else downloads them. -->
+<!-- DLV-969 (owner, 2026-11-04): which test account is in use stays in view under the header. Both
+     load only when needed, so nobody else downloads them. -->
 @defer (when testSessions.active()) {
   <app-test-session-bar />
 }

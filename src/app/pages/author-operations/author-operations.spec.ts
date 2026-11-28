@@ -20,7 +20,9 @@ const reference: AuthorDocument = {
   version: 'operations/test.1',
   sourceSha256: 'b'.repeat(64),
   htmlSha256: 'a'.repeat(64),
-  href: `/bff/author/previews/preview-directory/author-documents/operations-reference/${'a'.repeat(64)}/index.html`,
+  href:
+    `/bff/author/previews/preview-directory/author-documents/operations-reference/` +
+    `${'a'.repeat(64)}/index.html`,
   owningTicket: 'DLV-922',
   scope: 'Read-only reference',
   decisionDependencies: [],
@@ -33,7 +35,8 @@ const reference: AuthorDocument = {
       label: 'Startup runbook',
       href: 'https://github.com/example/infra/blob/main/docs/startup.md',
     },
-  ],  downloads: [],
+  ],
+  downloads: [],
 };
 describe('Operations author view', () => {
   const account = signal<any>({ accountId: 'author', authorPreview: true });
@@ -65,7 +68,7 @@ describe('Operations author view', () => {
     fixture.detectChanges();
     return fixture;
   }
-  it('embeds the immutable reference in a scripts-only sandbox and follows theme changes', async () => {
+  it('embeds the immutable reference in a scripts-only sandbox, following the theme', async () => {
     const fixture = await create();
     const frame = fixture.nativeElement.querySelector('iframe');
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
@@ -84,32 +87,60 @@ describe('Operations author view', () => {
     );
     expect(fixture.nativeElement.querySelectorAll('.workspace-content button')).toHaveLength(0);
   });
-  for (const [id, title] of [['runtime-stores','Runtime stores'],['contracts','Contracts'],['sign-in-flows','Sign-in flows'],['dynamodb-migration','DynamoDB migration design'],['aws-dev-certificates','DEV certificates']]) {
+  for (const [id, title] of [
+    ['runtime-stores', 'Runtime stores'],
+    ['contracts', 'Contracts'],
+    ['sign-in-flows', 'Sign-in flows'],
+    ['dynamodb-migration', 'DynamoDB migration design'],
+    ['aws-dev-certificates', 'DEV certificates'],
+  ]) {
     it(`loads ${id} instead of falling back to Operations`, async () => {
-      TestBed.overrideProvider(ActivatedRoute, {useValue: {snapshot: {data: {authorDocument: id}}}});
-      load.mockResolvedValue({...reference,id});
+      TestBed.overrideProvider(ActivatedRoute, {
+        useValue: { snapshot: { data: { authorDocument: id } } },
+      });
+      load.mockResolvedValue({ ...reference, id });
       const fixture = await create();
       expect(load).toHaveBeenCalledWith(id);
       expect(fixture.nativeElement.querySelector('h1').textContent).toBe(title);
     });
   }
-  it('keeps resource links in their own panel and root selections never request anchor scrolling', async () => {
-    history.replaceState(null,'','/admin/operations');
-    const fixture = await create();
-    const root = fixture.nativeElement as HTMLElement;
-    const frame = root.querySelector('iframe')!;
-    const send = vi.spyOn(frame.contentWindow!, 'postMessage');
-    const tab = [...root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')].find(tab=>tab.textContent==='Reference links')!;
-    tab.click(); fixture.detectChanges();
-    expect(root.querySelector<HTMLElement>('#workspace-panel-reference-links')!.hidden).toBe(false);
-    expect(frame.parentElement!.hidden).toBe(true);
-    root.querySelector<HTMLAnchorElement>('[role="tab"]')!.click(); fixture.detectChanges();
-    expect(root.querySelector<HTMLElement>('#workspace-panel-reference-links')!.hidden).toBe(true);
-    expect(frame.parentElement!.hidden).toBe(false);
-    expect(send.mock.calls.some(([message])=>message.type==='lookahead:author-document:tab-request')).toBe(true);
-    expect(send.mock.calls.some(([message])=>message.type==='lookahead:author-document:anchor-request')).toBe(false);
-    history.replaceState(null,'','/');
-  });
+  it(
+    'keeps resource links in their own panel and root selections never request anchor ' +
+      'scrolling',
+    async () => {
+      history.replaceState(null, '', '/admin/operations');
+      const fixture = await create();
+      const root = fixture.nativeElement as HTMLElement;
+      const frame = root.querySelector('iframe')!;
+      const send = vi.spyOn(frame.contentWindow!, 'postMessage');
+      const tab = [...root.querySelectorAll<HTMLAnchorElement>('[role="tab"]')].find(
+        (tab) => tab.textContent === 'Reference links',
+      )!;
+      tab.click();
+      fixture.detectChanges();
+      expect(root.querySelector<HTMLElement>('#workspace-panel-reference-links')!.hidden).toBe(
+        false,
+      );
+      expect(frame.parentElement!.hidden).toBe(true);
+      root.querySelector<HTMLAnchorElement>('[role="tab"]')!.click();
+      fixture.detectChanges();
+      expect(root.querySelector<HTMLElement>('#workspace-panel-reference-links')!.hidden).toBe(
+        true,
+      );
+      expect(frame.parentElement!.hidden).toBe(false);
+      expect(
+        send.mock.calls.some(
+          ([message]) => message.type === 'lookahead:author-document:tab-request',
+        ),
+      ).toBe(true);
+      expect(
+        send.mock.calls.some(
+          ([message]) => message.type === 'lookahead:author-document:anchor-request',
+        ),
+      ).toBe(false);
+      history.replaceState(null, '', '/');
+    },
+  );
   it('loads the dedicated Local setup document through the same protected reader', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
       useValue: { snapshot: { data: { authorDocument: 'local-development' } } },
@@ -132,24 +163,36 @@ describe('Operations author view', () => {
       ),
     ).not.toBeNull();
   });
-  it('opens with the page heading, the group tabs and page row, and keeps the published version in a footer below the document', async () => {
-    const fixture = await create();
-    const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
-    // Owner, 2026-11-09: no hero and no right rail; the heading row, the group tabs and the page row say where the page is.
-    expect(content.querySelector('app-author-doc-hero')).toBeNull();
-    expect(content.querySelector('app-author-admin-menu.documentation-rail')).toBeNull();
-    expect(content.querySelector('h1')?.textContent).toBe('Operations');
-    expect(content.querySelector('nav[aria-label="Documentation groups"] [aria-current="page"]')?.textContent).toBe('Operations & Support');
-    expect(content.querySelector('.documentation-pages a[aria-current="page"]')?.textContent).toContain('Operations');
-    // The strip names the page, so the heading is kept for assistive technology only.
-    expect(content.querySelector('.sidebar-header')?.classList.contains('visually-hidden')).toBe(true);
-    expect(content.firstElementChild?.querySelector('[role="tablist"]')).not.toBeNull();
-    const footer = content.querySelector('footer.reference-toolbar') as HTMLElement;
-    expect(footer.textContent).toContain('Version operations/test.1');
-    const panel = content.querySelector('.document-panel')!;
-    expect(panel.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(content.lastElementChild).toBe(footer);
-  });
+  it(
+    'opens with the page heading, the group tabs and page row, and keeps the published ' +
+      'version in a footer below the document',
+    async () => {
+      const fixture = await create();
+      const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
+      // Owner, 2026-11-09: no hero and no right rail; the heading row, the group tabs and the page
+      // row say where the page is.
+      expect(content.querySelector('app-author-doc-hero')).toBeNull();
+      expect(content.querySelector('app-author-admin-menu.documentation-rail')).toBeNull();
+      expect(content.querySelector('h1')?.textContent).toBe('Operations');
+      expect(
+        content.querySelector('nav[aria-label="Documentation groups"] [aria-current="page"]')
+          ?.textContent,
+      ).toBe('Operations & Support');
+      expect(
+        content.querySelector('.documentation-pages a[aria-current="page"]')?.textContent,
+      ).toContain('Operations');
+      // The strip names the page, so the heading is kept for assistive technology only.
+      expect(content.querySelector('.sidebar-header')?.classList.contains('visually-hidden')).toBe(
+        true,
+      );
+      expect(content.firstElementChild?.querySelector('[role="tablist"]')).not.toBeNull();
+      const footer = content.querySelector('footer.reference-toolbar') as HTMLElement;
+      expect(footer.textContent).toContain('Version operations/test.1');
+      const panel = content.querySelector('.document-panel')!;
+      expect(panel.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(content.lastElementChild).toBe(footer);
+    },
+  );
 
   it('moves through a split reference with a section row and previous and next links', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
@@ -159,7 +202,9 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-budget');
-    expect(content.querySelector('.documentation-pages a[aria-current="page"]')?.textContent).toContain('AWS deployment');
+    expect(
+      content.querySelector('.documentation-pages a[aria-current="page"]')?.textContent,
+    ).toContain('AWS deployment');
     // Owner, 2026-11-09: the sub-pages are a third header row, not "page 8 of 17" copy.
     const section = content.querySelector('nav.documentation-subpages') as HTMLElement;
     expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
@@ -169,11 +214,17 @@ describe('Operations author view', () => {
     expect(labels).toHaveLength(17);
     expect(labels[0]).toBe('Overview');
     expect(labels).toContain('DEV budget');
-    expect(section.querySelector('a[aria-current="page"]')!.getAttribute('href')).toBe('/admin/aws-dev-budget');
+    expect(section.querySelector('a[aria-current="page"]')!.getAttribute('href')).toBe(
+      '/admin/aws-dev-budget',
+    );
     expect(section.querySelectorAll('a[aria-current="page"]')).toHaveLength(1);
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
-    expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-permissions');
-    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-status');
+    expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe(
+      '/admin/aws-dev-permissions',
+    );
+    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe(
+      '/admin/aws-dev-status',
+    );
     expect(steps.querySelector('.section-previous strong')!.textContent).toBe('DEV permissions');
   });
 
@@ -185,22 +236,41 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-procedures');
-    expect(content.querySelector('nav.documentation-subpages a[aria-current="page"]')!.getAttribute('href')).toBe('/admin/aws-dev-procedures');
+    expect(
+      content
+        .querySelector('nav.documentation-subpages a[aria-current="page"]')!
+        .getAttribute('href'),
+    ).toBe('/admin/aws-dev-procedures');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
-    expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-workflow');
-    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-records');
+    expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe(
+      '/admin/aws-dev-workflow',
+    );
+    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe(
+      '/admin/aws-dev-records',
+    );
     expect(steps.querySelector('.section-next strong')!.textContent).toBe('DEV execution records');
   });
 
-  // DLV-971 (owner, 2026-11-06): Operations now has one sub-page, Runtime stores, so it is a section of two.
+  // DLV-971 (owner, 2026-11-06): Operations now has one sub-page, Runtime stores, so it is a
+  // section of two.
   it('shows the Runtime stores sub-page as the section under Operations', async () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
-    expect([...content.querySelectorAll('nav.documentation-subpages a')].map((link) => link.textContent!.trim())).toEqual(['Overview', 'Runtime stores']);
-    expect(content.querySelector('nav.documentation-subpages a[aria-current="page"]')!.textContent!.trim()).toBe('Overview');
+    expect(
+      [...content.querySelectorAll('nav.documentation-subpages a')].map((link) =>
+        link.textContent!.trim(),
+      ),
+    ).toEqual(['Overview', 'Runtime stores']);
+    expect(
+      content
+        .querySelector('nav.documentation-subpages a[aria-current="page"]')!
+        .textContent!.trim(),
+    ).toBe('Overview');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')).toBeNull();
-    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/runtime-stores');
+    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe(
+      '/admin/runtime-stores',
+    );
     expect(steps.querySelector('.section-next strong')!.textContent).toBe('Runtime stores');
   });
 
@@ -234,7 +304,9 @@ describe('Operations author view', () => {
     const setup = {
       label: 'One-command setup script',
       filename: 'lookahead_setup.py',
-      href: `/bff/author/previews/preview-directory/author-documents/downloads/${'c'.repeat(64)}/lookahead_setup.py`,
+      href:
+        `/bff/author/previews/preview-directory/author-documents/downloads/` +
+        `${'c'.repeat(64)}/lookahead_setup.py`,
       bytes: 22_000,
     };
     load.mockResolvedValue({ ...reference, downloads: [setup] });
@@ -323,13 +395,20 @@ describe('Operations author view', () => {
       fixture.nativeElement.querySelector('a[href="/admin/operations#supporting-references"]'),
     ).toBeNull();
   });
-  it('opens a page link from the document through the router, and ignores anything else', async () => {
+  it('opens a page link from the document through the router, ignoring the rest', async () => {
     const fixture = await create();
     const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     const send = (data: unknown, origin = 'null') =>
-      window.dispatchEvent(new MessageEvent('message', { origin, source: frame.contentWindow, data }));
-    const link = { type: 'lookahead:author-document:page-navigate', version: 1, documentId: 'operations-reference', route: '/admin/access?tab=test' };
+      window.dispatchEvent(
+        new MessageEvent('message', { origin, source: frame.contentWindow, data }),
+      );
+    const link = {
+      type: 'lookahead:author-document:page-navigate',
+      version: 1,
+      documentId: 'operations-reference',
+      route: '/admin/access?tab=test',
+    };
     send(link, 'https://example.test');
     send({ ...link, route: 'https://example.com' });
     expect(navigate).not.toHaveBeenCalled();

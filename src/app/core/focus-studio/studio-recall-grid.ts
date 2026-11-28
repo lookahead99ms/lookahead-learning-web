@@ -29,14 +29,27 @@ export interface RecallCardView {
         <span class="count" role="status">{{ graded() }} of {{ cards().length }} checked</span>
         <span class="meter" aria-hidden="true"><span [style.width.%]="meter()"></span></span>
       </div>
-      <button type="button" class="all" [attr.title]="allOpen() ? 'Hide every recall answer' : 'Reveal every recall answer to check your understanding'" (click)="toggleAll()">
+      <button
+        type="button"
+        class="all"
+        [attr.title]="
+          allOpen()
+            ? 'Hide every recall answer'
+            : 'Reveal every recall answer to check your understanding'
+        "
+        (click)="toggleAll()"
+      >
         {{ allOpen() ? 'Hide all answers' : 'Show all answers' }}
       </button>
     </header>
     <ol class="grid">
       @for (card of cards(); track card.id; let index = $index) {
         <li>
-          <article class="card" [attr.data-kind]="card.kind" [attr.aria-labelledby]="ids(index).question">
+          <article
+            class="card"
+            [attr.data-kind]="card.kind"
+            [attr.aria-labelledby]="ids(index).question"
+          >
             <div class="top">
               <span class="number" aria-hidden="true">{{ index + 1 }}</span>
               <span class="tag">{{ card.tag }}</span>
@@ -55,7 +68,11 @@ export interface RecallCardView {
                   </ol>
                 }
               </div>
-              <div class="grade" role="group" [attr.aria-label]="'How well did you recall card ' + (index + 1) + '?'">
+              <div
+                class="grade"
+                role="group"
+                [attr.aria-label]="'How well did you recall card ' + (index + 1) + '?'"
+              >
                 @for (grade of grades; track grade.id) {
                   <button
                     type="button"
@@ -72,7 +89,11 @@ export interface RecallCardView {
             <button
               type="button"
               class="reveal"
-              [attr.title]="isOpen(card.id) ? 'Hide this answer and try recalling it again' : 'Reveal this answer to check your recall'"
+              [attr.title]="
+                isOpen(card.id)
+                  ? 'Hide this answer and try recalling it again'
+                  : 'Reveal this answer to check your recall'
+              "
               [attr.aria-expanded]="isOpen(card.id)"
               [attr.aria-controls]="isOpen(card.id) ? ids(index).answer : null"
               (click)="toggle(card.id)"
@@ -205,7 +226,12 @@ export interface RecallCardView {
       }
       .number {
         color: var(--text-subtle);
-        font: 700 12px/1.4 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        font:
+          700 12px/1.4 ui-monospace,
+          'SF Mono',
+          Menlo,
+          Consolas,
+          monospace;
         font-variant-numeric: tabular-nums;
       }
       .tag {

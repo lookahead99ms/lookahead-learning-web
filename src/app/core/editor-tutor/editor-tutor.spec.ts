@@ -51,54 +51,62 @@ async function settle(fixture: ComponentFixture<EditorTutor>) {
 afterEach(() => vi.useRealTimers());
 
 describe('EditorTutor snapshot and request boundary', () => {
-  it('does not request on mount, edits or language changes; submit sends only explicit bounded context', async () => {
-    const review = vi.fn(async (request: TutorRequest) => ({
-      snapshotId: request.snapshot.id,
-      text: 'Scripted question.',
-    }));
-    const fixture = await setup({ review });
-    fixture.componentRef.setInput('code', 'new own attempt');
-    fixture.componentRef.setInput('language', 'go');
-    fixture.detectChanges();
-    expect(review).not.toHaveBeenCalled();
-    ask(fixture, 'Why does this lookup return zero?', 'syntax');
-    await settle(fixture);
-    expect(review).toHaveBeenCalledTimes(1);
-    const request = review.mock.calls[0]![0];
-    expect(request.snapshot).toMatchObject({ problem, language: 'go', code: 'new own attempt' });
-    expect(Object.keys(request).sort()).toEqual([
-      'help',
-      'hintLevel',
-      'history',
-      'question',
-      'snapshot',
-    ]);
-    expect(fixture.nativeElement.textContent).toContain('Matches the current editor');
-    expect(fixture.componentInstance.code()).toBe('new own attempt');
-  });
+  it(
+    'does not request on mount, edits or language changes; submit sends only explicit ' +
+      'bounded context',
+    async () => {
+      const review = vi.fn(async (request: TutorRequest) => ({
+        snapshotId: request.snapshot.id,
+        text: 'Scripted question.',
+      }));
+      const fixture = await setup({ review });
+      fixture.componentRef.setInput('code', 'new own attempt');
+      fixture.componentRef.setInput('language', 'go');
+      fixture.detectChanges();
+      expect(review).not.toHaveBeenCalled();
+      ask(fixture, 'Why does this lookup return zero?', 'syntax');
+      await settle(fixture);
+      expect(review).toHaveBeenCalledTimes(1);
+      const request = review.mock.calls[0]![0];
+      expect(request.snapshot).toMatchObject({ problem, language: 'go', code: 'new own attempt' });
+      expect(Object.keys(request).sort()).toEqual([
+        'help',
+        'hintLevel',
+        'history',
+        'question',
+        'snapshot',
+      ]);
+      expect(fixture.nativeElement.textContent).toContain('Matches the current editor');
+      expect(fixture.componentInstance.code()).toBe('new own attempt');
+    },
+  );
 
-  it('retains the exact submitted snapshot when edits occur during a delayed reply and blocks duplicate submission', async () => {
-    let resolve!: (reply: TutorReply) => void;
-    const review = vi.fn(
-      () =>
-        new Promise<TutorReply>((done) => {
-          resolve = done;
-        }),
-    );
-    const fixture = await setup({ review });
-    ask(fixture);
-    ask(fixture);
-    expect(review).toHaveBeenCalledTimes(1);
-    fixture.componentRef.setInput('code', 'changed while pending');
-    fixture.detectChanges();
-    resolve({ snapshotId: 1, text: 'Example response' });
-    await settle(fixture);
-    expect(fixture.nativeElement.querySelector('code').textContent).toBe('my own attempt');
-    expect(fixture.nativeElement.textContent).toContain('Editor changed since submission');
-    fixture.componentRef.setInput('code', 'my own attempt');
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Editor changed since submission');
-  });
+  it(
+    'retains the exact submitted snapshot when edits occur during a delayed reply and ' +
+      'blocks duplicate submission',
+    async () => {
+      let resolve!: (reply: TutorReply) => void;
+      const review = vi.fn(
+        () =>
+          new Promise<TutorReply>((done) => {
+            resolve = done;
+          }),
+      );
+      const fixture = await setup({ review });
+      ask(fixture);
+      ask(fixture);
+      expect(review).toHaveBeenCalledTimes(1);
+      fixture.componentRef.setInput('code', 'changed while pending');
+      fixture.detectChanges();
+      resolve({ snapshotId: 1, text: 'Example response' });
+      await settle(fixture);
+      expect(fixture.nativeElement.querySelector('code').textContent).toBe('my own attempt');
+      expect(fixture.nativeElement.textContent).toContain('Editor changed since submission');
+      fixture.componentRef.setInput('code', 'my own attempt');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('Editor changed since submission');
+    },
+  );
 
   it('marks old language feedback stale even after switching back', async () => {
     const fixture = await setup();
@@ -112,29 +120,33 @@ describe('EditorTutor snapshot and request boundary', () => {
     expect(fixture.nativeElement.textContent).toContain('Editor changed since submission');
   });
 
-  it('labels earlier provider history with its original language and revision after an editor change', async () => {
-    const review = vi.fn(async (request: TutorRequest) => ({
-      snapshotId: request.snapshot.id,
-      text: 'Example feedback',
-    }));
-    const fixture = await setup({ review });
-    ask(fixture);
-    await settle(fixture);
-    const original = review.mock.calls[0]![0].snapshot;
-    fixture.componentRef.setInput('language', 'java');
-    fixture.componentRef.setInput('code', 'new Java attempt');
-    fixture.detectChanges();
-    ask(fixture);
-    await settle(fixture);
-    expect(review.mock.calls[1]![0].history[0]).toMatchObject({
-      snapshotId: original.id,
-      editorRevision: original.revision,
-      language: 'python',
-      problemId: problem.id,
-      matchesCurrentEditor: false,
-    });
-    expect(review.mock.calls[1]![0].snapshot.language).toBe('java');
-  });
+  it(
+    'labels earlier provider history with its original language and revision after an ' +
+      'editor change',
+    async () => {
+      const review = vi.fn(async (request: TutorRequest) => ({
+        snapshotId: request.snapshot.id,
+        text: 'Example feedback',
+      }));
+      const fixture = await setup({ review });
+      ask(fixture);
+      await settle(fixture);
+      const original = review.mock.calls[0]![0].snapshot;
+      fixture.componentRef.setInput('language', 'java');
+      fixture.componentRef.setInput('code', 'new Java attempt');
+      fixture.detectChanges();
+      ask(fixture);
+      await settle(fixture);
+      expect(review.mock.calls[1]![0].history[0]).toMatchObject({
+        snapshotId: original.id,
+        editorRevision: original.revision,
+        language: 'python',
+        problemId: problem.id,
+        matchesCurrentEditor: false,
+      });
+      expect(review.mock.calls[1]![0].snapshot.language).toBe('java');
+    },
+  );
 
   it('clears per-problem history and discards a late reply from the previous problem', async () => {
     let resolve!: (reply: TutorReply) => void;
@@ -242,49 +254,57 @@ describe('EditorTutor snapshot and request boundary', () => {
     expect(fixture.nativeElement.querySelector('.response').textContent).toContain(attack);
   });
 
-  it('clears conversation without changing editor or submitting and ignores late cancelled replies', async () => {
-    let resolve!: (reply: TutorReply) => void;
-    const review = vi.fn(
-      () =>
-        new Promise<TutorReply>((done) => {
-          resolve = done;
-        }),
-    );
-    const fixture = await setup({ review });
-    ask(fixture);
-    fixture.detectChanges();
-    const clear = [...fixture.nativeElement.querySelectorAll('button')].find((button: any) =>
-      button.textContent.includes('Clear conversation'),
-    ) as HTMLButtonElement;
-    clear.click();
-    resolve({ snapshotId: 1, text: 'Cancelled' });
-    await settle(fixture);
-    expect(fixture.nativeElement.querySelectorAll('.exchanges li')).toHaveLength(0);
-    expect(fixture.componentInstance.code()).toBe('my own attempt');
-    expect(review).toHaveBeenCalledTimes(1);
-  });
+  it(
+    'clears conversation without changing editor or submitting and ignores late cancelled ' +
+      'replies',
+    async () => {
+      let resolve!: (reply: TutorReply) => void;
+      const review = vi.fn(
+        () =>
+          new Promise<TutorReply>((done) => {
+            resolve = done;
+          }),
+      );
+      const fixture = await setup({ review });
+      ask(fixture);
+      fixture.detectChanges();
+      const clear = [...fixture.nativeElement.querySelectorAll('button')].find((button: any) =>
+        button.textContent.includes('Clear conversation'),
+      ) as HTMLButtonElement;
+      clear.click();
+      resolve({ snapshotId: 1, text: 'Cancelled' });
+      await settle(fixture);
+      expect(fixture.nativeElement.querySelectorAll('.exchanges li')).toHaveLength(0);
+      expect(fixture.componentInstance.code()).toBe('my own attempt');
+      expect(review).toHaveBeenCalledTimes(1);
+    },
+  );
 });
 
 describe('Scripted tutor disclosure and help choices', () => {
-  it('offers free questions, progressive hints, language checklists and deliberate deeper help without evaluating source', async () => {
-    const fixture = await setup();
-    expect(fixture.nativeElement.textContent).toContain(
-      'not live Codex or an analysis of arbitrary code',
-    );
-    ask(fixture, 'hint please', 'hint');
-    await settle(fixture);
-    expect(fixture.nativeElement.querySelector('.response').textContent).toContain(
-      'same input position',
-    );
-    ask(fixture, 'another hint', 'hint');
-    await settle(fixture);
-    expect(fixture.nativeElement.querySelectorAll('.response')[1].textContent).toContain(
-      'earlier positions',
-    );
-    ask(fixture, 'Explain in depth', 'deeper');
-    await settle(fixture);
-    expect(fixture.nativeElement.textContent).toContain('Requested worked explanation');
-    expect(fixture.nativeElement.textContent).not.toContain('tests passed');
-    expect(fixture.nativeElement.querySelector('pre code').textContent).toBe('my own attempt');
-  });
+  it(
+    'offers free questions, progressive hints, language checklists and deliberate deeper ' +
+      'help without evaluating source',
+    async () => {
+      const fixture = await setup();
+      expect(fixture.nativeElement.textContent).toContain(
+        'not live Codex or an analysis of arbitrary code',
+      );
+      ask(fixture, 'hint please', 'hint');
+      await settle(fixture);
+      expect(fixture.nativeElement.querySelector('.response').textContent).toContain(
+        'same input position',
+      );
+      ask(fixture, 'another hint', 'hint');
+      await settle(fixture);
+      expect(fixture.nativeElement.querySelectorAll('.response')[1].textContent).toContain(
+        'earlier positions',
+      );
+      ask(fixture, 'Explain in depth', 'deeper');
+      await settle(fixture);
+      expect(fixture.nativeElement.textContent).toContain('Requested worked explanation');
+      expect(fixture.nativeElement.textContent).not.toContain('tests passed');
+      expect(fixture.nativeElement.querySelector('pre code').textContent).toBe('my own attempt');
+    },
+  );
 });

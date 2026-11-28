@@ -7,7 +7,8 @@ import { ContentService } from '../../content/content.service';
 import { CardScene, recordSceneTextSizes, sceneScale, sceneTextLimit } from './card-scene';
 
 const sceneSvg =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><script>alert(1)</script><rect class="x-a"/></svg>';
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 ' +
+  '180"><script>alert(1)</script><rect class="x-a"/></svg>';
 
 async function render(getCardScene: (path: string) => Observable<string>, src?: string) {
   await TestBed.configureTestingModule({
@@ -73,7 +74,7 @@ describe('CardScene', () => {
     }
   });
 
-  it('lets a card cap and round its drawing through unset custom properties (DLV-803)', async () => {
+  it('lets a card cap and round its drawing via unset custom properties (DLV-803)', async () => {
     await render(() => of(sceneSvg), '/content/blaze/x/visuals/cards/a.svg');
     const css = Array.from(document.querySelectorAll('style'))
       .map((style) => style.textContent ?? '')
@@ -81,7 +82,11 @@ describe('CardScene', () => {
       .replace(/\s+/g, ' ');
     // Defaults keep every other card unchanged: full width, square corners.
     expect(css).toMatch(
-      /\.la-card-scene \{[^}]*aspect-ratio: var\(--card-scene-ratio, 16 \/ 9\); width: 100%;[^}]*max-width: var\(--card-scene-max-width, none\); margin-inline: auto; border-radius: var\(--card-scene-radius, 0\);/,
+      new RegExp(
+        '\\.la-card-scene \\{[^}]*aspect-ratio: var\\(--card-scene-ratio, 16 \\/ 9\\); ' +
+          'width: 100%;[^}]*max-width: var\\(--card-scene-max-width, none\\); margin-inline: ' +
+          'auto; border-radius: var\\(--card-scene-radius, 0\\);',
+      ),
     );
   });
 
@@ -107,9 +112,14 @@ describe('CardScene', () => {
     expect(css).toMatch(/--card-scene-text-max:\s*calc\(\s*var\(--card-title-size/);
     expect(css).toMatch(/--card-scene-mark-max:\s*calc\(\s*var\(--card-title-size/);
     expect(css).toMatch(
-      /\[data-scene-size\]\s*\{\s*font-size:\s*min\(\s*var\(--scene-size\),\s*var\(--card-scene-text-limit/,
+      new RegExp(
+        '\\[data-scene-size\\]\\s*\\{\\s*font-size:\\s*min\\(\\s*var\\(--scene-size\\),' +
+          '\\s*var\\(--card-scene-text-limit',
+      ),
     );
-    expect(css).toMatch(/text\[data-scene-mark\]\[data-scene-size\][\s\S]*?--card-scene-mark-limit/);
+    expect(css).toMatch(
+      /text\[data-scene-mark\]\[data-scene-size\][\s\S]*?--card-scene-mark-limit/,
+    );
   });
 
   it('turns a rendered size cap into drawing units at the current scale', () => {
@@ -135,7 +145,8 @@ describe('CardScene', () => {
       'image/svg+xml',
     ).documentElement as unknown as SVGSVGElement;
     const size = (element: Element): string =>
-      element.getAttribute('font-size') ?? (element.parentElement ? size(element.parentElement) : '16');
+      element.getAttribute('font-size') ??
+      (element.parentElement ? size(element.parentElement) : '16');
     const view = {
       getComputedStyle: (element: Element) => ({ fontSize: `${size(element)}px` }),
     } as unknown as Window;
@@ -171,7 +182,10 @@ describe('CardScene', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: ContentService, useValue: { getCardScene: () => throwError(() => new Error('404')) } },
+        {
+          provide: ContentService,
+          useValue: { getCardScene: () => throwError(() => new Error('404')) },
+        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(CardScene);
@@ -251,7 +265,7 @@ describe('CardScene', () => {
     expect(fixture.nativeElement.querySelector('.la-card-scene').dataset['state']).toBe('failed');
   });
 
-  it('renders nothing for an optional scene whose file is missing or whose path is empty', async () => {
+  it('renders nothing for an optional scene with a missing file or an empty path', async () => {
     const fixture = await render(
       () => throwError(() => new Error('404')),
       '/content/blaze/x/visuals/cards/missing.svg',

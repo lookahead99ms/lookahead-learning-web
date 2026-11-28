@@ -17,13 +17,19 @@ import { PatternProblemFixture } from '../../content/content.models';
           @if (example.explanation) {
             <details>
               <summary>
-                <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: example, index, why: true }" />
+                <ng-container
+                  [ngTemplateOutlet]="row"
+                  [ngTemplateOutletContext]="{ $implicit: example, index, why: true }"
+                />
               </summary>
               <p>{{ example.explanation }}</p>
             </details>
           } @else {
             <div class="plain">
-              <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: example, index }" />
+              <ng-container
+                [ngTemplateOutlet]="row"
+                [ngTemplateOutletContext]="{ $implicit: example, index }"
+              />
             </div>
           }
         </li>
@@ -38,7 +44,8 @@ import { PatternProblemFixture } from '../../content/content.models';
       </span>
       <span class="io"
         ><code>{{ example.input }}</code> <span class="arrow" aria-hidden="true">→</span
-        ><span class="visually-hidden">expected</span> <code>{{ example.expectedOutput }}</code></span
+        ><span class="visually-hidden">expected</span>
+        <code>{{ example.expectedOutput }}</code></span
       >
     </ng-template>
   `,

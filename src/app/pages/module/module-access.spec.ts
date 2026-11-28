@@ -56,7 +56,11 @@ describe('Module access label', () => {
     await TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'blaze/:courseId/module/:moduleId', component: Module, data: { pathId: 'blaze' } },
+          {
+            path: 'blaze/:courseId/module/:moduleId',
+            component: Module,
+            data: { pathId: 'blaze' },
+          },
         ]),
         {
           provide: ContentService,
@@ -112,8 +116,12 @@ describe('Module access label', () => {
   });
 
   it('shows no label for a module outside any unit or without published levels', async () => {
-    expect((await render('/blaze/system-design/module/orphan', levels)).querySelector('.module-access')).toBeNull();
+    expect(
+      (await render('/blaze/system-design/module/orphan', levels)).querySelector('.module-access'),
+    ).toBeNull();
     TestBed.resetTestingModule();
-    expect((await render('/blaze/system-design/module/method', null)).querySelector('.module-access')).toBeNull();
+    expect(
+      (await render('/blaze/system-design/module/method', null)).querySelector('.module-access'),
+    ).toBeNull();
   });
 });

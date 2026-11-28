@@ -9,7 +9,7 @@ type Language = 'java' | 'python' | 'go';
 
 @Component({
   selector: 'app-pattern-essential-problems',
-  imports: [LearningCode,InteractiveTheoryVisual, CodeCopyButton],
+  imports: [LearningCode, InteractiveTheoryVisual, CodeCopyButton],
   template: `
     <section class="essential-workspace" aria-label="Three essential pattern problems">
       <header>
@@ -61,7 +61,8 @@ type Language = 'java' | 'python' | 'go';
             <span>{{ activeSolution().language }} reference</span
             ><app-code-copy-button [code]="activeSolution().source" />
           </div>
-          <pre><code [appLearningCode]="activeSolution().source" [codeLanguage]="activeSolution().language.toLowerCase()"></code></pre>
+          <pre><code [appLearningCode]="activeSolution().source"
+            [codeLanguage]="activeSolution().language.toLowerCase()"></code></pre>
         </div>
       }
       <footer>
@@ -259,7 +260,9 @@ export class PatternEssentialProblems {
     const variant = this.activeVariant().id;
     return {
       ...visual,
-      assetPath: `${path}?lang=${solution.language.toLowerCase()}&input=${variant}${hash ? `&problem=${hash}` : ''}&source=${source}`,
+      assetPath:
+        `${path}?lang=${solution.language.toLowerCase()}&input=${variant}` +
+        `${hash ? `&problem=${hash}` : ''}&source=${source}`,
     };
   });
   protected chooseProblem(value: string): void {

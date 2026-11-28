@@ -11,9 +11,12 @@ describe('Architecture diagram viewer', () => {
     start: ReturnType<typeof vi.fn>;
   };
   beforeEach(() => {
-    dialogDescriptors = Object.fromEntries(['showModal', 'close'].map((name) =>
-      [name, Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name)],
-    ));
+    dialogDescriptors = Object.fromEntries(
+      ['showModal', 'close'].map((name) => [
+        name,
+        Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name),
+      ]),
+    );
     vi.stubGlobal(
       'ResizeObserver',
       class {
@@ -100,28 +103,32 @@ describe('Architecture diagram viewer', () => {
     )!;
     button.click();
   }
-  it('opens a modal, fits intrinsic dimensions, restores scroll lock and closes the channel on Escape', () => {
-    document.body.style.overflow = 'clip';
-    const { fixture, root } = create();
-    const dismissed = vi.fn();
-    fixture.componentInstance.dismissed.subscribe(dismissed);
-    expect(root.querySelector('dialog')?.open).toBe(true);
-    expect(document.body.style.overflow).toBe('hidden');
-    ready();
-    fixture.detectChanges();
-    expect(root.querySelector('output')?.textContent).toBe('47%');
-    click(root, '100%');
-    fixture.detectChanges();
-    expect(root.querySelector('output')?.textContent).toBe('100%');
-    click(root, 'Reset');
-    fixture.detectChanges();
-    expect(root.querySelector('output')?.textContent).toBe('47%');
-    root.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true }));
-    expect(dismissed).toHaveBeenCalledOnce();
-    expect(port.close).toHaveBeenCalled();
-    expect(document.body.style.overflow).toBe('clip');
-    fixture.destroy();
-  });
+  it(
+    'opens a modal, fits intrinsic dimensions, restores scroll lock and closes the ' +
+      'channel on Escape',
+    () => {
+      document.body.style.overflow = 'clip';
+      const { fixture, root } = create();
+      const dismissed = vi.fn();
+      fixture.componentInstance.dismissed.subscribe(dismissed);
+      expect(root.querySelector('dialog')?.open).toBe(true);
+      expect(document.body.style.overflow).toBe('hidden');
+      ready();
+      fixture.detectChanges();
+      expect(root.querySelector('output')?.textContent).toBe('47%');
+      click(root, '100%');
+      fixture.detectChanges();
+      expect(root.querySelector('output')?.textContent).toBe('100%');
+      click(root, 'Reset');
+      fixture.detectChanges();
+      expect(root.querySelector('output')?.textContent).toBe('47%');
+      root.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true }));
+      expect(dismissed).toHaveBeenCalledOnce();
+      expect(port.close).toHaveBeenCalled();
+      expect(document.body.style.overflow).toBe('clip');
+      fixture.destroy();
+    },
+  );
   it('pans by keyboard while preserving browser zoom and ordinary scrolling', () => {
     const { fixture, viewport, root } = create();
     ready();

@@ -11,8 +11,11 @@ export function safeAccountReturn(value: string | null): string {
     return path === '/' ||
       path === '/account' ||
       path === '/account/merge' ||
-      path === '/pricing' || path === '/delivery-plan' ||
-      /^\/(?:study-plan|learn|grow|blaze|look-ahead|search|support|author|admin)(?:\/.*)?$/.test(path)
+      path === '/pricing' ||
+      path === '/delivery-plan' ||
+      /^\/(?:study-plan|learn|grow|blaze|look-ahead|search|support|author|admin)(?:\/.*)?$/.test(
+        path,
+      )
       ? value
       : '/';
   } catch {
@@ -23,7 +26,9 @@ export function safeAccountReturn(value: string | null): string {
 /** The sign-in a person picks on our own page (DLV-969); the Gateway then skips Cognito's page. */
 export type SignInProvider = 'google' | 'password';
 
-/** Gateway sign-in link that returns to `returnTo` afterwards, optionally straight to one provider. */
+/**
+ * Gateway sign-in link that returns to `returnTo` afterwards, optionally straight to one provider.
+ */
 export function gatewayLoginUrl(returnTo: string, provider?: SignInProvider): string {
   const chosen = provider ? 'provider=' + provider + '&' : '';
   return '/bff/login?' + chosen + 'returnTo=' + encodeURIComponent(returnTo);

@@ -111,7 +111,8 @@ export class HeaderHint implements OnInit {
     const viewportWidth = this.host.ownerDocument.documentElement.clientWidth;
     const width = origin.width;
     let left = item.left;
-    if (viewportWidth > 0 && left + width > viewportWidth - 8) left = Math.max(8, viewportWidth - 8 - width);
+    if (viewportWidth > 0 && left + width > viewportWidth - 8)
+      left = Math.max(8, viewportWidth - 8 - width);
     this.renderer.setStyle(this.hint, 'left', `${left - origin.left}px`);
     this.renderer.setStyle(this.hint, 'top', `${item.bottom + 6 - origin.top}px`);
   }

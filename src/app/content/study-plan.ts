@@ -93,7 +93,8 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
     path: 'grow',
     title: 'Practical AI engineering',
     description:
-      'AI foundations, bounded collaboration, prompt and context engineering, tools, evaluation, security, and operations.',
+      'AI foundations, bounded collaboration, prompt and context engineering, tools, ' +
+      'evaluation, security, and operations.',
     courseIds: ['ai-assisted-development'],
   },
   {
@@ -297,8 +298,9 @@ export function buildStudyPlan(
     const nextNew = [...allItems.values()].find(
       (item) => ready(item) && item.minutes <= minutesLeft,
     );
-    // On small budgets, alternate a fitting new session with due recall rather than starving new work.
-    // This deterministic planning default is an estimate, not an optimized learning prescription.
+    // On small budgets, alternate a fitting new session with due recall rather than starving new
+    // work. This deterministic planning default is an estimate, not an optimized learning
+    // prescription.
     const reserveNew = nextNew && !consolidationDay && day - lastNewDay > 1 ? nextNew.minutes : 0;
     const reviewBudget = nextNew ? Math.max(20, Math.floor(dailyMinutes * 0.35)) : dailyMinutes;
     let reviewMinutes = 0;
@@ -525,14 +527,15 @@ export const STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS: ReadonlySet<string> = new Set
   'design-systems',
   'design-rounds',
   'ai-collaborators',
-  ...HIDDEN_COURSE_IDS.filter((id) => id.startsWith('blaze:')).map((id) => id.slice('blaze:'.length)),
+  ...HIDDEN_COURSE_IDS.filter((id) => id.startsWith('blaze:')).map((id) =>
+    id.slice('blaze:'.length),
+  ),
 ]);
 
 export function studyPlanOfferings(documents: SearchDocument[]): StudyPlanTopic[] {
   const offerings = new Map<string, StudyPlanTopic>();
   for (const item of documents) {
-    if (item.path === 'blaze' && STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS.has(item.courseId))
-      continue;
+    if (item.path === 'blaze' && STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS.has(item.courseId)) continue;
     const id = `${item.path}:${item.courseId}`;
     if (!offerings.has(id))
       offerings.set(id, {
@@ -554,7 +557,8 @@ export function studyPlanOfferings(documents: SearchDocument[]): StudyPlanTopic[
     ];
     handsOn.contentTypes = ['dsa-problem'];
     handsOn.description =
-      'Canonical coding problems across the published DSA curriculum. Shared selections are scheduled only once.';
+      'Canonical coding problems across the published DSA curriculum. Shared selections ' +
+      'are scheduled only once.';
   }
   const paths: ContentPath[] = ['learn', 'grow', 'blaze'];
   return [...offerings.values()].sort(

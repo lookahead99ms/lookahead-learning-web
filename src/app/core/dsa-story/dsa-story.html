@@ -1,5 +1,6 @@
 <!-- Option B "Code beside" (user-approved 2026-10-06): the shared player lays out the controls,
-     caption, values and code; this template supplies the drawing for each step or recorded line. -->
+     caption, values and code; this template supplies the drawing for each step or recorded line.
+-->
 <app-walkthrough-player
   [examples]="examples()"
   [example]="selectedFixtureId()"
@@ -31,12 +32,16 @@
       <!-- Every line: the recorded state, drawn with the story's own cells and nodes. -->
       <div class="stage line-stage">
         @for (panel of linePanels(); track panel.view.id) {
-          <ng-container [ngTemplateOutlet]="viewTemplate" [ngTemplateOutletContext]="{ $implicit: panel }" />
+          <ng-container
+            [ngTemplateOutlet]="viewTemplate"
+            [ngTemplateOutletContext]="{ $implicit: panel }"
+          />
         } @empty {
           <p class="empty">
             {{
               current.snapshot.event
-                ? 'This line records values only; they are listed under the caption. Steps draws the structures.'
+                ? 'This line records values only; they are listed under the caption. Steps ' +
+                  'draws the structures.'
                 : current.caption
             }}
           </p>
@@ -46,19 +51,28 @@
       <div class="stage split" [style.--focal-min]="focalMin()">
         <div class="focal-col">
           @for (panel of focalPanels(); track panel.view.id) {
-            <ng-container [ngTemplateOutlet]="viewTemplate" [ngTemplateOutletContext]="{ $implicit: panel }" />
+            <ng-container
+              [ngTemplateOutlet]="viewTemplate"
+              [ngTemplateOutletContext]="{ $implicit: panel }"
+            />
           }
         </div>
         <div class="side-col">
           @for (panel of sidePanels(); track panel.view.id) {
-            <ng-container [ngTemplateOutlet]="viewTemplate" [ngTemplateOutletContext]="{ $implicit: panel }" />
+            <ng-container
+              [ngTemplateOutlet]="viewTemplate"
+              [ngTemplateOutletContext]="{ $implicit: panel }"
+            />
           }
         </div>
       </div>
     } @else {
       <div class="stage">
         @for (panel of panels(); track panel.view.id) {
-          <ng-container [ngTemplateOutlet]="viewTemplate" [ngTemplateOutletContext]="{ $implicit: panel }" />
+          <ng-container
+            [ngTemplateOutlet]="viewTemplate"
+            [ngTemplateOutletContext]="{ $implicit: panel }"
+          />
         }
       </div>
     }
@@ -81,7 +95,9 @@
     [class.focal]="panel.focal"
     [attr.data-kind]="panel.view.kind"
     [attr.data-window]="panel.view.window ? true : null"
-    [style.--cells]="panel.sequence && panel.sequence.kind !== 'stack' ? panel.sequence.cells.length : null"
+    [style.--cells]="
+      panel.sequence && panel.sequence.kind !== 'stack' ? panel.sequence.cells.length : null
+    "
     [style.--cell]="panel.cell"
     [style.--cell-fit]="panel.cellFit"
   >
@@ -171,7 +187,8 @@
             }
             @for (miss of model.misses; track miss) {
               <div class="entry tone-miss">
-                <span class="k">{{ miss }}</span><span class="val">not in {{ panel.view.var }}</span>
+                <span class="k">{{ miss }}</span
+                ><span class="val">not in {{ panel.view.var }}</span>
               </div>
             }
           </div>
@@ -258,13 +275,20 @@
                 [attr.d]="edge.path"
                 [attr.marker-end]="
                   edge.directed
-                    ? 'url(#' + uid + '-arrow' + (edge.tone && edge.tone !== 'done' ? '-' + edge.tone : '') + ')'
+                    ? 'url(#' +
+                      uid +
+                      '-arrow' +
+                      (edge.tone && edge.tone !== 'done' ? '-' + edge.tone : '') +
+                      ')'
                     : null
                 "
               />
             }
             @for (node of model.nodes; track node.id) {
-              <g [class]="'node ' + tones(node.tones)" [style.transform]="'translate(' + node.x + 'px,' + node.y + 'px)'">
+              <g
+                [class]="'node ' + tones(node.tones)"
+                [style.transform]="'translate(' + node.x + 'px,' + node.y + 'px)'"
+              >
                 @if (node.sentinel) {
                   <rect class="sentinel" x="-24" y="-17" width="48" height="34" rx="8" />
                 } @else {
@@ -273,12 +297,16 @@
                 @if (node.end) {
                   <circle class="end-ring" r="17" />
                 }
-                <!-- A dummy already named by its pointer label reads "dummy", so it fits its box. -->
+                <!-- A dummy already named by its pointer label reads "dummy", so it fits its box.
+                -->
+                <!-- prettier-ignore -->
                 <text [class.sentinel-text]="node.sentinel">{{
                   node.sentinel && node.pointers.includes(node.text) ? 'dummy' : node.text
                 }}</text>
                 @for (label of node.pointers; track label; let row = $index) {
-                  <text class="pointer-label" [attr.y]="node.labelsBelow ? 40 + row * 16 : -32 - row * 16">{{ label }}</text>
+                  <!-- prettier-ignore -->
+                  <text class="pointer-label" [attr.y]="node.labelsBelow ? 40 + row * 16 : -32 - row
+                    * 16">{{ label }}</text>
                 }
                 @if (node.badge) {
                   <text class="badge" x="25" y="12">{{ node.badge }}</text>
@@ -286,7 +314,10 @@
               </g>
             }
             @if (model.nullAt; as spot) {
-              <g class="null-slot" [style.transform]="'translate(' + spot.x + 'px,' + spot.y + 'px)'">
+              <g
+                class="null-slot"
+                [style.transform]="'translate(' + spot.x + 'px,' + spot.y + 'px)'"
+              >
                 <text>{{ noneText() }}</text>
                 @for (label of model.nullPointers; track label; let row = $index) {
                   <text class="pointer-label" [attr.y]="-32 - row * 16">{{ label }}</text>

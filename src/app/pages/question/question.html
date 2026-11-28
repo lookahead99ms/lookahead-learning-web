@@ -13,15 +13,17 @@
     [approachFamily]="readerApproachFamily()"
   />
   <ng-template #discoveryReturn>
-  @if (returnDestination(); as destination) {
-    <nav class="practice-return" aria-label="Discovery return navigation">
-      <a class="action-link" [routerLink]="destination">{{ returnLabel() }}</a>
-      @if (reviewModuleDestination(); as moduleDestination) {
-        <a class="action-link" [routerLink]="moduleDestination">Back to {{ reviewModuleLabel() }}</a>
-        <a class="action-link" routerLink="/search">Search all content</a>
-      }
-    </nav>
-  }
+    @if (returnDestination(); as destination) {
+      <nav class="practice-return" aria-label="Discovery return navigation">
+        <a class="action-link" [routerLink]="destination">{{ returnLabel() }}</a>
+        @if (reviewModuleDestination(); as moduleDestination) {
+          <a class="action-link" [routerLink]="moduleDestination"
+            >Back to {{ reviewModuleLabel() }}</a
+          >
+          <a class="action-link" routerLink="/search">Search all content</a>
+        }
+      </nav>
+    }
   </ng-template>
   @if (question(); as item) {
     <article class="question-reader question-detail-reader" [attr.data-path]="pathId()">
@@ -30,18 +32,22 @@
           <a routerLink="/">Home</a><span>/</span>
           <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
-          @if (isCodingPractice(item) && pathId() === 'learn' && (!isCoursePracticePlacement(item) || studioPilot() || focusStudio())) {
+          @if (
+            isCodingPractice(item) &&
+            pathId() === 'learn' &&
+            (!isCoursePracticePlacement(item) || studioPilot() || focusStudio())
+          ) {
             @if (handsOnGroup; as group) {
               <a routerLink="/learn" [queryParams]="{ group: group.id }">{{ group.title }}</a
               ><span>/</span>
             }
             <a routerLink="/learn/hands-on-dsa">Hands-On DSA</a><span>/</span>
             @if (!(studioPilot() || focusStudio()) || patternRevealed()) {
-            <a
-              routerLink="/learn/hands-on-dsa"
-              [queryParams]="{ pattern: patternContextToken(handsOnPatternId(item)) || null }"
-              >{{ handsOnPatternTitle(item) }}</a
-            ><span>/</span>
+              <a
+                routerLink="/learn/hands-on-dsa"
+                [queryParams]="{ pattern: patternContextToken(handsOnPatternId(item)) || null }"
+                >{{ handsOnPatternTitle(item) }}</a
+              ><span>/</span>
             }
             <span aria-current="page">{{ item.title }}</span>
           } @else {
@@ -93,73 +99,90 @@
       }
       <section class="reader-question-panel">
         <div class="reader-title-block" [class.has-unit-scene]="!!unitScene()">
-        @if (unitScene(); as scene) {
-          <app-card-scene
-            class="reader-unit-scene"
-            [src]="scene.src"
-            [alt]="scene.alt"
-            [optional]="true"
-            [attr.aria-hidden]="scene.alt ? null : 'true'"
-            [attr.data-unit]="scene.unitTitle"
-          />
-        }
-        <div class="reader-title-text">
-        @if (studioPilot() || focusStudio()) {
-          <a class="problem-back" [routerLink]="returnDestination() ?? ['/learn/hands-on-dsa']"
-            ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>{{ backLabel() }}</a
-          >
-        }
-        <div class="article-title-row">
-          <h1
-            class="reader-question-title"
-            [attr.aria-label]="numberedTitle(item)"
-            [attr.data-sidebar-title]="navTitle(item)"
-          >
-            @if (releaseInfo(item)?.studyOrder; as number) {
-              <span class="problem-number" [attr.title]="'Learning order ' + number + ' of ' + releaseTotal()"
-                >{{ number }}.
-              </span>
-            }
-            <span>{{ patternName(item.title) }}</span>
-            @if (patternSubtitle(item.title); as subtitle) {
-              <span class="pattern-title-subtitle">: {{ subtitle }}</span>
-            }
-          </h1>
-          @if (studioPilot() || focusStudio()) {
-            <p class="problem-title-metadata">
-              <span class="problem-level" [attr.aria-label]="'Difficulty: ' + item.difficulty">{{ item.difficulty }}</span>
-              @if (releaseInfo(item)?.interviewRank; as rank) {
-                <span
-                  [attr.title]="'Interview priority ' + rank + ' of ' + releaseTotal()"
-                  [attr.aria-label]="'Rank ' + rank + ' of ' + releaseTotal() + ' in interview priority'"
-                  >Rank {{ rank }}</span
-                >
-              }
-              @if (releaseInfo(item)?.studyOrder; as number) {
-                <span>Problem {{ number }} of {{ releaseTotal() }}</span>
-              }
-              @if (solvedRating(item); as rating) {
-                <span class="problem-solved"
-                  ><span aria-hidden="true">✓ </span><span class="visually-hidden">Solved: </span
-                  >{{ rating }}</span
-                >
-              }
-            </p>
+          @if (unitScene(); as scene) {
+            <app-card-scene
+              class="reader-unit-scene"
+              [src]="scene.src"
+              [alt]="scene.alt"
+              [optional]="true"
+              [attr.aria-hidden]="scene.alt ? null : 'true'"
+              [attr.data-unit]="scene.unitTitle"
+            />
           }
-        </div>
-        @if (lessonSubtitle(item); as subtitle) {
-          <p class="lesson-subtitle">{{ subtitle }}</p>
-        }
-        </div>
+          <div class="reader-title-text">
+            @if (studioPilot() || focusStudio()) {
+              <a class="problem-back" [routerLink]="returnDestination() ?? ['/learn/hands-on-dsa']"
+                ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg
+                >{{ backLabel() }}</a
+              >
+            }
+            <div class="article-title-row">
+              <h1
+                class="reader-question-title"
+                [attr.aria-label]="numberedTitle(item)"
+                [attr.data-sidebar-title]="navTitle(item)"
+              >
+                @if (releaseInfo(item)?.studyOrder; as number) {
+                  <span
+                    class="problem-number"
+                    [attr.title]="'Learning order ' + number + ' of ' + releaseTotal()"
+                    >{{ number }}.
+                  </span>
+                }
+                <span>{{ patternName(item.title) }}</span>
+                @if (patternSubtitle(item.title); as subtitle) {
+                  <span class="pattern-title-subtitle">: {{ subtitle }}</span>
+                }
+              </h1>
+              @if (studioPilot() || focusStudio()) {
+                <p class="problem-title-metadata">
+                  <span
+                    class="problem-level"
+                    [attr.aria-label]="'Difficulty: ' + item.difficulty"
+                    >{{ item.difficulty }}</span
+                  >
+                  @if (releaseInfo(item)?.interviewRank; as rank) {
+                    <span
+                      [attr.title]="'Interview priority ' + rank + ' of ' + releaseTotal()"
+                      [attr.aria-label]="
+                        'Rank ' + rank + ' of ' + releaseTotal() + ' in interview priority'
+                      "
+                      >Rank {{ rank }}</span
+                    >
+                  }
+                  @if (releaseInfo(item)?.studyOrder; as number) {
+                    <span>Problem {{ number }} of {{ releaseTotal() }}</span>
+                  }
+                  @if (solvedRating(item); as rating) {
+                    <span class="problem-solved"
+                      ><span aria-hidden="true">✓ </span
+                      ><span class="visually-hidden">Solved: </span>{{ rating }}</span
+                    >
+                  }
+                </p>
+              }
+            </div>
+            @if (lessonSubtitle(item); as subtitle) {
+              <p class="lesson-subtitle">{{ subtitle }}</p>
+            }
+          </div>
         </div>
         @if (studioPilot() || focusStudio()) {
-          <!-- User-approved 2026-10-06: recognize first; after reveal keep only the named lesson link.
-               DLV-965 (user, 2026-10-16): the approach switch moved beside "Show solution" in the
-               workspace (FocusStudio), so this row names nothing before the learner asks. -->
+          <!-- User-approved 2026-10-06: recognize first; after reveal keep only the named lesson
+               link. DLV-965 (user, 2026-10-16): the approach switch moved beside "Show solution" in
+               the workspace (FocusStudio), so this row names nothing before the learner asks. -->
           <div class="problem-pattern-actions">
             @if (!patternRevealed()) {
-              <button type="button" class="pattern-help-open" aria-haspopup="dialog" (click)="patternHelpOpen.set(true)">
-                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" /><path d="m10.6 5.4-1.7 3.5-3.5 1.7 1.7-3.5z" /></svg>
+              <button
+                type="button"
+                class="pattern-help-open"
+                aria-haspopup="dialog"
+                (click)="patternHelpOpen.set(true)"
+              >
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6.2" />
+                  <path d="m10.6 5.4-1.7 3.5-3.5 1.7 1.7-3.5z" />
+                </svg>
                 Help me recognize the pattern
               </button>
             } @else {
@@ -169,7 +192,9 @@
                 [queryParams]="returnQueryParams()"
                 target="_blank"
                 rel="noopener"
-                >Learn more about {{ patternName(conceptReviewTitle(item)) }}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
+                >Learn more about {{ patternName(conceptReviewTitle(item))
+                }}<svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
                 ><span class="visually-hidden"> (opens in a new tab)</span></a
               >
             }
@@ -189,8 +214,8 @@
         @if (!(studioPilot() || focusStudio())) {
           <p class="eyebrow">{{ item.difficulty }}</p>
         }
-        <!-- DLV-408: the left side nav already lists every stage, so the jump row under the level label only
-             renders when this page hides that nav. -->
+        <!-- DLV-408: the left side nav already lists every stage, so the jump row under the level
+             label only renders when this page hides that nav. -->
         @if (hasTheoryExperience(item) && sidebarContext().hideNavigation) {
           <nav class="pattern-navigation" aria-label="Article navigation">
             @for (link of patternNavigation(item); track link.target) {
@@ -200,11 +225,12 @@
         }
         @if ((studioPilot() || focusStudio()) && canonicalProblem(item)) {
           <div class="source-navigation-rows">
-            @for (row of problemNavigationRows(item, planNavigation); track row.label; let rows = $count) {
-              <nav
-                class="problem-nav-cards"
-                [attr.aria-label]="row.label + ' problem navigation'"
-              >
+            @for (
+              row of problemNavigationRows(item, planNavigation);
+              track row.label;
+              let rows = $count
+            ) {
+              <nav class="problem-nav-cards" [attr.aria-label]="row.label + ' problem navigation'">
                 @if (row.previous; as previous) {
                   <a
                     class="problem-nav-card previous"
@@ -212,13 +238,19 @@
                     [queryParams]="previous.query"
                     [attr.title]="previous.meaning"
                     [attr.aria-label]="
-                      'Previous: ' + previous.title + (previous.solved ? ', solved' : '') + '. ' + previous.meaning
+                      'Previous: ' +
+                      previous.title +
+                      (previous.solved ? ', solved' : '') +
+                      '. ' +
+                      previous.meaning
                     "
                   >
                     <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
                     <span class="card-text"
                       ><small>Previous{{ rows > 1 ? ' · ' + row.label : '' }}</small
-                      ><b>{{ previous.number ? previous.number + '. ' : '' }}{{ previous.title }}</b></span
+                      ><b
+                        >{{ previous.number ? previous.number + '. ' : '' }}{{ previous.title }}</b
+                      ></span
                     >
                     @if (previous.solved) {
                       <span class="solved-tick" aria-hidden="true" title="Solved">✓</span>
@@ -233,7 +265,9 @@
                     [routerLink]="next.route"
                     [queryParams]="next.query"
                     [attr.title]="next.meaning"
-                    [attr.aria-label]="'Next: ' + next.title + (next.solved ? ', solved' : '') + '. ' + next.meaning"
+                    [attr.aria-label]="
+                      'Next: ' + next.title + (next.solved ? ', solved' : '') + '. ' + next.meaning
+                    "
                   >
                     <span class="card-text"
                       ><small>Next{{ rows > 1 ? ' · ' + row.label : '' }}</small
@@ -365,9 +399,14 @@
           </nav>
         }
       </section>
-      <!-- DSA problem pages: the back link above the title replaces the return link and the pattern lesson sits
-           behind "Help me recognize the pattern"; only the review flow keeps its extra links here. -->
-      @if ((studioPilot() || focusStudio()) ? !!reviewModuleDestination() : (returnDestination() || item.relatedArticleId)) {
+      <!-- DSA problem pages: the back link above the title replaces the return link and the pattern
+           lesson sits behind "Help me recognize the pattern"; only the review flow keeps its extra
+           links here. -->
+      @if (
+        studioPilot() || focusStudio()
+          ? !!reviewModuleDestination()
+          : returnDestination() || item.relatedArticleId
+      ) {
         <div class="question-review-navigation">
           <ng-container [ngTemplateOutlet]="discoveryReturn" />
           @if (!(studioPilot() || focusStudio()) && item.relatedArticleId; as articleId) {
@@ -486,7 +525,8 @@
                       <app-code-copy-button [code]="code.source" />
                     </div>
                   </div>
-                  <pre><code [appLearningCode]="code.source" [codeLanguage]="code.language"></code></pre>
+                  <pre><code [appLearningCode]="code.source"
+                    [codeLanguage]="code.language"></code></pre>
                 </section>
               }
             }
@@ -587,7 +627,8 @@
                 <span class="reference-toggle-hint">Try it on your own first, then compare.</span>
               </span>
               <span class="reference-toggle-action">
-                {{ referenceExpanded() ? 'Hide' : 'Show' }}<span class="reference-toggle-chevron" aria-hidden="true"></span>
+                {{ referenceExpanded() ? 'Hide' : 'Show'
+                }}<span class="reference-toggle-chevron" aria-hidden="true"></span>
               </span>
             </summary>
             <div class="practice-reference-body">
@@ -613,19 +654,28 @@
               <ol class="walkthrough-steps" data-sidebar-stage="walkthrough">
                 @for (step of item.walkthrough; track step.id) {
                   <li class="walkthrough-step">
-                    <section [id]="'walkthrough-' + step.id" [attr.aria-labelledby]="'walkthrough-' + step.id + '-heading'">
+                    <section
+                      [id]="'walkthrough-' + step.id"
+                      [attr.aria-labelledby]="'walkthrough-' + step.id + '-heading'"
+                    >
                       <p class="walkthrough-time">{{ step.label }}</p>
-                      <h3 [id]="'walkthrough-' + step.id + '-heading'" [attr.data-sidebar-label]="step.heading">
+                      <h3
+                        [id]="'walkthrough-' + step.id + '-heading'"
+                        [attr.data-sidebar-label]="step.heading"
+                      >
                         {{ step.heading }}
                       </h3>
                       @for (paragraph of step.body; track $index; let index = $index) {
                         <p [innerHTML]="paragraph"></p>
                         @if (step.table && walkthroughTableAfter(step) === index) {
-                          <ng-container *ngTemplateOutlet="walkthroughTable; context: { $implicit: step.table }" />
+                          <ng-container
+                            *ngTemplateOutlet="walkthroughTable; context: { $implicit: step.table }"
+                          />
                         }
                       }
                       @if (step.cards?.length) {
-                        <!-- Same card look as lesson section cards: side by side when the step has room, stacked otherwise. -->
+                        <!-- Same card look as lesson section cards: side by side when the step has
+                             room, stacked otherwise. -->
                         <div class="section-cards walkthrough-cards">
                           <ul class="section-card-grid" [attr.data-card-count]="step.cards!.length">
                             @for (card of step.cards; track card.title) {
@@ -669,7 +719,8 @@
               </ol>
             </section>
           }
-          <!-- Same look as lesson tables; a wide table scrolls inside its own frame, never the page. -->
+          <!-- Same look as lesson tables; a wide table scrolls inside its own frame, never the
+               page. -->
           <ng-template #walkthroughTable let-table>
             <div
               class="lesson-table-wrap walkthrough-table"
@@ -752,7 +803,11 @@
                         <app-code-copy-button [code]="code.source" />
                       </div>
                     </div>
-                    <pre tabindex="0" aria-label="Example code"><code [appLearningCode]="code.source" [codeLanguage]="code.language"></code></pre>
+                    <pre
+                      tabindex="0"
+                      aria-label="Example code"
+                    ><code [appLearningCode]="code.source"
+                      [codeLanguage]="code.language"></code></pre>
                     @if (item.compatibility; as requirements) {
                       <section class="compatibility-notes" aria-label="Compatibility requirements">
                         <strong>Compatibility</strong>
@@ -814,7 +869,9 @@
           @if (item.followUps.length) {
             <section class="main-followups" aria-labelledby="question-followups-heading">
               <h2 class="panel-label" id="question-followups-heading">Likely follow-ups</h2>
-              <p class="followups-intro">Answer each one out loud first, then open the strong answer to compare.</p>
+              <p class="followups-intro"
+                >Answer each one out loud first, then open the strong answer to compare.</p
+              >
               <ol class="followup-list">
                 @for (followUp of item.followUps; track followUp.question; let index = $index) {
                   <li class="followup-card">
@@ -822,7 +879,11 @@
                       <span class="followup-number">Follow-up {{ index + 1 }}</span>
                       <span class="followup-role">Interviewer</span>
                     </p>
-                    <h3 class="followup-question" [id]="'followup-' + (index + 1) + '-question'" [innerHTML]="followUp.question"></h3>
+                    <h3
+                      class="followup-question"
+                      [id]="'followup-' + (index + 1) + '-question'"
+                      [innerHTML]="followUp.question"
+                    ></h3>
                     <details class="followup-answer">
                       <summary [attr.aria-describedby]="'followup-' + (index + 1) + '-question'">
                         <span class="followup-toggle-show">Show a strong answer</span>
@@ -842,9 +903,14 @@
       }
     </article>
   } @else if (error()) {
-    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
+    <app-content-recovery
+      [kind]="recovery()"
+      [preview]="recoveryPreview()"
+      (retry)="retryLoad.next()"
+    />
   } @else {
     <section class="page-message">
-      <ng-container [ngTemplateOutlet]="discoveryReturn" /><p>Loading question…</p></section>
+      <ng-container [ngTemplateOutlet]="discoveryReturn" /><p>Loading question…</p></section
+    >
   }
 </main>

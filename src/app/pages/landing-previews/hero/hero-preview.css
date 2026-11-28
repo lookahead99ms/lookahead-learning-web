@@ -21,7 +21,9 @@
   --home-hero-radius: 22px;
   --home-panel-top: color-mix(in srgb, var(--panel-background) 82%, #000);
   --home-glow-strength: 34%;
-  --home-hero-shadow: 0 30px 60px -28px color-mix(in srgb, var(--panel-background) 70%, transparent);
+  /* prettier-ignore */
+  --home-hero-shadow: 0 30px 60px -28px
+    color-mix(in srgb, var(--panel-background) 70%, transparent);
   --home-panel-learn: #83d8b9;
   --home-panel-grow: #f4ad92;
   --home-panel-blaze: #a9cdf5;
@@ -145,4 +147,3 @@ button:disabled {
   color: var(--text-subtle);
   font-size: 14px;
 }
-

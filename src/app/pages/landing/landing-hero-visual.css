@@ -1,5 +1,9 @@
 /* Styles owned by the hero-card illustration component. */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 /* DLV-803: the space between a card's parts follows the card's width but never takes more than a
    small share of the window height, so every slide fits above the fold on a laptop. The card's
    flexible part (path rows, chart, queue, window sketch, stack drawing, plan steps) takes any spare
@@ -764,10 +768,17 @@
   }
 }
 
-
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 @media (forced-colors: active) {
-  .hv-cell.in-window, .hv-code-line.invariant { outline: 1px solid CanvasText; }
+  .hv-cell.in-window,
+  .hv-code-line.invariant {
+    outline: 1px solid CanvasText;
+  }
 }

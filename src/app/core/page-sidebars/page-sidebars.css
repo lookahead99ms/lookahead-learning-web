@@ -380,7 +380,8 @@ button {
   }
 }
 
-/* DLV-408 lesson stages: plain uppercase group links, with the current stage's sections indented. */
+/* DLV-408 lesson stages: plain uppercase group links, with the current stage's sections indented.
+*/
 .shared-sidebar-outline a.sidebar-stage {
   min-height: 36px;
   margin-top: 6px;
@@ -394,8 +395,8 @@ button {
   padding-inline-start: 22px;
 }
 
-/* Practice & review (user review, 2026-10-05): compact full-width rows with an icon each, subtle edges,
-   clear hover and focus. Three rows jump within the page; Quick recall opens a dialog. */
+/* Practice & review (user review, 2026-10-05): compact full-width rows with an icon each, subtle
+   edges, clear hover and focus. Three rows jump within the page; Quick recall opens a dialog. */
 .practice-review {
   margin-bottom: 18px;
 }
@@ -475,8 +476,9 @@ button {
   stroke-width: 1.6;
 }
 
-/* Where you are (outline, 2026-10-05): path, group, course and lessons, then the next course and group.
-   Each level has its own type, colour and hover; the width stays the sidebar's and long names wrap. */
+/* Where you are (outline, 2026-10-05): path, group, course and lessons, then the next course and
+   group. Each level has its own type, colour and hover; the width stays the sidebar's and long
+   names wrap. */
 .sidebar-lesson-nav {
   display: grid;
   gap: 14px;

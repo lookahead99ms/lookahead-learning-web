@@ -61,7 +61,9 @@ describe('Published delivery plan shaping (mirror of scripts/delivery-editor.mjs
 
 describe('DeliveryPublicationService', () => {
   beforeEach(() =>
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] }),
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }),
   );
   afterEach(() => TestBed.inject(HttpTestingController).verify());
   it('reads the staff publication as text and shapes it into a snapshot', async () => {

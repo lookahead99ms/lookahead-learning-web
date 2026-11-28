@@ -22,10 +22,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { canSeePreviews } from '../../core/author-workspace-nav/author-workspace-links';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
-import {
-  embeddedAnchor,
-  embeddedChildNavigation,
-} from '../../core/author-embedded-anchor';
+import { embeddedAnchor, embeddedChildNavigation } from '../../core/author-embedded-anchor';
 import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
 import { AuthorReviewPacket } from './author-review-packet';
 import { ArchitectureDiagramId, connectArchitectureFrame } from './architecture-diagram-protocol';
@@ -56,7 +53,10 @@ import {
 export class AuthorPreviewsPage {
   private readonly hostDocument = inject(DOCUMENT);
   protected readonly accounts = inject(StudyPlanAccount);
-  /** DLV-969 (owner, 2026-11-04): the owner and co-authors; the route already keeps everyone else out. */
+  /**
+   * DLV-969 (owner, 2026-11-04): the owner and co-authors; the route already keeps everyone else
+   * out.
+   */
   protected readonly canView = computed(() => canSeePreviews(this.accounts.account()));
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
@@ -88,7 +88,10 @@ export class AuthorPreviewsPage {
   protected readonly architectureDocumentHref = computed(() => {
     if (
       !this.architectureOnly ||
-      !(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) ||
+      !(
+        this.accounts.account()?.permissions?.previewDocuments ??
+        this.accounts.account()?.authorPreview === true
+      ) ||
       this.accounts.sessionExpired()
     )
       return null;
@@ -154,7 +157,16 @@ export class AuthorPreviewsPage {
   protected onEmbeddedSectionSelected(hash: string): void {
     this.pendingArchitectureAnchor = hash;
     const anchor = embeddedAnchor(hash, this.architectureSections);
-    if (anchor) this.architectureFrame()?.nativeElement.contentWindow?.postMessage({type:'lookahead:author-document:tab-request',version:1,documentId:'architecture-reference',anchor}, '*');
+    if (anchor)
+      this.architectureFrame()?.nativeElement.contentWindow?.postMessage(
+        {
+          type: 'lookahead:author-document:tab-request',
+          version: 1,
+          documentId: 'architecture-reference',
+          anchor,
+        },
+        '*',
+      );
   }
 
   @HostListener('window:message', ['$event'])
@@ -195,7 +207,6 @@ export class AuthorPreviewsPage {
     )
       return;
     this.architectureFrameHeight.set(Math.ceil(data.height));
-
   }
 
   protected connectDocument(frame: HTMLIFrameElement) {
@@ -307,7 +318,14 @@ export class AuthorPreviewsPage {
   });
   protected readonly resultCount = computed(() => this.visibleCollections().length);
   protected readonly previewOutline = computed<AuthorOutlineItem[]>(() => {
-    if (!(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) || this.accounts.sessionExpired()) return [];
+    if (
+      !(
+        this.accounts.account()?.permissions?.previewDocuments ??
+        this.accounts.account()?.authorPreview === true
+      ) ||
+      this.accounts.sessionExpired()
+    )
+      return [];
     return [
       { label: 'Current product', href: '#live-product' },
       { label: 'Study Plan sample views', href: '#study-plan-views' },
@@ -330,7 +348,14 @@ export class AuthorPreviewsPage {
 
   protected async load() {
     const url = previewManifestUrl(this.base);
-    if (!url || !(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) || this.accounts.sessionExpired()) {
+    if (
+      !url ||
+      !(
+        this.accounts.account()?.permissions?.previewDocuments ??
+        this.accounts.account()?.authorPreview === true
+      ) ||
+      this.accounts.sessionExpired()
+    ) {
       this.state.set('disabled');
       return;
     }

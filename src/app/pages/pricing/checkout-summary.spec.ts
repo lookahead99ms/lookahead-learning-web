@@ -29,7 +29,9 @@ describe('checkout order summary (DLV-969)', () => {
   });
 
   it('names a plan from the catalog given, the built-in catalog, then its id', () => {
-    expect(planName('learn', [{ ...PLANS[1], id: 'learn', name: 'Learn (server)' }])).toBe('Learn (server)');
+    expect(planName('learn', [{ ...PLANS[1], id: 'learn', name: 'Learn (server)' }])).toBe(
+      'Learn (server)',
+    );
     expect(planName('grow', [])).toBe('Grow');
     expect(planName('retired-plan', [])).toBe('retired-plan');
   });
@@ -51,23 +53,33 @@ describe('checkout order summary (DLV-969)', () => {
   });
 
   it('uses today as the start when the quote sends only an end date', () => {
-    const order = orderSummary(card('learn'), { priceCents: 6999, endsAt: '2027-11-04T00:00:00Z' }, null, PLANS, NOW);
+    const order = orderSummary(
+      card('learn'),
+      { priceCents: 6999, endsAt: '2027-11-04T00:00:00Z' },
+      null,
+      PLANS,
+      NOW,
+    );
     expect(order.term).toBe('4 Nov 2026 – 4 Nov 2027');
     expect(order.quoted).toBe(true);
   });
 
-  it('shows an upgrade as the full price less the credit for the time left, keeping the end date', () => {
-    const order = orderSummary(
-      card('advance'),
-      { priceCents: 3999, startsAt: NOW.toISOString(), endsAt: learnRecord.endsAt! },
-      learnRecord,
-      PLANS,
-      NOW,
-    );
-    expect(order.upgrade).toEqual({ from: 'Learn', credit: '−$105.00', ends: '4 May 2027' });
-    expect(order.due).toBe('$39.99');
-    expect(order.startsLater).toBeNull();
-  });
+  it(
+    'shows an upgrade as the full price less the credit for the time left, keeping the ' +
+      'end date',
+    () => {
+      const order = orderSummary(
+        card('advance'),
+        { priceCents: 3999, startsAt: NOW.toISOString(), endsAt: learnRecord.endsAt! },
+        learnRecord,
+        PLANS,
+        NOW,
+      );
+      expect(order.upgrade).toEqual({ from: 'Learn', credit: '−$105.00', ends: '4 May 2027' });
+      expect(order.due).toBe('$39.99');
+      expect(order.startsLater).toBeNull();
+    },
+  );
 
   it('shows a change or renewal that starts when the current plan ends, with no credit', () => {
     const order = orderSummary(
@@ -80,7 +92,13 @@ describe('checkout order summary (DLV-969)', () => {
     expect(order.upgrade).toBeNull();
     expect(order.startsLater).toBe('Starts 4 May 2027, when your Learn plan ends.');
     expect(order.term).toBe('4 May 2027 – 4 May 2028');
-    const fresh = orderSummary(card('grow'), { priceCents: 9999, startsAt: '2027-01-01T00:00:00Z', endsAt: '2028-01-01T00:00:00Z' }, null, PLANS, NOW);
+    const fresh = orderSummary(
+      card('grow'),
+      { priceCents: 9999, startsAt: '2027-01-01T00:00:00Z', endsAt: '2028-01-01T00:00:00Z' },
+      null,
+      PLANS,
+      NOW,
+    );
     expect(fresh.startsLater).toBe('Starts 1 Jan 2027.');
   });
 

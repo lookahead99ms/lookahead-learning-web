@@ -120,7 +120,8 @@ button:focus-visible {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
-/* DLV-971 (owner, 2026-11-06): the type as a row of cards, the same control as the ticket kinds on Support. */
+/* DLV-971 (owner, 2026-11-06): the type as a row of cards, the same control as the ticket kinds on
+   Support. */
 .type-picker {
   margin: 0 0 16px;
   padding: 0;
@@ -439,7 +440,8 @@ button.danger {
   text-transform: uppercase;
   white-space: nowrap;
 }
-/* DLV-971 runtime stores: the ticket a promoted item became; a link in the open item, text in the row button. */
+/* DLV-971 runtime stores: the ticket a promoted item became; a link in the open item, text in the
+   row button. */
 .ticket-pill {
   display: inline-block;
   padding: 1px 8px;

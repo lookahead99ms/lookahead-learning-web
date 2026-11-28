@@ -3,8 +3,9 @@ import { ACCOUNT_FETCH } from '../study-plan/study-plan-account';
 import { AccountSignInMethod, readSignInMethods } from './account-settings-client';
 
 /**
- * DLV-969 S36.8: merging accounts that share one verified email (contract s36-merge-flow-contract.md).
- * The Gateway passes these routes through to the Domain under the existing account routes.
+ * DLV-969 S36.8: merging accounts that share one verified email (contract
+ * s36-merge-flow-contract.md). The Gateway passes these routes through to the Domain under the
+ * existing account routes.
  */
 export interface MergeStudyPlan {
   id: string;
@@ -22,7 +23,10 @@ export interface MergeCandidate {
   /** Null when the account has never signed in. */
   lastSignInAt: string | null;
   studyPlans: MergeStudyPlan[];
-  /** The account has a paid membership; the merge ends it for an account that is not kept (nothing is refunded). */
+  /**
+   * The account has a paid membership; the merge ends it for an account that is not kept (nothing
+   * is refunded).
+   */
   paidMembership: boolean;
 }
 
@@ -33,7 +37,8 @@ export interface MergeDetails {
 }
 
 /** The request always answers 202, so "sent" never says whether an email went out. */
-export type MergeRequestResult = { kind: 'sent' } | { kind: 'signed-out' } | { kind: 'unavailable' };
+export type MergeRequestResult =
+  { kind: 'sent' } | { kind: 'signed-out' } | { kind: 'unavailable' };
 
 export type MergeLoadResult =
   | { kind: 'ready'; merge: MergeDetails }
@@ -47,7 +52,10 @@ export type MergeLoadResult =
 export type MergeResult =
   | { kind: 'merged'; keptAccountId: string }
   | { kind: 'invalid' }
-  /** 409 MERGE_CONFLICT: a candidate changed since the page loaded, is disabled, or fewer than two remain. */
+  /**
+   * 409 MERGE_CONFLICT: a candidate changed since the page loaded, is disabled, or fewer than two
+   * remain.
+   */
   | { kind: 'conflict' }
   /** 422: the chosen account is not one of the candidates. */
   | { kind: 'not-candidate' }
@@ -78,7 +86,8 @@ export class AccountMergeClient {
     const answer = await this.send('/account/merge/request', { method: 'POST', body: {} });
     if (!answer) return { kind: 'unavailable' };
     // The Domain answers 202 even when nothing was sent; a rate limit reads the same on screen.
-    if ((answer.status >= 200 && answer.status < 300) || answer.status === 429) return { kind: 'sent' };
+    if ((answer.status >= 200 && answer.status < 300) || answer.status === 429)
+      return { kind: 'sent' };
     if (signedOut(answer)) return { kind: 'signed-out' };
     return { kind: 'unavailable' };
   }
@@ -106,19 +115,25 @@ export class AccountMergeClient {
     if (!answer) return { kind: 'unavailable' };
     if (answer.status === 200) {
       const kept = answer.data?.keptAccountId;
-      return typeof kept === 'string' && kept ? { kind: 'merged', keptAccountId: kept } : { kind: 'unavailable' };
+      return typeof kept === 'string' && kept
+        ? { kind: 'merged', keptAccountId: kept }
+        : { kind: 'unavailable' };
     }
     if (answer.status === 404) return { kind: 'invalid' };
     if (answer.status === 409) return { kind: 'conflict' };
     if (answer.status === 422) return { kind: 'not-candidate' };
-    // 400 INVALID_MERGE_REQUEST (a body the Domain could not read) reads like a lost answer: try again.
+    // 400 INVALID_MERGE_REQUEST (a body the Domain could not read) reads like a lost answer: try
+    // again.
     if (answer.status === 400) return { kind: 'unavailable' };
     if (signedOut(answer)) return { kind: 'signed-out' };
     return { kind: 'unavailable' };
   }
 
   /** One request; null when the network or the CSRF step failed. Never throws. */
-  private async send(path: string, options: { method?: 'POST'; body?: unknown } = {}): Promise<Answer> {
+  private async send(
+    path: string,
+    options: { method?: 'POST'; body?: unknown } = {},
+  ): Promise<Answer> {
     try {
       const headers: Record<string, string> = {};
       if (options.method === 'POST') {
@@ -172,7 +187,11 @@ function signedOut(answer: NonNullable<Answer>): boolean {
 }
 
 function validDate(value: unknown): value is string {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) && Number.isFinite(Date.parse(value));
+  return (
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}/.test(value) &&
+    Number.isFinite(Date.parse(value))
+  );
 }
 
 /** Keeps the answer only when every candidate is well formed; two or more are needed to merge. */
@@ -184,8 +203,16 @@ function details(data: any): MergeDetails | null {
     if (!candidate) return null;
     candidates.push(candidate);
   }
-  if (candidates.length < 2 || new Set(candidates.map((c) => c.accountId)).size !== candidates.length) return null;
-  return { email: data.email, expiresAt: typeof data.expiresAt === 'string' ? data.expiresAt : '', candidates };
+  if (
+    candidates.length < 2 ||
+    new Set(candidates.map((c) => c.accountId)).size !== candidates.length
+  )
+    return null;
+  return {
+    email: data.email,
+    expiresAt: typeof data.expiresAt === 'string' ? data.expiresAt : '',
+    candidates,
+  };
 }
 
 function candidateOf(value: any): MergeCandidate | null {
@@ -196,13 +223,22 @@ function candidateOf(value: any): MergeCandidate | null {
     typeof value.displayName !== 'string' ||
     typeof value.admitted !== 'boolean' ||
     !validDate(value.createdAt) ||
-    !(value.lastSignInAt === null || value.lastSignInAt === undefined || validDate(value.lastSignInAt)) ||
+    !(
+      value.lastSignInAt === null ||
+      value.lastSignInAt === undefined ||
+      validDate(value.lastSignInAt)
+    ) ||
     !Array.isArray(value.studyPlans)
   )
     return null;
   const studyPlans: MergeStudyPlan[] = [];
   for (const plan of value.studyPlans as any[]) {
-    if (!plan || typeof plan.id !== 'string' || typeof plan.title !== 'string' || typeof plan.progressPercent !== 'number')
+    if (
+      !plan ||
+      typeof plan.id !== 'string' ||
+      typeof plan.title !== 'string' ||
+      typeof plan.progressPercent !== 'number'
+    )
       return null;
     studyPlans.push({
       id: plan.id,

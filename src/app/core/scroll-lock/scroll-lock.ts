@@ -109,7 +109,8 @@ export class ScrollLockService {
       bodyPaddingRight: body.style.paddingRight,
     };
     if (scrollbar > 0) {
-      if (view.CSS?.supports?.('scrollbar-gutter', 'stable')) html.style.setProperty('scrollbar-gutter', 'stable');
+      if (view.CSS?.supports?.('scrollbar-gutter', 'stable'))
+        html.style.setProperty('scrollbar-gutter', 'stable');
       else {
         const current = parseFloat(view.getComputedStyle(body).paddingRight) || 0;
         body.style.paddingRight = `${current + scrollbar}px`;
@@ -191,7 +192,9 @@ export class ScrollLock {
   }
 
   private read(): void {
-    this.attributeOpen.set(this.host.hasAttribute('open') || this.host.getAttribute('aria-modal') === 'true');
+    this.attributeOpen.set(
+      this.host.hasAttribute('open') || this.host.getAttribute('aria-modal') === 'true',
+    );
   }
 
   private set(active: boolean): void {

@@ -14,9 +14,15 @@
   font-size: 0.95rem;
   line-height: 1.4;
 }
-.path-learn { --path-mark: var(--path-learn); }
-.path-grow { --path-mark: var(--path-grow); }
-.path-blaze { --path-mark: var(--path-blaze); }
+.path-learn {
+  --path-mark: var(--path-learn);
+}
+.path-grow {
+  --path-mark: var(--path-grow);
+}
+.path-blaze {
+  --path-mark: var(--path-blaze);
+}
 .path-icon {
   flex: none;
   display: grid;

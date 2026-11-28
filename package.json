@@ -67,7 +67,10 @@
     "test:gateway-contract": "node .github/pipeline/build/check-gateway-contract.mjs .github/pipeline/build/contracts/domain-api-v1.json dist/lookahead-learning-web/browser",
     "test:content-paths": "node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=.github/pipeline/build/web-content-paths.mjs .github/pipeline/build/web-content-paths.test.mjs",
     "test:contracts-fetch": "node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=.github/pipeline/build/fetch-contracts.mjs .github/pipeline/build/fetch-contracts.test.mjs",
-    "contracts:fetch": "node .github/pipeline/build/fetch-contracts.mjs"
+    "contracts:fetch": "node .github/pipeline/build/fetch-contracts.mjs",
+    "format": "prettier --write \"src/**/*.{ts,mjs,js,html,css,scss}\" \"scripts/**/*.{ts,mjs,js,html,css,scss}\" \".github/pipeline/**/*.{ts,mjs,js,html,css,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,mjs,js,html,css,scss}\" \"scripts/**/*.{ts,mjs,js,html,css,scss}\" \".github/pipeline/**/*.{ts,mjs,js,html,css,scss}\"",
+    "test:line-length": "node --test scripts/line-length.test.mjs"
   },
   "private": true,
   "packageManager": "npm@11.17.0",

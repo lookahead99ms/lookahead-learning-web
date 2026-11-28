@@ -15,8 +15,8 @@ import {
 } from './platform-review.model';
 
 /**
- * A stored item id: the UUIDs of today's records, or the numbered record ids of the runtime stores (REV-000001 for a
- * review, SUP-000001 for a learner request; DLV-971, owner 2026-11-06).
+ * A stored item id: the UUIDs of today's records, or the numbered record ids of the runtime stores
+ * (REV-000001 for a review, SUP-000001 for a learner request; DLV-971, owner 2026-11-06).
  */
 const id = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|(?:REV|SUP)-\d{6})$/;
 
@@ -55,7 +55,11 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
       ...(itemId ? { keepAttachmentIds: draft.keepAttachmentIds } : {}),
     };
     const form = new FormData();
-    form.append('item', new Blob([JSON.stringify(fields)], { type: 'application/json' }), 'item.json');
+    form.append(
+      'item',
+      new Blob([JSON.stringify(fields)], { type: 'application/json' }),
+      'item.json',
+    );
     for (const file of draft.newFiles) form.append('image', file, file.name || 'screenshot.png');
     return this.json(itemId ? `/${this.checked(itemId)}` : '', {
       method: itemId ? 'PUT' : 'POST',
@@ -69,7 +73,11 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
     await this.send(path, { method: 'DELETE', headers: await this.csrf() });
   }
 
-  async triage(itemId: string, status: ReviewStatus, ownerNote: string): Promise<PlatformReviewItem> {
+  async triage(
+    itemId: string,
+    status: ReviewStatus,
+    ownerNote: string,
+  ): Promise<PlatformReviewItem> {
     return this.json(`/${this.checked(itemId)}/triage`, {
       method: 'PUT',
       headers: {
@@ -88,7 +96,10 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
     });
   }
 
-  /** DLV-971: the owner's Jobs buttons; the Domain's 403 for anyone else arrives as `forbidden`, its 409 as `conflict`. */
+  /**
+   * DLV-971: the owner's Jobs buttons; the Domain's 403 for anyone else arrives as `forbidden`, its
+   * 409 as `conflict`.
+   */
   async runSweeps(job: SweepJob): Promise<SweepRunResult> {
     return this.data(
       await this.request(this.accounts.apiPath('/sweeps/run'), {
@@ -167,7 +178,8 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
     if (status === 403) throw new PlatformReviewError('forbidden');
     if (status === 404) throw new PlatformReviewError('not-found');
     if (status === 409) throw new PlatformReviewError('conflict', message);
-    if (status === 413) throw new PlatformReviewError('invalid', message ?? 'The images are too large to send.');
+    if (status === 413)
+      throw new PlatformReviewError('invalid', message ?? 'The images are too large to send.');
     if (status === 400 || status === 422) throw new PlatformReviewError('invalid', message);
     throw new PlatformReviewError('unavailable');
   }

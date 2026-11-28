@@ -87,7 +87,8 @@ export function semanticState(
       const matches = (pattern: string) => new RegExp(pattern, 'm').test(source);
       const heap =
         matches(
-          `(?:heappush|heappop|heapify|heapreplace|heappushpop)\\(\\s*${escaped}\\b|heap\\.(?:Push|Pop|Init)\\(\\s*&?${escaped}\\b`,
+          `(?:heappush|heappop|heapify|heapreplace|heappushpop)\\(\\s*` +
+            `${escaped}\\b|heap\\.(?:Push|Pop|Init)\\(\\s*&?${escaped}\\b`,
         ) ||
         (/heap/i.test(name) && matches(`\\b${escaped}\\s*\\[`));
       const priorityQueue =
@@ -95,7 +96,8 @@ export function semanticState(
         matches(`PriorityQueue[^;\\n]*\\b${escaped}\\b|\\b${escaped}\\s*=\\s*new\\s+PriorityQueue`);
       const fifo =
         matches(
-          `\\b${escaped}\\.(?:popleft|poll|pollFirst|removeFirst|offer|addLast)\\(|\\b${escaped}\\s*=\\s*${escaped}\\[1:\\]`,
+          `\\b${escaped}\\.(?:popleft|poll|pollFirst|removeFirst|offer|addLast)\\(|\\b` +
+            `${escaped}\\s*=\\s*${escaped}\\[1:\\]`,
         ) || variable.type === 'queue';
       const lifo =
         matches(`\\b${escaped}\\.pop\\(\\s*\\)|\\b${escaped}\\.(?:push|peek)\\(`) ||
@@ -212,7 +214,8 @@ export function semanticState(
         kind === 'stack' &&
         language === 'java' &&
         matches(
-          `(?:Deque|LinkedList)[^;\\n]*\\b${escaped}\\b|\\b${escaped}\\s*=\\s*new\\s+(?:ArrayDeque|LinkedList)`,
+          `(?:Deque|LinkedList)[^;\\n]*\\b${escaped}\\b|\\b` +
+            `${escaped}\\s*=\\s*new\\s+(?:ArrayDeque|LinkedList)`,
         );
       return {
         name,
@@ -230,11 +233,14 @@ export function semanticState(
             : kind === 'priority-queue'
               ? 'Recorded iteration order; heap shape and sorted order are not implied.'
               : kind === 'heap'
-                ? 'Parent-child positions come from the recorded heap array; its ordering may be under repair at this instruction.'
+                ? 'Parent-child positions come from the recorded heap array; its ordering ' +
+                  'may be under repair at this instruction.'
                 : kind === 'node'
-                  ? 'Only fields present in this snapshot are shown. Reference boundaries are not expanded.'
+                  ? 'Only fields present in this snapshot are shown. Reference boundaries ' +
+                    'are not expanded.'
                   : kind === 'queue-storage' || kind === 'stack-storage'
-                    ? 'Backing storage with recorded index markers. Capacity cells are not implied to be live entries.'
+                    ? 'Backing storage with recorded index markers. Capacity cells are ' +
+                      'not implied to be live entries.'
                     : kind === 'queue'
                       ? 'Recorded front-to-back order.'
                       : kind === 'stack'

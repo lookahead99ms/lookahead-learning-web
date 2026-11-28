@@ -29,7 +29,9 @@ interface Step {
   colour: string;
 }
 
-/** One drawn piece of the stair line: the riser up to a step, then its tread, in the step's colour. */
+/**
+ * One drawn piece of the stair line: the riser up to a step, then its tread, in the step's colour.
+ */
 export interface StairLine {
   d: string;
   colour: string;
@@ -38,7 +40,9 @@ export interface StairLine {
 /** From play to the arrow resting on the top step: statements (2.8 s) then four 2.9 s steps. */
 export const STEPS_MS = 14400;
 
-/** In loop rounds the arrow runs the whole staircase without stopping, in this many milliseconds. */
+/**
+ * In loop rounds the arrow runs the whole staircase without stopping, in this many milliseconds.
+ */
 export const LOOP_DASH_MS = 2000;
 
 /**
@@ -47,7 +51,10 @@ export const LOOP_DASH_MS = 2000;
  */
 export interface StairTraveller {
   route: string;
-  /** Where the arrow rests on each step: at the end of its tread, just short of the corner, pointing right. */
+  /**
+   * Where the arrow rests on each step: at the end of its tread, just short of the corner, pointing
+   * right.
+   */
   stops: readonly number[];
   /** Where the arrow passes each step's dot, for the loop's pulses. */
   dots: readonly number[];
@@ -160,8 +167,9 @@ export class EssenceSteps {
       this.traveller.set(null);
       return;
     }
-    // On-screen boxes include any CSS zoom on the way up (/welcome and locked pages scale the Essence to fit), while the
-    // drawing uses the frame's own units: divide by the scale so the line and the arrow reach the last step at any zoom.
+    // On-screen boxes include any CSS zoom on the way up (/welcome and locked pages scale the
+    // Essence to fit), while the drawing uses the frame's own units: divide by the scale so the
+    // line and the arrow reach the last step at any zoom.
     const scale = frame!.offsetWidth > 0 ? box.width / frame!.offsetWidth : 1;
     const x = (value: number) => Math.round(((value - box.left) / scale) * 10) / 10;
     const y = (value: number) => Math.round(((value - box.top) / scale) * 10) / 10;
@@ -174,8 +182,9 @@ export class EssenceSteps {
         return { d: `${start} H${x(step.right)}`, colour: this.steps[index].colour };
       }),
     );
-    const lengths = steps.map((step, index) =>
-      x(step.right) - x(step.left) + (index ? y(steps[index - 1].top) - y(step.top) : 0),
+    const lengths = steps.map(
+      (step, index) =>
+        x(step.right) - x(step.left) + (index ? y(steps[index - 1].top) - y(step.top) : 0),
     );
     const total = lengths.reduce((sum, length) => sum + length, 0);
     const percent = (length: number) => Math.round((length / total) * 1000) / 10;
@@ -230,7 +239,6 @@ export class EssenceSteps {
     traveller.colours.forEach((colour, index) => (style[`--colour-${index}`] = colour));
     return style;
   }
-
 
   protected readonly growth: readonly GrowthLine[] = [
     {

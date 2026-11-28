@@ -143,8 +143,10 @@ function listDrawing(list: ListVisual): Drawing {
     const rise = cy - NODE_RADIUS - 52;
     const path =
       target === last
-        ? `M${last.cx - 12} ${cy - NODE_RADIUS + 1}C${last.cx - 46} ${rise} ${last.cx + 46} ${rise} ${last.cx + 12} ${cy - NODE_RADIUS - 2}`
-        : `M${last.cx} ${cy - NODE_RADIUS - 2}C${last.cx} ${rise} ${target.cx} ${rise} ${target.cx} ${cy - NODE_RADIUS - 6}`;
+        ? `M${last.cx - 12} ${cy - NODE_RADIUS + 1}C${last.cx - 46} ${rise} ` +
+          `${last.cx + 46} ${rise} ${last.cx + 12} ${cy - NODE_RADIUS - 2}`
+        : `M${last.cx} ${cy - NODE_RADIUS - 2}C${last.cx} ${rise} ${target.cx} ${rise} ` +
+          `${target.cx} ${cy - NODE_RADIUS - 6}`;
     cycle = {
       path,
       noteX: (last.cx + target.cx) / 2,

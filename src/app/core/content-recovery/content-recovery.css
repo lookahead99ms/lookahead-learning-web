@@ -1,7 +1,8 @@
 :host {
   display: block;
   width: 100%;
-  /* The Essence card's own tokens (landing.css values), so it looks the same as on Home and /welcome. */
+  /* The Essence card's own tokens (landing.css values), so it looks the same as on Home and
+     /welcome. */
   --home-brand-block: #fbf6ee;
   --home-grad-text: linear-gradient(100deg, #006c73 0%, #4338ca 52%, #a3460a 100%);
 }
@@ -9,8 +10,8 @@
   --home-brand-block: #15213a;
   --home-grad-text: linear-gradient(100deg, #70d6cd 0%, #b4b2ff 52%, #ffba87 100%);
 }
-/* DLV-969 (owner, 2026-11-04): a locked page is title, the way in and the Essence, all on one screen, so it is
-   tighter than the other recovery states. */
+/* DLV-969 (owner, 2026-11-04): a locked page is title, the way in and the Essence, all on one
+   screen, so it is tighter than the other recovery states. */
 .recovery.with-essence {
   margin: 16px auto;
   padding: 20px clamp(20px, 3vw, 32px);

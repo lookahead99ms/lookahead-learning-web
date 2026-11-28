@@ -126,44 +126,50 @@ describe('Hands-On DSA projection', () => {
     );
   });
 
-  it('keeps every released rank in the Full Library scope while numbered tiers cut off (DLV-965)', () => {
-    const problem = (id: string, interviewRank: number) => ({
-      id,
-      title: id,
-      description: '',
-      difficulty: 'Intermediate' as const,
-      variation: '',
-      invariantAdaptation: '',
-      version: 'v1',
-      questionId: id,
-      route: ['/learn', 'algorithmic-patterns', id],
-      interviewRank,
-      studyOrder: interviewRank,
-    });
-    const groups = [
-      {
-        id: 'algorithmic-patterns:prefix-state',
-        courseId: 'algorithmic-patterns',
-        courseTitle: 'Algorithmic Patterns',
-        title: 'Prefix Sums',
+  it(
+    'keeps every released rank in the Full Library scope while numbered tiers cut off ' +
+      '(DLV-965)',
+    () => {
+      const problem = (id: string, interviewRank: number) => ({
+        id,
+        title: id,
         description: '',
-        unitId: 'prefix-state',
-        practiceModuleId: 'practice-difference-arrays',
-        lessonId: 'algorithmic-prefix-state',
-        lessonTitle: 'Prefix Sums',
-        tags: [],
-        hasGuidedLesson: true,
-        preparationOrder: 1,
-        problems: [problem('first', 12), problem('second-approach-2', 783)],
-      },
-    ] as unknown as HandsOnDsaIndexGroup[];
-    const ids = (scope: HandsOnTierScope) =>
-      filterHandsOnDsaIndexGroups(groups, '', 'All', scope).flatMap((group) => group.problems.map((item) => item.id));
-    expect(ids('782')).toEqual(['first', 'second-approach-2']);
-    expect(ids('730')).toEqual(['first', 'second-approach-2']);
-    expect(ids('600')).toEqual(['first']);
-    expect(ids('150')).toEqual(['first']);
-  });
+        difficulty: 'Intermediate' as const,
+        variation: '',
+        invariantAdaptation: '',
+        version: 'v1',
+        questionId: id,
+        route: ['/learn', 'algorithmic-patterns', id],
+        interviewRank,
+        studyOrder: interviewRank,
+      });
+      const groups = [
+        {
+          id: 'algorithmic-patterns:prefix-state',
+          courseId: 'algorithmic-patterns',
+          courseTitle: 'Algorithmic Patterns',
+          title: 'Prefix Sums',
+          description: '',
+          unitId: 'prefix-state',
+          practiceModuleId: 'practice-difference-arrays',
+          lessonId: 'algorithmic-prefix-state',
+          lessonTitle: 'Prefix Sums',
+          tags: [],
+          hasGuidedLesson: true,
+          preparationOrder: 1,
+          problems: [problem('first', 12), problem('second-approach-2', 783)],
+        },
+      ] as unknown as HandsOnDsaIndexGroup[];
+      const ids = (scope: HandsOnTierScope) =>
+        filterHandsOnDsaIndexGroups(groups, '', 'All', scope).flatMap((group) =>
+          group.problems.map((item) => item.id),
+        );
+      expect(ids('782')).toEqual(['first', 'second-approach-2']);
+      expect(ids('730')).toEqual(['first', 'second-approach-2']);
+      expect(ids('600')).toEqual(['first']);
+      expect(ids('150')).toEqual(['first']);
+    },
+  );
 
   it('filters by problem text and difficulty without duplicating groups', () => {
     const groups = buildHandsOnDsaGroups(course());
@@ -243,13 +249,16 @@ describe('Hands-On DSA projection', () => {
         ({ difficulty }) => difficulty,
       ),
     ).toEqual(['Advanced', 'Intermediate', 'Beginner']);
-    // DLV-965: Approach-N problems share their original's interview rank; study order keeps approach order.
+    // DLV-965: Approach-N problems share their original's interview rank; study order keeps
+    // approach order.
     difficultyGroup.problems[2].interviewRank = difficultyGroup.problems[0].interviewRank;
     expect(
       rankedHandsOnDsaIndexProblems([difficultyGroup], 'interview-rank').map(({ id }) => id),
     ).toEqual(['advanced', 'intermediate', 'beginner']);
     expect(
-      rankedHandsOnDsaIndexProblems([difficultyGroup], 'interview-rank-descending').map(({ id }) => id),
+      rankedHandsOnDsaIndexProblems([difficultyGroup], 'interview-rank-descending').map(
+        ({ id }) => id,
+      ),
     ).toEqual(['beginner', 'advanced', 'intermediate']);
     difficultyGroup.problems[2].interviewRank = 3;
     difficultyGroup.problems[1].interviewRank = undefined;
@@ -263,32 +272,36 @@ describe('Hands-On DSA projection', () => {
     }
   });
 
-  it('counts guided and independent capabilities without calling a completed problem catalogued', () => {
-    const groups = buildHandsOnDsaGroups(course());
-    const completedPalindrome = {
-      ...groups[0].continuationProblems[0],
-      title: 'palindrome',
-      contentType: 'dsa-problem' as const,
-      practiceProblem: {
-        sourceSets: ['Interview core'],
-        tier: 'core' as const,
-        objective: 'Solve independently.',
-        implementationStatus: 'complete' as const,
-      },
-    };
-    const withOverlappingCapability = [
-      {
-        ...groups[0],
-        continuationProblems: [completedPalindrome, groups[0].continuationProblems[1]],
-      },
-    ];
+  it(
+    'counts guided and independent capabilities without calling a completed problem ' +
+      'catalogued',
+    () => {
+      const groups = buildHandsOnDsaGroups(course());
+      const completedPalindrome = {
+        ...groups[0].continuationProblems[0],
+        title: 'palindrome',
+        contentType: 'dsa-problem' as const,
+        practiceProblem: {
+          sourceSets: ['Interview core'],
+          tier: 'core' as const,
+          objective: 'Solve independently.',
+          implementationStatus: 'complete' as const,
+        },
+      };
+      const withOverlappingCapability = [
+        {
+          ...groups[0],
+          continuationProblems: [completedPalindrome, groups[0].continuationProblems[1]],
+        },
+      ];
 
-    expect(handsOnReadinessCounts(withOverlappingCapability)).toEqual({
-      guided: 2,
-      practiceReady: 1,
-      catalogued: 1,
-    });
-  });
+      expect(handsOnReadinessCounts(withOverlappingCapability)).toEqual({
+        guided: 2,
+        practiceReady: 1,
+        catalogued: 1,
+      });
+    },
+  );
 
   it('treats a canonical reference as ready without hydrating its detail payload', () => {
     const groups = buildHandsOnDsaGroups(course());
@@ -318,8 +331,12 @@ describe('resolveHandsOnDsaIndexGroup with opaque pattern context (DLV-962)', ()
   ] as unknown as HandsOnDsaIndexGroup[];
 
   it('resolves the opaque id of a group, its lesson or its unit', () => {
-    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-course:second-unit'))).toBe(groups[1]);
-    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-second-lesson'))).toBe(groups[1]);
+    expect(
+      resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-course:second-unit')),
+    ).toBe(groups[1]);
+    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-second-lesson'))).toBe(
+      groups[1],
+    );
     expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('first-unit'))).toBe(groups[0]);
   });
 
@@ -331,6 +348,8 @@ describe('resolveHandsOnDsaIndexGroup with opaque pattern context (DLV-962)', ()
 
   it('resolves nothing for no value or an unknown one', () => {
     expect(resolveHandsOnDsaIndexGroup(groups, '')).toBeNull();
-    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-course:unknown'))).toBeNull();
+    expect(
+      resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-course:unknown')),
+    ).toBeNull();
   });
 });

@@ -12,10 +12,14 @@ import { AuthorReviewPacket } from './author-review-packet';
   template: `<app-platform-header />
     <main id="main-content" class="admin-workspace review-page">
       <app-author-admin-menu pageId="previews" />
-    <div class="review-content">
-<aside class="review-outline">
-        <app-author-workspace-nav [tabbed]="true" pageTitle="Study Plan review" [outline]="outline" />
-      </aside>
+      <div class="review-content">
+        <aside class="review-outline">
+          <app-author-workspace-nav
+            [tabbed]="true"
+            pageTitle="Study Plan review"
+            [outline]="outline"
+          />
+        </aside>
         <a class="action-link" routerLink="/admin/previews">All previews</a>
         <header id="review-overview">
           <p class="eyebrow">Review workspace</p>

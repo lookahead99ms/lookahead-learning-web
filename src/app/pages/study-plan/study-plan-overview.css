@@ -1,4 +1,5 @@
-/* Your active plan: the plan line, study day and plan actions, then the week's time split (the compass). */
+/* Your active plan: the plan line, study day and plan actions, then the week's time split (the
+   compass). */
 .compass-panel {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr);

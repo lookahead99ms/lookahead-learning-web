@@ -28,9 +28,9 @@ describe('SceneAssets', () => {
   });
 
   it('maps Blaze unit card scenes to their public asset copies', () => {
-    expect(
-      publicUnitScenePath('/content/blaze/design-systems/visuals/cards/reservation.svg'),
-    ).toBe('/assets/scenes/units/blaze/design-systems/reservation.svg');
+    expect(publicUnitScenePath('/content/blaze/design-systems/visuals/cards/reservation.svg')).toBe(
+      '/assets/scenes/units/blaze/design-systems/reservation.svg',
+    );
     for (const path of [
       '/content/grow/api-design/visuals/cards/a.svg',
       '/content/blaze/design-systems/visuals/other/a.svg',

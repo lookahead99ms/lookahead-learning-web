@@ -164,27 +164,30 @@ describe('Module question labels', () => {
       ['streams', 'stream-concept'],
       ['streams-practice', 'stream-practice'],
     ]) {
-      it(`provides a native primary link for ${path}/${moduleId} without nesting filter links`, async () => {
-        const harness = await RouterTestingHarness.create();
-        await harness.navigateByUrl(`/${path}/modern-java/module/${moduleId}`, Module);
-        const card = harness.routeNativeElement!.querySelector('.question-card')!;
-        const primary = card.querySelector<HTMLAnchorElement>('h3 a.question-card-link');
+      it(
+        `provides a native primary link for ${path}/${moduleId} without nesting filter ` + `links`,
+        async () => {
+          const harness = await RouterTestingHarness.create();
+          await harness.navigateByUrl(`/${path}/modern-java/module/${moduleId}`, Module);
+          const card = harness.routeNativeElement!.querySelector('.question-card')!;
+          const primary = card.querySelector<HTMLAnchorElement>('h3 a.question-card-link');
 
-        expect(primary).not.toBeNull();
-        expect(primary?.getAttribute('href')).toBe(`/${path}/modern-java/${questionId}`);
-        expect(primary?.textContent?.trim()).toBe(
-          streamsCourse.questions.find((question) => question.id === questionId)!.title,
-        );
-        expect(card.querySelector('a a, a button, button a')).toBeNull();
-        expect(card.querySelector('button, .question-card-open')).toBeNull();
-        expect(card.textContent).not.toContain('Open question');
-        expect(card.getAttribute('tabindex')).toBeNull();
-        expect(card.querySelector('a')).toBe(primary);
+          expect(primary).not.toBeNull();
+          expect(primary?.getAttribute('href')).toBe(`/${path}/modern-java/${questionId}`);
+          expect(primary?.textContent?.trim()).toBe(
+            streamsCourse.questions.find((question) => question.id === questionId)!.title,
+          );
+          expect(card.querySelector('a a, a button, button a')).toBeNull();
+          expect(card.querySelector('button, .question-card-open')).toBeNull();
+          expect(card.textContent).not.toContain('Open question');
+          expect(card.getAttribute('tabindex')).toBeNull();
+          expect(card.querySelector('a')).toBe(primary);
 
-        primary!.click();
-        await harness.fixture.whenStable();
-        expect(TestBed.inject(Router).url).toBe(`/${path}/modern-java/${questionId}`);
-      });
+          primary!.click();
+          await harness.fixture.whenStable();
+          expect(TestBed.inject(Router).url).toBe(`/${path}/modern-java/${questionId}`);
+        },
+      );
     }
   }
 

@@ -12,8 +12,8 @@ export const handsOnCoursePaths = [
 
 const preparationPlanPath = 'learn/hands-on-dsa-preparation.json';
 const rankingPlanPath = 'learn/hands-on-dsa-ranking.json';
-// Approved catalog targets: the 730 and 782 releases, 785 for the DLV-965 Approach-N pilot and 862 for its
-// full rollout (2026-10-16).
+// Approved catalog targets: the 730 and 782 releases, 785 for the DLV-965 Approach-N pilot and 862
+// for its full rollout (2026-10-16).
 const supportedCatalogTargets = new Set([730, 782, 785, 862, 863, 858]);
 
 async function readJson(path) {
@@ -130,7 +130,8 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
   }
   if (plan.publishedProblemCount !== discoveredProblems.size) {
     throw new Error(
-      `${rankingPlanPath}: publishedProblemCount ${plan.publishedProblemCount} does not match ${discoveredProblems.size}`,
+      `${rankingPlanPath}: publishedProblemCount ${plan.publishedProblemCount} does not ` +
+        `match ${discoveredProblems.size}`,
     );
   }
   if (plan.catalogTarget < discoveredProblems.size) {
@@ -140,8 +141,9 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
   }
 
   const rankingById = new Map();
-  // DLV-965 (user decision 2026-10-17): an Approach-N problem shares its original's interview rank, so a
-  // rank may repeat within one approach family only; a merged problem leaves a gap in the ranks.
+  // DLV-965 (user decision 2026-10-17): an Approach-N problem shares its original's interview rank,
+  // so a rank may repeat within one approach family only; a merged problem leaves a gap in the
+  // ranks.
   const approachOriginal = (problemId) => problemId.replace(/-approach-(?:[2-9]|[1-9]\d+)$/, '');
   const interviewRanks = new Map();
   const studyOrders = new Set();
@@ -190,7 +192,8 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
       const source = sourceById.get(signal?.sourceId);
       if (!source) {
         throw new Error(
-          `${rankingPlanPath}: unknown source ${signal?.sourceId ?? 'missing'} for ${item.problemId}`,
+          `${rankingPlanPath}: unknown source ${signal?.sourceId ?? 'missing'} ` +
+            `for ${item.problemId}`,
         );
       }
       if (!source.includedInRanking) {

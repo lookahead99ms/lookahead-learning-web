@@ -339,7 +339,11 @@ h2 {
 .sale-section {
   border: 2px solid color-mix(in srgb, var(--accent-strong) 55%, var(--line));
   background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-strong) 12%, transparent), transparent 22rem),
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--accent-strong) 12%, transparent),
+      transparent 22rem
+    ),
     var(--surface);
 }
 .preview-flag {
@@ -431,8 +435,9 @@ h2 {
   line-height: 1.6;
 }
 
-/* DLV-969 (owner, 2026-11-04): checkout. One dialog, Plan → Review → Payment, the same in every environment; only
-   the payment step differs. A fixed width and a minimum height keep the steps from resizing the dialog. */
+/* DLV-969 (owner, 2026-11-04): checkout. One dialog, Plan → Review → Payment, the same in every
+   environment; only the payment step differs. A fixed width and a minimum height keep the steps
+   from resizing the dialog. */
 .checkout {
   box-sizing: border-box;
   width: min(560px, calc(100vw - 32px));
@@ -927,7 +932,8 @@ h2 {
 
 /* Footer: Back on the left and the next step on the right; a closing pair is centred. */
 .checkout-foot {
-  /* A footer element: block here, whatever global footer layout says, so the row spans the dialog. */
+  /* A footer element: block here, whatever global footer layout says, so the row spans the dialog.
+  */
   display: block;
   padding: 16px 28px 20px;
   border-top: 1px solid var(--line);

@@ -21,11 +21,15 @@ import { PracticeProgressService } from '../../core/practice-progress/practice-p
         </div>
         <div class="stat">
           <dt>Started</dt>
-          <dd><b>{{ counts().started }}</b></dd>
+          <dd
+            ><b>{{ counts().started }}</b></dd
+          >
         </div>
         <div class="stat">
           <dt>Review due</dt>
-          <dd><b>{{ counts().reviewDue }}</b></dd>
+          <dd
+            ><b>{{ counts().reviewDue }}</b></dd
+          >
         </div>
       </dl>
       <p class="note">

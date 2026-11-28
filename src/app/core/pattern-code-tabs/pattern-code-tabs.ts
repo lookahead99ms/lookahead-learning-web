@@ -5,7 +5,7 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 
 @Component({
   selector: 'app-pattern-code-tabs',
-  imports: [LearningCode,CodeCopyButton],
+  imports: [LearningCode, CodeCopyButton],
   template: `
     <section class="code-tabs" aria-label="Core pattern template">
       <div class="tab-list" role="tablist" aria-label="Template language">

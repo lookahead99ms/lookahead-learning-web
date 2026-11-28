@@ -100,7 +100,14 @@ type AuthoredPlanStep = 'select' | 'review';
 
 @Component({
   selector: 'app-study-plan',
-  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk, StudyPlanOverview, StudyPlanTypeChoice, ScrollLock],
+  imports: [
+    PlatformHeader,
+    NgTemplateOutlet,
+    StudyDesk,
+    StudyPlanOverview,
+    StudyPlanTypeChoice,
+    ScrollLock,
+  ],
   templateUrl: './study-plan.html',
   styleUrls: ['./study-plan-base.css', './study-plan.css'],
 })
@@ -113,7 +120,11 @@ export class StudyPlanPage implements OnInit {
   protected readonly accountStore = inject(StudyPlanAccount);
   private readonly approaches = inject(StudyPlanApproaches);
   protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
-  protected readonly datedPlans = computed(() => this.accountMode() && !!this.accountStore.catalog()?.planLifecyclePolicies?.includes('dated-plan-v1'));
+  protected readonly datedPlans = computed(
+    () =>
+      this.accountMode() &&
+      !!this.accountStore.catalog()?.planLifecyclePolicies?.includes('dated-plan-v1'),
+  );
   protected async changeLifecycle(state: 'active' | 'archived' | 'completed'): Promise<void> {
     if (this.editsLocked()) return;
     const result = await this.accountStore.lifecycle(state, this.startDate());
@@ -195,7 +206,8 @@ export class StudyPlanPage implements OnInit {
       view === 'adjusted'
         ? 'Showing a saved Make Room for Real Life adjustment. No new adjustment was applied.'
         : view === 'missed'
-          ? 'Showing unfinished earlier sessions. Use Review schedule to inspect the current result without changing study days.'
+          ? 'Showing unfinished earlier sessions. Use Review schedule to inspect the ' +
+            'current result without changing study days.'
           : 'Showing the saved author example. No progress was changed.',
     );
     setTimeout(() => {
@@ -285,7 +297,7 @@ export class StudyPlanPage implements OnInit {
   protected async confirmDeletePlan(): Promise<void> {
     const plan = this.deletingPlan();
     if (!plan || this.editsLocked()) return;
-    if (!await this.accountStore.deletePlan(plan.planId, plan.revision)) return;
+    if (!(await this.accountStore.deletePlan(plan.planId, plan.revision))) return;
     this.deleteDialog?.nativeElement.close?.();
     this.deletingPlan.set(null);
     this.displayPlanDashboard();
@@ -555,7 +567,12 @@ export class StudyPlanPage implements OnInit {
       return;
     }
     if (this.accountMode()) {
-      const result = await this.accountStore.save(draft, 'update-plan', undefined, this.datedPlans() ? this.startDate() : undefined);
+      const result = await this.accountStore.save(
+        draft,
+        'update-plan',
+        undefined,
+        this.datedPlans() ? this.startDate() : undefined,
+      );
       if (!result) return;
       this.acceptAccountPlan(result);
     } else {
@@ -641,7 +658,9 @@ export class StudyPlanPage implements OnInit {
     const account = this.accountStore.account();
     const active = this.accountStore.active();
     const { weeks: _derivedWeeks, ...schedule } = saved.snapshot;
-    const key = `look-ahead.adjustment-dismissal.v1:${this.accountMode() ? `${account?.accountId}:${active?.planId}` : 'browser'}`;
+    const key =
+      `look-ahead.adjustment-dismissal.v1:` +
+      `${this.accountMode() ? `${account?.accountId}:${active?.planId}` : 'browser'}`;
     return {
       key,
       fingerprint: adjustmentFingerprint([
@@ -873,7 +892,9 @@ export class StudyPlanPage implements OnInit {
       ? this.catalogVariantValues('dailyHours', FREE_PREVIEW_HOURS)
       : this.readyMadeHours(),
   );
-  /** Every window or hour value offered by any published plan, plus the free one, smallest first. */
+  /**
+   * Every window or hour value offered by any published plan, plus the free one, smallest first.
+   */
   private catalogVariantValues(field: 'durationDays' | 'dailyHours', free: number): number[] {
     const values = (this.readyMadeCatalog()?.paths ?? []).flatMap((path) =>
       path.variants.map((variant) => variant[field]),
@@ -1069,7 +1090,8 @@ export class StudyPlanPage implements OnInit {
     this.authoredPlanStep.set('select');
     this.readyMadeMessage.set(
       hours >= 6
-        ? 'This is an intensive daily schedule. Availability is a ceiling; breaks and unused time remain valid.'
+        ? 'This is an intensive daily schedule. Availability is a ceiling; breaks and ' +
+            'unused time remain valid.'
         : '',
     );
   }
@@ -1122,7 +1144,8 @@ export class StudyPlanPage implements OnInit {
           ) {
             this.readyMadeStatus.set('error');
             this.readyMadeMessage.set(
-              'This authored schedule no longer matches the selected catalog version. Reload the catalog.',
+              'This authored schedule no longer matches the selected catalog version. ' +
+                'Reload the catalog.',
             );
             return;
           }
@@ -1135,7 +1158,9 @@ export class StudyPlanPage implements OnInit {
           if (unavailable.length) {
             this.readyMadeStatus.set('ready');
             this.readyMadeMessage.set(
-              `${unavailable.length} of ${template.references.length} referenced items are unavailable with your current access. The authored schedule was not changed or applied.`,
+              `${unavailable.length} of ${template.references.length} referenced items ` +
+                `are unavailable with your current access. The authored schedule was not ` +
+                `changed or applied.`,
             );
             return;
           }
@@ -1192,7 +1217,8 @@ export class StudyPlanPage implements OnInit {
                 ? 'This authored schedule is unavailable with your current access.'
                 : error.status === 404
                   ? 'This authored schedule is no longer in the selected catalog version.'
-                  : 'The authored schedule could not be loaded. Try again; your current selections are unchanged.',
+                  : 'The authored schedule could not be loaded. Try again; your current ' +
+                    'selections are unchanged.',
           );
         },
       });
@@ -1439,7 +1465,8 @@ export class StudyPlanPage implements OnInit {
   });
   protected readonly deskPlanKey = computed(
     () =>
-      `${this.accountStore.account()?.accountId ?? 'local'}:${this.accountStore.active()?.planId ?? 'browser'}`,
+      `${this.accountStore.account()?.accountId ?? 'local'}:` +
+      `${this.accountStore.active()?.planId ?? 'browser'}`,
   );
   private deskEntry(entry: StudyDeskActivity): StudyDeskEntry {
     const assignment = entry.assignment;
@@ -1500,7 +1527,11 @@ export class StudyPlanPage implements OnInit {
     if (!all.length) return;
     const visibleIds = new Set(
       (this.deskModel()?.entries ?? [])
-        .filter((entry) => entry.day === this.selectedDay() || entry.assignment.id === this.deskModel()?.resume?.assignment.id)
+        .filter(
+          (entry) =>
+            entry.day === this.selectedDay() ||
+            entry.assignment.id === this.deskModel()?.resume?.assignment.id,
+        )
         .map((entry) => this.sourceId(entry.assignment)),
     );
     const visible = all.filter(({ problemId }) => visibleIds.has(problemId));
@@ -2013,7 +2044,10 @@ export class StudyPlanPage implements OnInit {
         );
       });
       if (incomplete)
-        return 'Record the earlier attempt or complete the original learning session before this revisit.';
+        return (
+          'Record the earlier attempt or complete the original learning session before ' +
+          'this revisit.'
+        );
     }
     if (
       isStudyReview(assignment) &&
@@ -2109,7 +2143,8 @@ export class StudyPlanPage implements OnInit {
       this.days() !== active.snapshot.config.days
     ) {
       this.status.set(
-        'Use the explicit deadline extension to move this interview window, or start a new plan for a different window.',
+        'Use the explicit deadline extension to move this interview window, or start a ' +
+          'new plan for a different window.',
       );
       return;
     }
@@ -2305,7 +2340,9 @@ export class StudyPlanPage implements OnInit {
         {
           revision: saved.revision + 1,
           changedAt: new Date().toISOString(),
-          reason: `Recovered within the existing window; ${preview.deferred.length} sessions deferred`,
+          reason:
+            `Recovered within the existing window; ${preview.deferred.length} sessions ` +
+            `deferred`,
         },
       ],
     };
@@ -2333,7 +2370,8 @@ export class StudyPlanPage implements OnInit {
       this.saved.set(draft);
       if (!isAdjustment)
         this.persist(
-          'Recovery applied. Your deadline and daily budget are unchanged; deferred sessions are listed below.',
+          'Recovery applied. Your deadline and daily budget are unchanged; deferred ' +
+            'sessions are listed below.',
         );
     }
     this.closeRecovery();
@@ -2595,7 +2633,8 @@ export class StudyPlanPage implements OnInit {
       this.status.set(message);
     } catch {
       this.status.set(
-        'Your plan works in this tab, but browser storage is unavailable. Keep this tab open to retain progress.',
+        'Your plan works in this tab, but browser storage is unavailable. Keep this tab ' +
+          'open to retain progress.',
       );
     }
   }

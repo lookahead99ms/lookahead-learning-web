@@ -137,7 +137,8 @@ export const STUDY_PLAN_PRESETS: StudyPlanPreset[] = [
     id: 'senior-staff',
     title: 'Senior / Staff Engineer',
     summary:
-      'Reason across architecture, scale, resilience, organizational boundaries and technical influence.',
+      'Reason across architecture, scale, resilience, organizational boundaries and ' +
+      'technical influence.',
     days: 90,
     dailyHours: 1,
     topicIds: [
@@ -152,7 +153,8 @@ export const STUDY_PLAN_PRESETS: StudyPlanPreset[] = [
     id: 'fde',
     title: 'Forward Deployed Engineer',
     summary:
-      'Turn an ambiguous user problem into an integrated, evaluated solution and explain its trade-offs.',
+      'Turn an ambiguous user problem into an integrated, evaluated solution and ' +
+      'explain its trade-offs.',
     days: 90,
     dailyHours: 1,
     topicIds: [
@@ -177,7 +179,8 @@ export const STUDY_PLAN_PRESETS: StudyPlanPreset[] = [
     id: 'architect',
     title: 'Solution Architect',
     summary:
-      'Connect requirements, distributed systems, cloud boundaries, reliability and stakeholder communication.',
+      'Connect requirements, distributed systems, cloud boundaries, reliability and ' +
+      'stakeholder communication.',
     days: 120,
     dailyHours: 1,
     topicIds: [

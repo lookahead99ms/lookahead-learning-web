@@ -31,7 +31,9 @@ describe('ScrollLockService', () => {
   let service: ScrollLockService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', component: Blank }])] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter([{ path: '**', component: Blank }])],
+    });
     service = TestBed.inject(ScrollLockService);
     html().style.overflow = '';
     body().style.overflow = 'clip';
@@ -79,7 +81,7 @@ describe('ScrollLockService', () => {
     expect(service.holders()).toBe(0);
   });
 
-  it('keeps a classic scrollbar\'s width so the layout does not jump', () => {
+  it("keeps a classic scrollbar's width so the layout does not jump", () => {
     const width = vi.spyOn(html(), 'clientWidth', 'get').mockReturnValue(window.innerWidth - 15);
     const supports = vi.fn(() => true);
     const priorCss = (window as { CSS?: unknown }).CSS;
@@ -225,7 +227,13 @@ describe('every modal on the platform uses the shared lock (user, 2026-10-16)', 
     const unlocked = sources.flatMap(({ file, text }) =>
       [...text.matchAll(/<dialog\b[^>]*>/g)]
         .filter(([tag]) => !tag.includes('appScrollLock'))
-        .filter(() => !/ScrollLockService/.test(text) && !/ScrollLockService/.test(fs.readFileSync(`src/app/${file.replace(/\.html$/, '.ts')}`, 'utf8')))
+        .filter(
+          () =>
+            !/ScrollLockService/.test(text) &&
+            !/ScrollLockService/.test(
+              fs.readFileSync(`src/app/${file.replace(/\.html$/, '.ts')}`, 'utf8'),
+            ),
+        )
         .map(([tag]) => `${file}: ${tag.slice(0, 60)}`),
     );
     expect(unlocked).toEqual([]);
@@ -233,14 +241,23 @@ describe('every modal on the platform uses the shared lock (user, 2026-10-16)', 
   });
 
   it('locks the header search palette and the expanded debugger', () => {
-    const header = sources.find(({ file }) => file.endsWith('platform-header/platform-header.html'))!.text;
-    const palette = header.slice(header.indexOf('id="header-search-palette"') - 200, header.indexOf('id="header-search-palette"') + 200);
+    const header = sources.find(({ file }) =>
+      file.endsWith('platform-header/platform-header.html'),
+    )!.text;
+    const palette = header.slice(
+      header.indexOf('id="header-search-palette"') - 200,
+      header.indexOf('id="header-search-palette"') + 200,
+    );
     expect(palette).toContain('appScrollLock');
     expect(palette).toContain('aria-modal');
-    const pilot = sources.find(({ file }) => file.endsWith('dsa-problem-pilot/dsa-problem-pilot.ts'))!.text;
+    const pilot = sources.find(({ file }) =>
+      file.endsWith('dsa-problem-pilot/dsa-problem-pilot.ts'),
+    )!.text;
     expect(pilot).toContain('this.scrollLock.lock()');
     // No component sets the body's overflow by hand any more.
-    const manual = sources.filter(({ file, text }) => !file.includes('scroll-lock') && /body\.style\.overflow\s*=/.test(text));
+    const manual = sources.filter(
+      ({ file, text }) => !file.includes('scroll-lock') && /body\.style\.overflow\s*=/.test(text),
+    );
     expect(manual.map(({ file }) => file)).toEqual([]);
   });
 });

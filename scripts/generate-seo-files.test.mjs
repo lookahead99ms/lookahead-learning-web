@@ -81,7 +81,11 @@ async function fixtureCheckout() {
 }
 
 const retiredCourses = [
-  { path: 'learn', courseId: 'core-java', lessons: { 'old-lesson': 'java-platform-execution-model' } },
+  {
+    path: 'learn',
+    courseId: 'core-java',
+    lessons: { 'old-lesson': 'java-platform-execution-model' },
+  },
 ];
 const hiddenCourseIds = new Set(['blaze:system-design']);
 
@@ -101,21 +105,36 @@ test('normalizes the site origin and rejects anything that is not a bare origin'
   }
 });
 
-test('robots.txt allows public pages, blocks personal and internal ones, and names the sitemap only with an origin', () => {
-  const withoutOrigin = renderRobots(null);
-  assert.match(withoutOrigin, /^User-agent: \*$/m);
-  assert.match(withoutOrigin, /^Allow: \/$/m);
-  assert.doesNotMatch(withoutOrigin, /Sitemap:/);
-  for (const path of ['/admin', '/delivery-plan', '/account', '/sign-in', '/sign-up', '/support', '/study-plan']) {
-    assert.match(withoutOrigin, new RegExp(`^Disallow: ${path}$`, 'm'), path);
-  }
-  for (const path of ['/', '/learn', '/grow', '/blaze', '/content', '/search', '/assets']) {
-    assert.ok(!DISALLOWED_PATHS.includes(path), path);
-  }
-  assert.match(renderRobots('https://example.test'), /^Sitemap: https:\/\/example\.test\/sitemap\.xml$/m);
-});
+test(
+  'robots.txt allows public pages, blocks personal and internal ones, and names the ' +
+    'sitemap only with an origin',
+  () => {
+    const withoutOrigin = renderRobots(null);
+    assert.match(withoutOrigin, /^User-agent: \*$/m);
+    assert.match(withoutOrigin, /^Allow: \/$/m);
+    assert.doesNotMatch(withoutOrigin, /Sitemap:/);
+    for (const path of [
+      '/admin',
+      '/delivery-plan',
+      '/account',
+      '/sign-in',
+      '/sign-up',
+      '/support',
+      '/study-plan',
+    ]) {
+      assert.match(withoutOrigin, new RegExp(`^Disallow: ${path}$`, 'm'), path);
+    }
+    for (const path of ['/', '/learn', '/grow', '/blaze', '/content', '/search', '/assets']) {
+      assert.ok(!DISALLOWED_PATHS.includes(path), path);
+    }
+    assert.match(
+      renderRobots('https://example.test'),
+      /^Sitemap: https:\/\/example\.test\/sitemap\.xml$/m,
+    );
+  },
+);
 
-test('the sitemap lists catalogs, available visible courses and public-unit lessons only', async () => {
+test('the sitemap lists catalogs, visible available courses and public lessons only', async () => {
   const { checkout, runtime } = await fixtureCheckout();
   try {
     const warnings = [];
@@ -221,7 +240,7 @@ test('escapes sitemap locations', () => {
   assert.match(renderSitemap('https://e.test', ['/a&b']), /<loc>https:\/\/e\.test\/a&amp;b<\/loc>/);
 });
 
-test('prefers the private content root for protected builds and the synced copy otherwise', async () => {
+test('prefers the private content root for protected builds, else the synced copy', async () => {
   const { checkout, runtime } = await fixtureCheckout();
   try {
     const root = join(checkout, 'web');
@@ -252,7 +271,7 @@ test('reads the app hidden-course list and recognizes protected build arguments'
   assert.equal(isProtectedBuild([]), false);
 });
 
-test('the shared page flags list start-free and keep sample pricing out of the sitemap', async () => {
+test('the shared page flags list start-free and keep sample pricing off the sitemap', async () => {
   const pages = await readIndexablePages();
   assert.equal(pages['start-free'], true);
   assert.equal(pages.pricing, false);

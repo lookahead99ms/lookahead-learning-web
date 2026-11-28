@@ -1,7 +1,7 @@
 /** Grow teaches topic-specific platforms; Learn retains its comparative contract. */
 /**
- * `languages`: a lesson that ships its project in named languages (DLV-935 guided projects: Java and Python
- * downloads) covers exactly those languages instead of the Java, Python and Go baseline.
+ * `languages`: a lesson that ships its project in named languages (DLV-935 guided projects: Java
+ * and Python downloads) covers exactly those languages instead of the Java, Python and Go baseline.
  */
 export function foundationLanguageNoteErrors(notes, pathSlug, languages) {
   if (!Array.isArray(notes) || notes.length === 0) return ['must include implementation notes'];

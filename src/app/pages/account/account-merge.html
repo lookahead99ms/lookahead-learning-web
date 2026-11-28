@@ -1,6 +1,10 @@
 <app-platform-header />
 <main id="main-content" class="account-page merge-page" [class.merge-wide]="view() === 'choose'">
-  <section class="account-card merge-card" aria-labelledby="merge-heading" [attr.aria-busy]="view() === 'loading'">
+  <section
+    class="account-card merge-card"
+    aria-labelledby="merge-heading"
+    [attr.aria-busy]="view() === 'loading'"
+  >
     <header class="account-intro">
       <p class="eyebrow">Your learning account</p>
       <h1 id="merge-heading">{{ heading[view()] }}</h1>
@@ -25,17 +29,26 @@
           <a class="managed-login-action" [href]="loginUrl">Sign in</a>
         } @else {
           <div class="merge-actions merge-actions-single">
-            <a class="return-action primary-action" routerLink="/sign-in" [queryParams]="{ returnTo }">Sign in</a>
+            <a
+              class="return-action primary-action"
+              routerLink="/sign-in"
+              [queryParams]="{ returnTo }"
+              >Sign in</a
+            >
           </div>
         }
       }
       @case ('choose') {
         @if (merge(); as details) {
           <p>
-            These accounts all use {{ details.email }}. Keep one. The others are deleted with their study plans and
-            progress, and this can't be undone.
+            These accounts all use {{ details.email }}. Keep one. The others are deleted with their
+            study plans and progress, and this can't be undone.
           </p>
-          <form class="merge-form" (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="busy()">
+          <form
+            class="merge-form"
+            (submit)="$event.preventDefault(); submit()"
+            [attr.aria-busy]="busy()"
+          >
             <fieldset class="merge-choice">
               <legend>Choose the account to keep</legend>
               <div class="merge-candidates">
@@ -45,7 +58,9 @@
                     [class.kept]="keep() === candidate.accountId"
                     [class.dropped]="!!keep() && keep() !== candidate.accountId"
                   >
-                    <h2 class="merge-candidate-name" [id]="'merge-name-' + $index">{{ candidate.displayName || 'No name' }}</h2>
+                    <h2 class="merge-candidate-name" [id]="'merge-name-' + $index">{{
+                      candidate.displayName || 'No name'
+                    }}</h2>
                     @if (candidate.paidMembership) {
                       <p class="merge-paid">Paid membership</p>
                     }
@@ -53,7 +68,10 @@
                       <div>
                         <dt>Sign-in methods</dt>
                         <dd>
-                          @for (method of candidate.signInMethods; track method.provider + (method.email ?? '')) {
+                          @for (
+                            method of candidate.signInMethods;
+                            track method.provider + (method.email ?? '')
+                          ) {
                             <span class="merge-method">{{ methodLabel(method) }}</span>
                           } @empty {
                             <span>None reported</span>
@@ -66,13 +84,19 @@
                       </div>
                       <div>
                         <dt>Created</dt>
-                        <dd><time [attr.datetime]="candidate.createdAt">{{ date(candidate.createdAt) }}</time></dd>
+                        <dd
+                          ><time [attr.datetime]="candidate.createdAt">{{
+                            date(candidate.createdAt)
+                          }}</time></dd
+                        >
                       </div>
                       <div>
                         <dt>Last sign-in</dt>
                         <dd>
                           @if (candidate.lastSignInAt) {
-                            <time [attr.datetime]="candidate.lastSignInAt">{{ date(candidate.lastSignInAt) }}</time>
+                            <time [attr.datetime]="candidate.lastSignInAt">{{
+                              date(candidate.lastSignInAt)
+                            }}</time>
                           } @else {
                             Not yet
                           }
@@ -85,8 +109,12 @@
                         @for (plan of candidate.studyPlans; track plan.id) {
                           <li>
                             <span class="merge-plan-title">{{ plan.title }}</span>
-                            <span class="merge-plan-progress">{{ plan.progressPercent }}% done</span>
-                            <span class="merge-plan-bar" aria-hidden="true"><span [style.width.%]="plan.progressPercent"></span></span>
+                            <span class="merge-plan-progress"
+                              >{{ plan.progressPercent }}% done</span
+                            >
+                            <span class="merge-plan-bar" aria-hidden="true"
+                              ><span [style.width.%]="plan.progressPercent"></span
+                            ></span>
                           </li>
                         }
                       </ul>
@@ -149,7 +177,13 @@
           <p class="form-error" role="alert">{{ error() }}</p>
         }
         <div class="merge-actions merge-actions-single">
-          <button type="button" class="primary-action" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="sendNewEmail()">
+          <button
+            type="button"
+            class="primary-action"
+            [disabled]="busy()"
+            [attr.aria-busy]="busy()"
+            (click)="sendNewEmail()"
+          >
             Send a new email
           </button>
         </div>
@@ -164,7 +198,10 @@
         />
       }
       @case ('conflict') {
-        <p>One of these accounts changed or was disabled. Reload to see the latest. If this keeps happening, the owner has to sort it out.</p>
+        <p
+          >One of these accounts changed or was disabled. Reload to see the latest. If this keeps
+          happening, the owner has to sort it out.</p
+        >
         <div class="merge-actions merge-actions-single">
           <button type="button" class="primary-action" (click)="load()">Reload</button>
         </div>
@@ -182,9 +219,17 @@
         </div>
       }
       @case ('done') {
-        <p class="success-status" role="status">Accounts merged. Sign in again with any of your methods.</p>
+        <p class="success-status" role="status"
+          >Accounts merged. Sign in again with any of your methods.</p
+        >
         <div class="merge-actions merge-actions-single">
-          <button type="button" class="primary-action" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="signInAgain()">
+          <button
+            type="button"
+            class="primary-action"
+            [disabled]="busy()"
+            [attr.aria-busy]="busy()"
+            (click)="signInAgain()"
+          >
             Sign in again
           </button>
         </div>

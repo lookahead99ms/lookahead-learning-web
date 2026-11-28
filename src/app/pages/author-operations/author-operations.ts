@@ -34,7 +34,8 @@ import { PlatformThemeService } from '../../core/platform-theme';
 import {
   apiEndpointAnchor,
   embeddedAnchor,
-  embeddedPageRoute } from '../../core/author-embedded-anchor';
+  embeddedPageRoute,
+} from '../../core/author-embedded-anchor';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 // Long operator references wrap beyond 30,000px on narrow screens. Keep a
@@ -66,8 +67,10 @@ export class AuthorOperationsPage implements OnDestroy {
   protected readonly pageTitle = this.link.label;
   /** Sub-pages of a long reference read as one section, in order. */
   protected readonly section = authorDocumentationSection(this.pageId);
-  protected readonly sectionIndex = this.section?.pages.findIndex((page) => page.id === this.pageId) ?? -1;
-  protected readonly previousPage = this.section && this.sectionIndex > 0 ? this.section.pages[this.sectionIndex - 1] : null;
+  protected readonly sectionIndex =
+    this.section?.pages.findIndex((page) => page.id === this.pageId) ?? -1;
+  protected readonly previousPage =
+    this.section && this.sectionIndex > 0 ? this.section.pages[this.sectionIndex - 1] : null;
   protected readonly nextPage = this.section?.pages[this.sectionIndex + 1] ?? null;
   protected readonly pageRoute = this.link.href;
   protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
@@ -77,7 +80,10 @@ export class AuthorOperationsPage implements OnDestroy {
   private readonly navigationHash = signal(this.hostDocument.defaultView?.location.hash ?? '');
   private pendingAnchor = this.hostDocument.defaultView?.location.hash ?? '';
   protected readonly authorized = computed(
-    () => (this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
+    () =>
+      (this.accounts.account()?.permissions?.previewDocuments ??
+        this.accounts.account()?.authorPreview === true) &&
+      !this.accounts.sessionExpired(),
   );
   protected readonly document = signal<AuthorDocument | null>(null);
   protected readonly documentHeight = signal<number | null>(null);
@@ -108,7 +114,9 @@ export class AuthorOperationsPage implements OnDestroy {
     return this.sanitizer.bypassSecurityTrustResourceUrl(href);
   });
   protected readonly referenceLinks = computed(() => this.document()?.references ?? []);
-  /** Local setup only: the published setup script, offered here because the document sandbox cannot. */
+  /**
+   * Local setup only: the published setup script, offered here because the document sandbox cannot.
+   */
   protected readonly setupDownload = computed(() =>
     this.pageId === 'local-development'
       ? (this.document()?.downloads.find((item) => item.filename === 'lookahead_setup.py') ?? null)
@@ -117,19 +125,35 @@ export class AuthorOperationsPage implements OnDestroy {
   protected readonly setupSteps = [
     { icon: '📥', text: 'Clones or updates the six repositories into one folder.' },
     { icon: '🌿', text: 'Stays on main, or creates your branch from the latest origin/main.' },
-    { icon: '🛠️', text: 'Builds Gateway BFF and Identity (Gradle), Domain API (Maven) and their Docker images.' },
+    {
+      icon: '🛠️',
+      text: 'Builds Gateway BFF and Identity (Gradle), Domain API (Maven) and their Docker images.',
+    },
     { icon: '🐳', text: 'Starts the Local backend on ports 4350–4352.' },
     { icon: '🌐', text: 'Installs and starts the web app: protected on 4301 or demo on 4300.' },
   ];
-  protected readonly setupNeeds = ['Git', 'Python 3', 'Java 21', 'Docker (running)', 'Node 24 and npm'];
+  protected readonly setupNeeds = [
+    'Git',
+    'Python 3',
+    'Java 21',
+    'Docker (running)',
+    'Node 24 and npm',
+  ];
   protected readonly setupCommands = [
-    { label: 'Ask each question (press Enter for the default)', command: 'python3 lookahead_setup.py' },
+    {
+      label: 'Ask each question (press Enter for the default)',
+      command: 'python3 lookahead_setup.py',
+    },
     { label: 'Accept every default', command: 'python3 lookahead_setup.py --yes' },
-    { label: 'Preview the commands without changing anything', command: 'python3 lookahead_setup.py --yes --dry-run' },
+    {
+      label: 'Preview the commands without changing anything',
+      command: 'python3 lookahead_setup.py --yes --dry-run',
+    },
     {
       label: 'Task branch for a UI-only change, demo web app',
       command:
-        'python3 lookahead_setup.py --branch feature/DLV-123-short-description --repos web-public,content --web demo',
+        'python3 lookahead_setup.py --branch feature/DLV-123-short-description --repos ' +
+        'web-public,content --web demo',
     },
   ];
   protected readonly copiedCommand = signal<string | null>(null);
@@ -162,7 +186,7 @@ export class AuthorOperationsPage implements OnDestroy {
         href: `${this.pageRoute}#${section.anchor}`,
       })),
       ...(this.referenceLinks().length || document.evidence.length
-        ? [{label: 'Reference links', href: `${this.pageRoute}#reference-links`}]
+        ? [{ label: 'Reference links', href: `${this.pageRoute}#reference-links` }]
         : []),
     ];
   });
@@ -214,7 +238,11 @@ export class AuthorOperationsPage implements OnDestroy {
     if (!frame || event.source !== frame.contentWindow || event.origin !== 'null') return;
     if (!this.authorized() || this.state() !== 'ready') return;
     const data = event.data;
-    if (data?.type === 'lookahead:author-document:api-navigate' && data.version === 1 && data.documentId === this.documentId) {
+    if (
+      data?.type === 'lookahead:author-document:api-navigate' &&
+      data.version === 1 &&
+      data.documentId === this.documentId
+    ) {
       const endpoint = apiEndpointAnchor(data.anchor);
       if (endpoint) this.hostDocument.defaultView?.location.assign(`/admin/api#${endpoint}`);
       return;
@@ -236,7 +264,6 @@ export class AuthorOperationsPage implements OnDestroy {
     )
       return;
     this.documentHeight.set(Math.ceil(data.height));
-
   }
 
   @HostListener('window:hashchange')
@@ -248,8 +275,20 @@ export class AuthorOperationsPage implements OnDestroy {
 
   protected onEmbeddedSectionSelected(hash: string): void {
     this.pendingAnchor = hash;
-    const anchor = embeddedAnchor(hash, this.document()?.sections.map(section => section.anchor) ?? []);
-    if (anchor) this.documentFrame()?.nativeElement.contentWindow?.postMessage({type:'lookahead:author-document:tab-request',version:1,documentId:this.documentId,anchor}, '*');
+    const anchor = embeddedAnchor(
+      hash,
+      this.document()?.sections.map((section) => section.anchor) ?? [],
+    );
+    if (anchor)
+      this.documentFrame()?.nativeElement.contentWindow?.postMessage(
+        {
+          type: 'lookahead:author-document:tab-request',
+          version: 1,
+          documentId: this.documentId,
+          anchor,
+        },
+        '*',
+      );
   }
 
   ngOnDestroy(): void {

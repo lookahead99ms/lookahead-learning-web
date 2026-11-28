@@ -134,28 +134,24 @@ describe('adaptive Blaze catalog', () => {
     const harness = await RouterTestingHarness.create('/blaze');
     const root = harness.routeNativeElement!;
 
-    expect(root.querySelectorAll('.catalog-path-section')).toHaveLength(
-      BLAZE_COURSE_GROUPS.length,
-    );
-    expect(root.querySelectorAll('.catalog-jump-nav a')).toHaveLength(
-      BLAZE_COURSE_GROUPS.length,
-    );
+    expect(root.querySelectorAll('.catalog-path-section')).toHaveLength(BLAZE_COURSE_GROUPS.length);
+    expect(root.querySelectorAll('.catalog-jump-nav a')).toHaveLength(BLAZE_COURSE_GROUPS.length);
     expect(
       Array.from(root.querySelectorAll('.featured-catalog-card')).map((card) => card.id),
     ).toEqual(['design-fundamentals']);
     expect(
       root.querySelector('#design-fundamentals .catalog-featured-label')?.textContent?.trim(),
     ).toBe('New: start here');
-    expect(root.querySelector('.catalog-path-section .catalog-path-title')?.textContent?.trim()).toBe(
-      'System Design Ladder',
-    );
+    expect(
+      root.querySelector('.catalog-path-section .catalog-path-title')?.textContent?.trim(),
+    ).toBe('System Design Ladder');
     const featured = root.querySelector<HTMLElement>('#design-fundamentals')!;
     expect(featured.querySelectorAll('a')).toHaveLength(0);
   });
 });
 
 describe('hidden Blaze courses', () => {
-  it('stay out of the catalog, its groups, the More to explore section and the counts', async () => {
+  it('stay out of the catalog, its groups, the More to explore section and counts', async () => {
     const item = (id: string): CatalogOverviewItem => ({
       id,
       title: id,
@@ -185,7 +181,12 @@ describe('hidden Blaze courses', () => {
     }
     expect(root.textContent).not.toContain('More to explore');
     expect(root.querySelectorAll('.course-card')).toHaveLength(2);
-    expect(root.querySelectorAll('.catalog-scoreboard > div')[0].querySelector('dt')?.textContent?.trim()).toBe('2');
+    expect(
+      root
+        .querySelectorAll('.catalog-scoreboard > div')[0]
+        .querySelector('dt')
+        ?.textContent?.trim(),
+    ).toBe('2');
   });
 });
 
@@ -228,9 +229,12 @@ describe('planned Blaze course', () => {
     expect(card.tagName).toBe('ARTICLE');
     expect(card.classList).toContain('unavailable');
     expect(card.getAttribute('href')).toBeNull();
-    // No card carries a status label (owner, 2026-11-27): not Review pending, Planned, Evolving topic or Reviewed.
+    // No card carries a status label (owner, 2026-11-27): not Review pending, Planned, Evolving
+    // topic or Reviewed.
     const page = harness.routeNativeElement!;
-    expect(page.querySelector('.review-status, [data-review-status], .catalog-card-kicker')).toBeNull();
+    expect(
+      page.querySelector('.review-status, [data-review-status], .catalog-card-kicker'),
+    ).toBeNull();
     expect(page.textContent).not.toMatch(/Review pending|Planned|Evolving topic|Reviewed/);
     expect(card.querySelector('h3')?.textContent?.trim()).toBe('AI Collaborators');
     expect(card.querySelector('a, [href]')).toBeNull();
@@ -238,9 +242,9 @@ describe('planned Blaze course', () => {
     expect(card.querySelector('app-card-scene [role="img"]')?.getAttribute('aria-label')).toBe(
       'AI Collaborators illustration',
     );
-    expect(
-      harness.routeNativeElement!.querySelector('#ai-systems-architecture')?.tagName,
-    ).toBe('A');
+    expect(harness.routeNativeElement!.querySelector('#ai-systems-architecture')?.tagName).toBe(
+      'A',
+    );
   });
 });
 

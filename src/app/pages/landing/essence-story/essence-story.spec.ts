@@ -9,25 +9,35 @@ class Host {}
 describe('EssenceStory', () => {
   afterEach(() => vi.useRealTimers());
 
-  it('is the section itself: same classes, heading, children and sidebar label as the homepage had', () => {
-    TestBed.configureTestingModule({ imports: [Host] });
-    const fixture = TestBed.createComponent(Host);
-    fixture.detectChanges();
-    const essence: HTMLElement = fixture.nativeElement.querySelector('section');
-    expect(essence.classList.contains('brand-story')).toBe(true);
-    expect(essence.classList.contains('home-essence')).toBe(true);
-    expect(essence.getAttribute('aria-labelledby')).toBe('brand-story-title');
-    expect([...essence.querySelectorAll('app-platform-brand, app-wordmark-key, app-essence-steps')].map((child) => child.tagName.toLowerCase())).toEqual([
-      'app-platform-brand',
-      'app-wordmark-key',
-      'app-essence-steps',
-    ]);
-    expect(essence.querySelector('.brand-context')?.textContent).toBe('Our platform');
-    expect(essence.querySelector('#brand-story-title')?.getAttribute('data-sidebar-label')).toBe('The essence');
-    expect(essence.querySelector('app-platform-brand.essence-corner-mark')?.getAttribute('aria-hidden')).toBe('true');
-    expect(essence.hasAttribute('data-motion')).toBe(false);
-    expect(essence.hasAttribute('data-skip')).toBe(false);
-  });
+  it(
+    'is the section itself: same classes, heading, children and sidebar label as the ' +
+      'homepage had',
+    () => {
+      TestBed.configureTestingModule({ imports: [Host] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const essence: HTMLElement = fixture.nativeElement.querySelector('section');
+      expect(essence.classList.contains('brand-story')).toBe(true);
+      expect(essence.classList.contains('home-essence')).toBe(true);
+      expect(essence.getAttribute('aria-labelledby')).toBe('brand-story-title');
+      expect(
+        [
+          ...essence.querySelectorAll('app-platform-brand, app-wordmark-key, app-essence-steps'),
+        ].map((child) => child.tagName.toLowerCase()),
+      ).toEqual(['app-platform-brand', 'app-wordmark-key', 'app-essence-steps']);
+      expect(essence.querySelector('.brand-context')?.textContent).toBe('Our platform');
+      expect(essence.querySelector('#brand-story-title')?.getAttribute('data-sidebar-label')).toBe(
+        'The essence',
+      );
+      expect(
+        essence
+          .querySelector('app-platform-brand.essence-corner-mark')
+          ?.getAttribute('aria-hidden'),
+      ).toBe('true');
+      expect(essence.hasAttribute('data-motion')).toBe(false);
+      expect(essence.hasAttribute('data-skip')).toBe(false);
+    },
+  );
 
   it('plays the wordmark, then the statements and steps; pauses, skips, loops and restarts', () => {
     TestBed.configureTestingModule({ imports: [Host] });
@@ -48,7 +58,8 @@ describe('EssenceStory', () => {
     expect(steps?.getAttribute('data-state')).toBe('shown');
     expect(sentence?.classList.contains('shown')).toBe(true);
     expect(sentence?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'Look ahead to the obstacle, put AI to work in your code, explore and engineer with algorithms and architecture, and find the way through.',
+      'Look ahead to the obstacle, put AI to work in your code, explore and engineer ' +
+        'with algorithms and architecture, and find the way through.',
     );
 
     stepsNode.triggerEventHandler('settled');

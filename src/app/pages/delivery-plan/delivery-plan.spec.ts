@@ -9,7 +9,10 @@ import { ContentService } from '../../content/content.service';
 import { DeliveryPlan } from '../../content/delivery-plan.models';
 import { DeliveryEditorService, DeliverySnapshot } from '../../content/delivery-editor.service';
 import { DeliveryPublicationService } from '../../content/delivery-publication.service';
-import { DeliveryDevPlanService, DeliveryPlanApiError } from '../../content/delivery-dev-plan.service';
+import {
+  DeliveryDevPlanService,
+  DeliveryPlanApiError,
+} from '../../content/delivery-dev-plan.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { SearchDocument } from '../../content/content.models';
@@ -133,7 +136,14 @@ describe('DeliveryPlanPage', () => {
     save: vi.fn(),
   };
   const publication = { load: vi.fn<() => Observable<DeliverySnapshot>>() };
-  const devApi = { load: vi.fn(), create: vi.fn(), update: vi.fn(), resolveConflict: vi.fn(), uploadInbox: vi.fn(), syncInbox: vi.fn() };
+  const devApi = {
+    load: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    resolveConflict: vi.fn(),
+    uploadInbox: vi.fn(),
+    syncInbox: vi.fn(),
+  };
   // Read lazily when the page first injects PROTECTED_CONTENT, so a nested beforeEach can flip it.
   let protectedBuild = false;
 
@@ -161,9 +171,13 @@ describe('DeliveryPlanPage', () => {
       providers: [
         provideHttpClient(),
         provideRouter([
-          ...routes.filter((route) => ['delivery-plan', 'delivery-plan/work'].includes(route.path ?? '')).map((route) => ({
-            ...route, component: DeliveryPlanPage, loadComponent: undefined,
-          })),
+          ...routes
+            .filter((route) => ['delivery-plan', 'delivery-plan/work'].includes(route.path ?? ''))
+            .map((route) => ({
+              ...route,
+              component: DeliveryPlanPage,
+              loadComponent: undefined,
+            })),
           { path: 'away', component: OtherPage },
         ]),
         { provide: ContentService, useValue: content },
@@ -195,17 +209,21 @@ describe('DeliveryPlanPage', () => {
     const root = harness.routeNativeElement!;
     expect(root.querySelector('h1')?.textContent).toContain('Delivery plan');
     expect(root.querySelector('.delivery-hero')).toBeNull();
-    // DLV-995: the stage cards carry the current focus; the only action sits in the heading, right of the title.
+    // DLV-995: the stage cards carry the current focus; the only action sits in the heading, right
+    // of the title.
     expect(root.querySelector('.delivery-current-focus')).toBeNull();
     expect(root.querySelectorAll('a.delivery-work-link')).toHaveLength(1);
     expect(root.querySelector('.delivery-page-heading a.delivery-work-link')).not.toBeNull();
     expect(root.textContent).not.toContain('View active work');
     expect(root.querySelector('.stage-strip li.current')?.textContent).toContain('Active');
-    // DLV-995: no completion percentage; stages, work in flight, up next and finished recently instead.
+    // DLV-995: no completion percentage; stages, work in flight, up next and finished recently
+    // instead.
     const summary = root.querySelector('.delivery-metrics')!;
     expect(summary.textContent).not.toMatch(/\d+%/);
     expect(summary.textContent).not.toContain('Tickets completed');
-    const stages = [...summary.querySelectorAll('.stage-strip li')].map((li) => li.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+    const stages = [...summary.querySelectorAll('.stage-strip li')].map(
+      (li) => li.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+    );
     expect(stages).toHaveLength(2);
     expect(stages[0]).toContain('Foundation');
     expect(stages[0]).toContain('1 of 1 delivered');
@@ -213,24 +231,38 @@ describe('DeliveryPlanPage', () => {
     expect(stages[1]).toContain('Future stage from JSON');
     expect(stages[1]).toContain('0 of 1 delivered');
     expect(stages[1]).not.toContain('Active');
-    expect(summary.querySelector('.stage-strip li.current a')?.getAttribute('href')).toBe('/delivery-plan/work?stage=foundation');
-    expect(summary.querySelector('.flow-bar')?.getAttribute('aria-label')).toBe('Done 1, In progress 0, Backlog 0');
-    expect([...summary.querySelectorAll('.flow-legend li')].map((li) => li.textContent?.replace(/\s+/g, ''))).toEqual(['1Done', '0Inprogress', '0Backlog']);
+    expect(summary.querySelector('.stage-strip li.current a')?.getAttribute('href')).toBe(
+      '/delivery-plan/work?stage=foundation',
+    );
+    expect(summary.querySelector('.flow-bar')?.getAttribute('aria-label')).toBe(
+      'Done 1, In progress 0, Backlog 0',
+    );
+    expect(
+      [...summary.querySelectorAll('.flow-legend li')].map((li) =>
+        li.textContent?.replace(/\s+/g, ''),
+      ),
+    ).toEqual(['1Done', '0Inprogress', '0Backlog']);
     expect(summary.querySelector('.glance-next')?.textContent).toContain('TEST-2');
-    expect(summary.querySelector('.glance-next a')?.getAttribute('href')).toBe('/delivery-plan/work#TEST-2');
+    expect(summary.querySelector('.glance-next a')?.getAttribute('href')).toBe(
+      '/delivery-plan/work#TEST-2',
+    );
     expect(summary.querySelector('.glance-next')?.textContent).not.toContain('TEST-1');
     expect(summary.querySelector('.glance-recent')?.textContent).toContain('TEST-1');
     expect(page['stageSummaries']().map((entry) => entry.done)).toEqual([1, 0]);
     expect(root.querySelector('.delivery-workspace')).toBeNull();
     expect(root.querySelector('.delivery-outline')).toBeNull();
     expect(root.querySelector('.view-tabs')).toBeNull();
-    const open = [...root.querySelectorAll<HTMLAnchorElement>('a')].find(a => a.textContent?.includes('Open work & decisions'));
+    const open = [...root.querySelectorAll<HTMLAnchorElement>('a')].find((a) =>
+      a.textContent?.includes('Open work & decisions'),
+    );
     expect(open?.getAttribute('href')).toBe('/delivery-plan/work');
     open!.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/delivery-plan/work');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Work & decisions');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
+      'Work & decisions',
+    );
     expect(harness.routeNativeElement?.querySelector('.delivery-hero')).toBeNull();
     expect(harness.routeNativeElement?.querySelector('.delivery-metrics')).toBeNull();
     expect(harness.routeNativeElement?.querySelectorAll('.view-tabs button')).toHaveLength(5);
@@ -246,17 +278,22 @@ describe('DeliveryPlanPage', () => {
     expect(TestBed.inject(Router).url).toContain('/delivery-plan/work');
     expect(harness.routeNativeElement?.querySelector('.delivery-board')).not.toBeNull();
     expect(harness.routeNativeElement?.querySelector('.delivery-hero')).toBeNull();
-    expect(harness.routeNativeElement?.querySelector<HTMLSelectElement>('.board-controls select')?.value).toBe('current');
+    expect(
+      harness.routeNativeElement?.querySelector<HTMLSelectElement>('.board-controls select')?.value,
+    ).toBe('current');
   });
 
   it.each(['?view=roadmap', '?q=data-driven', '?stage=foundation', '?priority=P1', '?type=story'])(
-    'preserves the legacy workspace bookmark /delivery-plan%s', async (query) => {
+    'preserves the legacy workspace bookmark /delivery-plan%s',
+    async (query) => {
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl('/delivery-plan' + query, DeliveryPlanPage);
       harness.detectChanges();
       expect(harness.routeNativeElement?.querySelector('.delivery-workspace')).not.toBeNull();
       expect(harness.routeNativeElement?.querySelector('.delivery-hero')).toBeNull();
-      expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Work & decisions');
+      expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
+        'Work & decisions',
+      );
     },
   );
 
@@ -285,31 +322,38 @@ describe('DeliveryPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.delivery-hero')).toBeNull();
   });
 
-  it('protects and discards drafts correctly when returning home through a reused legacy route', async () => {
-    editor.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'revision-1' }));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan?view=decisions', DeliveryPlanPage);
-    harness.detectChanges();
-    await newItem(harness);
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const back = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-back')!;
-    back.click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=decisions');
-    expect(confirm).toHaveBeenCalledOnce();
-    expect(harness.routeNativeElement!.querySelector<HTMLInputElement>('[name="title"]')?.value).toBe('A new story');
-    expect(editor.save).not.toHaveBeenCalled();
-    confirm.mockReturnValue(true);
-    back.click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
-    expect(harness.routeNativeElement!.querySelector('.delivery-workspace')).toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.editor-dialog')?.hasAttribute('open')).not.toBe(true);
-    expect(harness.routeNativeElement!.querySelector('[name="title"]')).toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
-  });
+  it(
+    'protects and discards drafts correctly when returning home through a reused legacy ' + 'route',
+    async () => {
+      editor.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'revision-1' }));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/delivery-plan?view=decisions', DeliveryPlanPage);
+      harness.detectChanges();
+      await newItem(harness);
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const back = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.delivery-back')!;
+      back.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=decisions');
+      expect(confirm).toHaveBeenCalledOnce();
+      expect(
+        harness.routeNativeElement!.querySelector<HTMLInputElement>('[name="title"]')?.value,
+      ).toBe('A new story');
+      expect(editor.save).not.toHaveBeenCalled();
+      confirm.mockReturnValue(true);
+      back.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+      expect(harness.routeNativeElement!.querySelector('.delivery-workspace')).toBeNull();
+      expect(
+        harness.routeNativeElement!.querySelector('.editor-dialog')?.hasAttribute('open'),
+      ).not.toBe(true);
+      expect(harness.routeNativeElement!.querySelector('[name="title"]')).toBeNull();
+      expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
+    },
+  );
 
   it('renders the summary safely for an empty delivery record', async () => {
     editor.load.mockReturnValue(of({ plan: { ...plan, workItems: [] }, revision: 'empty-1' }));
@@ -320,8 +364,12 @@ describe('DeliveryPlanPage', () => {
     expect(page['stageSummaries']().map((entry) => entry.percent)).toEqual([0, 0]);
     expect(summary.textContent).not.toContain('NaN');
     expect(summary.querySelectorAll('.flow-bar i')).toHaveLength(0);
-    expect(summary.querySelector('.glance-next .glance-empty')?.textContent).toContain('Nothing is queued');
-    expect(summary.querySelector('.glance-recent .glance-empty')?.textContent).toContain('No ticket has been marked Done');
+    expect(summary.querySelector('.glance-next .glance-empty')?.textContent).toContain(
+      'Nothing is queued',
+    );
+    expect(summary.querySelector('.glance-recent .glance-empty')?.textContent).toContain(
+      'No ticket has been marked Done',
+    );
   });
 
   it('hides a loaded board and stops refresh after author access is lost', async () => {
@@ -348,7 +396,9 @@ describe('DeliveryPlanPage', () => {
     expect(publication.load).not.toHaveBeenCalled();
     expect(harness.routeNativeElement?.textContent).toContain('Read-only view');
     expect(harness.routeNativeElement?.querySelector('.delivery-outline')).toBeNull();
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Work & decisions');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
+      'Work & decisions',
+    );
     expect(harness.routeNativeElement?.querySelector('.editor-toolbar .editor-primary')).toBeNull();
     expect(harness.routeNativeElement?.querySelectorAll('.board-column')).toHaveLength(3);
     expect(harness.routeNativeElement?.textContent).toContain('Render a data-driven board');
@@ -363,25 +413,29 @@ describe('DeliveryPlanPage', () => {
     expect(TestBed.inject(Router).url).toBe('/delivery-plan/work?view=roadmap');
   });
 
-  it('opens All tickets, clears the filters and marks the ticket a /delivery-plan#<id> link names (DLV-971)', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/delivery-plan?stage=foundation#TEST-2', DeliveryPlanPage);
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    const root = harness.routeNativeElement!;
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
-    const marked = root.querySelector('li#ticket-TEST-2');
-    expect(marked?.classList.contains('highlighted')).toBe(true);
-    expect(marked?.textContent).toContain('Keep another item');
-    expect(root.querySelectorAll('.ticket-results li.highlighted')).toHaveLength(1);
-    // An unknown id changes nothing.
-    await harness.navigateByUrl('/away', OtherPage);
-    await harness.navigateByUrl('/delivery-plan#DLV-9999', DeliveryPlanPage);
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe('/delivery-plan#DLV-9999');
-    expect(harness.routeNativeElement!.querySelector('.highlighted')).toBeNull();
-  });
+  it(
+    'opens All tickets, clears the filters and marks the ticket a /delivery-plan#<id> ' +
+      'link names (DLV-971)',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/delivery-plan?stage=foundation#TEST-2', DeliveryPlanPage);
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      const root = harness.routeNativeElement!;
+      expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
+      const marked = root.querySelector('li#ticket-TEST-2');
+      expect(marked?.classList.contains('highlighted')).toBe(true);
+      expect(marked?.textContent).toContain('Keep another item');
+      expect(root.querySelectorAll('.ticket-results li.highlighted')).toHaveLength(1);
+      // An unknown id changes nothing.
+      await harness.navigateByUrl('/away', OtherPage);
+      await harness.navigateByUrl('/delivery-plan#DLV-9999', DeliveryPlanPage);
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe('/delivery-plan#DLV-9999');
+      expect(harness.routeNativeElement!.querySelector('.highlighted')).toBeNull();
+    },
+  );
 
   it('keeps author navigation available when private delivery data is unavailable', async () => {
     content.getDeliveryPlan.mockReturnValueOnce(
@@ -444,7 +498,10 @@ describe('DeliveryPlanPage', () => {
       'Keep another item',
     );
 
-    await harness.navigateByUrl('/delivery-plan/work?stage=foundation&type=story', DeliveryPlanPage);
+    await harness.navigateByUrl(
+      '/delivery-plan/work?stage=foundation&type=story',
+      DeliveryPlanPage,
+    );
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect([...selects].map((select) => select.value)).toEqual(['foundation', 'all', 'story']);
@@ -661,10 +718,14 @@ describe('DeliveryPlanPage', () => {
     expect(editor.save).not.toHaveBeenCalled();
   });
 
-  it('links private evidence by item and attachment identity, never by filesystem path', async () => {
+  it('links private evidence by item and attachment identity, never a file path', async () => {
     const snapshot = structuredClone(plan);
     snapshot.workItems[0].evidence = [
-      { id: 'report', title: 'Route inventory report', path: 'src/delivery-plan/evidence/report.md' },
+      {
+        id: 'report',
+        title: 'Route inventory report',
+        path: 'src/delivery-plan/evidence/report.md',
+      },
     ];
     editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-1' }));
     const harness = await RouterTestingHarness.create();
@@ -689,7 +750,11 @@ describe('DeliveryPlanPage', () => {
   it('does not offer private evidence endpoints in a read-only public board', async () => {
     const snapshot = structuredClone(plan);
     snapshot.workItems[0].evidence = [
-      { id: 'report', title: 'Route inventory report', path: 'src/delivery-plan/evidence/report.md' },
+      {
+        id: 'report',
+        title: 'Route inventory report',
+        path: 'src/delivery-plan/evidence/report.md',
+      },
     ];
     content.getDeliveryPlan.mockReturnValueOnce(of(snapshot));
     const harness = await RouterTestingHarness.create();
@@ -827,7 +892,7 @@ describe('DeliveryPlanPage', () => {
     saved.complete();
   });
 
-  it('creates a story through the local service and only reports success after saving', async () => {
+  it('creates a story through the local service, reporting success only once saved', async () => {
     const harness = await editableBoard();
     await newItem(harness);
     const saved = new Subject<DeliverySnapshot>();
@@ -885,24 +950,27 @@ describe('DeliveryPlanPage', () => {
     );
   });
 
-  it('moves a card using the keyboard-accessible selector and handles a failed move honestly', async () => {
-    const harness = await editableBoard();
-    editor.save.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
-    const select = harness.routeNativeElement!.querySelector(
-      '.quick-move select',
-    ) as HTMLSelectElement;
-    expect(select.value).toBe('in-progress');
-    select.value = 'done';
-    select.dispatchEvent(new Event('change'));
-    harness.detectChanges();
-    expect(editor.save).toHaveBeenCalledWith(
-      'revision-1',
-      expect.objectContaining({ statusId: 'done' }),
-      'TEST-1',
-    );
-    expect(select.value).toBe('in-progress');
-    expect(harness.routeNativeElement!.textContent).toContain('Move not saved: the plan changed');
-  });
+  it(
+    'moves a card using the keyboard-accessible selector and handles a failed move ' + 'honestly',
+    async () => {
+      const harness = await editableBoard();
+      editor.save.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
+      const select = harness.routeNativeElement!.querySelector(
+        '.quick-move select',
+      ) as HTMLSelectElement;
+      expect(select.value).toBe('in-progress');
+      select.value = 'done';
+      select.dispatchEvent(new Event('change'));
+      harness.detectChanges();
+      expect(editor.save).toHaveBeenCalledWith(
+        'revision-1',
+        expect.objectContaining({ statusId: 'done' }),
+        'TEST-1',
+      );
+      expect(select.value).toBe('in-progress');
+      expect(harness.routeNativeElement!.textContent).toContain('Move not saved: the plan changed');
+    },
+  );
 
   it('saves a drag-and-drop move and ignores drops from outside the board', async () => {
     const harness = await editableBoard();
@@ -988,7 +1056,9 @@ describe('DeliveryPlanPage', () => {
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/delivery-plan/work');
     expect(confirm).toHaveBeenCalledOnce();
-    expect(harness.routeNativeElement!.querySelector<HTMLInputElement>('[name="title"]')?.value).toBe('A new story');
+    expect(
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('[name="title"]')?.value,
+    ).toBe('A new story');
     expect(editor.save).not.toHaveBeenCalled();
     confirm.mockReturnValue(true);
     back.click();
@@ -999,7 +1069,7 @@ describe('DeliveryPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.delivery-metrics')).not.toBeNull();
   });
 
-  it('keeps a dirty draft when navigation is cancelled and leaves only after confirmation', async () => {
+  it('keeps a dirty draft when navigation is cancelled; leaves only after confirming', async () => {
     const harness = await editableBoard();
     await newItem(harness);
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
@@ -1037,7 +1107,7 @@ describe('DeliveryPlanPage', () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
-  it('blocks navigation while a save is pending, including moves without an open draft', async () => {
+  it('blocks navigation while a save is pending, even moves without an open draft', async () => {
     const harness = await editableBoard();
     const saved = new Subject<DeliverySnapshot>();
     editor.save.mockReturnValue(saved);
@@ -1060,7 +1130,11 @@ describe('DeliveryPlanPage', () => {
   describe('protected build (no local editor, Content publication served by Domain)', () => {
     const snapshot = structuredClone(plan);
     snapshot.workItems[0].evidence = [
-      { id: 'report', title: 'Route inventory report', path: 'src/delivery-plan/evidence/report.md' },
+      {
+        id: 'report',
+        title: 'Route inventory report',
+        path: 'src/delivery-plan/evidence/report.md',
+      },
     ];
     beforeEach(() => {
       protectedBuild = true;
@@ -1111,18 +1185,23 @@ describe('DeliveryPlanPage', () => {
       harness.detectChanges();
       expect(publication.load).not.toHaveBeenCalled();
       expect(harness.routeNativeElement!.textContent).toContain('Local editing enabled');
-      expect(harness.routeNativeElement!.querySelector('.editor-toolbar .editor-primary')).not.toBeNull();
+      expect(
+        harness.routeNativeElement!.querySelector('.editor-toolbar .editor-primary'),
+      ).not.toBeNull();
     });
 
     it('ignores programmatic edit attempts on the published copy', async () => {
       const harness = await publishedBoard();
-      const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
-        .componentInstance as DeliveryPlanPage;
+      const page = harness.fixture.debugElement.query(
+        (node) => node.componentInstance instanceof DeliveryPlanPage,
+      ).componentInstance as DeliveryPlanPage;
       page['openEditor']();
       page['moveItem'](snapshot.workItems[0], 'done');
       harness.detectChanges();
       expect(editor.save).not.toHaveBeenCalled();
-      expect(harness.routeNativeElement!.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+      expect(
+        harness.routeNativeElement!.querySelector('.editor-dialog')!.hasAttribute('open'),
+      ).toBe(false);
     });
 
     it.each([
@@ -1132,10 +1211,14 @@ describe('DeliveryPlanPage', () => {
       publication.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status })));
       const harness = await publishedBoard();
       const root = harness.routeNativeElement!;
-      expect(root.textContent).toContain('The published delivery plan is not available to this account.');
+      expect(root.textContent).toContain(
+        'The published delivery plan is not available to this account.',
+      );
       expect(root.textContent).toContain(message);
       expect(root.textContent).not.toContain('needs its local data');
-      expect(root.querySelector('app-author-admin-menu nav[aria-label="Admin navigation"]')).not.toBeNull();
+      expect(
+        root.querySelector('app-author-admin-menu nav[aria-label="Admin navigation"]'),
+      ).not.toBeNull();
     });
 
     it('reports a missing publication without blaming the local workstation', async () => {
@@ -1166,13 +1249,26 @@ describe('DeliveryPlanPage', () => {
     });
   });
 
-  describe('DEV plan (the Domain serves and edits delivery/plan.json; DLV-971 runtime stores)', () => {
+  describe('DEV plan (Domain serves and edits delivery/plan.json; DLV-971 runtime stores)', () => {
     const owner = {
-      manageAccess: true, previewDocuments: true, deliveryRead: true,
-      deliveryCreate: true, deliveryReview: true, deliveryDone: true,
-      triageFeedback: true, fullCurriculum: true, feedbackRole: 'owner',
+      manageAccess: true,
+      previewDocuments: true,
+      deliveryRead: true,
+      deliveryCreate: true,
+      deliveryReview: true,
+      deliveryDone: true,
+      triageFeedback: true,
+      fullCurriculum: true,
+      feedbackRole: 'owner',
     };
-    const reader = { ...owner, manageAccess: false, deliveryCreate: false, deliveryReview: false, deliveryDone: false, feedbackRole: 'reviewer' };
+    const reader = {
+      ...owner,
+      manageAccess: false,
+      deliveryCreate: false,
+      deliveryReview: false,
+      deliveryDone: false,
+      feedbackRole: 'reviewer',
+    };
     const devItem = (change: Partial<DeliveryPlan['workItems'][number]> = {}) => ({
       ...structuredClone(plan.workItems[0]),
       updatedAt: '2026-11-06T09:30:00.000Z',
@@ -1182,7 +1278,10 @@ describe('DeliveryPlanPage', () => {
       pendingLocal: null,
       ...change,
     });
-    const devPlan = (items = [devItem(), structuredClone(plan.workItems[1])], version = 7): DeliveryPlan => ({
+    const devPlan = (
+      items = [devItem(), structuredClone(plan.workItems[1])],
+      version = 7,
+    ): DeliveryPlan => ({
       ...structuredClone(plan),
       version,
       workItems: items,
@@ -1191,7 +1290,10 @@ describe('DeliveryPlanPage', () => {
     beforeEach(() => {
       protectedBuild = true;
       TestBed.inject(DevSession).gated.set(true);
-      TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: owner }));
+      TestBed.inject(StudyPlanAccount).account.update((account) => ({
+        ...account!,
+        permissions: owner,
+      }));
       devApi.load.mockResolvedValue(devPlan());
     });
     afterEach(() => {
@@ -1221,64 +1323,91 @@ describe('DeliveryPlanPage', () => {
       }
     }
     function submitEditor(harness: RouterTestingHarness) {
-      harness.routeNativeElement!.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+      harness
+        .routeNativeElement!.querySelector('form')!
+        .dispatchEvent(new Event('submit', { cancelable: true }));
       return settle(harness);
     }
     const fieldNames = (root: Element) =>
-      [...root.querySelectorAll<HTMLElement>('.editor-fields [name]')].map((field) => field.getAttribute('name'));
-
-    it('reads the plan from the DEV API behind the gate and lets the owner edit a ticket with the plan version', async () => {
-      const harness = await devBoard();
-      const root = harness.routeNativeElement!;
-      expect(devApi.load).toHaveBeenCalledOnce();
-      expect(publication.load).not.toHaveBeenCalled();
-      expect(editor.load).toHaveBeenCalledOnce();
-      expect(root.textContent).toContain('Editing the plan on DEV');
-      expect(root.textContent).not.toContain('Published copy');
-      expect(root.querySelector('.editor-toolbar .editor-primary')?.textContent?.trim()).toBe('+ New ticket');
-      expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(false);
-      expect(root.querySelector('.quick-move select')).not.toBeNull();
-      expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('true');
-
-      const dialog = await openTicket(harness);
-      expect(dialog.querySelector('.dialog-footer span')?.textContent).toBe('updated on DEV · 6 Nov');
-      expect(dialog.querySelector('.ticket-origin')).toBeNull();
-      expect(dialog.querySelector('.conflict-banner')).toBeNull();
-      const edit = dialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!;
-      expect(edit.textContent?.trim()).toBe('Edit ticket');
-      edit.click();
-      await settle(harness);
-      expect(root.querySelector('#editor-title')?.textContent?.trim()).toBe('Edit ticket');
-      expect(root.textContent).toContain('Saves go to the plan on DEV.');
-      expect(fieldNames(root)).toEqual(['title', 'summary', 'type', 'priority', 'stage', 'status', 'labels', 'notes']);
-      // The status select offers the ticket's own column and the moves this account may make.
-      expect([...root.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map((option) => option.disabled)).toEqual([false, false, false]);
-      await fill(harness, 'title', 'Edited on DEV');
-      await fill(harness, 'labels', 'board, dev');
-      devApi.update.mockResolvedValue({
-        version: 8,
-        item: devItem({ title: 'Edited on DEV', labels: ['board', 'dev'] }),
-      });
-      await submitEditor(harness);
-      expect(devApi.update).toHaveBeenCalledWith(
-        'TEST-1',
-        7,
-        expect.objectContaining({
-          title: 'Edited on DEV',
-          labels: ['board', 'dev'],
-          // Fields the DEV form does not show keep their stored values.
-          acceptanceCriteria: ['All configured columns render.'],
-          dependencies: [],
-          blockedBy: [],
-        }),
+      [...root.querySelectorAll<HTMLElement>('.editor-fields [name]')].map((field) =>
+        field.getAttribute('name'),
       );
-      expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
-      expect(root.textContent).toContain('TEST-1 saved to the plan on DEV.');
-      expect(root.textContent).toContain('Edited on DEV');
-      expect(editor.save).not.toHaveBeenCalled();
-    });
 
-    it('creates a ticket from the small form: title, outcome, type, priority and stage', async () => {
+    it(
+      'reads the plan from the DEV API behind the gate and lets the owner edit a ticket ' +
+        'with the plan version',
+      async () => {
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        expect(devApi.load).toHaveBeenCalledOnce();
+        expect(publication.load).not.toHaveBeenCalled();
+        expect(editor.load).toHaveBeenCalledOnce();
+        expect(root.textContent).toContain('Editing the plan on DEV');
+        expect(root.textContent).not.toContain('Published copy');
+        expect(root.querySelector('.editor-toolbar .editor-primary')?.textContent?.trim()).toBe(
+          '+ New ticket',
+        );
+        expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(
+          false,
+        );
+        expect(root.querySelector('.quick-move select')).not.toBeNull();
+        expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('true');
+
+        const dialog = await openTicket(harness);
+        expect(dialog.querySelector('.dialog-footer span')?.textContent).toBe(
+          'updated on DEV · 6 Nov',
+        );
+        expect(dialog.querySelector('.ticket-origin')).toBeNull();
+        expect(dialog.querySelector('.conflict-banner')).toBeNull();
+        const edit = dialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!;
+        expect(edit.textContent?.trim()).toBe('Edit ticket');
+        edit.click();
+        await settle(harness);
+        expect(root.querySelector('#editor-title')?.textContent?.trim()).toBe('Edit ticket');
+        expect(root.textContent).toContain('Saves go to the plan on DEV.');
+        expect(fieldNames(root)).toEqual([
+          'title',
+          'summary',
+          'type',
+          'priority',
+          'stage',
+          'status',
+          'labels',
+          'notes',
+        ]);
+        // The status select offers the ticket's own column and the moves this account may make.
+        expect(
+          [...root.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map(
+            (option) => option.disabled,
+          ),
+        ).toEqual([false, false, false]);
+        await fill(harness, 'title', 'Edited on DEV');
+        await fill(harness, 'labels', 'board, dev');
+        devApi.update.mockResolvedValue({
+          version: 8,
+          item: devItem({ title: 'Edited on DEV', labels: ['board', 'dev'] }),
+        });
+        await submitEditor(harness);
+        expect(devApi.update).toHaveBeenCalledWith(
+          'TEST-1',
+          7,
+          expect.objectContaining({
+            title: 'Edited on DEV',
+            labels: ['board', 'dev'],
+            // Fields the DEV form does not show keep their stored values.
+            acceptanceCriteria: ['All configured columns render.'],
+            dependencies: [],
+            blockedBy: [],
+          }),
+        );
+        expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+        expect(root.textContent).toContain('TEST-1 saved to the plan on DEV.');
+        expect(root.textContent).toContain('Edited on DEV');
+        expect(editor.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('creates a ticket from the small form: title, outcome, type, priority, stage', async () => {
       const harness = await devBoard();
       const root = harness.routeNativeElement!;
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
@@ -1294,7 +1423,13 @@ describe('DeliveryPlanPage', () => {
       await fill(harness, 'type', 'bug');
       devApi.create.mockResolvedValue({
         version: 8,
-        item: devItem({ id: 'DLV-0042', title: 'A DEV ticket', summary: 'Raised on the page.', type: 'bug', statusId: 'backlog' }),
+        item: devItem({
+          id: 'DLV-0042',
+          title: 'A DEV ticket',
+          summary: 'Raised on the page.',
+          type: 'bug',
+          statusId: 'backlog',
+        }),
       });
       await submitEditor(harness);
       expect(devApi.create).toHaveBeenCalledWith(
@@ -1314,37 +1449,60 @@ describe('DeliveryPlanPage', () => {
       expect(root.textContent).toContain('Showing 2 of 3 work items');
     });
 
-    it('reloads the plan on a version conflict and asks for the change again, keeping the draft', async () => {
-      const harness = await devBoard();
-      const root = harness.routeNativeElement!;
-      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
-      await settle(harness);
-      await fill(harness, 'title', 'Second writer');
-      await fill(harness, 'summary', 'Collides.');
-      devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
-      devApi.load.mockResolvedValueOnce(devPlan([devItem({ title: 'Changed by someone else' }), structuredClone(plan.workItems[1])], 9));
-      await submitEditor(harness);
-      expect(devApi.load).toHaveBeenCalledTimes(2);
-      expect(root.querySelector('.editor-error')?.textContent).toContain('Someone changed the plan; reloaded, apply your change again.');
-      expect((root.querySelector('[name="title"]') as HTMLInputElement).value).toBe('Second writer');
-      expect((root.querySelector('[type="submit"]') as HTMLButtonElement).disabled).toBe(false);
-      expect(root.textContent).toContain('Changed by someone else');
-      devApi.create.mockResolvedValueOnce({ version: 10, item: devItem({ id: 'DLV-0043', title: 'Second writer' }) });
-      await submitEditor(harness);
-      expect(devApi.create).toHaveBeenLastCalledWith(9, expect.objectContaining({ title: 'Second writer' }));
-      expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
-      // A refused save keeps the draft with a plain message.
-      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
-      await settle(harness);
-      await fill(harness, 'title', 'Refused');
-      await fill(harness, 'summary', 'Refused.');
-      devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(403, 'FORBIDDEN'));
-      await submitEditor(harness);
-      expect(root.querySelector('.editor-error')?.textContent).toContain('Your role cannot make this change on DEV.');
-      devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(0, null));
-      await submitEditor(harness);
-      expect(root.querySelector('.editor-error')?.textContent).toContain('Save failed. Your draft is retained; try again.');
-    });
+    it(
+      'reloads the plan on a version conflict and asks for the change again, keeping the ' +
+        'draft',
+      async () => {
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
+        await settle(harness);
+        await fill(harness, 'title', 'Second writer');
+        await fill(harness, 'summary', 'Collides.');
+        devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
+        devApi.load.mockResolvedValueOnce(
+          devPlan(
+            [devItem({ title: 'Changed by someone else' }), structuredClone(plan.workItems[1])],
+            9,
+          ),
+        );
+        await submitEditor(harness);
+        expect(devApi.load).toHaveBeenCalledTimes(2);
+        expect(root.querySelector('.editor-error')?.textContent).toContain(
+          'Someone changed the plan; reloaded, apply your change again.',
+        );
+        expect((root.querySelector('[name="title"]') as HTMLInputElement).value).toBe(
+          'Second writer',
+        );
+        expect((root.querySelector('[type="submit"]') as HTMLButtonElement).disabled).toBe(false);
+        expect(root.textContent).toContain('Changed by someone else');
+        devApi.create.mockResolvedValueOnce({
+          version: 10,
+          item: devItem({ id: 'DLV-0043', title: 'Second writer' }),
+        });
+        await submitEditor(harness);
+        expect(devApi.create).toHaveBeenLastCalledWith(
+          9,
+          expect.objectContaining({ title: 'Second writer' }),
+        );
+        expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+        // A refused save keeps the draft with a plain message.
+        root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
+        await settle(harness);
+        await fill(harness, 'title', 'Refused');
+        await fill(harness, 'summary', 'Refused.');
+        devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(403, 'FORBIDDEN'));
+        await submitEditor(harness);
+        expect(root.querySelector('.editor-error')?.textContent).toContain(
+          'Your role cannot make this change on DEV.',
+        );
+        devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(0, null));
+        await submitEditor(harness);
+        expect(root.querySelector('.editor-error')?.textContent).toContain(
+          'Save failed. Your draft is retained; try again.',
+        );
+      },
+    );
 
     it('moves a card on DEV with the plan version, and reloads on a conflict', async () => {
       const harness = await devBoard();
@@ -1354,115 +1512,165 @@ describe('DeliveryPlanPage', () => {
       select.value = 'done';
       select.dispatchEvent(new Event('change'));
       await settle(harness);
-      expect(devApi.update).toHaveBeenCalledWith('TEST-1', 7, expect.objectContaining({ statusId: 'done', title: 'Render a data-driven board' }));
+      expect(devApi.update).toHaveBeenCalledWith(
+        'TEST-1',
+        7,
+        expect.objectContaining({ statusId: 'done', title: 'Render a data-driven board' }),
+      );
       expect(root.textContent).toContain('TEST-1 moved to Done on DEV.');
-      expect(root.querySelectorAll('.board-column')[2].textContent).toContain('Render a data-driven board');
+      expect(root.querySelectorAll('.board-column')[2].textContent).toContain(
+        'Render a data-driven board',
+      );
       // The version advanced with the write; a later conflict reloads and says so.
       devApi.update.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
-      devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12));
+      devApi.load.mockResolvedValueOnce(
+        devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12),
+      );
       const back = root.querySelector('.quick-move select') as HTMLSelectElement;
       back.value = 'in-progress';
       back.dispatchEvent(new Event('change'));
       await settle(harness);
-      expect(devApi.update).toHaveBeenLastCalledWith('TEST-1', 8, expect.objectContaining({ statusId: 'in-progress' }));
-      expect(root.textContent).toContain('Someone changed the plan; reloaded, apply your change again.');
+      expect(devApi.update).toHaveBeenLastCalledWith(
+        'TEST-1',
+        8,
+        expect.objectContaining({ statusId: 'in-progress' }),
+      );
+      expect(root.textContent).toContain(
+        'Someone changed the plan; reloaded, apply your change again.',
+      );
       devApi.update.mockRejectedValueOnce(new DeliveryPlanApiError(500, null));
       back.value = 'in-progress';
       back.dispatchEvent(new Event('change'));
       await settle(harness);
-      expect(root.textContent).toContain('Move could not be saved. The item stays in its original column.');
+      expect(root.textContent).toContain(
+        'Move could not be saved. The item stays in its original column.',
+      );
       // Refresh board reads DEV again and reports the version it found.
-      devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12));
+      devApi.load.mockResolvedValueOnce(
+        devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12),
+      );
       const refresh = root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!;
       expect(refresh.textContent?.trim()).toBe('Refresh board');
       expect(refresh.title).toBe('Reads the plan on DEV again and shows the version it found');
       refresh.click();
       await settle(harness);
-      expect(root.textContent).toContain('Board is up to date. Nothing new to sync: DEV plan version 12, 2 items, checked');
-      devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 13));
+      expect(root.textContent).toContain(
+        'Board is up to date. Nothing new to sync: DEV plan version 12, 2 items, checked',
+      );
+      devApi.load.mockResolvedValueOnce(
+        devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 13),
+      );
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
       await settle(harness);
-      expect(root.textContent).toContain('Board refreshed from DEV. DEV plan version 13, 2 items, checked');
+      expect(root.textContent).toContain(
+        'Board refreshed from DEV. DEV plan version 13, 2 items, checked',
+      );
       devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(0, null));
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
       await settle(harness);
-      expect(root.textContent).toContain('The plan on DEV could not be refreshed. Current data is retained.');
+      expect(root.textContent).toContain(
+        'The plan on DEV could not be refreshed. Current data is retained.',
+      );
       expect(editor.load).toHaveBeenCalledOnce();
     });
 
-    it('shows the published copy with a notice until the first DEV plan is uploaded, and outside the gate', async () => {
-      devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(404, 'DELIVERY_PLAN_MISSING'));
-      publication.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'published-1' }));
-      const harness = await devBoard();
-      let root = harness.routeNativeElement!;
-      expect(devApi.load).toHaveBeenCalledOnce();
-      expect(publication.load).toHaveBeenCalledOnce();
-      expect(root.querySelector('.plan-notice')?.textContent?.trim()).toBe(
-        'The plan on DEV has not been uploaded yet; showing the published copy.',
-      );
-      expect(root.textContent).toContain('Published copy, read-only; edit on the local workstation.');
-      expect(root.querySelector('.editor-toolbar .editor-primary')).toBeNull();
-      // Outside the DEV gate the API is never asked.
-      TestBed.inject(DevSession).gated.set(false);
-      devApi.load.mockClear();
-      publication.load.mockClear();
-      root = await reopen(harness);
-      expect(devApi.load).not.toHaveBeenCalled();
-      expect(publication.load).toHaveBeenCalledOnce();
-      expect(root.querySelector('.plan-notice')).toBeNull();
-      // An admitted session (status set) counts as DEV like the bare gate does.
-      TestBed.inject(DevSession).status.set({ dev: true, deadline: '', warning: false, maintenance: false });
-      devApi.load.mockClear();
-      await reopen(harness);
-      expect(devApi.load).toHaveBeenCalledOnce();
-    });
-
-    it('waits for the first DEV gate answer on a direct link, and gives up on the publication after a while', async () => {
-      vi.useFakeTimers();
-      try {
-        const session = TestBed.inject(DevSession);
-        session.gated.set(false);
-        session.known.set(false);
-        publication.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'published-1' }));
-        const harness = await RouterTestingHarness.create();
-        await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
-        harness.detectChanges();
-        expect(devApi.load).not.toHaveBeenCalled();
-        expect(publication.load).not.toHaveBeenCalled();
-        session.gated.set(true);
-        session.known.set(true);
-        await vi.advanceTimersByTimeAsync(10);
-        harness.detectChanges();
+    it(
+      'shows the published copy with a notice until the first DEV plan is uploaded, and ' +
+        'outside the gate',
+      async () => {
+        devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(404, 'DELIVERY_PLAN_MISSING'));
+        publication.load.mockReturnValue(
+          of({ plan: structuredClone(plan), revision: 'published-1' }),
+        );
+        const harness = await devBoard();
+        let root = harness.routeNativeElement!;
         expect(devApi.load).toHaveBeenCalledOnce();
-        expect(publication.load).not.toHaveBeenCalled();
-        session.gated.set(false);
-        session.known.set(false);
+        expect(publication.load).toHaveBeenCalledOnce();
+        expect(root.querySelector('.plan-notice')?.textContent?.trim()).toBe(
+          'The plan on DEV has not been uploaded yet; showing the published copy.',
+        );
+        expect(root.textContent).toContain(
+          'Published copy, read-only; edit on the local workstation.',
+        );
+        expect(root.querySelector('.editor-toolbar .editor-primary')).toBeNull();
+        // Outside the DEV gate the API is never asked.
+        TestBed.inject(DevSession).gated.set(false);
         devApi.load.mockClear();
-        await harness.navigateByUrl('/away', OtherPage);
-        await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
-        await vi.advanceTimersByTimeAsync(3100);
-        harness.detectChanges();
+        publication.load.mockClear();
+        root = await reopen(harness);
         expect(devApi.load).not.toHaveBeenCalled();
         expect(publication.load).toHaveBeenCalledOnce();
-      } finally {
-        vi.useRealTimers();
-        TestBed.inject(DevSession).known.set(true);
-      }
-    });
+        expect(root.querySelector('.plan-notice')).toBeNull();
+        // An admitted session (status set) counts as DEV like the bare gate does.
+        TestBed.inject(DevSession).status.set({
+          dev: true,
+          deadline: '',
+          warning: false,
+          maintenance: false,
+        });
+        devApi.load.mockClear();
+        await reopen(harness);
+        expect(devApi.load).toHaveBeenCalledOnce();
+      },
+    );
+
+    it(
+      'waits for the first DEV gate answer on a direct link, and gives up on the ' +
+        'publication after a while',
+      async () => {
+        vi.useFakeTimers();
+        try {
+          const session = TestBed.inject(DevSession);
+          session.gated.set(false);
+          session.known.set(false);
+          publication.load.mockReturnValue(
+            of({ plan: structuredClone(plan), revision: 'published-1' }),
+          );
+          const harness = await RouterTestingHarness.create();
+          await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
+          harness.detectChanges();
+          expect(devApi.load).not.toHaveBeenCalled();
+          expect(publication.load).not.toHaveBeenCalled();
+          session.gated.set(true);
+          session.known.set(true);
+          await vi.advanceTimersByTimeAsync(10);
+          harness.detectChanges();
+          expect(devApi.load).toHaveBeenCalledOnce();
+          expect(publication.load).not.toHaveBeenCalled();
+          session.gated.set(false);
+          session.known.set(false);
+          devApi.load.mockClear();
+          await harness.navigateByUrl('/away', OtherPage);
+          await harness.navigateByUrl('/delivery-plan/work', DeliveryPlanPage);
+          await vi.advanceTimersByTimeAsync(3100);
+          harness.detectChanges();
+          expect(devApi.load).not.toHaveBeenCalled();
+          expect(publication.load).toHaveBeenCalledOnce();
+        } finally {
+          vi.useRealTimers();
+          TestBed.inject(DevSession).known.set(true);
+        }
+      },
+    );
 
     it.each([
       [401, 'Sign in again to read the delivery plan on DEV.'],
       [403, 'Your role cannot read the delivery plan on DEV.'],
       [500, 'The plan on DEV could not be loaded. Try again.'],
-    ])('explains a DEV plan the Domain answers %s and never falls back silently', async (status, message) => {
-      devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(status, null));
-      const harness = await devBoard();
-      const root = harness.routeNativeElement!;
-      expect(publication.load).not.toHaveBeenCalled();
-      expect(root.textContent).toContain('The delivery plan on DEV is not available.');
-      expect(root.textContent).toContain(message);
-      expect(root.querySelector('app-author-admin-menu nav[aria-label="Admin navigation"]')).not.toBeNull();
-    });
+    ])(
+      'explains a DEV plan the Domain answers %s and never falls back silently',
+      async (status, message) => {
+        devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(status, null));
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        expect(publication.load).not.toHaveBeenCalled();
+        expect(root.textContent).toContain('The delivery plan on DEV is not available.');
+        expect(root.textContent).toContain(message);
+        expect(
+          root.querySelector('app-author-admin-menu nav[aria-label="Admin navigation"]'),
+        ).not.toBeNull();
+      },
+    );
 
     it('links a promoted ticket to the review or learner request it came from', async () => {
       devApi.load.mockResolvedValue(
@@ -1476,8 +1684,9 @@ describe('DeliveryPlanPage', () => {
       let origin = dialog.querySelector<HTMLAnchorElement>('.ticket-origin a')!;
       expect(origin.textContent?.trim()).toBe('From review REV-000001');
       expect(origin.getAttribute('href')).toBe('/admin/feedback#REV-000001');
-      const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
-        .componentInstance as DeliveryPlanPage;
+      const page = harness.fixture.debugElement.query(
+        (node) => node.componentInstance instanceof DeliveryPlanPage,
+      ).componentInstance as DeliveryPlanPage;
       page['closeWorkItem']();
       await switchView(harness, 'All tickets');
       harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.ticket-row')[1].click();
@@ -1490,118 +1699,166 @@ describe('DeliveryPlanPage', () => {
       expect(dialog.querySelector('.dialog-footer span')?.textContent).toBe('Updated 2026-09-03');
     });
 
-    it('shows an unmerged local edit as a field diff and resolves it with Keep DEV or Take local', async () => {
-      const conflicted = devItem({
-        pendingLocal: devItem({
-          title: 'Local title',
-          labels: ['board', 'local'],
-          notes: ['A note written locally'],
-          updatedIn: 'local',
-          pendingLocal: null,
-        }),
-      });
-      devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
-      const harness = await devBoard();
-      const root = harness.routeNativeElement!;
-      expect(root.querySelector('.work-item-card .conflict-mark')?.textContent).toBe('Local edit pending');
-      let dialog = await openTicket(harness);
-      const banner = dialog.querySelector('.conflict-banner')!;
-      expect(banner.querySelector('h3')?.textContent).toBe('A local edit of this ticket was not merged');
-      const rows = [...banner.querySelectorAll('.conflict-diff div')].map((row) => ({
-        field: row.querySelector('dt')?.textContent,
-        dev: row.querySelector('.diff-dev')?.textContent?.replace(/\s+/g, ' ').trim(),
-        local: row.querySelector('.diff-local')?.textContent?.replace(/\s+/g, ' ').trim(),
-      }));
-      expect(rows).toEqual([
-        { field: 'Title', dev: 'DEV Render a data-driven board', local: 'Local Local title' },
-        { field: 'Labels', dev: 'DEV board', local: 'Local board, local' },
-        { field: 'Notes', dev: 'DEV —', local: 'Local A note written locally' },
-      ]);
-      const buttons = [...banner.querySelectorAll<HTMLButtonElement>('.conflict-actions button')];
-      expect(buttons.map((button) => button.textContent?.trim())).toEqual(['Keep DEV', 'Take local']);
-      devApi.resolveConflict.mockResolvedValueOnce({ version: 8, item: devItem() });
-      buttons[0].click();
-      await settle(harness);
-      expect(devApi.resolveConflict).toHaveBeenCalledWith('TEST-1', 7, 'dev');
-      expect(dialog.querySelector('.conflict-banner')).toBeNull();
-      expect(root.textContent).toContain('TEST-1: kept the DEV version; the local edit was dropped.');
-      expect(root.querySelector('.conflict-mark')).toBeNull();
+    it(
+      'shows an unmerged local edit as a field diff and resolves it with Keep DEV or Take ' +
+        'local',
+      async () => {
+        const conflicted = devItem({
+          pendingLocal: devItem({
+            title: 'Local title',
+            labels: ['board', 'local'],
+            notes: ['A note written locally'],
+            updatedIn: 'local',
+            pendingLocal: null,
+          }),
+        });
+        devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        expect(root.querySelector('.work-item-card .conflict-mark')?.textContent).toBe(
+          'Local edit pending',
+        );
+        let dialog = await openTicket(harness);
+        const banner = dialog.querySelector('.conflict-banner')!;
+        expect(banner.querySelector('h3')?.textContent).toBe(
+          'A local edit of this ticket was not merged',
+        );
+        const rows = [...banner.querySelectorAll('.conflict-diff div')].map((row) => ({
+          field: row.querySelector('dt')?.textContent,
+          dev: row.querySelector('.diff-dev')?.textContent?.replace(/\s+/g, ' ').trim(),
+          local: row.querySelector('.diff-local')?.textContent?.replace(/\s+/g, ' ').trim(),
+        }));
+        expect(rows).toEqual([
+          { field: 'Title', dev: 'DEV Render a data-driven board', local: 'Local Local title' },
+          { field: 'Labels', dev: 'DEV board', local: 'Local board, local' },
+          { field: 'Notes', dev: 'DEV —', local: 'Local A note written locally' },
+        ]);
+        const buttons = [...banner.querySelectorAll<HTMLButtonElement>('.conflict-actions button')];
+        expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+          'Keep DEV',
+          'Take local',
+        ]);
+        devApi.resolveConflict.mockResolvedValueOnce({ version: 8, item: devItem() });
+        buttons[0].click();
+        await settle(harness);
+        expect(devApi.resolveConflict).toHaveBeenCalledWith('TEST-1', 7, 'dev');
+        expect(dialog.querySelector('.conflict-banner')).toBeNull();
+        expect(root.textContent).toContain(
+          'TEST-1: kept the DEV version; the local edit was dropped.',
+        );
+        expect(root.querySelector('.conflict-mark')).toBeNull();
 
-      // Take local, from a fresh load with the conflict back.
-      devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
-      const second = harness;
-      await reopen(second);
-      dialog = await openTicket(second);
-      devApi.resolveConflict.mockResolvedValueOnce({
-        version: 8,
-        item: devItem({ title: 'Local title', labels: ['board', 'local'], notes: ['A note written locally'] }),
-      });
-      [...dialog.querySelectorAll<HTMLButtonElement>('.conflict-actions button')][1].click();
-      await settle(second);
-      expect(devApi.resolveConflict).toHaveBeenLastCalledWith('TEST-1', 7, 'local');
-      expect(dialog.querySelector('.conflict-banner')).toBeNull();
-      expect(dialog.querySelector('h2')?.textContent).toBe('Local title');
-      expect(second.routeNativeElement!.textContent).toContain('TEST-1: took the local edit.');
+        // Take local, from a fresh load with the conflict back.
+        devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
+        const second = harness;
+        await reopen(second);
+        dialog = await openTicket(second);
+        devApi.resolveConflict.mockResolvedValueOnce({
+          version: 8,
+          item: devItem({
+            title: 'Local title',
+            labels: ['board', 'local'],
+            notes: ['A note written locally'],
+          }),
+        });
+        [...dialog.querySelectorAll<HTMLButtonElement>('.conflict-actions button')][1].click();
+        await settle(second);
+        expect(devApi.resolveConflict).toHaveBeenLastCalledWith('TEST-1', 7, 'local');
+        expect(dialog.querySelector('.conflict-banner')).toBeNull();
+        expect(dialog.querySelector('h2')?.textContent).toBe('Local title');
+        expect(second.routeNativeElement!.textContent).toContain('TEST-1: took the local edit.');
 
-      // A conflict while resolving reloads; any other failure leaves the ticket as it was.
-      devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
-      const third = harness;
-      await reopen(third);
-      dialog = await openTicket(third);
-      devApi.resolveConflict.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
-      devApi.load.mockResolvedValueOnce(devPlan([conflicted, structuredClone(plan.workItems[1])], 9));
-      dialog.querySelector<HTMLButtonElement>('.conflict-actions button')!.click();
-      await settle(third);
-      expect(third.routeNativeElement!.textContent).toContain('Someone changed the plan; reloaded, apply your change again.');
-      expect(dialog.querySelector('.conflict-banner')).not.toBeNull();
-      devApi.resolveConflict.mockRejectedValueOnce(new DeliveryPlanApiError(500, null));
-      dialog.querySelector<HTMLButtonElement>('.conflict-actions button')!.click();
-      await settle(third);
-      expect(third.routeNativeElement!.textContent).toContain('The conflict could not be resolved. The ticket is unchanged; try again.');
-      expect(devApi.resolveConflict).toHaveBeenLastCalledWith('TEST-1', 9, 'dev');
-    });
+        // A conflict while resolving reloads; any other failure leaves the ticket as it was.
+        devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
+        const third = harness;
+        await reopen(third);
+        dialog = await openTicket(third);
+        devApi.resolveConflict.mockRejectedValueOnce(
+          new DeliveryPlanApiError(409, 'VERSION_CONFLICT'),
+        );
+        devApi.load.mockResolvedValueOnce(
+          devPlan([conflicted, structuredClone(plan.workItems[1])], 9),
+        );
+        dialog.querySelector<HTMLButtonElement>('.conflict-actions button')!.click();
+        await settle(third);
+        expect(third.routeNativeElement!.textContent).toContain(
+          'Someone changed the plan; reloaded, apply your change again.',
+        );
+        expect(dialog.querySelector('.conflict-banner')).not.toBeNull();
+        devApi.resolveConflict.mockRejectedValueOnce(new DeliveryPlanApiError(500, null));
+        dialog.querySelector<HTMLButtonElement>('.conflict-actions button')!.click();
+        await settle(third);
+        expect(third.routeNativeElement!.textContent).toContain(
+          'The conflict could not be resolved. The ticket is unchanged; try again.',
+        );
+        expect(devApi.resolveConflict).toHaveBeenLastCalledWith('TEST-1', 9, 'dev');
+      },
+    );
 
-    it('keeps the DEV plan read-only for a reviewer: no create, edit, move, drag or conflict buttons', async () => {
-      TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: reader }));
-      devApi.load.mockResolvedValue(
-        devPlan([devItem({ pendingLocal: devItem({ title: 'Local title', pendingLocal: null }) }), structuredClone(plan.workItems[1])]),
-      );
-      const harness = await devBoard();
-      const root = harness.routeNativeElement!;
-      expect(root.textContent).toContain('The plan on DEV, read-only for your role.');
-      expect(root.textContent).not.toContain('Editing the plan on DEV');
-      expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(true);
-      expect(root.querySelector('.quick-move select')).toBeNull();
-      expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('false');
-      const dialog = await openTicket(harness);
-      expect(dialog.querySelector('.dialog-footer button')).toBeNull();
-      expect(dialog.textContent).toContain('Read-only plan');
-      expect(dialog.querySelector('.conflict-banner h3')?.textContent).toBe('A local edit of this ticket was not merged');
-      expect(dialog.querySelector('.conflict-actions')).toBeNull();
-      const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
-        .componentInstance as DeliveryPlanPage;
-      page['openEditor'](devItem());
-      page['moveItem'](devItem(), 'done');
-      await page['resolveConflict'](devItem(), 'dev');
-      harness.detectChanges();
-      expect(devApi.update).not.toHaveBeenCalled();
-      expect(devApi.resolveConflict).not.toHaveBeenCalled();
-      expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
-      // An admin with deliveryCreate edits cards and moves to review, but may not close.
-      TestBed.inject(StudyPlanAccount).account.update((account) => ({
-        ...account!,
-        permissions: { ...reader, deliveryCreate: true, deliveryReview: true },
-      }));
-      const admin = harness;
-      const adminRoot = await reopen(admin);
-      expect(adminRoot.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(false);
-      const adminDialog = await openTicket(admin);
-      expect(adminDialog.querySelector('.dialog-footer .editor-primary')?.textContent?.trim()).toBe('Edit ticket');
-      expect(adminDialog.querySelector('.conflict-actions')).not.toBeNull();
-      adminDialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!.click();
-      await settle(admin);
-      expect([...adminRoot.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map((option) => option.disabled)).toEqual([true, false, true]);
-    });
+    it(
+      'keeps the DEV plan read-only for a reviewer: no create, edit, move, drag or ' +
+        'conflict buttons',
+      async () => {
+        TestBed.inject(StudyPlanAccount).account.update((account) => ({
+          ...account!,
+          permissions: reader,
+        }));
+        devApi.load.mockResolvedValue(
+          devPlan([
+            devItem({ pendingLocal: devItem({ title: 'Local title', pendingLocal: null }) }),
+            structuredClone(plan.workItems[1]),
+          ]),
+        );
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        expect(root.textContent).toContain('The plan on DEV, read-only for your role.');
+        expect(root.textContent).not.toContain('Editing the plan on DEV');
+        expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(
+          true,
+        );
+        expect(root.querySelector('.quick-move select')).toBeNull();
+        expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('false');
+        const dialog = await openTicket(harness);
+        expect(dialog.querySelector('.dialog-footer button')).toBeNull();
+        expect(dialog.textContent).toContain('Read-only plan');
+        expect(dialog.querySelector('.conflict-banner h3')?.textContent).toBe(
+          'A local edit of this ticket was not merged',
+        );
+        expect(dialog.querySelector('.conflict-actions')).toBeNull();
+        const page = harness.fixture.debugElement.query(
+          (node) => node.componentInstance instanceof DeliveryPlanPage,
+        ).componentInstance as DeliveryPlanPage;
+        page['openEditor'](devItem());
+        page['moveItem'](devItem(), 'done');
+        await page['resolveConflict'](devItem(), 'dev');
+        harness.detectChanges();
+        expect(devApi.update).not.toHaveBeenCalled();
+        expect(devApi.resolveConflict).not.toHaveBeenCalled();
+        expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+        // An admin with deliveryCreate edits cards and moves to review, but may not close.
+        TestBed.inject(StudyPlanAccount).account.update((account) => ({
+          ...account!,
+          permissions: { ...reader, deliveryCreate: true, deliveryReview: true },
+        }));
+        const admin = harness;
+        const adminRoot = await reopen(admin);
+        expect(
+          adminRoot.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden'),
+        ).toBe(false);
+        const adminDialog = await openTicket(admin);
+        expect(
+          adminDialog.querySelector('.dialog-footer .editor-primary')?.textContent?.trim(),
+        ).toBe('Edit ticket');
+        expect(adminDialog.querySelector('.conflict-actions')).not.toBeNull();
+        adminDialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!.click();
+        await settle(admin);
+        expect(
+          [...adminRoot.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map(
+            (option) => option.disabled,
+          ),
+        ).toEqual([true, false, true]);
+      },
+    );
 
     describe('inbox sync controls (owner, 2026-11-07)', () => {
       const coAuthor = { ...reader, feedbackRole: 'co-author' };
@@ -1609,7 +1866,14 @@ describe('DeliveryPlanPage', () => {
         synced: true,
         version: 9,
         reason: null,
-        counts: { added: 2, takenLocal: 1, keptDev: 3, conflicts: 1, unchanged: 4, deletedOnDev: 0 },
+        counts: {
+          added: 2,
+          takenLocal: 1,
+          keptDev: 3,
+          conflicts: 1,
+          unchanged: 4,
+          deletedOnDev: 0,
+        },
         // DLV-1007: the DEV version before the merge and the ticket ids behind each count.
         versionBefore: 8,
         details: {
@@ -1621,15 +1885,21 @@ describe('DeliveryPlanPage', () => {
           deletedOnDev: [],
         },
       };
-      const downloadButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .download-plan');
+      const downloadButton = (root: Element) =>
+        root.querySelector<HTMLButtonElement>('.editor-toolbar .download-plan');
       const resultCard = (root: Element) => root.querySelector<HTMLElement>('.upload-result');
-      const uploadButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .upload-plan');
-      const syncButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .sync-inbox');
-      const fileInput = (root: Element) => root.querySelector<HTMLInputElement>('.editor-toolbar input[type="file"]')!;
-      const helpText = (root: Element) => root.querySelector('.refresh-help')!.textContent!.replace(/\s+/g, ' ').trim();
+      const uploadButton = (root: Element) =>
+        root.querySelector<HTMLButtonElement>('.editor-toolbar .upload-plan');
+      const syncButton = (root: Element) =>
+        root.querySelector<HTMLButtonElement>('.editor-toolbar .sync-inbox');
+      const fileInput = (root: Element) =>
+        root.querySelector<HTMLInputElement>('.editor-toolbar input[type="file"]')!;
+      const helpText = (root: Element) =>
+        root.querySelector('.refresh-help')!.textContent!.replace(/\s+/g, ' ').trim();
       const notice = (root: Element) => root.querySelector('.save-notice')!.textContent!.trim();
       const syncHelp =
-        'Upload plan file sends your local delivery-plan.json to DEV and merges it at once; Sync plan inbox merges a file already placed in delivery/inbox/.';
+        'Upload plan file sends your local delivery-plan.json to DEV and merges it at ' +
+        'once; Sync plan inbox merges a file already placed in delivery/inbox/.';
       async function pickFile(harness: RouterTestingHarness, text: string) {
         const input = fileInput(harness.routeNativeElement!);
         const file = new File([text], 'delivery-plan.json', { type: 'application/json' });
@@ -1640,7 +1910,10 @@ describe('DeliveryPlanPage', () => {
       }
 
       it('hides Upload plan file and Sync plan inbox from a reviewer', async () => {
-        TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: reader }));
+        TestBed.inject(StudyPlanAccount).account.update((account) => ({
+          ...account!,
+          permissions: reader,
+        }));
         const harness = await devBoard();
         const root = harness.routeNativeElement!;
         expect(uploadButton(root)).toBeNull();
@@ -1649,108 +1922,191 @@ describe('DeliveryPlanPage', () => {
         expect(helpText(root)).toBe('The plan on DEV, read-only for your role.');
       });
 
-      it('shows both controls with their titles to the owner and to a co-author, and explains them under the toolbar', async () => {
-        const harness = await devBoard();
-        let root = harness.routeNativeElement!;
-        const labels = (node: Element) =>
-          [...node.querySelectorAll<HTMLButtonElement>('.editor-toolbar button:not([hidden])')].map((button) => button.textContent!.trim());
-        expect(labels(root)).toEqual(['Refresh board', 'Upload plan file', 'Sync plan inbox', 'Download DEV plan', '+ New ticket']);
-        expect(uploadButton(root)!.title).toBe('Sends your local delivery-plan.json to DEV and merges it at once');
-        expect(syncButton(root)!.title).toBe('Merges a plan file already placed in delivery/inbox/ on DEV');
-        expect(uploadButton(root)!.disabled).toBe(false);
-        expect(syncButton(root)!.disabled).toBe(false);
-        expect(fileInput(root).accept).toBe('.json,application/json');
-        expect(fileInput(root).classList.contains('plan-file-input')).toBe(true);
-        expect(helpText(root)).toBe(
-          `Editing the plan on DEV. Saves go to DEV at once; local edits reach it through the inbox sync. ${syncHelp}`,
-        );
-        // The button opens the hidden picker.
-        const click = vi.spyOn(fileInput(root), 'click');
-        uploadButton(root)!.click();
-        expect(click).toHaveBeenCalledOnce();
-        // A co-author reads the board but may sync it.
-        TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: coAuthor }));
-        root = await reopen(harness);
-        expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(true);
-        expect(uploadButton(root)).not.toBeNull();
-        expect(syncButton(root)).not.toBeNull();
-        expect(helpText(root)).toBe(`The plan on DEV, read-only for your role. ${syncHelp}`);
-        // A legacy owner account without permissions keeps the controls.
-        TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: undefined }));
-        root = await reopen(harness);
-        expect(uploadButton(root)).not.toBeNull();
-      });
+      it(
+        'shows both controls with their titles to the owner and to a co-author, and ' +
+          'explains them under the toolbar',
+        async () => {
+          const harness = await devBoard();
+          let root = harness.routeNativeElement!;
+          const labels = (node: Element) =>
+            [
+              ...node.querySelectorAll<HTMLButtonElement>('.editor-toolbar button:not([hidden])'),
+            ].map((button) => button.textContent!.trim());
+          expect(labels(root)).toEqual([
+            'Refresh board',
+            'Upload plan file',
+            'Sync plan inbox',
+            'Download DEV plan',
+            '+ New ticket',
+          ]);
+          expect(uploadButton(root)!.title).toBe(
+            'Sends your local delivery-plan.json to DEV and merges it at once',
+          );
+          expect(syncButton(root)!.title).toBe(
+            'Merges a plan file already placed in delivery/inbox/ on DEV',
+          );
+          expect(uploadButton(root)!.disabled).toBe(false);
+          expect(syncButton(root)!.disabled).toBe(false);
+          expect(fileInput(root).accept).toBe('.json,application/json');
+          expect(fileInput(root).classList.contains('plan-file-input')).toBe(true);
+          expect(helpText(root)).toBe(
+            `Editing the plan on DEV. Saves go to DEV at once; local edits reach it ` +
+              `through the inbox sync. ${syncHelp}`,
+          );
+          // The button opens the hidden picker.
+          const click = vi.spyOn(fileInput(root), 'click');
+          uploadButton(root)!.click();
+          expect(click).toHaveBeenCalledOnce();
+          // A co-author reads the board but may sync it.
+          TestBed.inject(StudyPlanAccount).account.update((account) => ({
+            ...account!,
+            permissions: coAuthor,
+          }));
+          root = await reopen(harness);
+          expect(
+            root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden'),
+          ).toBe(true);
+          expect(uploadButton(root)).not.toBeNull();
+          expect(syncButton(root)).not.toBeNull();
+          expect(helpText(root)).toBe(`The plan on DEV, read-only for your role. ${syncHelp}`);
+          // A legacy owner account without permissions keeps the controls.
+          TestBed.inject(StudyPlanAccount).account.update((account) => ({
+            ...account!,
+            permissions: undefined,
+          }));
+          root = await reopen(harness);
+          expect(uploadButton(root)).not.toBeNull();
+        },
+      );
 
-      it('uploads the chosen file as text, reports the merge counts, reloads the board and clears the picker', async () => {
-        let finish!: (value: typeof merged) => void;
-        devApi.uploadInbox.mockImplementationOnce(() => new Promise<typeof merged>((resolve) => (finish = resolve)));
-        const harness = await devBoard();
-        const root = harness.routeNativeElement!;
-        const text = '{ "schemaVersion": "delivery-plan/v1", "version": 7, "workItems": [] }';
-        const loads = devApi.load.mock.calls.length;
-        const input = await pickFile(harness, text);
-        expect(devApi.uploadInbox).toHaveBeenCalledExactlyOnceWith(text);
-        expect(uploadButton(root)!.disabled).toBe(true);
-        expect(syncButton(root)!.disabled).toBe(true);
-        // DLV-1007: the button says what it is doing while the Domain works.
-        expect(uploadButton(root)!.textContent!.trim()).toBe('Uploading…');
-        expect(uploadButton(root)!.getAttribute('aria-busy')).toBe('true');
-        devApi.load.mockResolvedValueOnce(
-          devPlan([devItem({ id: 'DLV-0077', title: 'Both sides changed me' }), devItem({ id: 'DLV-0101', title: 'Brand new' }), structuredClone(plan.workItems[1])], 9),
-        );
-        finish(merged);
-        await settle(harness);
-        expect(notice(root)).toBe(
-          'Plan file uploaded and merged into DEV plan version 9: 2 added, 1 taken from local, 3 kept from DEV, 1 conflict(s).',
-        );
-        expect(uploadButton(root)!.textContent!.trim()).toBe('Upload plan file');
-        // The result card: the file, the version move, the counts and one row per ticket, conflicts first.
-        const card = resultCard(root)!;
-        expect(card.querySelector('h2')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Merged into DEV plan version 9');
-        expect(card.querySelector('.dialog-header span')!.textContent).toBe('Upload plan file');
-        expect(card.closest('dialog')!.classList.contains('upload-result-dialog')).toBe(true);
-        const facts = [...card.querySelectorAll('.upload-result-fact')].map((p) => p.textContent!.replace(/\s+/g, ' ').trim()).join(' | ');
-        expect(facts).toContain('File sent: delivery-plan.json · ');
-        expect(facts).toContain('local version 7, edited from DEV version 7');
-        expect(facts).toContain('DEV plan: version 8 → 9');
-        expect([...card.querySelectorAll('.upload-result-counts li')].map((li) => li.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
-          '1 conflict', '2 added', '1 updated from your file', '3 kept from DEV', '4 unchanged',
-        ]);
-        const rows = [...card.querySelectorAll('tbody tr')].map((row) => [...row.querySelectorAll('td')].map((cell) => cell.textContent!.trim()));
-        expect(rows[0]).toEqual(['DLV-0077', 'Both sides changed me', 'Conflict: changed on DEV and in your file', 'Open the ticket and choose Keep DEV or Take local']);
-        expect(rows[1]).toEqual(['DLV-0101', 'Brand new', 'Added from your file', 'New on DEV']);
-        expect(rows.map((row) => row[0])).toEqual(['DLV-0077', 'DLV-0101', 'DLV-0102', 'DLV-0042', 'DLV-0001', 'DLV-0002', 'DLV-0003']);
-        expect(card.querySelector('tbody tr a')!.getAttribute('href')).toBe('/delivery-plan/work#DLV-0077');
-        card.querySelector<HTMLButtonElement>('.upload-result-close')!.click();
-        await settle(harness);
-        expect(resultCard(root)).toBeNull();
-        expect(devApi.load.mock.calls.length).toBe(loads + 1);
-        expect(input.value).toBe('');
-        expect(uploadButton(root)!.disabled).toBe(false);
-        expect(syncButton(root)!.disabled).toBe(false);
-        // Nothing chosen: nothing sent.
-        Object.defineProperty(input, 'files', { value: [], configurable: true });
-        input.dispatchEvent(new Event('change'));
-        await settle(harness);
-        expect(devApi.uploadInbox).toHaveBeenCalledOnce();
-      });
+      it(
+        'uploads the chosen file as text, reports the merge counts, reloads the board and ' +
+          'clears the picker',
+        async () => {
+          let finish!: (value: typeof merged) => void;
+          devApi.uploadInbox.mockImplementationOnce(
+            () => new Promise<typeof merged>((resolve) => (finish = resolve)),
+          );
+          const harness = await devBoard();
+          const root = harness.routeNativeElement!;
+          const text = '{ "schemaVersion": "delivery-plan/v1", "version": 7, "workItems": [] }';
+          const loads = devApi.load.mock.calls.length;
+          const input = await pickFile(harness, text);
+          expect(devApi.uploadInbox).toHaveBeenCalledExactlyOnceWith(text);
+          expect(uploadButton(root)!.disabled).toBe(true);
+          expect(syncButton(root)!.disabled).toBe(true);
+          // DLV-1007: the button says what it is doing while the Domain works.
+          expect(uploadButton(root)!.textContent!.trim()).toBe('Uploading…');
+          expect(uploadButton(root)!.getAttribute('aria-busy')).toBe('true');
+          devApi.load.mockResolvedValueOnce(
+            devPlan(
+              [
+                devItem({ id: 'DLV-0077', title: 'Both sides changed me' }),
+                devItem({ id: 'DLV-0101', title: 'Brand new' }),
+                structuredClone(plan.workItems[1]),
+              ],
+              9,
+            ),
+          );
+          finish(merged);
+          await settle(harness);
+          expect(notice(root)).toBe(
+            'Plan file uploaded and merged into DEV plan version 9: 2 added, 1 taken from ' +
+              'local, 3 kept from DEV, 1 conflict(s).',
+          );
+          expect(uploadButton(root)!.textContent!.trim()).toBe('Upload plan file');
+          // The result card: the file, the version move, the counts and one row per ticket,
+          // conflicts first.
+          const card = resultCard(root)!;
+          expect(card.querySelector('h2')!.textContent!.replace(/\s+/g, ' ').trim()).toBe(
+            'Merged into DEV plan version 9',
+          );
+          expect(card.querySelector('.dialog-header span')!.textContent).toBe('Upload plan file');
+          expect(card.closest('dialog')!.classList.contains('upload-result-dialog')).toBe(true);
+          const facts = [...card.querySelectorAll('.upload-result-fact')]
+            .map((p) => p.textContent!.replace(/\s+/g, ' ').trim())
+            .join(' | ');
+          expect(facts).toContain('File sent: delivery-plan.json · ');
+          expect(facts).toContain('local version 7, edited from DEV version 7');
+          expect(facts).toContain('DEV plan: version 8 → 9');
+          expect(
+            [...card.querySelectorAll('.upload-result-counts li')].map((li) =>
+              li.textContent!.replace(/\s+/g, ' ').trim(),
+            ),
+          ).toEqual([
+            '1 conflict',
+            '2 added',
+            '1 updated from your file',
+            '3 kept from DEV',
+            '4 unchanged',
+          ]);
+          const rows = [...card.querySelectorAll('tbody tr')].map((row) =>
+            [...row.querySelectorAll('td')].map((cell) => cell.textContent!.trim()),
+          );
+          expect(rows[0]).toEqual([
+            'DLV-0077',
+            'Both sides changed me',
+            'Conflict: changed on DEV and in your file',
+            'Open the ticket and choose Keep DEV or Take local',
+          ]);
+          expect(rows[1]).toEqual(['DLV-0101', 'Brand new', 'Added from your file', 'New on DEV']);
+          expect(rows.map((row) => row[0])).toEqual([
+            'DLV-0077',
+            'DLV-0101',
+            'DLV-0102',
+            'DLV-0042',
+            'DLV-0001',
+            'DLV-0002',
+            'DLV-0003',
+          ]);
+          expect(card.querySelector('tbody tr a')!.getAttribute('href')).toBe(
+            '/delivery-plan/work#DLV-0077',
+          );
+          card.querySelector<HTMLButtonElement>('.upload-result-close')!.click();
+          await settle(harness);
+          expect(resultCard(root)).toBeNull();
+          expect(devApi.load.mock.calls.length).toBe(loads + 1);
+          expect(input.value).toBe('');
+          expect(uploadButton(root)!.disabled).toBe(false);
+          expect(syncButton(root)!.disabled).toBe(false);
+          // Nothing chosen: nothing sent.
+          Object.defineProperty(input, 'files', { value: [], configurable: true });
+          input.dispatchEvent(new Event('change'));
+          await settle(harness);
+          expect(devApi.uploadInbox).toHaveBeenCalledOnce();
+        },
+      );
 
       it('says when the file was stored but not merged, and names the Domain refusal', async () => {
-        devApi.uploadInbox.mockResolvedValueOnce({ synced: false, version: 7, reason: 'inbox version 7 is already the DEV plan', counts: null });
+        devApi.uploadInbox.mockResolvedValueOnce({
+          synced: false,
+          version: 7,
+          reason: 'inbox version 7 is already the DEV plan',
+          counts: null,
+        });
         const harness = await devBoard();
         const root = harness.routeNativeElement!;
         const loads = devApi.load.mock.calls.length;
         await pickFile(harness, '{}');
-        expect(notice(root)).toBe('Plan file uploaded but not merged: inbox version 7 is already the DEV plan.');
+        expect(notice(root)).toBe(
+          'Plan file uploaded but not merged: inbox version 7 is already the DEV plan.',
+        );
         expect(devApi.load.mock.calls.length).toBe(loads);
         devApi.uploadInbox.mockRejectedValueOnce(
-          new DeliveryPlanApiError(422, 'DELIVERY_INBOX_BASE_UNKNOWN', 'Base version 3 is neither the DEV plan nor an archived version.'),
+          new DeliveryPlanApiError(
+            422,
+            'DELIVERY_INBOX_BASE_UNKNOWN',
+            'Base version 3 is neither the DEV plan nor an archived version.',
+          ),
         );
         await pickFile(harness, '{}');
         expect(notice(root)).toBe(
-          'The plan file could not be uploaded: Base version 3 is neither the DEV plan nor an archived version.',
+          'The plan file could not be uploaded: Base version 3 is neither the DEV plan ' +
+            'nor an archived version.',
         );
-        devApi.uploadInbox.mockRejectedValueOnce(new DeliveryPlanApiError(413, 'DELIVERY_PLAN_TOO_LARGE'));
+        devApi.uploadInbox.mockRejectedValueOnce(
+          new DeliveryPlanApiError(413, 'DELIVERY_PLAN_TOO_LARGE'),
+        );
         await pickFile(harness, '{}');
         expect(notice(root)).toBe('The plan file could not be uploaded: DELIVERY_PLAN_TOO_LARGE.');
         devApi.uploadInbox.mockRejectedValueOnce(new Error('file vanished'));
@@ -1759,79 +2115,127 @@ describe('DeliveryPlanPage', () => {
         expect(uploadButton(root)!.disabled).toBe(false);
       });
 
-      it('Download DEV plan saves the plan DEV holds now, named by its version, and says so', async () => {
-        const harness = await devBoard();
-        const root = harness.routeNativeElement!;
-        const loads = devApi.load.mock.calls.length;
-        devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 11));
-        const createObjectURL = vi.fn<(blob: Blob) => string>(() => 'blob:dev-plan');
-        const revokeObjectURL = vi.fn();
-        Object.assign(URL, { createObjectURL, revokeObjectURL });
-        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
-        try {
-          downloadButton(root)!.click();
-          await settle(harness);
-          expect(devApi.load.mock.calls.length).toBe(loads + 1);
-          expect(createObjectURL).toHaveBeenCalledOnce();
-          const blob = createObjectURL.mock.calls[0]![0];
-          expect(blob.type).toBe('application/json');
-          expect(JSON.parse(await blob.text()).version).toBe(11);
-          const anchor = click.mock.instances[0] as HTMLAnchorElement;
-          expect(anchor.download).toBe('delivery-plan-dev-v11.json');
-          expect(revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:dev-plan');
-          expect(notice(root)).toBe('Downloaded delivery-plan-dev-v11.json: DEV plan version 11, 2 tickets.');
-          // A failed read is named and the button recovers.
-          devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(503, 'DELIVERY_PLAN_UNAVAILABLE', 'The plan store is busy.'));
-          downloadButton(root)!.click();
-          await settle(harness);
-          expect(notice(root)).toBe('The DEV plan could not be downloaded: The plan store is busy.');
-          expect(downloadButton(root)!.disabled).toBe(false);
-        } finally {
-          click.mockRestore();
-        }
-      });
+      it(
+        'Download DEV plan saves the plan DEV holds now, named by its version, and says ' + 'so',
+        async () => {
+          const harness = await devBoard();
+          const root = harness.routeNativeElement!;
+          const loads = devApi.load.mock.calls.length;
+          devApi.load.mockResolvedValueOnce(
+            devPlan([devItem(), structuredClone(plan.workItems[1])], 11),
+          );
+          const createObjectURL = vi.fn<(blob: Blob) => string>(() => 'blob:dev-plan');
+          const revokeObjectURL = vi.fn();
+          Object.assign(URL, { createObjectURL, revokeObjectURL });
+          const click = vi
+            .spyOn(HTMLAnchorElement.prototype, 'click')
+            .mockImplementation(() => undefined);
+          try {
+            downloadButton(root)!.click();
+            await settle(harness);
+            expect(devApi.load.mock.calls.length).toBe(loads + 1);
+            expect(createObjectURL).toHaveBeenCalledOnce();
+            const blob = createObjectURL.mock.calls[0]![0];
+            expect(blob.type).toBe('application/json');
+            expect(JSON.parse(await blob.text()).version).toBe(11);
+            const anchor = click.mock.instances[0] as HTMLAnchorElement;
+            expect(anchor.download).toBe('delivery-plan-dev-v11.json');
+            expect(revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:dev-plan');
+            expect(notice(root)).toBe(
+              'Downloaded delivery-plan-dev-v11.json: DEV plan version 11, 2 tickets.',
+            );
+            // A failed read is named and the button recovers.
+            devApi.load.mockRejectedValueOnce(
+              new DeliveryPlanApiError(503, 'DELIVERY_PLAN_UNAVAILABLE', 'The plan store is busy.'),
+            );
+            downloadButton(root)!.click();
+            await settle(harness);
+            expect(notice(root)).toBe(
+              'The DEV plan could not be downloaded: The plan store is busy.',
+            );
+            expect(downloadButton(root)!.disabled).toBe(false);
+          } finally {
+            click.mockRestore();
+          }
+        },
+      );
 
-      it('Sync plan inbox merges the stored file and reloads, says when there is nothing, and names a failure', async () => {
-        devApi.syncInbox.mockResolvedValueOnce(merged);
-        devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 9));
-        const harness = await devBoard();
-        const root = harness.routeNativeElement!;
-        const loads = devApi.load.mock.calls.length;
-        syncButton(root)!.click();
-        await settle(harness);
-        expect(devApi.syncInbox).toHaveBeenCalledOnce();
-        expect(notice(root)).toBe(
-          'Sync plan inbox: merged into DEV plan version 9: 2 added, 1 taken from local, 3 kept from DEV, 1 conflict(s).',
-        );
-        expect(devApi.load.mock.calls.length).toBe(loads + 1);
-        devApi.syncInbox.mockResolvedValueOnce({ synced: false, version: 9, reason: 'no inbox file', counts: null });
-        syncButton(root)!.click();
-        await settle(harness);
-        expect(notice(root)).toBe('Sync plan inbox: nothing to sync (no inbox file).');
-        expect(devApi.load.mock.calls.length).toBe(loads + 1);
-        devApi.syncInbox.mockRejectedValueOnce(new DeliveryPlanApiError(403, 'DELIVERY_ACCESS_DENIED', 'Only the owner and co-authors may sync the plan.'));
-        syncButton(root)!.click();
-        await settle(harness);
-        expect(notice(root)).toBe('Sync plan inbox failed: Only the owner and co-authors may sync the plan.');
-        // DLV-1007: an inbox merge shows the same result card, without a file line.
-        expect(resultCard(root)!.querySelector('.dialog-header span')!.textContent).toBe('Sync plan inbox');
-        expect(resultCard(root)!.textContent).not.toContain('File sent');
-        expect(syncButton(root)!.disabled).toBe(false);
-        // A merge with no counts still reads.
-        devApi.syncInbox.mockResolvedValueOnce({ synced: true, version: 10, reason: null, counts: null });
-        syncButton(root)!.click();
-        await settle(harness);
-        expect(notice(root)).toBe(
-          'Sync plan inbox: merged into DEV plan version 10: 0 added, 0 taken from local, 0 kept from DEV, 0 conflict(s).',
-        );
-      });
+      it(
+        'Sync plan inbox merges the stored file and reloads, says when there is nothing, ' +
+          'and names a failure',
+        async () => {
+          devApi.syncInbox.mockResolvedValueOnce(merged);
+          devApi.load.mockResolvedValueOnce(
+            devPlan([devItem(), structuredClone(plan.workItems[1])], 9),
+          );
+          const harness = await devBoard();
+          const root = harness.routeNativeElement!;
+          const loads = devApi.load.mock.calls.length;
+          syncButton(root)!.click();
+          await settle(harness);
+          expect(devApi.syncInbox).toHaveBeenCalledOnce();
+          expect(notice(root)).toBe(
+            'Sync plan inbox: merged into DEV plan version 9: 2 added, 1 taken from ' +
+              'local, 3 kept from DEV, 1 conflict(s).',
+          );
+          expect(devApi.load.mock.calls.length).toBe(loads + 1);
+          devApi.syncInbox.mockResolvedValueOnce({
+            synced: false,
+            version: 9,
+            reason: 'no inbox file',
+            counts: null,
+          });
+          syncButton(root)!.click();
+          await settle(harness);
+          expect(notice(root)).toBe('Sync plan inbox: nothing to sync (no inbox file).');
+          expect(devApi.load.mock.calls.length).toBe(loads + 1);
+          devApi.syncInbox.mockRejectedValueOnce(
+            new DeliveryPlanApiError(
+              403,
+              'DELIVERY_ACCESS_DENIED',
+              'Only the owner and co-authors may sync the plan.',
+            ),
+          );
+          syncButton(root)!.click();
+          await settle(harness);
+          expect(notice(root)).toBe(
+            'Sync plan inbox failed: Only the owner and co-authors may sync the plan.',
+          );
+          // DLV-1007: an inbox merge shows the same result card, without a file line.
+          expect(resultCard(root)!.querySelector('.dialog-header span')!.textContent).toBe(
+            'Sync plan inbox',
+          );
+          expect(resultCard(root)!.textContent).not.toContain('File sent');
+          expect(syncButton(root)!.disabled).toBe(false);
+          // A merge with no counts still reads.
+          devApi.syncInbox.mockResolvedValueOnce({
+            synced: true,
+            version: 10,
+            reason: null,
+            counts: null,
+          });
+          syncButton(root)!.click();
+          await settle(harness);
+          expect(notice(root)).toBe(
+            'Sync plan inbox: merged into DEV plan version 10: 0 added, 0 taken from ' +
+              'local, 0 kept from DEV, 0 conflict(s).',
+          );
+        },
+      );
 
       it('shows the notice as a status line the eye lands on, not a small green note', () => {
-        const fs = (globalThis as unknown as { process: { getBuiltinModule(id: string): unknown } }).process
-          .getBuiltinModule('node:fs') as { readFileSync(path: string, encoding: 'utf8'): string };
-        const css = fs.readFileSync('src/app/pages/delivery-plan/delivery-plan.css', 'utf8').replace(/\s+/g, ' ');
+        const fs = (
+          globalThis as unknown as { process: { getBuiltinModule(id: string): unknown } }
+        ).process.getBuiltinModule('node:fs') as {
+          readFileSync(path: string, encoding: 'utf8'): string;
+        };
+        const css = fs
+          .readFileSync('src/app/pages/delivery-plan/delivery-plan.css', 'utf8')
+          .replace(/\s+/g, ' ');
         expect(css).toContain(
-          '.save-notice { margin: 8px 0; padding: 0 20px 0 10px; border-left: 3px solid var(--accent-strong); color: var(--text-strong); font-size: 0.9rem; font-weight: 600; }',
+          '.save-notice { margin: 8px 0; padding: 0 20px 0 10px; border-left: 3px solid ' +
+            'var(--accent-strong); color: var(--text-strong); font-size: 0.9rem; ' +
+            'font-weight: 600; }',
         );
         expect(css).toContain('.save-notice:empty { display: none; }');
         expect(css).toContain('.plan-file-input { position: absolute; width: 1px; height: 1px;');

@@ -12,16 +12,21 @@
 @if (!documentationOnly()) {
   <p class="rail-heading" aria-hidden="true">Admin</p>
 }
-<div class="admin-menu-content" [id]="contentId" [hidden]="!open()" [attr.inert]="open() ? null : ''">
+<div
+  class="admin-menu-content"
+  [id]="contentId"
+  [hidden]="!open()"
+  [attr.inert]="open() ? null : ''"
+>
   @if (!documentationOnly()) {
-  <nav class="admin-links" aria-label="Admin navigation">
-    @for (page of workspaceLinks(); track page.id) {
-      <a [href]="page.href" [attr.aria-current]="currentState(page.id)"
-        ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
-        ><span>{{ page.label }}</span></a
-      >
-    }
-  </nav>
+    <nav class="admin-links" aria-label="Admin navigation">
+      @for (page of workspaceLinks(); track page.id) {
+        <a [href]="page.href" [attr.aria-current]="currentState(page.id)"
+          ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
+          ><span>{{ page.label }}</span></a
+        >
+      }
+    </nav>
   }
   @if (documentationOnly() && (onDocumentationPage() || pageId() === 'docs')) {
     <nav class="documentation-links" [attr.aria-labelledby]="contentId + '-docs'">
@@ -34,7 +39,10 @@
         >
           <span aria-hidden="true">{{ group.icon }}</span> {{ group.label }}
         </p>
-        <ul [attr.aria-labelledby]="contentId + '-' + group.id" [style.--group-accent]="group.accent">
+        <ul
+          [attr.aria-labelledby]="contentId + '-' + group.id"
+          [style.--group-accent]="group.accent"
+        >
           @for (page of group.pages; track page.id) {
             <li>
               <a [href]="page.href" [attr.aria-current]="documentationState(page.id)"
@@ -45,7 +53,9 @@
                 <ul class="subpages" [attr.aria-label]="page.label + ' pages'">
                   @for (child of page.children; track child.id) {
                     <li>
-                      <a [href]="child.href" [attr.aria-current]="child.id === pageId() ? 'page' : null"
+                      <a
+                        [href]="child.href"
+                        [attr.aria-current]="child.id === pageId() ? 'page' : null"
                         ><span class="item-icon" aria-hidden="true">{{ child.icon }}</span
                         ><span>{{ child.label }}</span></a
                       >

@@ -179,7 +179,10 @@ export function sceneTextLimit(maxPx: number, scale: number): string | null {
           var(--card-title-size, 1.3rem) * var(--card-scene-mark-max-ratio, 0.85)
         );
       }
-      app-card-scene.la-card-scene-card .la-card-scene-art > svg[data-card-text-fit] [data-scene-size] {
+      app-card-scene.la-card-scene-card
+        .la-card-scene-art
+        > svg[data-card-text-fit]
+        [data-scene-size] {
         font-size: min(
           var(--scene-size),
           var(--card-scene-text-limit, var(--scene-size))
@@ -254,9 +257,14 @@ export class CardScene {
 
   readonly src = input<string | undefined>(undefined);
   readonly alt = input<string>('');
-  /** Short mark (e.g. initials) shown on a soft background when the scene is missing; else the alt text. */
+  /**
+   * Short mark (e.g. initials) shown on a soft background when the scene is missing; else the alt
+   * text.
+   */
   readonly fallback = input<string>('');
-  /** Optional scenes render nothing (the host is hidden) when there is no path or the file fails. */
+  /**
+   * Optional scenes render nothing (the host is hidden) when there is no path or the file fails.
+   */
   readonly optional = input(false);
   /**
    * A catalog course/group card or course unit card drawing: its words take the shared card

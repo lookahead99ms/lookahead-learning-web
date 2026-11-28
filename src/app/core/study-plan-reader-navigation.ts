@@ -1,6 +1,16 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { upgradeLegacyCatalogJson } from './catalog-url';
-import { Component, DestroyRef, OnInit, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   StudyPlanAccount,
@@ -20,7 +30,10 @@ export interface ReaderApproachFamily {
   imports: [RouterLink],
   template: `@if (valid()) {
     <nav class="plan-reader-navigation" aria-label="Study Plan navigation">
-      <a class="action-link" routerLink="/study-plan" [queryParams]="{ day: day(), plan: planId, activity: activity() }"
+      <a
+        class="action-link"
+        routerLink="/study-plan"
+        [queryParams]="{ day: day(), plan: planId, activity: activity() }"
         >Back to Study Plan · Day {{ day() }}</a
       >
       @if (!problemRows()) {
@@ -104,7 +117,8 @@ export class StudyPlanReaderNavigation implements OnInit {
       saved = this.saved();
     if (!item || !family?.siblingRoutes.length || !saved) return;
     // A finished item keeps the approach it was completed with.
-    if (saved.completedIds.includes(item.id) || saved.sessionOutcomes?.[item.id] === 'completed') return;
+    if (saved.completedIds.includes(item.id) || saved.sessionOutcomes?.[item.id] === 'completed')
+      return;
     const planKey = `${this.account.account()?.accountId ?? 'local'}:${this.planId}`;
     untracked(() => this.approaches.choose(planKey, item.id, family.problemId));
   });
@@ -183,7 +197,9 @@ export class StudyPlanReaderNavigation implements OnInit {
       if (plan) this.saved.set(savedAccountPlan(plan));
     } else if (this.planId === 'browser' && !this.account.account()) {
       try {
-        const saved = JSON.parse(upgradeLegacyCatalogJson(localStorage.getItem('look-ahead.study-plan.v1') ?? 'null'));
+        const saved = JSON.parse(
+          upgradeLegacyCatalogJson(localStorage.getItem('look-ahead.study-plan.v1') ?? 'null'),
+        );
         if (
           saved?.schemaVersion === 'study-plan-local/v1' &&
           (saved.studyLog === undefined || validStudyLog(saved.studyLog)) &&

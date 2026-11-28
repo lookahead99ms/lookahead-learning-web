@@ -535,9 +535,14 @@ button:disabled {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path tiles). */
+  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path
+     tiles). */
   background:
-    radial-gradient(circle at 85% 100%, color-mix(in srgb, var(--path-color) 22%, transparent), transparent 55%),
+    radial-gradient(
+      circle at 85% 100%,
+      color-mix(in srgb, var(--path-color) 22%, transparent),
+      transparent 55%
+    ),
     linear-gradient(
       160deg,
       color-mix(in srgb, var(--path-color) 12%, var(--surface)),

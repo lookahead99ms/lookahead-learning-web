@@ -71,9 +71,15 @@ export function highlightStudioSource(source: string, language: PatternLanguage)
   return (result + escapeHtml(source.slice(offset))).split('\n');
 }
 
-
 /** Languages shown as escaped plain text: prose-like pseudo-code would be mis-highlighted. */
-const PLAIN_CODE_LANGUAGES = new Set(['pseudo', 'pseudocode', 'pseudo-code', 'text', 'plaintext', 'plain']);
+const PLAIN_CODE_LANGUAGES = new Set([
+  'pseudo',
+  'pseudocode',
+  'pseudo-code',
+  'text',
+  'plaintext',
+  'plain',
+]);
 
 export function isPlainCodeLanguage(language: string | undefined | null): boolean {
   return PLAIN_CODE_LANGUAGES.has((language ?? 'text').trim().toLowerCase());
@@ -95,13 +101,34 @@ export function highlightLearningCode(source: string, language = 'text'): string
     return highlightStudioSource(source, language).join('\n');
   }
   // Other teaching languages retain every character, including unsupported syntax.
-  return source.split(/(\/\/[^\n]*|--[^\n]*|#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b(?:SELECT|FROM|WHERE|ORDER|BY|GROUP|HAVING|JOIN|LEFT|INNER|ON|AS|DISTINCT|CREATE|TABLE|INSERT|INTO|VALUES|AND|OR|NULL|IS|IN|NOT|ASC|DESC|LIMIT|const|let|var|function|return|if|else|for|while|class|new|async|await|throw|try|catch|finally|import|export|true|false|null|undefined)\b)/g)
-    .map(part => {
+  return source
+    .split(
+      new RegExp(
+        '(\\/\\/[^\\n]*|--[^\\n]*|#[^\\n]*|"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'|' +
+          '`(?:\\\\.|[^`\\\\])*`|\\b\\d+(?:\\.\\d+)?\\b|\\b(?:SELECT|FROM|WHERE|ORDER|BY|GROUP|' +
+          'HAVING|JOIN|LEFT|INNER|ON|AS|DISTINCT|CREATE|TABLE|INSERT|INTO|VALUES|AND|OR|NULL|' +
+          'IS|IN|NOT|ASC|DESC|LIMIT|const|let|var|function|return|if|else|for|while|class|new|' +
+          'async|await|throw|try|catch|finally|import|export|true|false|null|undefined)\\b)',
+        'g',
+      ),
+    )
+    .map((part) => {
       const safe = escapeHtml(part);
-      const kind = /^(\/\/|--|#)/.test(part) ? 'comment'
-        : /^['"`]/.test(part) ? 'string'
-        : /^\d+(?:\.\d+)?$/.test(part) ? 'number'
-        : /^(?:SELECT|FROM|WHERE|ORDER|BY|GROUP|HAVING|JOIN|LEFT|INNER|ON|AS|DISTINCT|CREATE|TABLE|INSERT|INTO|VALUES|AND|OR|NULL|IS|IN|NOT|ASC|DESC|LIMIT|const|let|var|function|return|if|else|for|while|class|new|async|await|throw|try|catch|finally|import|export|true|false|null|undefined)$/.test(part) ? 'keyword' : '';
+      const kind = /^(\/\/|--|#)/.test(part)
+        ? 'comment'
+        : /^['"`]/.test(part)
+          ? 'string'
+          : /^\d+(?:\.\d+)?$/.test(part)
+            ? 'number'
+            : new RegExp(
+                  '^(?:SELECT|FROM|WHERE|ORDER|BY|GROUP|HAVING|JOIN|LEFT|INNER|ON|AS|DISTINCT|' +
+                    'CREATE|TABLE|INSERT|INTO|VALUES|AND|OR|NULL|IS|IN|NOT|ASC|DESC|LIMIT|const|' +
+                    'let|var|function|return|if|else|for|while|class|new|async|await|throw|try|' +
+                    'catch|finally|import|export|true|false|null|undefined)$',
+                ).test(part)
+              ? 'keyword'
+              : '';
       return kind ? `<span class="syntax-${kind}">${safe}</span>` : safe;
-    }).join('');
+    })
+    .join('');
 }

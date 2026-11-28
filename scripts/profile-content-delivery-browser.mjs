@@ -33,11 +33,7 @@ export const representativeRoutes = [
 ];
 
 export const cacheSaturationProblems = [
-  [
-    'Graph Traversal',
-    '/learn/algorithmic-patterns/dsa-catalog-open-the-lock',
-    'Open the Lock',
-  ],
+  ['Graph Traversal', '/learn/algorithmic-patterns/dsa-catalog-open-the-lock', 'Open the Lock'],
   ['Backtracking', '/learn/algorithmic-patterns/dsa-catalog-sudoku-solver', 'Sudoku Solver'],
   [
     'Backtracking',
@@ -49,11 +45,7 @@ export const cacheSaturationProblems = [
     '/learn/algorithmic-patterns/dsa-catalog-stream-of-characters',
     'Stream of Characters',
   ],
-  [
-    'Graph Traversal',
-    '/learn/algorithmic-patterns/dsa-catalog-word-ladder',
-    'Word Ladder',
-  ],
+  ['Graph Traversal', '/learn/algorithmic-patterns/dsa-catalog-word-ladder', 'Word Ladder'],
   [
     'Graph Traversal',
     '/learn/algorithmic-patterns/dsa-catalog-escape-the-spreading-fire',
@@ -686,11 +678,13 @@ class BrowserHarness {
   }
 
   async clickLink({ href, readyText, groupText }) {
-    const expression = `(() => {
+    const expression =
+      `(() => {
       const href = ${JSON.stringify(href)};
       const readyText = ${JSON.stringify(readyText)};
       const groupText = ${JSON.stringify(groupText ?? null)};
-      const twoFrames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const twoFrames = () => new Promise((resolve) => requestAnimationFrame(() => ` +
+      `requestAnimationFrame(resolve)));
       return (async () => {
         const findLink = () => [...document.querySelectorAll('a')]
           .find((element) => new URL(element.href).pathname === href);
@@ -718,7 +712,8 @@ class BrowserHarness {
         let settledFrames = 0;
         link.click();
         return await new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Navigation did not settle: ' + href)), 20000);
+          const timeout = setTimeout(() => reject(new Error('Navigation did not settle: ' + ` +
+      `href)), 20000);
           const frame = (timestamp) => {
             const gap = timestamp - lastFrame;
             maxFrameGapMs = Math.max(maxFrameGapMs, gap);
@@ -984,8 +979,11 @@ async function captureReport(options) {
         platform: process.platform,
         viewport: { width: 1440, height: 1000, deviceScaleFactor: 1 },
         coldCache:
-          'Isolated Chrome profile; browser cache and origin storage cleared before each cold route.',
-        heap: 'HeapProfiler.collectGarbage followed by Runtime.getHeapUsage after every measured cycle.',
+          'Isolated Chrome profile; browser cache and origin storage cleared before ' +
+          'each cold route.',
+        heap:
+          'HeapProfiler.collectGarbage followed by Runtime.getHeapUsage after every ' +
+          'measured cycle.',
         throttledProfile: {
           cpuSlowdown: 4,
           latencyMs: 150,
@@ -1015,9 +1013,12 @@ async function captureReport(options) {
       },
       interactions,
       limitations: [
-        'Local loopback transfer and timing do not represent production TLS, CDN, server, or internet latency.',
-        'Chrome throttling is deterministic tooling evidence, not a physical low-end-device certification.',
-        'Runtime.getHeapUsage measures the inspected renderer after explicit GC; it is not whole-system RSS.',
+        'Local loopback transfer and timing do not represent production TLS, CDN, ' +
+          'server, or internet latency.',
+        'Chrome throttling is deterministic tooling evidence, not a physical ' +
+          'low-end-device certification.',
+        'Runtime.getHeapUsage measures the inspected renderer after explicit GC; it is ' +
+          'not whole-system RSS.',
       ],
     };
     const budgets = options.budgets

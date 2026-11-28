@@ -1,7 +1,10 @@
 import { Component, input, output } from '@angular/core';
 import { StudyPlan } from '../../content/study-plan';
 
-/** Minutes of the plan's first week by kind of work, and where each kind ends on the compass ring (percent). */
+/**
+ * Minutes of the plan's first week by kind of work, and where each kind ends on the compass ring
+ * (percent).
+ */
 export interface StudyPlanWeekAllocation {
   total: number;
   understand: number;
@@ -12,9 +15,10 @@ export interface StudyPlanWeekAllocation {
 }
 
 /**
- * Your active plan: the plan line with its revision, the study day picker and plan actions, then the first week's
- * time split (the compass) with what the plan does and does not promise. The host is the page's
- * `section.active-plan-overview`; the page owns the plan, the selected day and the dialogs these actions open.
+ * Your active plan: the plan line with its revision, the study day picker and plan actions, then
+ * the first week's time split (the compass) with what the plan does and does not promise. The host
+ * is the page's `section.active-plan-overview`; the page owns the plan, the selected day and the
+ * dialogs these actions open.
  */
 @Component({
   selector: 'section[appStudyPlanOverview]',

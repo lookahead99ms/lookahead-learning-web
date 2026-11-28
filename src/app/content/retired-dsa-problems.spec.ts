@@ -15,20 +15,35 @@ describe('merged DSA problems (DLV-965)', () => {
   };
   const merged = retiredContent.courses.filter((entry) => entry.reason.startsWith('DLV-965'));
 
-  it('lists the merges in one Learn algorithmic-patterns entry with no module or unit changes', () => {
-    expect(merged).toHaveLength(1);
-    expect(merged[0]).toMatchObject({ path: 'learn', courseId: 'algorithmic-patterns' });
-    expect(merged[0].modules).toEqual({});
-    expect(merged[0].units).toEqual({});
-    expect(Object.keys(merged[0].lessons)).toHaveLength(7);
-  });
+  it(
+    'lists the merges in one Learn algorithmic-patterns entry with no module or unit ' + 'changes',
+    () => {
+      expect(merged).toHaveLength(1);
+      expect(merged[0]).toMatchObject({ path: 'learn', courseId: 'algorithmic-patterns' });
+      expect(merged[0].modules).toEqual({});
+      expect(merged[0].units).toEqual({});
+      expect(Object.keys(merged[0].lessons)).toHaveLength(7);
+    },
+  );
 
   it.each([
-    ['algorithmic-graph-traversal-topo-shortest-paths-floyd-warshall', 'dsa-catalog-all-pairs-shortest-path'],
-    ['dsa-catalog-largest-sum-contiguous-subarray', 'algorithmic-dp-state-transition-optimization-kadane-maximum-subarray'],
-    ['dsa-catalog-largest-sum-contiguous-subarray-approach-2', 'dsa-catalog-kadane-maximum-subarray-approach-2'],
+    [
+      'algorithmic-graph-traversal-topo-shortest-paths-floyd-warshall',
+      'dsa-catalog-all-pairs-shortest-path',
+    ],
+    [
+      'dsa-catalog-largest-sum-contiguous-subarray',
+      'algorithmic-dp-state-transition-optimization-kadane-maximum-subarray',
+    ],
+    [
+      'dsa-catalog-largest-sum-contiguous-subarray-approach-2',
+      'dsa-catalog-kadane-maximum-subarray-approach-2',
+    ],
     ['dsa-catalog-cycle-detection-in-directed-graph', 'dsa-catalog-directed-cycle-detection'],
-    ['dsa-catalog-cycle-detection-directed-graph-approach-2', 'dsa-catalog-directed-cycle-detection-approach-2'],
+    [
+      'dsa-catalog-cycle-detection-directed-graph-approach-2',
+      'dsa-catalog-directed-cycle-detection-approach-2',
+    ],
     ['dsa-catalog-delete-middle-element-of-stack', 'dsa-catalog-delete-middle-of-stack'],
     ['dsa-catalog-same-tree-check-dfs-variant', 'dsa-catalog-same-tree-approach-2'],
   ])('sends the merged question %s to %s and keeps the query', (retired, kept) => {

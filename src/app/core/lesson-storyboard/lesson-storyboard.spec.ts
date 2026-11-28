@@ -4,7 +4,13 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TheoryVisual } from '../../content/content.models';
 import { LessonStoryboard } from './lesson-storyboard';
-import { StoryboardClock, StoryboardPlayer, StoryboardState, parseFrameSet, sanitizeStoryboardSvg } from './storyboard-player';
+import {
+  StoryboardClock,
+  StoryboardPlayer,
+  StoryboardState,
+  parseFrameSet,
+  sanitizeStoryboardSvg,
+} from './storyboard-player';
 
 /** A clock the test moves by hand; animation frames run every 16 ms of manual time. */
 class ManualClock implements StoryboardClock {
@@ -28,7 +34,8 @@ class ManualClock implements StoryboardClock {
   }
 }
 
-const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100">
+const SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100">
   <title>Two nodes</title><style>.node{fill:red}</style>
   <script>alert(1)</script>
   <defs><marker id="ah"><path class="arrowhead" d="M0,0 L10,5 L0,10 z"/></marker></defs>
@@ -40,7 +47,8 @@ const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width
   <text class="counter" x="100" y="20" data-sb-text="start|step 1|done">done</text>
   <text class="result" x="100" y="90" data-sb-show="2-">found</text>
   <circle class="hit" cx="180" cy="50" r="10" data-sb-show="1"/>
-  <g class="mover walker" data-sb-at="a b b" transform="translate(180 50)"><circle class="ring" r="14"/></g>
+  <g class="mover walker" data-sb-at="a b b" transform="translate(180 50)"><circle ` +
+  `class="ring" r="14"/></g>
 </svg>`;
 
 const frames = [{ ms: 0, wait: 100 }, { ms: 400, wait: 100 }, { ms: 0 }];
@@ -83,7 +91,8 @@ describe('sanitizeStoryboardSvg', () => {
 
 describe('StoryboardPlayer', () => {
   const build = () => sanitizeStoryboardSvg(SVG, document, 'p3')!;
-  const opacity = (svg: SVGSVGElement, selector: string) => (svg.querySelector(selector) as SVGElement).style.opacity;
+  const opacity = (svg: SVGSVGElement, selector: string) =>
+    (svg.querySelector(selector) as SVGElement).style.opacity;
   const at = (svg: SVGSVGElement) => svg.querySelector('.mover')?.getAttribute('transform');
 
   it('shows a frame at once: visibility, texts and mover positions', () => {
@@ -104,7 +113,11 @@ describe('StoryboardPlayer', () => {
     const svg = build();
     const clock = new ManualClock();
     const states: StoryboardState[] = [];
-    const player = new StoryboardPlayer(svg, frames, { clock, holdMs: 5000, onState: (state) => states.push(state) });
+    const player = new StoryboardPlayer(svg, frames, {
+      clock,
+      holdMs: 5000,
+      onState: (state) => states.push(state),
+    });
     player.start();
     expect(states).toEqual(['playing']);
     await clock.advance(100 + 200);
@@ -156,7 +169,10 @@ describe('LessonStoryboard', () => {
       holdMs: 5000,
       playingStatus: 'Walking…',
       doneStatus: 'Found it.',
-      legend: [{ mark: 'walker', text: 'walker' }, { mark: 'none', text: 'a note' }],
+      legend: [
+        { mark: 'walker', text: 'walker' },
+        { mark: 'none', text: 'a note' },
+      ],
     },
   };
   let observers: { callback: IntersectionObserverCallback; element?: Element }[];
@@ -180,8 +196,13 @@ describe('LessonStoryboard', () => {
         disconnect() {}
       },
     );
-    vi.stubGlobal('matchMedia', (query: string) => ({ matches: media && query.includes('reduce'), media: query }));
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: media && query.includes('reduce'),
+      media: query,
+    }));
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
   });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -201,35 +222,60 @@ describe('LessonStoryboard', () => {
     return { fixture, clock, root: fixture.nativeElement as HTMLElement };
   }
 
-  it('shows the drawing as an image until it is inlined, then plays it only while it is on screen', async () => {
-    const fixture = TestBed.createComponent(LessonStoryboard);
-    fixture.componentRef.setInput('visual', { ...visual, assetPath: '/content/learn/x/visuals/first.svg' });
-    fixture.detectChanges();
-    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
-    expect(image.getAttribute('src')).toBe('/content/learn/x/visuals/first.svg');
-    expect(image.alt).toBe('The walker goes from a to b.');
-    TestBed.inject(HttpTestingController).match('/content/learn/x/visuals/first.svg').forEach((request) => request.flush(SVG));
+  it(
+    'shows the drawing as an image until it is inlined, then plays it only while it is on ' +
+      'screen',
+    async () => {
+      const fixture = TestBed.createComponent(LessonStoryboard);
+      fixture.componentRef.setInput('visual', {
+        ...visual,
+        assetPath: '/content/learn/x/visuals/first.svg',
+      });
+      fixture.detectChanges();
+      const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+      expect(image.getAttribute('src')).toBe('/content/learn/x/visuals/first.svg');
+      expect(image.alt).toBe('The walker goes from a to b.');
+      TestBed.inject(HttpTestingController)
+        .match('/content/learn/x/visuals/first.svg')
+        .forEach((request) => request.flush(SVG));
 
-    const { root, clock, fixture: second } = await render();
-    const svg = root.querySelector('.storyboard-svg svg') as SVGSVGElement;
-    expect(root.querySelector('img')).toBeNull();
-    expect(svg.getAttribute('role')).toBe('img');
-    expect(svg.getAttribute('aria-label')).toBe('The walker goes from a to b.');
-    expect(root.classList).toContain('storyboard-story');
-    expect(Array.from(root.querySelectorAll('.storyboard-legend span')).map((span) => span.textContent?.trim())).toEqual(['walker', 'a note']);
-    // Off screen until the observer says otherwise: frame 0, no movement.
-    await clock.advance(1000);
-    expect(svg.querySelector('.counter')?.textContent).toBe('start');
-    observers.forEach(({ callback }) => callback([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
-    await clock.advance(100 + 400 + 300 + 100 + 300 + 50);
-    second.detectChanges();
-    expect(svg.querySelector('.counter')?.textContent).toBe('done');
-    expect(root.querySelector('.storyboard-status')?.textContent).toBe('Found it. Replaying in 5 s.');
-    // Scrolled away: it stops.
-    observers.forEach(({ callback }) => callback([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver));
-    await clock.advance(8000);
-    expect(svg.querySelector('.counter')?.textContent).toBe('done');
-  });
+      const { root, clock, fixture: second } = await render();
+      const svg = root.querySelector('.storyboard-svg svg') as SVGSVGElement;
+      expect(root.querySelector('img')).toBeNull();
+      expect(svg.getAttribute('role')).toBe('img');
+      expect(svg.getAttribute('aria-label')).toBe('The walker goes from a to b.');
+      expect(root.classList).toContain('storyboard-story');
+      expect(
+        Array.from(root.querySelectorAll('.storyboard-legend span')).map((span) =>
+          span.textContent?.trim(),
+        ),
+      ).toEqual(['walker', 'a note']);
+      // Off screen until the observer says otherwise: frame 0, no movement.
+      await clock.advance(1000);
+      expect(svg.querySelector('.counter')?.textContent).toBe('start');
+      observers.forEach(({ callback }) =>
+        callback(
+          [{ isIntersecting: true } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        ),
+      );
+      await clock.advance(100 + 400 + 300 + 100 + 300 + 50);
+      second.detectChanges();
+      expect(svg.querySelector('.counter')?.textContent).toBe('done');
+      expect(root.querySelector('.storyboard-status')?.textContent).toBe(
+        'Found it. Replaying in 5 s.',
+      );
+      // Scrolled away: it stops.
+      observers.forEach(({ callback }) =>
+        callback(
+          [{ isIntersecting: false } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        ),
+      );
+      await clock.advance(8000);
+      expect(svg.querySelector('.counter')?.textContent).toBe('done');
+    },
+  );
 
   it('pauses and plays with the button, and says so', async () => {
     const { root, fixture } = await render();
@@ -243,45 +289,56 @@ describe('LessonStoryboard', () => {
     expect(root.querySelector('.storyboard-status')?.textContent).toBe('Paused.');
   });
 
-  it('sets the Problem-first explanation beside the drawing a little smaller, with rules that reach its projected paragraphs', async () => {
-    @Component({
-      imports: [LessonStoryboard],
-      template: `<app-lesson-storyboard [visual]="visual" [variant]="variant()" [beside]="true">
-        <div class="prose">The first way most people try.</div>
-        <div class="prose">Keep a box of visited nodes.</div>
-      </app-lesson-storyboard>`,
-    })
-    class Host {
-      visual = visual;
-      variant = signal<'story' | 'scene'>('story');
-    }
-    const fixture = TestBed.createComponent(Host);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const rules = Array.from(document.styleSheets)
-      .flatMap((sheet) => Array.from(sheet.cssRules))
-      .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
-    const declared = (element: Element, property: string) =>
-      rules.filter((rule) => element.matches(rule.selectorText) && rule.style.getPropertyValue(property)).map((rule) => ({
-        value: rule.style.getPropertyValue(property),
-        // Classes and attributes in the selector: the shell's scoped .system .prose rule has four.
-        weight: (rule.selectorText.match(/\.[\w-]+|\[[^\]]+\]/g) ?? []).length,
-      }));
-    const beside = root.querySelector('.storyboard-beside')!;
-    const paragraphs = Array.from(root.querySelectorAll('.storyboard-beside .prose'));
-    expect(paragraphs.length).toBe(2);
-    expect(declared(beside, 'font-size').map((d) => d.value)).toEqual(['1rem']);
-    for (const paragraph of paragraphs) {
-      expect(declared(paragraph, 'line-height')).toEqual([{ value: '1.55', weight: 5 }]);
-      expect(declared(paragraph, 'margin').map((d) => d.value)).toEqual(['0px 0px 0.6rem']);
-    }
+  it(
+    'sets the Problem-first explanation beside the drawing a little smaller, with rules ' +
+      'that reach its projected paragraphs',
+    async () => {
+      @Component({
+        imports: [LessonStoryboard],
+        template: `<app-lesson-storyboard [visual]="visual" [variant]="variant()" [beside]="true">
+          <div class="prose">The first way most people try.</div>
+          <div class="prose">Keep a box of visited nodes.</div>
+        </app-lesson-storyboard>`,
+      })
+      class Host {
+        visual = visual;
+        variant = signal<'story' | 'scene'>('story');
+      }
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const rules = Array.from(document.styleSheets)
+        .flatMap((sheet) => Array.from(sheet.cssRules))
+        .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
+      const declared = (element: Element, property: string) =>
+        rules
+          .filter(
+            (rule) => element.matches(rule.selectorText) && rule.style.getPropertyValue(property),
+          )
+          .map((rule) => ({
+            value: rule.style.getPropertyValue(property),
+            // Classes and attributes in the selector: the shell's scoped .system .prose rule has
+            // four.
+            weight: (rule.selectorText.match(/\.[\w-]+|\[[^\]]+\]/g) ?? []).length,
+          }));
+      const beside = root.querySelector('.storyboard-beside')!;
+      const paragraphs = Array.from(root.querySelectorAll('.storyboard-beside .prose'));
+      expect(paragraphs.length).toBe(2);
+      expect(declared(beside, 'font-size').map((d) => d.value)).toEqual(['1rem']);
+      for (const paragraph of paragraphs) {
+        expect(declared(paragraph, 'line-height')).toEqual([{ value: '1.55', weight: 5 }]);
+        expect(declared(paragraph, 'margin').map((d) => d.value)).toEqual(['0px 0px 0.6rem']);
+      }
 
-    fixture.componentInstance.variant.set('scene');
-    fixture.detectChanges();
-    expect(root.querySelector('app-lesson-storyboard')!.classList).not.toContain('storyboard-story');
-    expect(declared(beside, 'font-size')).toEqual([]);
-    expect(declared(paragraphs[0], 'line-height')).toEqual([]);
-  });
+      fixture.componentInstance.variant.set('scene');
+      fixture.detectChanges();
+      expect(root.querySelector('app-lesson-storyboard')!.classList).not.toContain(
+        'storyboard-story',
+      );
+      expect(declared(beside, 'font-size')).toEqual([]);
+      expect(declared(paragraphs[0], 'line-height')).toEqual([]);
+    },
+  );
 
   it('shows the last frame and no control under reduced motion', async () => {
     media = true;

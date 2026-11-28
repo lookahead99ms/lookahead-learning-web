@@ -15,12 +15,14 @@ const examples = [
     steps: [
       [
         'Read the contract',
-        'Zero is a valid request to hide results. Only null or undefined should select the default.',
+        'Zero is a valid request to hide results. Only null or undefined should select the ' +
+          'default.',
       ],
       ['Trace the expression', 'JavaScript treats zero as falsy, so the || expression selects 10.'],
       [
         'Check the boundary',
-        'Use requestedSize ?? 10 for this contract. Verify 0, a positive value, null and undefined independently.',
+        'Use requestedSize ?? 10 for this contract. Verify 0, a positive value, null and ' +
+          'undefined independently.',
       ],
     ],
     rule: 'Choose a default by the contract for missing values, not by truthiness.',
@@ -36,7 +38,8 @@ const examples = [
     steps: [
       [
         'Follow the reference',
-        'Assigning an array to another variable copies the reference, not the array. Both variables point to one object.',
+        'Assigning an array to another variable copies the reference, not the array. Both ' +
+          'variables point to one object.',
       ],
       [
         'Observe the mutation',
@@ -44,7 +47,8 @@ const examples = [
       ],
       [
         'Verify the requirement',
-        'If the caller owns the original order, reverse a copy: [...original].reverse(). Test the result and that the input remains unchanged.',
+        'If the caller owns the original order, reverse a copy: [...original].reverse(). ' +
+          'Test the result and that the input remains unchanged.',
       ],
     ],
     rule: 'A correct return value does not prove that caller-owned input was preserved.',
@@ -53,13 +57,16 @@ const examples = [
     category: 'Edge cases / Empty input',
     question: 'What does an empty average return?',
     context: 'The candidate sums an empty list with an initial zero, then divides by its length.',
-    code: 'const values = [];\nconst total = values.reduce((sum, n) => sum + n, 0);\nconst average = total / values.length;',
+    code:
+      'const values = [];\nconst total = values.reduce((sum, n) => sum + n, ' +
+      '0);\nconst average = total / values.length;',
     choices: ['Zero.', 'A thrown exception.', 'NaN.'],
     correct: 2,
     steps: [
       [
         'Identify the input',
-        'The list has no values. The initial accumulator makes the sum zero, and the length is also zero.',
+        'The list has no values. The initial accumulator makes the sum zero, and the length ' +
+          'is also zero.',
       ],
       [
         'Follow the arithmetic',
@@ -67,7 +74,8 @@ const examples = [
       ],
       [
         'Define the empty case',
-        'Agree whether empty input should return null, produce an error, or be rejected. Test that choice explicitly before computing the division.',
+        'Agree whether empty input should return null, produce an error, or be rejected. ' +
+          'Test that choice explicitly before computing the division.',
       ],
     ],
     rule: 'Handle an undefined mathematical result with an explicit product contract.',

@@ -49,7 +49,8 @@ export function accessLevelErrors(document, unitIdsByCourse) {
       errors.push(`${label}: invalid unit ID ${key}`);
       continue;
     }
-    if (level !== 'open' && level !== 'free') errors.push(`${label}: ${key} has invalid level ${level}`);
+    if (level !== 'open' && level !== 'free')
+      errors.push(`${label}: ${key} has invalid level ${level}`);
     const [path, courseId, unitId] = key.split('/');
     if (!unitIdsByCourse.get(`${path}/${courseId}`)?.has(unitId)) {
       errors.push(`${label}: ${key} is not a learning unit of ${path}/${courseId}`);

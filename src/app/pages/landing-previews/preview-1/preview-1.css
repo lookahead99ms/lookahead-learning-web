@@ -148,8 +148,7 @@ button:disabled {
   margin: 0;
 }
 .slide-title {
-  font:
-    600 clamp(40px, calc(4.4vw + 8px), 96px)/1.02 var(--p1-display);
+  font: 600 clamp(40px, calc(4.4vw + 8px), 96px)/1.02 var(--p1-display);
   letter-spacing: -0.04em;
   margin: clamp(14px, 1.4vw, 22px) 0 clamp(18px, 1.8vw, 28px);
   text-wrap: balance;
@@ -208,8 +207,7 @@ button:disabled {
   padding-top: 12px;
 }
 .hero-visual h2 {
-  font:
-    600 clamp(22px, 2.1vw, 38px)/1.18 var(--p1-display);
+  font: 600 clamp(22px, 2.1vw, 38px)/1.18 var(--p1-display);
   letter-spacing: -0.02em;
   margin: 0 0 18px;
   text-wrap: balance;
@@ -395,8 +393,7 @@ button:disabled {
 }
 .section-heading h2,
 .feature-grid-heading h2 {
-  font:
-    600 clamp(28px, 2.6vw, 46px)/1.1 var(--p1-display);
+  font: 600 clamp(28px, 2.6vw, 46px)/1.1 var(--p1-display);
   letter-spacing: -0.04em;
   margin: 0;
 }
@@ -451,9 +448,14 @@ button:disabled {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path tiles). */
+  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path
+     tiles). */
   background:
-    radial-gradient(circle at 85% 100%, color-mix(in srgb, var(--path-color) 22%, transparent), transparent 55%),
+    radial-gradient(
+      circle at 85% 100%,
+      color-mix(in srgb, var(--path-color) 22%, transparent),
+      transparent 55%
+    ),
     linear-gradient(
       160deg,
       color-mix(in srgb, var(--path-color) 12%, var(--surface)),
@@ -641,8 +643,7 @@ app-engineering-challenge {
   margin: 0;
 }
 .discovery-feature h3 {
-  font:
-    600 clamp(22px, 1.8vw, 28px)/1.2 var(--p1-display);
+  font: 600 clamp(22px, 1.8vw, 28px)/1.2 var(--p1-display);
   letter-spacing: -0.025em;
   margin: 14px 0 10px;
   max-width: 29ch;

@@ -114,30 +114,41 @@ describe('CourseLearningMap', () => {
     expect(element().querySelectorAll('a.unit-card')).toHaveLength(1);
   });
 
-  it('reflows the card grid with browser zoom from a rem minimum and keeps a rem-based title (DLV-803)', () => {
-    const grid = element().querySelector<HTMLElement>('.unit-card-grid')!;
-    // One card: the whole row; every capacity still resolves to one column.
-    expect(grid.getAttribute('data-columns')).toBe('1');
-    expect(grid.style.getPropertyValue('--even-cols-3').trim()).toBe('1');
-    const css = [...document.querySelectorAll('style')]
-      .map((style) => style.textContent ?? '')
-      .join('\n')
-      .replace(/\s+/g, ' ');
-    expect(css).toMatch(
-      /\.unit-card-grid\[[^\]]+\] \{ --unit-card-min: 25rem;[^}]*grid-template-columns: repeat\(\s?auto-fill, minmax\(\s?max\(\s?min\(100%, var\(--unit-card-min\)\),/,
-    );
-    expect(css).toMatch(
-      /@container \(min-width: 77\.5rem\) \{ \.unit-card-grid\[[^\]]+\] \{ --unit-columns: var\(--even-cols-3, 3\); \}/,
-    );
-    expect(css).not.toMatch(/\.unit-card-grid\[[^\]]+\] \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
-    expect(css).toContain('font-size: clamp(1.9rem, 1.45rem + 1.2vw, 2.6rem);');
-    // With the side lesson list the grid stays one card per row (DLV-408): no capacity vars.
-    fixture.componentRef.setInput('lessonNav', true);
-    fixture.detectChanges();
-    const navGrid = element().querySelector<HTMLElement>('.unit-card-grid')!;
-    expect(navGrid.getAttribute('data-columns')).toBeNull();
-    expect(navGrid.style.getPropertyValue('--even-cols-3')).toBe('');
-  });
+  it(
+    'reflows the card grid with browser zoom from a rem minimum and keeps a rem-based ' +
+      'title (DLV-803)',
+    () => {
+      const grid = element().querySelector<HTMLElement>('.unit-card-grid')!;
+      // One card: the whole row; every capacity still resolves to one column.
+      expect(grid.getAttribute('data-columns')).toBe('1');
+      expect(grid.style.getPropertyValue('--even-cols-3').trim()).toBe('1');
+      const css = [...document.querySelectorAll('style')]
+        .map((style) => style.textContent ?? '')
+        .join('\n')
+        .replace(/\s+/g, ' ');
+      expect(css).toMatch(
+        new RegExp(
+          '\\.unit-card-grid\\[[^\\]]+\\] \\{ --unit-card-min: 25rem;' +
+            '[^}]*grid-template-columns: repeat\\(\\s?auto-fill, ' +
+            'minmax\\(\\s?max\\(\\s?min\\(100%, var\\(--unit-card-min\\)\\),',
+        ),
+      );
+      expect(css).toMatch(
+        new RegExp(
+          '@container \\(min-width: 77\\.5rem\\) \\{ \\.unit-card-grid\\[[^\\]]+\\] \\{ ' +
+            '--unit-columns: var\\(--even-cols-3, 3\\); \\}',
+        ),
+      );
+      expect(css).not.toMatch(/\.unit-card-grid\[[^\]]+\] \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
+      expect(css).toContain('font-size: clamp(1.9rem, 1.45rem + 1.2vw, 2.6rem);');
+      // With the side lesson list the grid stays one card per row (DLV-408): no capacity vars.
+      fixture.componentRef.setInput('lessonNav', true);
+      fixture.detectChanges();
+      const navGrid = element().querySelector<HTMLElement>('.unit-card-grid')!;
+      expect(navGrid.getAttribute('data-columns')).toBeNull();
+      expect(navGrid.style.getPropertyValue('--even-cols-3')).toBe('');
+    },
+  );
 
   it('builds the card from unit data and links the whole card to its lesson', () => {
     const card = cardFor('unit');
@@ -173,7 +184,8 @@ describe('CourseLearningMap', () => {
     http
       .expectOne('/assets/scenes/units/learn/course/unit.svg')
       .flush(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="10" height="10"/></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="10" ' +
+          'height="10"/></svg>',
       );
     fixture.detectChanges();
 
@@ -252,7 +264,9 @@ describe('CourseLearningMap', () => {
     fixture.detectChanges();
 
     const card = cardFor('hashing-lookup');
-    expect(card.getAttribute('href')).toBe(`/learn/hands-on-dsa?pattern=${patternContextToken('course:hashing-lookup')}`);
+    expect(card.getAttribute('href')).toBe(
+      `/learn/hands-on-dsa?pattern=${patternContextToken('course:hashing-lookup')}`,
+    );
     expect(card.getAttribute('href')).not.toContain('hashing-lookup');
     // Cards carry no practice counts (user review, 2026-10-03).
     expect(metaText(card)).toEqual([]);
@@ -288,7 +302,8 @@ describe('CourseLearningMap', () => {
     fixture.detectChanges();
 
     expect(cardFor('fast-slow-pointers').getAttribute('href')).toBe(
-      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:fast-slow-pointers')}`,
+      `/learn/hands-on-dsa?pattern=` +
+        `${patternContextToken('algorithmic-patterns:fast-slow-pointers')}`,
     );
     expect(cardFor('list-reversal').getAttribute('href')).toBe(
       `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:list-reversal')}`,
@@ -325,16 +340,19 @@ describe('CourseLearningMap', () => {
     practiceExperience: 'questionBank',
   };
 
-  it('links a unit without a lesson to its question-bank practice, with no count on the card', () => {
-    fixture.componentRef.setInput('course', withPractice(withoutLesson, 4));
-    fixture.componentRef.setInput('units', [streams]);
-    fixture.detectChanges();
+  it(
+    'links a unit without a lesson to its question-bank practice, with no count on the ' + 'card',
+    () => {
+      fixture.componentRef.setInput('course', withPractice(withoutLesson, 4));
+      fixture.componentRef.setInput('units', [streams]);
+      fixture.detectChanges();
 
-    const card = cardFor('streams');
-    // The practice count stays; the lesson number and question count do not (2026-10-03).
-    expect(metaText(card)).toEqual([]);
-    expect(card.getAttribute('href')).toBe('/learn/course/module/practice-module');
-  });
+      const card = cardFor('streams');
+      // The practice count stays; the lesson number and question count do not (2026-10-03).
+      expect(metaText(card)).toEqual([]);
+      expect(card.getAttribute('href')).toBe('/learn/course/module/practice-module');
+    },
+  );
 
   it('prefers the lesson over practice and shows no practice count', () => {
     fixture.componentRef.setInput('course', withPractice(course, 1));
@@ -410,7 +428,9 @@ describe('CourseLearningMap', () => {
 
 describe('CourseLearningMap unit cards', () => {
   const sceneSvg =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><style>.s-a{fill:var(--scene-accent)}</style><rect class="s-a" width="10" height="10"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 ' +
+    '180"><style>.s-a{fill:var(--scene-accent)}</style><rect class="s-a" width="10" ' +
+    'height="10"/></svg>';
   let sceneRequests: string[];
 
   const cardCourse: CourseContent = {
@@ -522,30 +542,41 @@ describe('CourseLearningMap unit cards', () => {
     expect(banner.textContent).not.toMatch(/\d+ (?:rounds?|lessons?)\b/);
   });
 
-  it('caps the drawing at Home-card size in the multi-column grid and gives the title more presence (DLV-803)', async () => {
-    const element = await render('design-rounds');
-    const grid = element.querySelector<HTMLElement>('.unit-card-grid')!;
-    // Three cards: a multi-column grid, so the scene band cap applies to every card scene.
-    expect(grid.getAttribute('data-columns')).toBe('3');
-    expect(grid.querySelectorAll('app-card-scene.unit-card-scene')).toHaveLength(3);
-    const css = [...document.querySelectorAll('style')]
-      .map((style) => style.textContent ?? '')
-      .join('\n')
-      .replace(/\s+/g, ' ');
-    // A rem cap (zoom enlarges it with the text): 13rem tall at 16:9, centred in the band.
-    expect(css).toMatch(
-      /\.unit-card-grid\[data-columns\]\[[^\]]+\]:not\(\[data-columns=["']1["']\]\) \.unit-card-scene\[[^\]]+\] \{ --unit-scene-max-height: 13rem; --card-scene-max-width: calc\(var\(--unit-scene-max-height\) \* 16 \/ 9\); --card-scene-radius: 12px; padding: 0\.5rem; \}/,
-    );
-    // The title is the strongest text: 1.4rem, which also sets the drawing-text cap.
-    expect(css).toMatch(/\.unit-card-item\[[^\]]+\] \{ --card-title-size: 1\.4rem;/);
-    expect(css).toMatch(/\.unit-card-title\[[^\]]+\] \{[^}]*font-size: var\(--card-title-size, 1\.4rem\);/);
-    expect(css).not.toContain('--card-title-size: 1.3rem');
+  it(
+    'caps the drawing at Home-card size in the multi-column grid and gives the title more ' +
+      'presence (DLV-803)',
+    async () => {
+      const element = await render('design-rounds');
+      const grid = element.querySelector<HTMLElement>('.unit-card-grid')!;
+      // Three cards: a multi-column grid, so the scene band cap applies to every card scene.
+      expect(grid.getAttribute('data-columns')).toBe('3');
+      expect(grid.querySelectorAll('app-card-scene.unit-card-scene')).toHaveLength(3);
+      const css = [...document.querySelectorAll('style')]
+        .map((style) => style.textContent ?? '')
+        .join('\n')
+        .replace(/\s+/g, ' ');
+      // A rem cap (zoom enlarges it with the text): 13rem tall at 16:9, centred in the band.
+      expect(css).toMatch(
+        new RegExp(
+          '\\.unit-card-grid\\[data-columns\\]\\[[^\\]]+\\]:not\\(\\[data-columns=["\']1["\']' +
+            '\\]\\) \\.unit-card-scene\\[[^\\]]+\\] \\{ --unit-scene-max-height: 13rem; ' +
+            '--card-scene-max-width: calc\\(var\\(--unit-scene-max-height\\) \\* 16 \\/ 9\\); ' +
+            '--card-scene-radius: 12px; padding: 0\\.5rem; \\}',
+        ),
+      );
+      // The title is the strongest text: 1.4rem, which also sets the drawing-text cap.
+      expect(css).toMatch(/\.unit-card-item\[[^\]]+\] \{ --card-title-size: 1\.4rem;/);
+      expect(css).toMatch(
+        /\.unit-card-title\[[^\]]+\] \{[^}]*font-size: var\(--card-title-size, 1\.4rem\);/,
+      );
+      expect(css).not.toContain('--card-title-size: 1.3rem');
 
-    // The side-nav row (DLV-408) has no data-columns, so it keeps its drawing column.
-    lastFixture.componentRef.setInput('lessonNav', true);
-    lastFixture.detectChanges();
-    expect(element.querySelector('.unit-card-grid')?.hasAttribute('data-columns')).toBe(false);
-  });
+      // The side-nav row (DLV-408) has no data-columns, so it keeps its drawing column.
+      lastFixture.componentRef.setInput('lessonNav', true);
+      lastFixture.detectChanges();
+      expect(element.querySelector('.unit-card-grid')?.hasAttribute('data-columns')).toBe(false);
+    },
+  );
 
   it('keeps the full drawing beside the text for a single-card course (DLV-803)', async () => {
     const element = await render('design-rounds', units.slice(0, 1));
@@ -558,69 +589,81 @@ describe('CourseLearningMap unit cards', () => {
     expect(element.querySelector('.unit-card-banner')?.textContent).not.toMatch(/\d+ lessons?\b/);
   });
 
-  it('makes each card one link to its lesson, the round question, or the practice of a plain unit', async () => {
-    const element = await render('design-rounds');
-    const cards = Array.from(element.querySelectorAll<HTMLAnchorElement>('a.unit-card'));
+  it(
+    'makes each card one link to its lesson, the round question, or the practice of a ' +
+      'plain unit',
+    async () => {
+      const element = await render('design-rounds');
+      const cards = Array.from(element.querySelectorAll<HTMLAnchorElement>('a.unit-card'));
 
-    expect(cards.length).toBe(3);
-    expect(cards[0].getAttribute('href')).toBe('/blaze/design-rounds/lesson');
-    expect(cards[1].getAttribute('href')).toBe('/blaze/design-rounds/round-question');
-    expect(cards[2].getAttribute('href')).toBe('/blaze/design-rounds/module/plain-module');
-    expect(element.querySelector('.unit-card-grid .learning-action')).toBeNull();
-    expect(element.querySelector('.unit-card-grid app-interview-question-bank-link')).toBeNull();
-    expect(cards[0].getAttribute('aria-labelledby')).toBe('unit-card-title-lesson-unit');
-    expect(element.querySelector('#unit-card-title-lesson-unit')?.textContent?.trim()).toBe(
-      'Reservation System',
-    );
-  });
+      expect(cards.length).toBe(3);
+      expect(cards[0].getAttribute('href')).toBe('/blaze/design-rounds/lesson');
+      expect(cards[1].getAttribute('href')).toBe('/blaze/design-rounds/round-question');
+      expect(cards[2].getAttribute('href')).toBe('/blaze/design-rounds/module/plain-module');
+      expect(element.querySelector('.unit-card-grid .learning-action')).toBeNull();
+      expect(element.querySelector('.unit-card-grid app-interview-question-bank-link')).toBeNull();
+      expect(cards[0].getAttribute('aria-labelledby')).toBe('unit-card-title-lesson-unit');
+      expect(element.querySelector('#unit-card-title-lesson-unit')?.textContent?.trim()).toBe(
+        'Reservation System',
+      );
+    },
+  );
 
-  it('shows the level on the title row, no counts or minutes, and family pills below the link', async () => {
-    const element = await render('design-rounds');
-    const card = element.querySelector('a.unit-card')!;
+  it(
+    'shows the level on the title row, no counts or minutes, and family pills below the ' + 'link',
+    async () => {
+      const element = await render('design-rounds');
+      const card = element.querySelector('a.unit-card')!;
 
-    // No minutes or counts on cards (user review, 2026-10-03), so this card has no meta line.
-    expect(card.querySelector('.unit-card-minutes, .unit-card-meta')).toBeNull();
-    expect(card.querySelector('.unit-card-level')?.textContent).toBe('Advanced');
-    // Drawing, then title, then description.
-    expect(
-      Array.from(
-        card.querySelectorAll(
-          'app-card-scene, .unit-card-title, .unit-card-summary, .unit-card-meta',
-        ),
-      ).map((node) => node.classList[0]),
-    ).toEqual(['unit-card-scene', 'unit-card-title', 'unit-card-summary']);
-    // Drawing words take the shared card text styling; the map carries the path for the title colour.
-    expect(card.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
-    expect(element.querySelector('.learning-map')?.getAttribute('data-path')).toBe('blaze');
-    // The level is plain text beside the title (not a pill, not in the meta line).
-    const level = card.querySelector('.unit-card-level')!;
-    expect(level.closest('.unit-card-meta')).toBeNull();
-    expect(level.parentElement?.classList).toContain('unit-card-title-row');
-    expect(level.previousElementSibling?.classList).toContain('unit-card-title');
-    expect(card.getAttribute('aria-describedby')).toBe(
-      'unit-card-level-lesson-unit unit-card-summary-lesson-unit',
-    );
-    expect(card.querySelector('.unit-card-summary')?.textContent).toContain('never sell it twice');
-    // Family pills are filter buttons, so they sit in the card frame but outside the link.
-    expect(card.querySelector('.unit-card-pills, button')).toBeNull();
-    const frame = card.closest('.unit-card-frame')!;
-    const rows = frame.querySelectorAll('.unit-card-pill-row');
-    expect(rows.length).toBe(2);
-    expect(rows[0].classList).toContain('primary');
-    expect(rows[0].getAttribute('role')).toBe('group');
-    expect(rows[0].getAttribute('aria-label')).toBe('Filter lessons by Patterns');
-    // Pills only: the group name is the accessible label, not visible text.
-    expect(frame.querySelector('.unit-card-pill-label')).toBeNull();
-    expect(frame.querySelector('.unit-card-pills')?.textContent).not.toContain('Patterns');
-    expect(frame.querySelector('.unit-card-pills')?.textContent).not.toContain('Fundamentals');
-    const pills = Array.from(rows[1].querySelectorAll<HTMLButtonElement>('button.unit-card-pill'));
-    expect(pills.map((pill) => pill.textContent?.trim())).toEqual(['Transactions', 'Caching']);
-    for (const pill of pills) {
-      expect(pill.type).toBe('button');
-      expect(pill.getAttribute('aria-pressed')).toBe('false');
-    }
-    expect(element.querySelectorAll('a.unit-card a, a.unit-card button').length).toBe(0);
-  });
+      // No minutes or counts on cards (user review, 2026-10-03), so this card has no meta line.
+      expect(card.querySelector('.unit-card-minutes, .unit-card-meta')).toBeNull();
+      expect(card.querySelector('.unit-card-level')?.textContent).toBe('Advanced');
+      // Drawing, then title, then description.
+      expect(
+        Array.from(
+          card.querySelectorAll(
+            'app-card-scene, .unit-card-title, .unit-card-summary, .unit-card-meta',
+          ),
+        ).map((node) => node.classList[0]),
+      ).toEqual(['unit-card-scene', 'unit-card-title', 'unit-card-summary']);
+      // Drawing words take the shared card text styling; the map carries the path for the title
+      // colour.
+      expect(card.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
+      expect(element.querySelector('.learning-map')?.getAttribute('data-path')).toBe('blaze');
+      // The level is plain text beside the title (not a pill, not in the meta line).
+      const level = card.querySelector('.unit-card-level')!;
+      expect(level.closest('.unit-card-meta')).toBeNull();
+      expect(level.parentElement?.classList).toContain('unit-card-title-row');
+      expect(level.previousElementSibling?.classList).toContain('unit-card-title');
+      expect(card.getAttribute('aria-describedby')).toBe(
+        'unit-card-level-lesson-unit unit-card-summary-lesson-unit',
+      );
+      expect(card.querySelector('.unit-card-summary')?.textContent).toContain(
+        'never sell it twice',
+      );
+      // Family pills are filter buttons, so they sit in the card frame but outside the link.
+      expect(card.querySelector('.unit-card-pills, button')).toBeNull();
+      const frame = card.closest('.unit-card-frame')!;
+      const rows = frame.querySelectorAll('.unit-card-pill-row');
+      expect(rows.length).toBe(2);
+      expect(rows[0].classList).toContain('primary');
+      expect(rows[0].getAttribute('role')).toBe('group');
+      expect(rows[0].getAttribute('aria-label')).toBe('Filter lessons by Patterns');
+      // Pills only: the group name is the accessible label, not visible text.
+      expect(frame.querySelector('.unit-card-pill-label')).toBeNull();
+      expect(frame.querySelector('.unit-card-pills')?.textContent).not.toContain('Patterns');
+      expect(frame.querySelector('.unit-card-pills')?.textContent).not.toContain('Fundamentals');
+      const pills = Array.from(
+        rows[1].querySelectorAll<HTMLButtonElement>('button.unit-card-pill'),
+      );
+      expect(pills.map((pill) => pill.textContent?.trim())).toEqual(['Transactions', 'Caching']);
+      for (const pill of pills) {
+        expect(pill.type).toBe('button');
+        expect(pill.getAttribute('aria-pressed')).toBe('false');
+      }
+      expect(element.querySelectorAll('a.unit-card a, a.unit-card button').length).toBe(0);
+    },
+  );
 
   it('filters the map to one family when its pill is pressed, and clears it again', async () => {
     const shared = units.map((unit) =>
@@ -768,9 +811,7 @@ describe('CourseLearningMap unit cards', () => {
       'Plain description.',
     );
     expect(plain.querySelector('.learning-action')).toBeNull();
-    expect(sceneRequests).not.toContain(
-      '/assets/scenes/units/blaze/design-rounds/plain-unit.svg',
-    );
+    expect(sceneRequests).not.toContain('/assets/scenes/units/blaze/design-rounds/plain-unit.svg');
     TestBed.inject(HttpTestingController).expectOne(
       '/assets/scenes/units/blaze/design-rounds/plain-unit.svg',
     );

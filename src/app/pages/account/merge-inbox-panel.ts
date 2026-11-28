@@ -1,12 +1,22 @@
-import { Component, computed, DestroyRef, inject, input, OnInit, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
+} from '@angular/core';
 import { AccountMergeClient, maskMergeEmail } from './account-merge-client';
 
 /** Seconds before "Send the email again" works again. */
 export const MERGE_EMAIL_COOLDOWN = 60;
 
 /**
- * DLV-969 S36.8: "Check your inbox". Shown after a sign-in that reports another account with the same email, and after
- * asking for a new link. The text never changes with what the Domain did: it always answers 202.
+ * DLV-969 S36.8: "Check your inbox". Shown after a sign-in that reports another account with the
+ * same email, and after asking for a new link. The text never changes with what the Domain did: it
+ * always answers 202.
  */
 @Component({
   selector: 'app-merge-inbox-panel',
@@ -18,7 +28,10 @@ export class MergeInboxPanel implements OnInit {
   readonly email = input('');
   /** True when the caller already asked for the email; the panel then only starts the wait. */
   readonly alreadySent = input(false);
-  /** Where the sign-in was going (a same-origin path the API already checked); a full page load continues there. */
+  /**
+   * Where the sign-in was going (a same-origin path the API already checked); a full page load
+   * continues there.
+   */
   readonly next = input<string | null>(null);
   /** False when the page already has a heading that says "Check your inbox". */
   readonly titled = input(true);

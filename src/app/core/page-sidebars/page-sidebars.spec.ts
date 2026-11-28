@@ -65,7 +65,9 @@ describe('Shared page sidebars', () => {
     main = document.createElement('main');
     main.id = 'main-content';
     main.innerHTML =
-      '<h1>Sample lesson</h1><section id="existing"><h2>Mechanism</h2><p>Original body</p></section><section id="practice"><h2>Practice</h2><p>Try the example</p></section>';
+      '<h1>Sample lesson</h1><section id="existing"><h2>Mechanism</h2><p>Original ' +
+      'body</p></section><section id="practice"><h2>Practice</h2><p>Try the ' +
+      'example</p></section>';
     page.append(main);
     root.append(page);
     document.body.append(root);
@@ -291,30 +293,34 @@ describe('Shared page sidebars', () => {
     expect(document.activeElement).toBe(main.querySelector('#existing'));
   });
 
-  it('highlights the catalog group corresponding to the visible section independently of expansion', () => {
-    TestBed.inject(PageSidebarContext).set(contextOwner, {
-      excluded: false,
-      groups: [
-        {
-          id: 'mechanism',
-          sectionId: 'existing',
-          title: 'Mechanism',
-          courses: [{ id: 'example', title: 'Example', url: '/learn/example' }],
-        },
-      ],
-    });
-    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({
-      top: 90,
-    } as DOMRect);
-    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({
-      top: 500,
-    } as DOMRect);
-    flush();
-    refresh();
-    const group = root.querySelector('.catalog-group-toggle')!;
-    expect(group.getAttribute('aria-current')).toBe('location');
-    expect(group.getAttribute('aria-expanded')).toBe('false');
-  });
+  it(
+    'highlights the catalog group corresponding to the visible section independently of ' +
+      'expansion',
+    () => {
+      TestBed.inject(PageSidebarContext).set(contextOwner, {
+        excluded: false,
+        groups: [
+          {
+            id: 'mechanism',
+            sectionId: 'existing',
+            title: 'Mechanism',
+            courses: [{ id: 'example', title: 'Example', url: '/learn/example' }],
+          },
+        ],
+      });
+      vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({
+        top: 90,
+      } as DOMRect);
+      vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({
+        top: 500,
+      } as DOMRect);
+      flush();
+      refresh();
+      const group = root.querySelector('.catalog-group-toggle')!;
+      expect(group.getAttribute('aria-current')).toBe('location');
+      expect(group.getAttribute('aria-expanded')).toBe('false');
+    },
+  );
 
   it('highlights the overview at the top and transfers selection to sections and back', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
@@ -461,7 +467,8 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1440);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1440 } as DOMRect);
     main.innerHTML =
-      '<article class="question-reader"><nav>Lessons</nav><section class="learning-map" data-signature-column><h1>Fundamentals</h1></section></article>';
+      '<article class="question-reader"><nav>Lessons</nav><section class="learning-map" ' +
+      'data-signature-column><h1>Fundamentals</h1></section></article>';
     vi.spyOn(main.querySelector('.question-reader')!, 'getBoundingClientRect').mockReturnValue({
       left: 43,
       right: 1397,
@@ -492,23 +499,27 @@ describe('Shared page sidebars', () => {
     expect(strip.style.width).toBe('1354px');
   });
 
-  it('lines the strip up with the page content, not the window edge, when the page is the column', () => {
-    // Manage account below 1280px: the page spans the window and pads its content by 24px.
-    main.classList.add('account-page');
-    main.style.paddingLeft = '24px';
-    main.style.paddingRight = '24px';
-    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1200);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({
-      left: 0,
-      right: 1200,
-      width: 1200,
-    } as DOMRect);
-    refresh();
-    const strip = root.querySelector<HTMLElement>('.signature-strip')!;
-    expect(strip.classList).toContain('aligned');
-    expect(strip.style.marginLeft).toBe('24px');
-    expect(strip.style.width).toBe('1152px');
-  });
+  it(
+    'lines the strip up with the page content, not the window edge, when the page is the ' +
+      'column',
+    () => {
+      // Manage account below 1280px: the page spans the window and pads its content by 24px.
+      main.classList.add('account-page');
+      main.style.paddingLeft = '24px';
+      main.style.paddingRight = '24px';
+      vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1200);
+      vi.mocked(main.getBoundingClientRect).mockReturnValue({
+        left: 0,
+        right: 1200,
+        width: 1200,
+      } as DOMRect);
+      refresh();
+      const strip = root.querySelector<HTMLElement>('.signature-strip')!;
+      expect(strip.classList).toContain('aligned');
+      expect(strip.style.marginLeft).toBe('24px');
+      expect(strip.style.width).toBe('1152px');
+    },
+  );
 
   it('keeps docked statements out of the in-flow strip', () => {
     main.classList.add('course-page');
@@ -523,7 +534,10 @@ describe('Shared page sidebars', () => {
   it('preserves existing section IDs and ignores hidden, modal, carousel and card headings', () => {
     main.insertAdjacentHTML(
       'beforeend',
-      '<section hidden><h2>Hidden</h2></section><div role="dialog"><h2>Dialog</h2></div><div class="hero-slide"><h2>Slide</h2></div><a href="/learn"><h2>Card</h2></a><details><summary>More</summary><h2>Closed disclosure</h2></details>',
+      '<section hidden><h2>Hidden</h2></section><div ' +
+        'role="dialog"><h2>Dialog</h2></div><div class="hero-slide"><h2>Slide</h2></div><a ' +
+        'href="/learn"><h2>Card</h2></a><details><summary>More</summary><h2>Closed ' +
+        'disclosure</h2></details>',
     );
     const sections = collectPageSections(main);
     expect(sections.map((section) => section.label)).toEqual(['Overview', 'Mechanism', 'Practice']);
@@ -593,46 +607,52 @@ describe('Shared page sidebars', () => {
     expect(main.style.getPropertyValue('--sidebar-end-space')).toBe('');
   });
 
-  it('leaves the reasoning statements off the page when the gutters are wide (Home footer only)', () => {
-    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({
-      left: 540,
-      right: 1860,
-      width: 1320,
-      top: 76,
-      bottom: 900,
-      height: 824,
-      x: 540,
-      y: 76,
-      toJSON: () => ({}),
-    });
-    refresh();
-    // The reasoning pair (user, 2026-10-17) now closes Home's footer only: no corner row here.
-    expect(root.querySelector('.corner-signature, .closing-signature')).toBeNull();
-    expect(root.textContent).not.toContain('Understand the obstacle');
-    expect(root.textContent).not.toContain('Know why it works');
-    expect(
-      root.querySelector('#page-sidebar-left .sidebar-heading .sidebar-title')?.textContent,
-    ).toBe('Sample lesson');
-    expect(
-      root.querySelector('#page-sidebar-left .sidebar-heading app-sidebar-toggle'),
-    ).not.toBeNull();
-    expect(root.querySelector('.persistent-signature app-sidebar-toggle')).toBeNull();
-    expect(
-      root
-        .querySelector('#page-sidebar-right app-reasoning-prompt')
-        ?.textContent?.replace(/\s+/g, ' ')
-        .trim(),
-    ).toBe('Review what AI writes. Know where it can fail.');
-    // With no statement fixed in the bottom corner, an open sidebar keeps the full height below
-    // the header (DLV-803; it used to stop 96px short of the corner).
-    button('Open left sidebar').click();
-    flush();
-    const reserved = Number(
-      /- (\d+)px/.exec(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.maxHeight)?.[1],
-    );
-    expect(reserved).toBeLessThan(96 + 8);
-  });
+  it(
+    'leaves the reasoning statements off the page when the gutters are wide (Home footer ' +
+      'only)',
+    () => {
+      vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
+      vi.mocked(main.getBoundingClientRect).mockReturnValue({
+        left: 540,
+        right: 1860,
+        width: 1320,
+        top: 76,
+        bottom: 900,
+        height: 824,
+        x: 540,
+        y: 76,
+        toJSON: () => ({}),
+      });
+      refresh();
+      // The reasoning pair (user, 2026-10-17) now closes Home's footer only: no corner row here.
+      expect(root.querySelector('.corner-signature, .closing-signature')).toBeNull();
+      expect(root.textContent).not.toContain('Understand the obstacle');
+      expect(root.textContent).not.toContain('Know why it works');
+      expect(
+        root.querySelector('#page-sidebar-left .sidebar-heading .sidebar-title')?.textContent,
+      ).toBe('Sample lesson');
+      expect(
+        root.querySelector('#page-sidebar-left .sidebar-heading app-sidebar-toggle'),
+      ).not.toBeNull();
+      expect(root.querySelector('.persistent-signature app-sidebar-toggle')).toBeNull();
+      expect(
+        root
+          .querySelector('#page-sidebar-right app-reasoning-prompt')
+          ?.textContent?.replace(/\s+/g, ' ')
+          .trim(),
+      ).toBe('Review what AI writes. Know where it can fail.');
+      // With no statement fixed in the bottom corner, an open sidebar keeps the full height below
+      // the header (DLV-803; it used to stop 96px short of the corner).
+      button('Open left sidebar').click();
+      flush();
+      const reserved = Number(
+        /- (\d+)px/.exec(
+          root.querySelector<HTMLElement>('#page-sidebar-left')!.style.maxHeight,
+        )?.[1],
+      );
+      expect(reserved).toBeLessThan(96 + 8);
+    },
+  );
 
   it('keeps both statements visible when navigation and practice are collapsed', () => {
     expect(
@@ -641,7 +661,9 @@ describe('Shared page sidebars', () => {
         ?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(
-      root.querySelector('.standalone-signature app-reasoning-prompt')?.closest('[hidden], [inert]'),
+      root
+        .querySelector('.standalone-signature app-reasoning-prompt')
+        ?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
     expect(root.querySelector('.standalone-signature app-reasoning-prompt')).not.toBeNull();
@@ -807,7 +829,9 @@ describe('Shared page sidebars', () => {
   });
 
   it('has no styles left for the old corner statements (user, 2026-10-17)', () => {
-    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n');
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n');
     expect(css).not.toContain('closing-signature');
     expect(css).not.toContain('corner-signature');
   });
@@ -818,23 +842,39 @@ describe('Shared page sidebars', () => {
       .join('\n')
       .replace(/\s+/g, ' ');
     expect(css).toMatch(
-      /\.page-sidebar\.docked\[[^\]]+\]:not\(\.homepage\) > :is\(\.sidebar-heading\[[^\]]+\], \.sidebar-content\[[^\]]+\]\) \{ box-sizing: border-box; max-width: var\(--sidebar-panel-max, 22\.5rem\); \}/,
+      new RegExp(
+        '\\.page-sidebar\\.docked\\[[^\\]]+\\]:not\\(\\.homepage\\) > ' +
+          ':is\\(\\.sidebar-heading\\[[^\\]]+\\], \\.sidebar-content\\[[^\\]]+\\]\\) \\{ ' +
+          'box-sizing: border-box; max-width: var\\(--sidebar-panel-max, 22\\.5rem\\); \\}',
+      ),
     );
-    expect(css).toMatch(/\.left\.docked\[[^\]]+\]:not\(\.homepage\) > :is\([^)]*\) \{ margin-inline-start: auto; \}/);
+    expect(css).toMatch(
+      /\.left\.docked\[[^\]]+\]:not\(\.homepage\) > :is\([^)]*\) \{ margin-inline-start: auto; \}/,
+    );
     expect(css).toMatch(/\.right\.docked\[[^\]]+\] > :is\([^)]*\) \{ margin-inline-end: auto; \}/);
-    expect(css).toMatch(/@media \(min-width: 40rem\) \{ \.inline-sidebars\[[^\]]+\] \{ flex-flow: row wrap;/);
+    expect(css).toMatch(
+      /@media \(min-width: 40rem\) \{ \.inline-sidebars\[[^\]]+\] \{ flex-flow: row wrap;/,
+    );
   });
 
-  it('on phones, sets the homepage tab bar flush under the header and across the window (user, 2026-11-03)', () => {
-    const css = [...document.querySelectorAll('style')]
-      .map((style) => style.textContent ?? '')
-      .join('\n')
-      .replace(/\s+/g, ' ');
-    // headerBottom() leaves 8px for the floating panels; the full-width bar takes it back, so no page shows through.
-    expect(css).toMatch(
-      /@media \(max-width: 1099px\) \{ \.left\.homepage\.open\[[^\]]+\] \{ inset-inline: 0 !important; width: auto !important; margin-block-start: -8px;/,
-    );
-  });
+  it(
+    'on phones, sets the homepage tab bar flush under the header and across the window ' +
+      '(user, 2026-11-03)',
+    () => {
+      const css = [...document.querySelectorAll('style')]
+        .map((style) => style.textContent ?? '')
+        .join('\n')
+        .replace(/\s+/g, ' ');
+      // headerBottom() leaves 8px for the floating panels; the full-width bar takes it back, so no
+      // page shows through.
+      expect(css).toMatch(
+        new RegExp(
+          '@media \\(max-width: 1099px\\) \\{ \\.left\\.homepage\\.open\\[[^\\]]+\\] \\{ ' +
+            'inset-inline: 0 !important; width: auto !important; margin-block-start: -8px;',
+        ),
+      );
+    },
+  );
 
   it('keeps expanded in-flow sections interactive without modal keyboard behavior', () => {
     const contentBefore = main.innerHTML;
@@ -934,39 +974,43 @@ describe('Shared page sidebars', () => {
     expect(page.hasAttribute('inert')).toBe(false);
   });
 
-  it('opens docked sections by default and preserves expansion when the viewport loses its gutters', () => {
-    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 300, right: 1500 } as DOMRect);
-    fixture.destroy();
-    fixture = TestBed.createComponent(PageSidebars);
-    root.append(fixture.nativeElement);
-    flush();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(main.hasAttribute('data-sidebar-columns')).toBe(true);
-    // The page knows the docked navigation is showing, so it can drop shortcuts that repeat it.
-    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
-    button('Close left sidebar').click();
-    flush();
-    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    button('Open left sidebar').click();
-    flush();
-    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
-    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a')!.focus();
-    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(391);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 391 } as DOMRect);
-    refresh();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
-    expect(main.previousElementSibling).toBe(fixture.nativeElement);
-    expect(document.activeElement?.tagName).toBe('A');
-  });
+  it(
+    'opens docked sections by default and preserves expansion when the viewport loses its ' +
+      'gutters',
+    () => {
+      vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
+      vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 300, right: 1500 } as DOMRect);
+      fixture.destroy();
+      fixture = TestBed.createComponent(PageSidebars);
+      root.append(fixture.nativeElement);
+      flush();
+      expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+      expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+      expect(main.hasAttribute('data-sidebar-columns')).toBe(true);
+      // The page knows the docked navigation is showing, so it can drop shortcuts that repeat it.
+      expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
+      button('Close left sidebar').click();
+      flush();
+      expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
+      expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+      button('Open left sidebar').click();
+      flush();
+      expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
+      expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+      expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+      root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a')!.focus();
+      vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(391);
+      vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 391 } as DOMRect);
+      refresh();
+      expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+      expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+      expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
+      expect(main.previousElementSibling).toBe(fixture.nativeElement);
+      expect(document.activeElement?.tagName).toBe('A');
+    },
+  );
 
-  it('starts expanded despite a page width hint and lets the learner reclaim its column', async () => {
+  it('starts expanded despite a page width hint; the learner can reclaim its column', async () => {
     // The page gives up the left column while main carries data-sidebar-left-collapsed.
     const width = vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1440);
     vi.mocked(main.getBoundingClientRect).mockImplementation(
@@ -1031,67 +1075,72 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('groups the practice links with Quick recall, which opens a dialog that keeps its place', () => {
-    TestBed.inject(PageSidebarContext).set(contextOwner, {
-      excluded: false,
-      recall: [
-        {
-          id: 'first',
-          prompt: 'First check?',
-          answer: '<strong>First answer</strong><script>alert(1)</script>',
-        },
-        { id: 'second', prompt: 'Second check?', answer: 'Second answer' },
-      ],
-    });
-    flush();
-    button('Open right sidebar').click();
-    flush();
-    const group = root.querySelector<HTMLElement>('.practice-review')!;
-    expect(
-      root.querySelector('.practice-heading #practice-review-label')?.textContent?.trim(),
-    ).toBe('Practice & review');
-    expect(group.getAttribute('aria-labelledby')).toBe('practice-review-label');
-    expect(root.querySelector('.practice-heading app-sidebar-toggle')).not.toBeNull();
-    const rows = Array.from(group.querySelectorAll<HTMLElement>('.practice-action'));
-    expect(rows.map((row) => row.textContent?.trim())).toContain('Quick recall');
-    expect(rows.every((row) => row.querySelector('.practice-icon svg'))).toBe(true);
-    // No question sits in the sidebar any more.
-    expect(root.querySelector('#page-sidebar-right-content')?.textContent).not.toContain(
-      'First check?',
-    );
+  it(
+    'groups the practice links with Quick recall, which opens a dialog that keeps its ' + 'place',
+    () => {
+      TestBed.inject(PageSidebarContext).set(contextOwner, {
+        excluded: false,
+        recall: [
+          {
+            id: 'first',
+            prompt: 'First check?',
+            answer: '<strong>First answer</strong><script>alert(1)</script>',
+          },
+          { id: 'second', prompt: 'Second check?', answer: 'Second answer' },
+        ],
+      });
+      flush();
+      button('Open right sidebar').click();
+      flush();
+      const group = root.querySelector<HTMLElement>('.practice-review')!;
+      expect(
+        root.querySelector('.practice-heading #practice-review-label')?.textContent?.trim(),
+      ).toBe('Practice & review');
+      expect(group.getAttribute('aria-labelledby')).toBe('practice-review-label');
+      expect(root.querySelector('.practice-heading app-sidebar-toggle')).not.toBeNull();
+      const rows = Array.from(group.querySelectorAll<HTMLElement>('.practice-action'));
+      expect(rows.map((row) => row.textContent?.trim())).toContain('Quick recall');
+      expect(rows.every((row) => row.querySelector('.practice-icon svg'))).toBe(true);
+      // No question sits in the sidebar any more.
+      expect(root.querySelector('#page-sidebar-right-content')?.textContent).not.toContain(
+        'First check?',
+      );
 
-    const opener = rows.find(
-      (row) => row.textContent?.trim() === 'Quick recall',
-    ) as HTMLButtonElement;
-    expect(opener.getAttribute('aria-haspopup')).toBe('dialog');
-    opener.click();
-    flush();
-    const dialog = root.querySelector<HTMLDialogElement>('dialog.recall-dialog')!;
-    expect(dialog.hasAttribute('open')).toBe(true);
-    expect(dialog.querySelector('.recall-count')?.textContent?.trim()).toBe('Question 1 of 2');
-    expect(dialog.querySelector('.recall-question')?.textContent).toBe('First check?');
-    expect(dialog.querySelector<HTMLElement>('#sidebar-recall-answer')!.hidden).toBe(true);
-    dialog.querySelector<HTMLButtonElement>('.recall-reveal')!.click();
-    flush();
-    expect(dialog.querySelector('#sidebar-recall-answer strong')?.textContent).toBe('First answer');
-    expect(dialog.querySelector('#sidebar-recall-answer script')).toBeNull();
-    expect(dialog.querySelector('.recall-reveal')).toBeNull();
+      const opener = rows.find(
+        (row) => row.textContent?.trim() === 'Quick recall',
+      ) as HTMLButtonElement;
+      expect(opener.getAttribute('aria-haspopup')).toBe('dialog');
+      opener.click();
+      flush();
+      const dialog = root.querySelector<HTMLDialogElement>('dialog.recall-dialog')!;
+      expect(dialog.hasAttribute('open')).toBe(true);
+      expect(dialog.querySelector('.recall-count')?.textContent?.trim()).toBe('Question 1 of 2');
+      expect(dialog.querySelector('.recall-question')?.textContent).toBe('First check?');
+      expect(dialog.querySelector<HTMLElement>('#sidebar-recall-answer')!.hidden).toBe(true);
+      dialog.querySelector<HTMLButtonElement>('.recall-reveal')!.click();
+      flush();
+      expect(dialog.querySelector('#sidebar-recall-answer strong')?.textContent).toBe(
+        'First answer',
+      );
+      expect(dialog.querySelector('#sidebar-recall-answer script')).toBeNull();
+      expect(dialog.querySelector('.recall-reveal')).toBeNull();
 
-    // Next question hides the previous answer.
-    dialog.querySelector<HTMLButtonElement>('.recall-next')!.click();
-    flush();
-    expect(dialog.querySelector('.recall-question')?.textContent).toBe('Second check?');
-    expect(dialog.querySelector<HTMLElement>('#sidebar-recall-answer')!.hidden).toBe(true);
-    expect(dialog.querySelector('.recall-next')?.textContent?.trim()).toBe('Start again');
+      // Next question hides the previous answer.
+      dialog.querySelector<HTMLButtonElement>('.recall-next')!.click();
+      flush();
+      expect(dialog.querySelector('.recall-question')?.textContent).toBe('Second check?');
+      expect(dialog.querySelector<HTMLElement>('#sidebar-recall-answer')!.hidden).toBe(true);
+      expect(dialog.querySelector('.recall-next')?.textContent?.trim()).toBe('Start again');
 
-    // Close recall, then reopen at the same question.
-    dialog.querySelector<HTMLButtonElement>('.recall-close')!.click();
-    flush();
-    expect(dialog.hasAttribute('open')).toBe(false);
-    root.querySelector<HTMLButtonElement>('.practice-review button.practice-action')!.click();
-    flush();
-    expect(dialog.querySelector('.recall-question')?.textContent).toBe('Second check?');
-  });
+      // Close recall, then reopen at the same question.
+      dialog.querySelector<HTMLButtonElement>('.recall-close')!.click();
+      flush();
+      expect(dialog.hasAttribute('open')).toBe(false);
+      root.querySelector<HTMLButtonElement>('.practice-review button.practice-action')!.click();
+      flush();
+      expect(dialog.querySelector('.recall-question')?.textContent).toBe('Second check?');
+    },
+  );
 
   it('excludes every coding workspace via page capability even without a known URL', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, { excluded: true });
@@ -1154,7 +1203,10 @@ describe('Shared page sidebars', () => {
       flush();
       expect(root.querySelector('#page-sidebar-right app-sidebar-toggle')).toBeNull();
       expect(
-        root.querySelector('.standalone-signature app-reasoning-prompt')?.textContent?.replace(/\s+/g, ' ').trim(),
+        root
+          .querySelector('.standalone-signature app-reasoning-prompt')
+          ?.textContent?.replace(/\s+/g, ' ')
+          .trim(),
       ).toBe('Review what AI writes. Know where it can fail.');
       // "Know why it works. Know when it won't." now closes Home's footer only (user, 2026-10-17).
       expect(root.querySelector('app-learning-prompt')).toBeNull();
@@ -1206,13 +1258,18 @@ describe('Shared page sidebars', () => {
 describe('Lesson stage outline (DLV-408)', () => {
   it('marks stage headings and assigns each section to its stage', () => {
     const main = document.createElement('main');
-    main.innerHTML = `
+    main.innerHTML =
+      `
       <h1>Spring MVC</h1>
-      <section id="stage-brief" data-sidebar-label="Brief" data-sidebar-level="stage" data-sidebar-stage="brief">
-        <section id="lesson-scenario"><h2 data-sidebar-label="Scenario">Learning scenario: A URL shortener</h2></section>
+      <section id="stage-brief" data-sidebar-label="Brief" data-sidebar-level="stage" ` +
+      `data-sidebar-stage="brief">
+        <section id="lesson-scenario"><h2 data-sidebar-label="Scenario">Learning scenario: ` +
+      `A URL shortener</h2></section>
       </section>
-      <section id="stage-build" data-sidebar-label="Build" data-sidebar-level="stage" data-sidebar-stage="build">
-        <section id="url-shortener-code"><h2 data-sidebar-label="The code">Build it: create and redirect</h2></section>
+      <section id="stage-build" data-sidebar-label="Build" data-sidebar-level="stage" ` +
+      `data-sidebar-stage="build">
+        <section id="url-shortener-code"><h2 data-sidebar-label="The code">Build it: create ` +
+      `and redirect</h2></section>
       </section>`;
     document.body.append(main);
     try {
@@ -1235,13 +1292,18 @@ describe('Lesson stage outline (DLV-408)', () => {
   });
   it('drops the title Overview link when the lesson has its own Overview stage', () => {
     const main = document.createElement('main');
-    main.innerHTML = `
+    main.innerHTML =
+      `
       <h1>Replication and Quorums</h1>
-      <section id="stage-overview" data-sidebar-label="Overview" data-sidebar-level="stage" data-sidebar-stage="overview">
-        <section id="rq-overview"><h2 data-sidebar-label="What you will learn">Overview</h2></section>
+      <section id="stage-overview" data-sidebar-label="Overview" data-sidebar-level="stage" ` +
+      `data-sidebar-stage="overview">
+        <section id="rq-overview"><h2 data-sidebar-label="What you will ` +
+      `learn">Overview</h2></section>
       </section>
-      <section id="stage-brief" data-sidebar-label="Brief" data-sidebar-level="stage" data-sidebar-stage="brief">
-        <section id="lesson-scenario"><h2 data-sidebar-label="Scenario">Learning scenario</h2></section>
+      <section id="stage-brief" data-sidebar-label="Brief" data-sidebar-level="stage" ` +
+      `data-sidebar-stage="brief">
+        <section id="lesson-scenario"><h2 data-sidebar-label="Scenario">Learning ` +
+      `scenario</h2></section>
       </section>`;
     document.body.append(main);
     try {
@@ -1261,7 +1323,8 @@ describe('Sidebar page title (navTitle)', () => {
   it('prefers the authored short title on the h1 and falls back to its text', () => {
     const main = document.createElement('main');
     main.innerHTML =
-      '<h1 data-sidebar-title=" Design a reservation system ">Design a reservation system with payment: 60,000 seats</h1>';
+      '<h1 data-sidebar-title=" Design a reservation system ">Design a reservation ' +
+      'system with payment: 60,000 seats</h1>';
     expect(sidebarPageTitle(main)).toBe('Design a reservation system');
     main.querySelector('h1')!.removeAttribute('data-sidebar-title');
     expect(sidebarPageTitle(main)).toBe('Design a reservation system with payment: 60,000 seats');

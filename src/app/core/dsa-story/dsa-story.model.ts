@@ -26,7 +26,15 @@ export type StoryValue =
   | { $sparse: { length: number; fill: StoryValue; items: [number, StoryValue][] } };
 
 export type StoryTone = 'active' | 'compare' | 'found' | 'done' | 'dim' | 'new' | 'miss';
-export const STORY_TONES: readonly StoryTone[] = ['active', 'compare', 'found', 'done', 'dim', 'new', 'miss'];
+export const STORY_TONES: readonly StoryTone[] = [
+  'active',
+  'compare',
+  'found',
+  'done',
+  'dim',
+  'new',
+  'miss',
+];
 export type StoryViewKind =
   | 'array'
   | 'string'
@@ -100,9 +108,13 @@ export interface StoryView {
   cell?: number;
   /** Linked list with `follow`: the back-link field drawn as a second arrow (e.g. "prev"). */
   prevField?: string;
-  /** Linked list with `follow`: node fields shown in the circle, joined by ":" (default val or key). */
+  /**
+   * Linked list with `follow`: node fields shown in the circle, joined by ":" (default val or key).
+   */
   fields?: string[];
-  /** Linked list with `follow`: locals holding dummy nodes, drawn as boxes named after the local. */
+  /**
+   * Linked list with `follow`: locals holding dummy nodes, drawn as boxes named after the local.
+   */
   sentinels?: string[];
   /**
    * Any view with a `var`: draw this field of the object the var holds (`self.heap`,
@@ -227,7 +239,9 @@ export function sequenceOf(value: StoryValue | undefined): StoryValue[] | null {
   }
   return null;
 }
-export function entriesOf(value: StoryValue | undefined): [StoryValue, StoryValue | undefined][] | null {
+export function entriesOf(
+  value: StoryValue | undefined,
+): [StoryValue, StoryValue | undefined][] | null {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     if ('$map' in value) return value.$map;
     if ('$set' in value) return value.$set.map((key) => [key, undefined]);
@@ -266,11 +280,13 @@ function format(
   if (typeof value === 'boolean') return value ? words.yes : words.no;
   if (typeof value === 'number') return String(value);
   if (typeof value === 'string') return JSON.stringify(value);
-  const inner = (item: StoryValue) => (depth > 3 ? '…' : format(item, language, heap, depth + 1, aliases));
+  const inner = (item: StoryValue) =>
+    depth > 3 ? '…' : format(item, language, heap, depth + 1, aliases);
   if (Array.isArray(value)) return `[${value.map(inner).join(', ')}]`;
   if ('$tuple' in value) return `(${value.$tuple.map(inner).join(', ')})`;
   if ('$deque' in value) return `[${value.$deque.map(inner).join(', ')}]`;
-  if ('$set' in value) return value.$set.length ? `{${value.$set.map(inner).join(', ')}}` : 'empty set';
+  if ('$set' in value)
+    return value.$set.length ? `{${value.$set.map(inner).join(', ')}}` : 'empty set';
   if ('$map' in value)
     return `{${value.$map.map(([key, item]) => `${inner(key)}: ${inner(item)}`).join(', ')}}`;
   if ('$num' in value) return value.$num === 'inf' ? '∞' : value.$num === '-inf' ? '−∞' : 'NaN';
@@ -291,18 +307,26 @@ export function nodeLabel(ref: string, heap: Record<string, StoryHeapObject>): s
   const fields = Object.keys(node).filter((field) => field !== '$type');
   // A one-field object (a heap entry `Entry(word)`) prints by that field: Entry("love").
   const only = fields.length === 1 ? node[fields[0]] : undefined;
-  const value = node['val'] ?? node['key'] ?? (typeof only === 'string' || typeof only === 'number' ? only : undefined);
+  const value =
+    node['val'] ??
+    node['key'] ??
+    (typeof only === 'string' || typeof only === 'number' ? only : undefined);
   if (value === undefined || typeof value === 'object') return node.$type;
   const text = typeof value === 'string' ? JSON.stringify(value) : String(value);
   // List and graph nodes (a `val` and `next` or `neighbors`) print as "node 3" in every tab.
-  const listNode = 'val' in node && ('next' in node || 'neighbors' in node) && !('left' in node) && !('right' in node);
+  const listNode =
+    'val' in node &&
+    ('next' in node || 'neighbors' in node) &&
+    !('left' in node) &&
+    !('right' in node);
   return listNode ? `node ${text}` : `${node.$type}(${text})`;
 }
 
 // ------------------------------------------------------------------ selectors
 // Same grammar as tools/validate_option_b_stories.py in the content repository.
 // The offset may be a local too ("@i-@coin"), so a DP read such as dp[i - coin] follows the code.
-const TERM = /^\s*(@[A-Za-z_][A-Za-z0-9_]*|-?\d+)\s*(?:([+-])\s*(\d+|@[A-Za-z_][A-Za-z0-9_]*))?\s*$/;
+const TERM =
+  /^\s*(@[A-Za-z_][A-Za-z0-9_]*|-?\d+)\s*(?:([+-])\s*(\d+|@[A-Za-z_][A-Za-z0-9_]*))?\s*$/;
 type Key = StoryValue;
 function term(text: string, state: Record<string, StoryValue>): Key | undefined {
   const match = TERM.exec(text);
@@ -329,7 +353,11 @@ export function resolveSelector(
   if (text.includes('..') && !/^['"]/.test(text)) {
     const [startText, endText] = text.split('..', 2);
     const start = startText.trim() ? term(startText, state) : 0;
-    const end = endText.trim() ? term(endText, state) : length === undefined ? undefined : length - 1;
+    const end = endText.trim()
+      ? term(endText, state)
+      : length === undefined
+        ? undefined
+        : length - 1;
     if (typeof start !== 'number' || typeof end !== 'number') return [];
     const keys: number[] = [];
     for (let index = start; index <= end; index += 1) keys.push(index);
@@ -399,13 +427,18 @@ export function displayName(story: DsaStoryV1, name: string, language: PatternLa
  * the Variables panel and call-stack labels, not as `Entry(0)`: two dummies would read alike and
  * look like a cached key 0.
  */
-export function sentinelNames(story: DsaStoryV1, step: StoryStep, language: PatternLanguage): Map<string, string> {
+export function sentinelNames(
+  story: DsaStoryV1,
+  step: StoryStep,
+  language: PatternLanguage,
+): Map<string, string> {
   const names = new Map<string, string>();
   for (const view of story.views) {
     if (view.kind !== 'linked-list') continue;
     for (const name of view.sentinels ?? []) {
       const value = liveLocal(step, name);
-      if (isRef(value) && !names.has(value.$ref)) names.set(value.$ref, displayName(story, name, language));
+      if (isRef(value) && !names.has(value.$ref))
+        names.set(value.$ref, displayName(story, name, language));
     }
   }
   return names;
@@ -449,7 +482,13 @@ export function variableRows(
   const text = (current: StoryStep, name: string) => {
     const frame = rowFrame(current, name);
     return frame
-      ? formatValue(frame.state[name], language, current.heap, undefined, sentinelNames(story, current, language))
+      ? formatValue(
+          frame.state[name],
+          language,
+          current.heap,
+          undefined,
+          sentinelNames(story, current, language),
+        )
       : null;
   };
   const rows: StoryVariableRow[] = story.variables.map((name) => {
@@ -470,7 +509,13 @@ export function variableRows(
     rows.push({
       name: 'this call returns',
       value: returns
-        ? formatValue(step.returns, language, step.heap, undefined, sentinelNames(story, step, language))
+        ? formatValue(
+            step.returns,
+            language,
+            step.heap,
+            undefined,
+            sentinelNames(story, step, language),
+          )
         : '—',
       unset: !returns,
       changed: returns,
@@ -531,7 +576,13 @@ export function languageLines(
       sourceAnchor: event.sourceAnchor[language],
       eventIndex,
     }));
-  const byCall = callAlignedLines(problem as Partial<PatternProblemV1>, story, language, python, native);
+  const byCall = callAlignedLines(
+    problem as Partial<PatternProblemV1>,
+    story,
+    language,
+    python,
+    native,
+  );
   if (byCall) return byCall;
   const positionOfEvent = new Map<number, number>();
   python.forEach((entry, position) => {
@@ -540,7 +591,8 @@ export function languageLines(
   const slots = native.map((entry) => positionOfEvent.get(entry.eventIndex) ?? -1);
   for (let index = 1; index < slots.length; index += 1) {
     if (slots[index] < 0 || slots[index] > slots[index - 1]) continue;
-    const nextDistinct = slots.slice(index + 1).find((slot) => slot > slots[index]) ?? python.length;
+    const nextDistinct =
+      slots.slice(index + 1).find((slot) => slot > slots[index]) ?? python.length;
     const candidate = slots[index - 1] + 1;
     if (candidate < nextDistinct && candidate < python.length) slots[index] = candidate;
   }
@@ -554,7 +606,9 @@ export function languageLines(
   });
 }
 
-/** True when the line declares the function `name` (Python def, Java method, Go func or closure). */
+/**
+ * True when the line declares the function `name` (Python def, Java method, Go func or closure).
+ */
 function declares(text: string, name: string, language: PatternLanguage): boolean {
   const n = name.replace(/[^A-Za-z0-9_]/g, '');
   const pattern =
@@ -589,8 +643,11 @@ function callAlignedLines(
     const lines = problem.implementations?.find((item) => item.language === target)?.lines ?? [];
     const ids = new Set<string>();
     lines.forEach((line, index) => {
-      if (![...names].some((name) => declares(line.text, functionName(name, target), target))) return;
-      const body = lines.slice(index + 1).find((next) => /\S/.test(next.text) && !/^\s*(\/\/|#|\{\s*$)/.test(next.text));
+      if (![...names].some((name) => declares(line.text, functionName(name, target), target)))
+        return;
+      const body = lines
+        .slice(index + 1)
+        .find((next) => /\S/.test(next.text) && !/^\s*(\/\/|#|\{\s*$)/.test(next.text));
       if (body) ids.add(body.id);
     });
     return ids;
@@ -602,20 +659,27 @@ function callAlignedLines(
   if (pythonCuts.length < 2 || pythonCuts.length !== nativeCuts.length) return null;
   // Segment k runs from cut k-1 (or the path start) to cut k; the last runs to the end.
   const bounds = (path: PathEntry[], at: number[]) =>
-    [0, ...at, path.length].slice(0, -1).map((start, k, all) => [start, k + 1 < all.length ? all[k + 1] : path.length]);
+    [0, ...at, path.length]
+      .slice(0, -1)
+      .map((start, k, all) => [start, k + 1 < all.length ? all[k + 1] : path.length]);
   const pythonSegments = bounds(python, pythonCuts);
   const slots: { slot: number; primary: boolean }[] = [];
   bounds(native, nativeCuts).forEach(([start, end], k) => {
     const [from, to] = pythonSegments[k];
     for (let offset = 0; offset < end - start; offset += 1) {
       const primary = offset < to - from;
-      slots.push({ slot: Math.max(0, primary ? from + offset : (to > from ? to : from + 1) - 1), primary });
+      slots.push({
+        slot: Math.max(0, primary ? from + offset : (to > from ? to : from + 1) - 1),
+        primary,
+      });
     }
   });
   let carried: string | null = null;
   return stepRanges(story).map(([start, end]) => {
     const inside = native.flatMap((entry, index) =>
-      slots[index].slot >= start && slots[index].slot <= end ? [{ anchor: entry.sourceAnchor, primary: slots[index].primary }] : [],
+      slots[index].slot >= start && slots[index].slot <= end
+        ? [{ anchor: entry.sourceAnchor, primary: slots[index].primary }]
+        : [],
     );
     const lead = inside.filter((item) => item.primary).at(-1) ?? inside.at(-1);
     if (lead) carried = lead.anchor;
@@ -633,8 +697,12 @@ function frameValue(view: StoryView, step: StoryStep): StoryValue | undefined {
   const bottom =
     view.frame === 'bottom' ||
     (!view.frame &&
-      (view.kind === 'tree' || view.kind === 'trie' || view.kind === 'linked-list' || view.kind === 'graph'));
-  if (bottom && step.calls?.length && view.var in step.calls[0].state) return step.calls[0].state[view.var];
+      (view.kind === 'tree' ||
+        view.kind === 'trie' ||
+        view.kind === 'linked-list' ||
+        view.kind === 'graph'));
+  if (bottom && step.calls?.length && view.var in step.calls[0].state)
+    return step.calls[0].state[view.var];
   return step.state[view.var];
 }
 
@@ -666,7 +734,9 @@ export interface SequenceModel {
 }
 /** A pointer's value: the current frame, or (views pinned to the outermost call) the caller's. */
 function pointerValue(view: StoryView, step: StoryStep, name: string): StoryValue | undefined {
-  return view.frame === 'bottom' && !(name in step.state) ? step.calls?.[0]?.state[name] : step.state[name];
+  return view.frame === 'bottom' && !(name in step.state)
+    ? step.calls?.[0]?.state[name]
+    : step.state[name];
 }
 function placePointers(
   view: StoryView,
@@ -721,7 +791,10 @@ function windowCells(
   }
   let shown = [...used].sort((a, b) => a - b);
   if (shown.length && shown[shown.length - 1] - shown[0] <= WINDOW_SPAN)
-    shown = Array.from({ length: shown[shown.length - 1] - shown[0] + 1 }, (_, offset) => shown[0] + offset);
+    shown = Array.from(
+      { length: shown[shown.length - 1] - shown[0] + 1 },
+      (_, offset) => shown[0] + offset,
+    );
   const cells: StoryCell[] = [];
   const slots = new Map<number, number>();
   const gap = (from: number, to: number) =>
@@ -739,19 +812,38 @@ function windowCells(
     cells.push({
       key: String(index),
       index,
-      text: formatValue(values.has(index) ? values.get(index)! : sparse.fill, language, step.heap, 24),
+      text: formatValue(
+        values.has(index) ? values.get(index)! : sparse.fill,
+        language,
+        step.heap,
+        24,
+      ),
       tones: tones.get(keyId(index)) ?? [],
     });
   }
-  return { cells, slotOf: (value) => slots.get(value) ?? (value === sparse.length ? cells.length : null) };
+  return {
+    cells,
+    slotOf: (value) => slots.get(value) ?? (value === sparse.length ? cells.length : null),
+  };
 }
-function itemText(view: StoryView, item: StoryValue, step: StoryStep, language: PatternLanguage): string {
+function itemText(
+  view: StoryView,
+  item: StoryValue,
+  step: StoryStep,
+  language: PatternLanguage,
+): string {
   const heap = step.heap ?? {};
   if (view.fields?.length && isRef(item) && heap[item.$ref])
-    return view.fields.map((field) => formatValue(heap[item.$ref][field], language, heap, 12)).join(':');
+    return view.fields
+      .map((field) => formatValue(heap[item.$ref][field], language, heap, 12))
+      .join(':');
   return formatValue(item, language, heap, 24);
 }
-export function sequenceModel(view: StoryView, raw: StoryStep, language: PatternLanguage): SequenceModel {
+export function sequenceModel(
+  view: StoryView,
+  raw: StoryStep,
+  language: PatternLanguage,
+): SequenceModel {
   const step = shownStep(raw);
   if (view.kind === 'number-line') return numberLineModel(view, step);
   if (view.kind === 'bits') return bitsModel(view, step);
@@ -760,16 +852,25 @@ export function sequenceModel(view: StoryView, raw: StoryStep, language: Pattern
   const sparse = value && typeof value === 'object' && '$sparse' in value ? value.$sparse : null;
   if (sparse && view.window) {
     const { cells, slotOf } = windowCells(view, step, language, sparse);
-    const pointers = placePointers(view, step, slotOf).map((pointer) => ({ ...pointer, past: pointer.index === sparse.length }));
-    return { kind, missing: false, cells, pointers, note: `window of ${sparse.length.toLocaleString('en-US')} cells` };
+    const pointers = placePointers(view, step, slotOf).map((pointer) => ({
+      ...pointer,
+      past: pointer.index === sparse.length,
+    }));
+    return {
+      kind,
+      missing: false,
+      cells,
+      pointers,
+      note: `window of ${sparse.length.toLocaleString('en-US')} cells`,
+    };
   }
   const items: StoryValue[] | null =
     view.kind === 'string' ? (typeof value === 'string' ? [...value] : null) : sequenceOf(value);
   if (!items) return { kind, missing: true, cells: [], pointers: [] };
   const tones = viewTones(step, view.id, items.length);
-  const pointers = placePointers(view, step, (index) => (index >= 0 && index <= items.length ? index : null)).map(
-    (pointer) => ({ ...pointer, past: pointer.index === items.length }),
-  );
+  const pointers = placePointers(view, step, (index) =>
+    index >= 0 && index <= items.length ? index : null,
+  ).map((pointer) => ({ ...pointer, past: pointer.index === items.length }));
   return {
     kind,
     missing: false,
@@ -777,7 +878,8 @@ export function sequenceModel(view: StoryView, raw: StoryStep, language: Pattern
     cells: items.map((item, index) => ({
       key: String(index),
       index,
-      text: view.kind === 'string' ? charText(item as string) : itemText(view, item, step, language),
+      text:
+        view.kind === 'string' ? charText(item as string) : itemText(view, item, step, language),
       tones: tones.get(keyId(index)) ?? [],
     })),
   };
@@ -786,7 +888,8 @@ export function sequenceModel(view: StoryView, raw: StoryStep, language: Pattern
 /** A number or "@local" bound of a number line. */
 function bound(value: number | string | undefined, step: StoryStep): number | null {
   if (typeof value === 'number') return value;
-  const held = typeof value === 'string' && value.startsWith('@') ? step.state[value.slice(1)] : undefined;
+  const held =
+    typeof value === 'string' && value.startsWith('@') ? step.state[value.slice(1)] : undefined;
   return typeof held === 'number' ? held : null;
 }
 const MAX_TICKS = 64;
@@ -800,8 +903,15 @@ export function numberLineModel(view: StoryView, step: StoryStep): SequenceModel
   const tones = viewTones(step, view.id, high + 1);
   const cells: StoryCell[] = [];
   for (let value = low; value <= high; value += 1)
-    cells.push({ key: String(value), index: value, text: String(value), tones: tones.get(keyId(value)) ?? [] });
-  const pointers = placePointers(view, step, (value) => (value >= low && value <= high ? value - low : null));
+    cells.push({
+      key: String(value),
+      index: value,
+      text: String(value),
+      tones: tones.get(keyId(value)) ?? [],
+    });
+  const pointers = placePointers(view, step, (value) =>
+    value >= low && value <= high ? value - low : null,
+  );
   return { kind: 'number-line', missing: false, cells, pointers };
 }
 /** Binary digits of an int local, highest bit first; bit k is marked by the selector k. */
@@ -829,7 +939,12 @@ export interface MapModel {
   misses: string[];
 }
 /** A map value as the page writes it: a chain of nodes, chosen fields, or the plain value. */
-function mapValueText(view: StoryView, value: StoryValue, step: StoryStep, language: PatternLanguage): string {
+function mapValueText(
+  view: StoryView,
+  value: StoryValue,
+  step: StoryStep,
+  language: PatternLanguage,
+): string {
   const heap = step.heap ?? {};
   const object = isRef(value) ? heap[value.$ref] : undefined;
   if (object && view.chain) {
@@ -837,10 +952,16 @@ function mapValueText(view: StoryView, value: StoryValue, step: StoryStep, langu
     const stop = view.chain.to ? object[view.chain.to] : null;
     const start = object[view.chain.from];
     // With `to`, both ends are dummy nodes: walk the real nodes between them.
-    let link: StoryValue | undefined = view.chain.to && isRef(start) ? heap[start.$ref]?.[next] : start;
+    let link: StoryValue | undefined =
+      view.chain.to && isRef(start) ? heap[start.$ref]?.[next] : start;
     const items: string[] = [];
     const seen = new Set<string>();
-    while (isRef(link) && heap[link.$ref] && !seen.has(link.$ref) && !(isRef(stop) && stop.$ref === link.$ref)) {
+    while (
+      isRef(link) &&
+      heap[link.$ref] &&
+      !seen.has(link.$ref) &&
+      !(isRef(stop) && stop.$ref === link.$ref)
+    ) {
       seen.add(link.$ref);
       const node: StoryHeapObject = heap[link.$ref];
       items.push(
@@ -854,7 +975,9 @@ function mapValueText(view: StoryView, value: StoryValue, step: StoryStep, langu
     return items.length ? items.join(both ? ' ⇄ ' : ' → ') : 'empty';
   }
   if (object && view.valueFields?.length)
-    return view.valueFields.map((field) => `${field} ${formatValue(object[field], language, heap, 16)}`).join(', ');
+    return view.valueFields
+      .map((field) => `${field} ${formatValue(object[field], language, heap, 16)}`)
+      .join(', ');
   return formatValue(value, language, heap, 48);
 }
 export function mapModel(view: StoryView, raw: StoryStep, language: PatternLanguage): MapModel {
@@ -952,13 +1075,22 @@ export function callTimeline(story: DsaStoryV1): StoryCallMoment[] {
     /** Locals after this frame's latest line as the running call (not as seen from a callee). */
     own: Record<string, StoryValue> | null;
   }
-  const moments: StoryCallMoment[] = story.steps.map(() => ({ inProgress: false, unwinds: [], ordinal: 0 }));
+  const moments: StoryCallMoment[] = story.steps.map(() => ({
+    inProgress: false,
+    unwinds: [],
+    ordinal: 0,
+  }));
   let stack: Frame[] = [];
   const end = (frames: Frame[], offset: number): StoryReturn[] =>
     frames
       .map((frame, index) => ({ frame, depth: offset + index }))
       .filter(({ frame }) => frame.returned)
-      .map(({ frame, depth }) => ({ depth, value: frame.returned!.value, state: frame.state, heap: frame.returned!.heap }))
+      .map(({ frame, depth }) => ({
+        depth,
+        value: frame.returned!.value,
+        state: frame.state,
+        heap: frame.returned!.heap,
+      }))
       .reverse();
   const before: (Record<string, StoryValue> | null)[] = story.steps.map(() => null);
   story.steps.forEach((step, index) => {
@@ -974,10 +1106,17 @@ export function callTimeline(story: DsaStoryV1): StoryCallMoment[] {
     }
     while (stack.length < frames.length) {
       const parent = stack.at(-1);
-      stack.push({ state: {}, returned: null, children: 0, ordinal: parent ? parent.children++ : 0, own: null });
+      stack.push({
+        state: {},
+        returned: null,
+        children: 0,
+        ordinal: parent ? parent.children++ : 0,
+        own: null,
+      });
     }
     frames.forEach((frame, depth) => (stack[depth].state = frame.state));
-    if ('returns' in step) stack[frames.length - 1].returned = { value: step.returns ?? null, heap: step.heap ?? {} };
+    if ('returns' in step)
+      stack[frames.length - 1].returned = { value: step.returns ?? null, heap: step.heap ?? {} };
     moments[index].ordinal = stack[frames.length - 1].ordinal;
     stack[frames.length - 1].own = step.state;
   });
@@ -990,7 +1129,9 @@ export function callTimeline(story: DsaStoryV1): StoryCallMoment[] {
 }
 /** Java and Go name functions in camelCase (max_depth -> maxDepth). */
 function functionName(name: string, language: PatternLanguage): string {
-  return language === 'python' ? name : name.replace(/_([a-z0-9])/g, (_, letter: string) => letter.toUpperCase());
+  return language === 'python'
+    ? name
+    : name.replace(/_([a-z0-9])/g, (_, letter: string) => letter.toUpperCase());
 }
 
 export interface CallsModel {
@@ -1009,14 +1150,18 @@ export function callsModel(
   const all: StoryFrame[] = [...(step.calls ?? []), { fn: step.fn ?? 'call', state: step.state }];
   const tones = viewTones(step, view.id, all.length);
   const own =
-    'returns' in step && !moment?.inProgress ? formatValue(step.returns, language, step.heap, 40, aliases) : null;
+    'returns' in step && !moment?.inProgress
+      ? formatValue(step.returns, language, step.heap, 40, aliases)
+      : null;
   return {
     returns: own,
     frames: all.map((frame, index) => {
       const names = view.show ?? Object.keys(frame.state).slice(0, 2);
       const args = names
         .filter((name) => name in frame.state)
-        .map((name) => `${name}=${formatValue(frame.state[name], language, step.heap, 28, aliases)}`);
+        .map(
+          (name) => `${name}=${formatValue(frame.state[name], language, step.heap, 28, aliases)}`,
+        );
       const ends = moment?.unwinds.find((item) => item.depth === index);
       return {
         label: `${functionName(frame.fn, language)}(${args.join(', ')})`,
@@ -1042,7 +1187,10 @@ export interface NodeShape {
   pointers: string[];
   /** Linked list with `sentinels`: a dummy node, drawn as a box. */
   sentinel?: boolean;
-  /** Linked list with `follow`: a node off the list; its pointer labels sit below it, clear of its stale links. */
+  /**
+   * Linked list with `follow`: a node off the list; its pointer labels sit below it, clear of its
+   * stale links.
+   */
   labelsBelow?: boolean;
   /** Tree with `returned`: what this node's finished call returned ("depth 2"). */
   badge?: string;
@@ -1095,7 +1243,10 @@ function nodeText(node: StoryHeapObject | undefined, language: PatternLanguage):
   return value === undefined ? node.$type : formatValue(value, language, {}, 6);
 }
 
-/** Linked list: every node keeps one slot for the whole story; arrows follow each step's real `next`. */
+/**
+ * Linked list: every node keeps one slot for the whole story; arrows follow each step's real
+ * `next`.
+ */
 export function linkedListModel(
   view: StoryView,
   story: DsaStoryV1,
@@ -1106,7 +1257,10 @@ export function linkedListModel(
   const order: string[] = [];
   for (const raw of story.steps) {
     const step = shownStep(raw);
-    const roots = [...rootsOf(view, frameValue(view, step)), ...(view.pointers ?? []).map((p) => step.state[p.var])];
+    const roots = [
+      ...rootsOf(view, frameValue(view, step)),
+      ...(view.pointers ?? []).map((p) => step.state[p.var]),
+    ];
     for (const root of roots) {
       let ref = isRef(root) ? root.$ref : null;
       const visited = new Set<string>();
@@ -1120,7 +1274,16 @@ export function linkedListModel(
   }
   const step = shownStep(story.steps[index]);
   const heap = step.heap ?? {};
-  if (!order.length) return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+  if (!order.length)
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   const gap = 84;
   const y = 70;
   const x = (slot: number) => 40 + slot * gap;
@@ -1154,9 +1317,17 @@ export function linkedListModel(
       path = `M${from.x - R} ${y}H${to.x + R + 4}`;
     else {
       const lift = to.x > from.x ? -46 : 46;
-      path = `M${from.x} ${y + (lift < 0 ? -R : R)}C${from.x} ${y + lift} ${to.x} ${y + lift} ${to.x} ${y + (lift < 0 ? -R - 4 : R + 4)}`;
+      path =
+        `M${from.x} ${y + (lift < 0 ? -R : R)}C${from.x} ${y + lift} ${to.x} ${y + lift} ` +
+        `${to.x} ${y + (lift < 0 ? -R - 4 : R + 4)}`;
     }
-    edges.push({ id: `${node.id}-next`, from: node.id, to: target?.id ?? 'null', path, directed: !!to });
+    edges.push({
+      id: `${node.id}-next`,
+      from: node.id,
+      to: target?.id ?? 'null',
+      path,
+      directed: !!to,
+    });
   }
   // Extra pointer fields (random): dashed arrows that curve below the row; a self-link loops.
   for (const node of nodes) {
@@ -1166,9 +1337,19 @@ export function linkedListModel(
       if (!target) continue;
       const path =
         target.id === node.id
-          ? `M${node.x - 8} ${y + R - 2}C${node.x - 30} ${y + 62} ${node.x + 30} ${y + 62} ${node.x + 9} ${y + R + 3}`
-          : `M${node.x} ${y + R}C${node.x} ${y + 64 + Math.abs(target.x - node.x) / 8} ${target.x} ${y + 64 + Math.abs(target.x - node.x) / 8} ${target.x} ${y + R + 4}`;
-      edges.push({ id: `${node.id}-${field}`, from: node.id, to: target.id, path, directed: true, kind: 'extra' });
+          ? `M${node.x - 8} ${y + R - 2}C${node.x - 30} ${y + 62} ${node.x + 30} ` +
+            `${y + 62} ${node.x + 9} ${y + R + 3}`
+          : `M${node.x} ${y + R}C${node.x} ${y + 64 + Math.abs(target.x - node.x) / 8} ` +
+            `${target.x} ${y + 64 + Math.abs(target.x - node.x) / 8} ${target.x} ` +
+            `${y + R + 4}`;
+      edges.push({
+        id: `${node.id}-${field}`,
+        from: node.id,
+        to: target.id,
+        path,
+        directed: true,
+        kind: 'extra',
+      });
     }
   }
   return {
@@ -1191,7 +1372,8 @@ function rootsOf(view: StoryView, value: StoryValue | undefined): (StoryValue | 
 /** A local from the current frame, else from the nearest call below it that has it. */
 function liveLocal(step: StoryStep, name: string): StoryValue | undefined {
   if (name in step.state) return step.state[name];
-  for (const frame of [...(step.calls ?? [])].reverse()) if (name in frame.state) return frame.state[name];
+  for (const frame of [...(step.calls ?? [])].reverse())
+    if (name in frame.state) return frame.state[name];
   return undefined;
 }
 interface FollowLayout {
@@ -1225,19 +1407,39 @@ function followLayout(view: StoryView, step: StoryStep): FollowLayout {
     };
     const after = near('next');
     const before = view.prevField ? near(view.prevField) : undefined;
-    let spot = Math.max(x(0), before && after ? (before.x + after.x) / 2 : after ? after.x - FOLLOW_GAP / 2 : x(1));
-    const taken = () => [...spots.values()].some((item) => item.y === FOLLOW_ROW2 && Math.abs(item.x - spot) < FOLLOW_GAP * 0.9);
+    let spot = Math.max(
+      x(0),
+      before && after ? (before.x + after.x) / 2 : after ? after.x - FOLLOW_GAP / 2 : x(1),
+    );
+    const taken = () =>
+      [...spots.values()].some(
+        (item) => item.y === FOLLOW_ROW2 && Math.abs(item.x - spot) < FOLLOW_GAP * 0.9,
+      );
     while (taken()) spot += FOLLOW_GAP;
     spots.set(value.$ref, { x: spot, y: FOLLOW_ROW2 });
   }
   return { chain, spots };
 }
 /** Linked list with `follow`: positions follow each step's real order; back links optional. */
-function followListModel(view: StoryView, story: DsaStoryV1, index: number, language: PatternLanguage): NodeDiagram {
+function followListModel(
+  view: StoryView,
+  story: DsaStoryV1,
+  index: number,
+  language: PatternLanguage,
+): NodeDiagram {
   const step = shownStep(story.steps[index]);
   const heap = step.heap ?? {};
   const layout = followLayout(view, step);
-  if (!layout.spots.size) return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+  if (!layout.spots.size)
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   // One frame size for the whole story, so the drawing doesn't rescale from step to step.
   let right = 0;
   let twoRows = false;
@@ -1284,7 +1486,10 @@ function followListModel(view: StoryView, story: DsaStoryV1, index: number, lang
     ...(spot.y === FOLLOW_ROW2 ? { labelsBelow: true } : {}),
   }));
   const edges: EdgeShape[] = [];
-  const fields: [string, 'next' | 'prev'][] = [['next', 'next'], ...(view.prevField ? [[view.prevField, 'prev'] as [string, 'prev']] : [])];
+  const fields: [string, 'next' | 'prev'][] = [
+    ['next', 'next'],
+    ...(view.prevField ? [[view.prevField, 'prev'] as [string, 'prev']] : []),
+  ];
   for (const node of nodes) {
     for (const [field, role] of fields) {
       const link = heap[node.id][field];
@@ -1301,13 +1506,18 @@ function followListModel(view: StoryView, story: DsaStoryV1, index: number, lang
       } else if (a.y === b.y) {
         const lift = role === 'next' ? -46 : 46;
         const edge = lift < 0 ? -R : R;
-        path = `M${a.x} ${a.y + edge}C${a.x} ${a.y + lift} ${b.x} ${b.y + lift} ${b.x} ${b.y + edge + Math.sign(edge) * 4}`;
+        path =
+          `M${a.x} ${a.y + edge}C${a.x} ${a.y + lift} ${b.x} ${b.y + lift} ${b.x} ` +
+          `${b.y + edge + Math.sign(edge) * 4}`;
       } else {
         const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
         const ux = (b.x - a.x) / length;
         const uy = (b.y - a.y) / length;
         const side = role === 'next' ? 4 : -4;
-        path = `M${a.x + ux * R - uy * side} ${a.y + uy * R + ux * side}L${b.x - ux * (R + 5) - uy * side} ${b.y - uy * (R + 5) + ux * side}`;
+        path =
+          `M${a.x + ux * R - uy * side} ` +
+          `${a.y + uy * R + ux * side}L${b.x - ux * (R + 5) - uy * side} ` +
+          `${b.y - uy * (R + 5) + ux * side}`;
       }
       const offList = !layout.chain.includes(node.id);
       edges.push({
@@ -1316,7 +1526,11 @@ function followListModel(view: StoryView, story: DsaStoryV1, index: number, lang
         to: link.$ref,
         path,
         directed: true,
-        ...(offList ? { kind: 'stale' as const } : role === 'prev' ? { kind: 'prev' as const } : {}),
+        ...(offList
+          ? { kind: 'stale' as const }
+          : role === 'prev'
+            ? { kind: 'prev' as const }
+            : {}),
       });
     }
   }
@@ -1356,7 +1570,11 @@ export function treeModel(
       for (const ended of moment.unwinds) {
         const node = ended.state[view.returned.var];
         if (isRef(node))
-          badges.set(node.$ref, `${view.returned.label ? `${view.returned.label} ` : ''}${formatValue(ended.value, language, ended.heap, 12)}`);
+          badges.set(
+            node.$ref,
+            `${view.returned.label ? `${view.returned.label} ` : ''}` +
+              `${formatValue(ended.value, language, ended.heap, 12)}`,
+          );
       }
     for (const node of model.nodes) if (badges.has(node.id)) node.badge = badges.get(node.id);
     model.width += 40;
@@ -1394,7 +1612,15 @@ function treeLayout(view: StoryView, step: StoryStep, language: PatternLanguage)
   const heap = step.heap ?? {};
   const root = frameValue(view, step);
   if (!isRef(root) || !heap[root.$ref])
-    return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   const placed: { id: string; order: number; depth: number }[] = [];
   const child = (ref: string, side: 'left' | 'right') => {
     const value = heap[ref]?.[side];
@@ -1413,7 +1639,9 @@ function treeLayout(view: StoryView, step: StoryStep, language: PatternLanguage)
   const levels = Math.max(...placed.map((item) => item.depth)) + 1;
   const tones = viewTones(step, view.id);
   const labels = pointerLabels(view, step);
-  const position = new Map(placed.map((item) => [item.id, { x: 36 + item.order * gap, y: 44 + item.depth * 78 }]));
+  const position = new Map(
+    placed.map((item) => [item.id, { x: 36 + item.order * gap, y: 44 + item.depth * 78 }]),
+  );
   const nodes = placed.map((item) => ({
     id: item.id,
     ...position.get(item.id)!,
@@ -1428,7 +1656,13 @@ function treeLayout(view: StoryView, step: StoryStep, language: PatternLanguage)
       if (!target || !position.has(target)) continue;
       const a = position.get(item.id)!;
       const b = position.get(target)!;
-      edges.push({ id: `${item.id}-${side}`, from: item.id, to: target, path: `M${a.x} ${a.y + R}L${b.x} ${b.y - R}`, directed: false });
+      edges.push({
+        id: `${item.id}-${side}`,
+        from: item.id,
+        to: target,
+        path: `M${a.x} ${a.y + R}L${b.x} ${b.y - R}`,
+        directed: false,
+      });
     }
   }
   return {
@@ -1450,12 +1684,25 @@ function treeLayout(view: StoryView, step: StoryStep, language: PatternLanguage)
  * Pointers read the current call, else the callers (`node` stays labelled while a helper
  * runs). A pointer-held node not linked in yet (just built) is drawn apart, top right.
  */
-export function trieModel(view: StoryView, raw: StoryStep, language: PatternLanguage, story?: DsaStoryV1): NodeDiagram {
+export function trieModel(
+  view: StoryView,
+  raw: StoryStep,
+  language: PatternLanguage,
+  story?: DsaStoryV1,
+): NodeDiagram {
   const step = shownStep(raw);
   const heap = step.heap ?? {};
   const root = frameValue(view, step);
   if (!isRef(root) || !heap[root.$ref])
-    return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   const childrenField = view.children ?? 'children';
   const endField = view.end ?? 'terminal';
   const children = (ref: string): [string, string][] =>
@@ -1469,7 +1716,9 @@ export function trieModel(view: StoryView, raw: StoryStep, language: PatternLang
   const visit = (ref: string, depth: number, text: string): number => {
     if (placed.has(ref) || depth > 24) return 0;
     placed.set(ref, { x: 0, depth, text });
-    const xs = children(ref).map(([char, child]) => visit(child, depth + 1, char)).filter((x) => x > 0);
+    const xs = children(ref)
+      .map(([char, child]) => visit(child, depth + 1, char))
+      .filter((x) => x > 0);
     const x = xs.length ? (xs[0] + xs[xs.length - 1]) / 2 : 30 + leaves++ * gap;
     placed.get(ref)!.x = x;
     return x;
@@ -1484,10 +1733,18 @@ export function trieModel(view: StoryView, raw: StoryStep, language: PatternLang
     if (!id) continue;
     labels.set(id, [...(labels.get(id) ?? []), pointer.label ?? rename(pointer.var)]);
     // Only trie nodes (objects with the children field) are drawn apart, never their owner.
-    if (id !== 'null' && !placed.has(id) && heap[id]?.[childrenField] !== undefined && !loose.includes(id)) loose.push(id);
+    if (
+      id !== 'null' &&
+      !placed.has(id) &&
+      heap[id]?.[childrenField] !== undefined &&
+      !loose.includes(id)
+    )
+      loose.push(id);
   }
   const right = Math.max(...[...placed.values()].map((item) => item.x));
-  loose.forEach((id, slot) => placed.set(id, { x: right + gap * (slot + 1.5), depth: 1, text: '' }));
+  loose.forEach((id, slot) =>
+    placed.set(id, { x: right + gap * (slot + 1.5), depth: 1, text: '' }),
+  );
   const tones = viewTones(step, view.id);
   const y = (depth: number) => 40 + depth * levelGap;
   const nodes: NodeShape[] = [...placed].map(([id, item]) => ({
@@ -1506,7 +1763,13 @@ export function trieModel(view: StoryView, raw: StoryStep, language: PatternLang
       const a = placed.get(id)!;
       const b = placed.get(child);
       if (!b || b.depth !== a.depth + 1) continue;
-      edges.push({ id: `${id}-${child}`, from: id, to: child, directed: false, path: `M${a.x} ${y(a.depth) + R}L${b.x} ${y(b.depth) - R}` });
+      edges.push({
+        id: `${id}-${child}`,
+        from: id,
+        to: child,
+        directed: false,
+        path: `M${a.x} ${y(a.depth) + R}L${b.x} ${y(b.depth) - R}`,
+      });
     }
   const widest = Math.max(...[...placed.values()].map((item) => item.x));
   const deepest = Math.max(...[...placed.values()].map((item) => item.depth));
@@ -1529,26 +1792,52 @@ export function trieModel(view: StoryView, raw: StoryStep, language: PatternLang
  * their `val`. `layout` is keyed by that label text. A directed edge whose reverse also exists is
  * drawn as two arrows side by side.
  */
-function objectGraphModel(view: StoryView, step: StoryStep, language: PatternLanguage, story?: DsaStoryV1): NodeDiagram {
+function objectGraphModel(
+  view: StoryView,
+  step: StoryStep,
+  language: PatternLanguage,
+  story?: DsaStoryV1,
+): NodeDiagram {
   const heap = step.heap ?? {};
   const field = view.neighbors!;
   const order: string[] = [];
-  const todo = rootsOf(view, frameValue(view, step)).flatMap((root) => (isRef(root) ? [root.$ref] : []));
+  const todo = rootsOf(view, frameValue(view, step)).flatMap((root) =>
+    isRef(root) ? [root.$ref] : [],
+  );
   while (todo.length) {
     const ref = todo.shift()!;
     if (order.includes(ref) || !heap[ref]) continue;
     order.push(ref);
     for (const link of sequenceOf(heap[ref][field]) ?? []) if (isRef(link)) todo.push(link.$ref);
   }
-  if (!order.length) return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+  if (!order.length)
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   const size = 300;
   const text = (ref: string) => nodeText(heap[ref], language);
   const position = new Map(
     order.map((ref, index) => {
       const fixed = view.layout?.[text(ref)];
-      if (fixed) return [ref, { x: 30 + (fixed[0] / 100) * (size - 60), y: 30 + (fixed[1] / 100) * (size - 60) }];
+      if (fixed)
+        return [
+          ref,
+          { x: 30 + (fixed[0] / 100) * (size - 60), y: 30 + (fixed[1] / 100) * (size - 60) },
+        ];
       const angle = (2 * Math.PI * index) / order.length - Math.PI / 2;
-      return [ref, { x: size / 2 + Math.cos(angle) * (size / 2 - 40), y: size / 2 + Math.sin(angle) * (size / 2 - 40) }];
+      return [
+        ref,
+        {
+          x: size / 2 + Math.cos(angle) * (size / 2 - 40),
+          y: size / 2 + Math.sin(angle) * (size / 2 - 40),
+        },
+      ];
     }),
   );
   const tones = viewTones(step, view.id);
@@ -1556,7 +1845,8 @@ function objectGraphModel(view: StoryView, step: StoryStep, language: PatternLan
   for (const pointer of view.pointers ?? []) {
     const held = step.state[pointer.var];
     if (!isRef(held) || !position.has(held.$ref)) continue;
-    const label = pointer.label ?? (story ? displayName(story, pointer.var, language) : pointer.var);
+    const label =
+      pointer.label ?? (story ? displayName(story, pointer.var, language) : pointer.var);
     labels.set(held.$ref, [...(labels.get(held.$ref) ?? []), label]);
   }
   const nodes: NodeShape[] = order.map((ref) => ({
@@ -1568,7 +1858,8 @@ function objectGraphModel(view: StoryView, step: StoryStep, language: PatternLan
   }));
   const pairs = new Set<string>();
   for (const ref of order)
-    for (const link of sequenceOf(heap[ref][field]) ?? []) if (isRef(link) && position.has(link.$ref)) pairs.add(`${ref}>${link.$ref}`);
+    for (const link of sequenceOf(heap[ref][field]) ?? [])
+      if (isRef(link) && position.has(link.$ref)) pairs.add(`${ref}>${link.$ref}`);
   const edges: EdgeShape[] = [];
   const seen = new Set<string>();
   for (const pair of pairs) {
@@ -1588,11 +1879,22 @@ function objectGraphModel(view: StoryView, step: StoryStep, language: PatternLan
       from: keyId({ $ref: from }),
       to: keyId({ $ref: to }),
       directed: !!view.directed,
-      path: `M${a.x + ux * R - uy * side} ${a.y + uy * R + ux * side}L${b.x - ux * end - uy * side} ${b.y - uy * end + ux * side}`,
+      path:
+        `M${a.x + ux * R - uy * side} ` +
+        `${a.y + uy * R + ux * side}L${b.x - ux * end - uy * side} ` +
+        `${b.y - uy * end + ux * side}`,
     });
   }
   toneEdges(edges, nodes);
-  return { missing: false, width: size, height: size, nodes, edges, nullPointers: [], nullAt: null };
+  return {
+    missing: false,
+    width: size,
+    height: size,
+    nodes,
+    edges,
+    nullPointers: [],
+    nullAt: null,
+  };
 }
 
 /**
@@ -1604,9 +1906,19 @@ function objectGraphModel(view: StoryView, step: StoryStep, language: PatternLan
  *   ends are both done.
  * Undirected edges are checked both ways round.
  */
-export function graphEdgeTone(from: StoryTone[], to: StoryTone[], directed: boolean): StoryTone | undefined {
+export function graphEdgeTone(
+  from: StoryTone[],
+  to: StoryTone[],
+  directed: boolean,
+): StoryTone | undefined {
   const followed = (a: StoryTone[], b: StoryTone[]) =>
-    a.includes('active') ? (b.includes('new') ? 'new' : b.includes('compare') ? 'compare' : undefined) : undefined;
+    a.includes('active')
+      ? b.includes('new')
+        ? 'new'
+        : b.includes('compare')
+          ? 'compare'
+          : undefined
+      : undefined;
   const live = followed(from, to) ?? (directed ? undefined : followed(to, from));
   if (live) return live;
   if (from.includes('found') && to.includes('found')) return 'found';
@@ -1625,13 +1937,25 @@ function toneEdges(edges: EdgeShape[], nodes: NodeShape[]): void {
  * Grid as a graph (`gridNodes`): the cells holding a listed value are nodes "row,col" in grid
  * position, joined to the up/down/left/right cells that are nodes too.
  */
-function gridGraphModel(view: StoryView, value: StoryValue | undefined, step: StoryStep): NodeDiagram {
+function gridGraphModel(
+  view: StoryView,
+  value: StoryValue | undefined,
+  step: StoryStep,
+): NodeDiagram {
   const rows = (sequenceOf(value) ?? []).map((row) => gridRow(row) ?? []);
   const wanted = new Set((view.gridNodes ?? []).map((item) => keyId(item)));
   const isNode = (r: number, c: number) =>
     r >= 0 && r < rows.length && c >= 0 && c < rows[r].length && wanted.has(keyId(rows[r][c]));
   if (!rows.length)
-    return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   const gap = 70;
   const pad = 34;
   const tones = viewTones(step, view.id);
@@ -1641,11 +1965,30 @@ function gridGraphModel(view: StoryView, value: StoryValue | undefined, step: St
     row.forEach((_, c) => {
       if (!isNode(r, c)) return;
       const id = keyId(`${r},${c}`);
-      nodes.push({ id, x: pad + c * gap, y: pad + r * gap, text: `${r},${c}`, tones: tones.get(id) ?? [], pointers: [] });
+      nodes.push({
+        id,
+        x: pad + c * gap,
+        y: pad + r * gap,
+        text: `${r},${c}`,
+        tones: tones.get(id) ?? [],
+        pointers: [],
+      });
       if (isNode(r, c + 1))
-        edges.push({ id: `${id}~r`, from: id, to: keyId(`${r},${c + 1}`), directed: false, path: `M${pad + c * gap + R} ${pad + r * gap}h${gap - 2 * R}` });
+        edges.push({
+          id: `${id}~r`,
+          from: id,
+          to: keyId(`${r},${c + 1}`),
+          directed: false,
+          path: `M${pad + c * gap + R} ${pad + r * gap}h${gap - 2 * R}`,
+        });
       if (isNode(r + 1, c))
-        edges.push({ id: `${id}~d`, from: id, to: keyId(`${r + 1},${c}`), directed: false, path: `M${pad + c * gap} ${pad + r * gap + R}v${gap - 2 * R}` });
+        edges.push({
+          id: `${id}~d`,
+          from: id,
+          to: keyId(`${r + 1},${c}`),
+          directed: false,
+          path: `M${pad + c * gap} ${pad + r * gap + R}v${gap - 2 * R}`,
+        });
     }),
   );
   toneEdges(edges, nodes);
@@ -1679,12 +2022,23 @@ export function graphModel(
   const map = entriesOf(value);
   const list = sequenceOf(value);
   const adjacency: [StoryValue, StoryValue[]][] = map
-    ? map.map(([key, neighbors]) => [key, sequenceOf(neighbors ?? null) ?? entriesOf(neighbors ?? null)?.map(([k]) => k) ?? []])
+    ? map.map(([key, neighbors]) => [
+        key,
+        sequenceOf(neighbors ?? null) ?? entriesOf(neighbors ?? null)?.map(([k]) => k) ?? [],
+      ])
     : list
       ? list.map((neighbors, index) => [index, sequenceOf(neighbors) ?? []])
       : [];
   if (!adjacency.length)
-    return { missing: true, width: 0, height: 0, nodes: [], edges: [], nullPointers: [], nullAt: null };
+    return {
+      missing: true,
+      width: 0,
+      height: 0,
+      nodes: [],
+      edges: [],
+      nullPointers: [],
+      nullAt: null,
+    };
   const keys = new Map<string, StoryValue>();
   for (const [key, neighbors] of adjacency) {
     keys.set(keyId(key), key);
@@ -1695,9 +2049,13 @@ export function graphModel(
   const place = (id: string, index: number) => {
     const raw = keys.get(id)!;
     const fixed = view.layout?.[typeof raw === 'string' ? raw : JSON.stringify(raw)];
-    if (fixed) return { x: 30 + (fixed[0] / 100) * (size - 60), y: 30 + (fixed[1] / 100) * (size - 60) };
+    if (fixed)
+      return { x: 30 + (fixed[0] / 100) * (size - 60), y: 30 + (fixed[1] / 100) * (size - 60) };
     const angle = (2 * Math.PI * index) / ids.length - Math.PI / 2;
-    return { x: size / 2 + Math.cos(angle) * (size / 2 - 36), y: size / 2 + Math.sin(angle) * (size / 2 - 36) };
+    return {
+      x: size / 2 + Math.cos(angle) * (size / 2 - 36),
+      y: size / 2 + Math.sin(angle) * (size / 2 - 36),
+    };
   };
   const position = new Map(ids.map((id, index) => [id, place(id, index)]));
   const tones = viewTones(step, view.id);
@@ -1705,7 +2063,8 @@ export function graphModel(
   for (const pointer of view.pointers ?? []) {
     const held = step.state[pointer.var];
     if (held === undefined || held === null || !keys.has(keyId(held))) continue;
-    const label = pointer.label ?? (story ? displayName(story, pointer.var, language) : pointer.var);
+    const label =
+      pointer.label ?? (story ? displayName(story, pointer.var, language) : pointer.var);
     labels.set(keyId(held), [...(labels.get(keyId(held)) ?? []), label]);
   }
   const nodes: NodeShape[] = ids.map((id) => ({
@@ -1740,7 +2099,15 @@ export function graphModel(
     }
   }
   toneEdges(edges, nodes);
-  return { missing: false, width: size, height: size, nodes, edges, nullPointers: [], nullAt: null };
+  return {
+    missing: false,
+    width: size,
+    height: size,
+    nodes,
+    edges,
+    nullPointers: [],
+    nullAt: null,
+  };
 }
 
 /**
@@ -1788,7 +2155,11 @@ export function viewSummary(
     case 'stack':
     case 'queue': {
       const model = sequenceModel(view, step, language);
-      if (model.missing) return `${view.title}: ${outOfScope(view, story, index) ? 'no longer in scope' : 'not created yet'}.`;
+      if (model.missing)
+        return (
+          `${view.title}: ` +
+          `${outOfScope(view, story, index) ? 'no longer in scope' : 'not created yet'}.`
+        );
       const order =
         view.kind === 'stack'
           ? ' (bottom to top)'
@@ -1801,26 +2172,70 @@ export function viewSummary(
                 : '';
       const unit = view.kind === 'bits' ? 'bit' : view.kind === 'number-line' ? 'at' : 'index';
       const pointers = model.pointers
-        .map((pointer) => `${pointer.label} ${pointer.past ? 'at the end' : `${unit === 'at' ? 'at' : `at ${unit}`} ${pointer.index}`}`)
+        .map(
+          (pointer) =>
+            `${pointer.label} ` +
+            (pointer.past
+              ? 'at the end'
+              : `${unit === 'at' ? 'at' : `at ${unit}`} ${pointer.index}`),
+        )
         .join(', ');
       const cells = model.cells.map((cell) =>
-        cell.gap ? `${cell.gap} more cells` : view.kind === 'string' ? cell.text : view.window ? `[${cell.index}] ${cell.text}` : cell.text,
+        cell.gap
+          ? `${cell.gap} more cells`
+          : view.kind === 'string'
+            ? cell.text
+            : view.window
+              ? `[${cell.index}] ${cell.text}`
+              : cell.text,
       );
       const value = view.kind === 'bits' ? ` ${model.note}` : '';
-      return `${view.title}${order}: ${cells.join(view.kind === 'string' ? '' : ', ') || 'empty'}${value}.${pointers ? ` ${pointers}.` : ''}${toneSummary(model.cells.filter((cell) => !cell.gap).map((cell) => ({ label: `${unit === 'at' ? '' : `${unit} `}${cell.index}`, tones: cell.tones })))}`;
+      return (
+        `${view.title}${order}: ` +
+        `${cells.join(view.kind === 'string' ? '' : ', ') || 'empty'}${value}.` +
+        `${pointers ? ` ${pointers}.` : ''}` +
+        toneSummary(
+          model.cells
+            .filter((cell) => !cell.gap)
+            .map((cell) => ({
+              label: `${unit === 'at' ? '' : `${unit} `}${cell.index}`,
+              tones: cell.tones,
+            })),
+        )
+      );
     }
     case 'map':
     case 'set': {
       const model = mapModel(view, step, language);
-      if (model.missing) return `${view.title}: ${outOfScope(view, story, index) ? 'no longer in scope' : 'not created yet'}.`;
-      const entries = model.entries.map((entry) => (entry.value === null ? entry.key : `${entry.key} → ${entry.value}`));
-      return `${view.title}: ${entries.join(', ') || 'empty'}.${toneSummary(model.entries.map((entry) => ({ label: entry.key, tones: entry.tones })))}${model.misses.length ? ` Looked up ${model.misses.join(', ')}: not present.` : ''}`;
+      if (model.missing)
+        return (
+          `${view.title}: ` +
+          `${outOfScope(view, story, index) ? 'no longer in scope' : 'not created yet'}.`
+        );
+      const entries = model.entries.map((entry) =>
+        entry.value === null ? entry.key : `${entry.key} → ${entry.value}`,
+      );
+      return (
+        `${view.title}: ` +
+        `${entries.join(', ') || 'empty'}.` +
+        `${toneSummary(model.entries.map((entry) => ({ label: entry.key, tones: entry.tones })))}` +
+        `${model.misses.length ? ` Looked up ${model.misses.join(', ')}: not present.` : ''}`
+      );
     }
     case 'grid': {
       const model = gridModel(view, step, language);
-      if (model.missing) return `${view.title}: ${outOfScope(view, story, index) ? 'no longer in scope' : 'not created yet'}.`;
+      if (model.missing)
+        return (
+          `${view.title}: ` +
+          `${outOfScope(view, story, index) ? 'no longer in scope' : 'not created yet'}.`
+        );
       const cells = model.rows.flat();
-      return `${view.title}: ${model.rows.length} rows.${model.cursor ? ` Cursor at row ${model.cursor[0]}, column ${model.cursor[1]}.` : ''}${toneSummary(cells.map((cell) => ({ label: `(${cell.key})`, tones: cell.tones })))}`;
+      return (
+        `${view.title}: ${model.rows.length} ` +
+        'rows.' +
+        (model.cursor ? ` Cursor at row ${model.cursor[0]}, column ${model.cursor[1]}.` : '') +
+        `${toneSummary(cells.map((cell) => ({ label: `(${cell.key})`, tones: cell.tones })))}`
+      );
     }
     case 'calls': {
       const model = callsModel(view, step, language, callTimeline(story)[index]);
@@ -1828,7 +2243,11 @@ export function viewSummary(
         .filter((frame) => frame.returns !== null)
         .reverse()
         .map((frame) => `${frame.label} returns ${frame.returns}`);
-      return `${view.title}, bottom to top: ${model.frames.map((frame) => frame.label).join(', ')}.${ending.length ? ` Then ${ending.join(', then ')}.` : ''}`;
+      return (
+        `${view.title}, bottom to ` +
+        `top: ${model.frames.map((frame) => frame.label).join(', ')}.` +
+        `${ending.length ? ` Then ${ending.join(', then ')}.` : ''}`
+      );
     }
     default: {
       const model =
@@ -1844,7 +2263,8 @@ export function viewSummary(
         .filter((node) => node.pointers.length)
         .map((node) => `${node.pointers.join(' and ')} at ${node.text}`);
       if (model.nullPointers.length) pointers.push(`${model.nullPointers.join(' and ')} at null`);
-      for (const node of model.nodes) if (node.badge) pointers.push(`${node.text} returned ${node.badge}`);
+      for (const node of model.nodes)
+        if (node.badge) pointers.push(`${node.text} returned ${node.badge}`);
       const ends = model.nodes.filter((node) => node.end).map((node) => node.text);
       if (ends.length) pointers.push(`a word ends at ${ends.join(', ')}`);
       const text = new Map(model.nodes.map((node) => [node.id, node.text]));
@@ -1854,7 +2274,13 @@ export function viewSummary(
           label: `edge ${text.get(edge.from)} ${edge.directed ? '→' : '–'} ${text.get(edge.to)}`,
           tones: [edge.tone!],
         }));
-      return `${view.title}: ${model.nodes.length} nodes (${model.nodes.map((node) => node.text).join(', ')}).${pointers.length ? ` ${pointers.join('; ')}.` : ''}${toneSummary(model.nodes.map((node) => ({ label: node.text, tones: node.tones })))}${edges.length ? toneSummary(edges) : ''}`;
+      return (
+        `${view.title}: ${model.nodes.length} nodes ` +
+        `(${model.nodes.map((node) => node.text).join(', ')}).` +
+        `${pointers.length ? ` ${pointers.join('; ')}.` : ''}` +
+        `${toneSummary(model.nodes.map((node) => ({ label: node.text, tones: node.tones })))}` +
+        `${edges.length ? toneSummary(edges) : ''}`
+      );
     }
   }
 }

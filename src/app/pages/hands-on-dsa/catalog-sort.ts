@@ -38,7 +38,11 @@ export type SortDirection = 'ascending' | 'descending' | 'none';
 
 export function columnSortDirection(sort: HandsOnSort, id: SortColumnId): SortDirection {
   const column = SORT_COLUMNS.find((item) => item.id === id)!;
-  return sort === column.ascending ? 'ascending' : sort === column.descending ? 'descending' : 'none';
+  return sort === column.ascending
+    ? 'ascending'
+    : sort === column.descending
+      ? 'descending'
+      : 'none';
 }
 
 /** The arrow beside a header: the current direction, or ↕ when the column is not the sort. */
@@ -55,7 +59,8 @@ export function columnSortLabel(
 ): string {
   if (column.id === 'difficulty' && difficultyFiltered)
     return 'Difficulty: sorting unavailable while filtered to one difficulty';
-  const direction = columnSortDirection(sort, column.id) === 'ascending' ? 'descending' : 'ascending';
+  const direction =
+    columnSortDirection(sort, column.id) === 'ascending' ? 'descending' : 'ascending';
   return `Sort by ${column.label.toLowerCase()}, ${direction}`;
 }
 

@@ -48,14 +48,23 @@ p {
   border: 1px solid var(--line);
   border-radius: 22px;
   background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-strong) 12%, transparent), transparent 24rem),
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--accent-strong) 12%, transparent),
+      transparent 24rem
+    ),
     var(--surface);
 }
 .start-free-hero::before {
   position: absolute;
   inset: 0 0 auto;
   height: 4px;
-  background: linear-gradient(90deg, var(--path-learn) 0 33.3%, var(--path-grow) 33.3% 66.6%, var(--path-blaze) 66.6%);
+  background: linear-gradient(
+    90deg,
+    var(--path-learn) 0 33.3%,
+    var(--path-grow) 33.3% 66.6%,
+    var(--path-blaze) 66.6%
+  );
   content: '';
 }
 .eyebrow {
@@ -256,22 +265,54 @@ p {
     'aicv systems systems cloud'
     'sysd stories aibuild aibuild';
 }
-.bento [data-area='alg'] { grid-area: alg; }
-.bento [data-area='sql'] { grid-area: sql; }
-.bento [data-area='spring'] { grid-area: spring; }
-.bento [data-area='dist'] { grid-area: dist; }
-.bento [data-area='aieng'] { grid-area: aieng; }
-.bento [data-area='git'] { grid-area: git; }
-.bento [data-area='react'] { grid-area: react; }
-.bento [data-area='docker'] { grid-area: docker; }
-.bento [data-area='aicv'] { grid-area: aicv; }
-.bento [data-area='sysd'] { grid-area: sysd; }
-.bento [data-area='systems'] { grid-area: systems; }
-.bento [data-area='fund'] { grid-area: fund; }
-.bento [data-area='stories'] { grid-area: stories; }
-.bento [data-area='sec'] { grid-area: sec; }
-.bento [data-area='cloud'] { grid-area: cloud; }
-.bento [data-area='aibuild'] { grid-area: aibuild; }
+.bento [data-area='alg'] {
+  grid-area: alg;
+}
+.bento [data-area='sql'] {
+  grid-area: sql;
+}
+.bento [data-area='spring'] {
+  grid-area: spring;
+}
+.bento [data-area='dist'] {
+  grid-area: dist;
+}
+.bento [data-area='aieng'] {
+  grid-area: aieng;
+}
+.bento [data-area='git'] {
+  grid-area: git;
+}
+.bento [data-area='react'] {
+  grid-area: react;
+}
+.bento [data-area='docker'] {
+  grid-area: docker;
+}
+.bento [data-area='aicv'] {
+  grid-area: aicv;
+}
+.bento [data-area='sysd'] {
+  grid-area: sysd;
+}
+.bento [data-area='systems'] {
+  grid-area: systems;
+}
+.bento [data-area='fund'] {
+  grid-area: fund;
+}
+.bento [data-area='stories'] {
+  grid-area: stories;
+}
+.bento [data-area='sec'] {
+  grid-area: sec;
+}
+.bento [data-area='cloud'] {
+  grid-area: cloud;
+}
+.bento [data-area='aibuild'] {
+  grid-area: aibuild;
+}
 /* Wide tiles with long lists use two columns. */
 .missing-course[data-columns='2'] .locked-units {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -317,9 +358,15 @@ p {
 }
 /* On phones tiles stack; each keeps a fixed height by size. */
 @media (max-width: 560px) {
-  .bento .missing-course { height: 250px; }
-  .bento .missing-course:is([data-size='tall'], [data-size='wide']) { height: 320px; }
-  .bento .missing-course[data-size='big'] { height: 440px; }
+  .bento .missing-course {
+    height: 250px;
+  }
+  .bento .missing-course:is([data-size='tall'], [data-size='wide']) {
+    height: 320px;
+  }
+  .bento .missing-course[data-size='big'] {
+    height: 440px;
+  }
 }
 .missing-course h3 {
   margin: 0;

@@ -32,7 +32,11 @@ export class PageTitleStrategy extends TitleStrategy {
     this.pageMeta.apply(staticPageMeta(target, this.buildTitle(snapshot)), url);
     if (target.kind === 'static') return;
     this.pending = from(import('./public-page-metadata'))
-      .pipe(switchMap(({ PublicPageMetadata }) => this.injector.get(PublicPageMetadata).describe(target)))
+      .pipe(
+        switchMap(({ PublicPageMetadata }) =>
+          this.injector.get(PublicPageMetadata).describe(target),
+        ),
+      )
       .subscribe({
         next: (page) => {
           if (page) this.pageMeta.apply(page, url);

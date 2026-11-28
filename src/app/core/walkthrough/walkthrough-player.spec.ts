@@ -26,7 +26,11 @@ function render(inputs: Record<string, unknown> = {}) {
   for (const [name, value] of Object.entries(all)) fixture.componentRef.setInput(name, value);
   fixture.detectChanges();
   const element = fixture.nativeElement as HTMLElement;
-  const emitted: { step: number[]; toggle: number; everyLine: boolean[] } = { step: [], toggle: 0, everyLine: [] };
+  const emitted: { step: number[]; toggle: number; everyLine: boolean[] } = {
+    step: [],
+    toggle: 0,
+    everyLine: [],
+  };
   fixture.componentInstance.step.subscribe((value) => emitted.step.push(value));
   fixture.componentInstance.toggle.subscribe(() => emitted.toggle++);
   fixture.componentInstance.everyLineChange.subscribe((value) => emitted.everyLine.push(value));
@@ -36,39 +40,53 @@ function render(inputs: Record<string, unknown> = {}) {
 describe('walkthroughKey', () => {
   const press = (key: string, target: Element, init: KeyboardEventInit = {}) => {
     let action: unknown = 'none';
-    target.addEventListener('keydown', (event) => (action = walkthroughKey(event as KeyboardEvent)), { once: true });
+    target.addEventListener(
+      'keydown',
+      (event) => (action = walkthroughKey(event as KeyboardEvent)),
+      { once: true },
+    );
     target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...init }));
     return action;
   };
-  it('maps arrows, Home, End and Space; ignores fields, code, tabs, buttons for Space, and modifiers', () => {
-    const host = document.createElement('div');
-    host.innerHTML = `<div class="stage"></div><select></select><input type="range"><pre></pre>
+  it(
+    'maps arrows, Home, End and Space; ignores fields, code, tabs, buttons for Space, and ' +
+      'modifiers',
+    () => {
+      const host = document.createElement('div');
+      host.innerHTML = `<div class="stage"></div><select></select><input type="range"><pre></pre>
       <button role="tab"></button><button class="plain"></button><textarea></textarea>`;
-    document.body.append(host);
-    const stage = host.querySelector('.stage')!;
-    expect(press('ArrowLeft', stage)).toBe('previous');
-    expect(press('ArrowRight', stage)).toBe('next');
-    expect(press('Home', stage)).toBe('first');
-    expect(press('End', stage)).toBe('last');
-    expect(press(' ', stage)).toBe('toggle');
-    expect(press('Enter', stage)).toBeNull();
-    for (const selector of ['select', 'input', 'pre', '[role="tab"]', 'textarea'])
-      expect(press('ArrowRight', host.querySelector(selector)!), selector).toBeNull();
-    expect(press(' ', host.querySelector('.plain')!)).toBeNull();
-    expect(press('ArrowRight', host.querySelector('.plain')!)).toBe('next');
-    expect(press('ArrowRight', stage, { shiftKey: true })).toBeNull();
-    expect(press('ArrowRight', stage, { metaKey: true })).toBeNull();
-    host.remove();
-  });
+      document.body.append(host);
+      const stage = host.querySelector('.stage')!;
+      expect(press('ArrowLeft', stage)).toBe('previous');
+      expect(press('ArrowRight', stage)).toBe('next');
+      expect(press('Home', stage)).toBe('first');
+      expect(press('End', stage)).toBe('last');
+      expect(press(' ', stage)).toBe('toggle');
+      expect(press('Enter', stage)).toBeNull();
+      for (const selector of ['select', 'input', 'pre', '[role="tab"]', 'textarea'])
+        expect(press('ArrowRight', host.querySelector(selector)!), selector).toBeNull();
+      expect(press(' ', host.querySelector('.plain')!)).toBeNull();
+      expect(press('ArrowRight', host.querySelector('.plain')!)).toBe('next');
+      expect(press('ArrowRight', stage, { shiftKey: true })).toBeNull();
+      expect(press('ArrowRight', stage, { metaKey: true })).toBeNull();
+      host.remove();
+    },
+  );
 });
 
 describe('walkthrough text helpers', () => {
   it('keeps the first sentence and a short example label', () => {
-    expect(firstSentence('Two pointers from both ends. Then more.')).toBe('Two pointers from both ends.');
+    expect(firstSentence('Two pointers from both ends. Then more.')).toBe(
+      'Two pointers from both ends.',
+    );
     expect(firstSentence('No full stop')).toBe('No full stop');
     expect(firstSentence('x'.repeat(200)).length).toBe(158);
-    expect(exampleLabel({ id: 'a', label: 'A', input: 'n = 2', expectedOutput: 'true' })).toBe('n = 2 → true');
-    expect(exampleLabel({ id: 'a', label: 'A', input: 'v'.repeat(100), expectedOutput: '1' })).toHaveLength(88);
+    expect(exampleLabel({ id: 'a', label: 'A', input: 'n = 2', expectedOutput: 'true' })).toBe(
+      'n = 2 → true',
+    );
+    expect(
+      exampleLabel({ id: 'a', label: 'A', input: 'v'.repeat(100), expectedOutput: '1' }),
+    ).toHaveLength(88);
   });
 
   it('scrolls the code box only when the current line leaves it', () => {
@@ -78,27 +96,31 @@ describe('walkthrough text helpers', () => {
     expect(codeScrollTop({ scrollTop: 400, clientHeight: 300 }, 100, 24)).toBe(0);
   });
 
-  it('keeps the current line below the controls pinned above the code on a narrow player (DLV-803)', () => {
-    const host = document.createElement('section');
-    host.className = 'walkthrough';
-    host.innerHTML = '<div class="wt-left"></div><pre></pre>';
-    document.body.append(host);
-    const left = host.querySelector<HTMLElement>('.wt-left')!;
-    const box = host.querySelector('pre')!;
-    const rect = (top: number, bottom: number, x = 0, width = 600) =>
-      ({ top, bottom, left: x, right: x + width, height: bottom - top, width }) as DOMRect;
-    vi.spyOn(box, 'getBoundingClientRect').mockReturnValue(rect(250, 600));
-    const cover = vi.spyOn(left, 'getBoundingClientRect').mockReturnValue(rect(90, 240));
-    // Not pinned: only the page header covers the box.
-    expect(pinnedCover(box, 90)).toBe(90);
-    left.style.position = 'sticky';
-    // Pinned above the code (Code pane): the visible area starts under the controls and caption.
-    expect(pinnedCover(box, 90)).toBe(240);
-    // A column beside the code (two-column player) never covers it.
-    cover.mockReturnValue(rect(90, 700, 620, 500));
-    expect(pinnedCover(box, 90)).toBe(90);
-    host.remove();
-  });
+  it(
+    'keeps the current line below the controls pinned above the code on a narrow player ' +
+      '(DLV-803)',
+    () => {
+      const host = document.createElement('section');
+      host.className = 'walkthrough';
+      host.innerHTML = '<div class="wt-left"></div><pre></pre>';
+      document.body.append(host);
+      const left = host.querySelector<HTMLElement>('.wt-left')!;
+      const box = host.querySelector('pre')!;
+      const rect = (top: number, bottom: number, x = 0, width = 600) =>
+        ({ top, bottom, left: x, right: x + width, height: bottom - top, width }) as DOMRect;
+      vi.spyOn(box, 'getBoundingClientRect').mockReturnValue(rect(250, 600));
+      const cover = vi.spyOn(left, 'getBoundingClientRect').mockReturnValue(rect(90, 240));
+      // Not pinned: only the page header covers the box.
+      expect(pinnedCover(box, 90)).toBe(90);
+      left.style.position = 'sticky';
+      // Pinned above the code (Code pane): the visible area starts under the controls and caption.
+      expect(pinnedCover(box, 90)).toBe(240);
+      // A column beside the code (two-column player) never covers it.
+      cover.mockReturnValue(rect(90, 700, 620, 500));
+      expect(pinnedCover(box, 90)).toBe(90);
+      host.remove();
+    },
+  );
 });
 
 describe('WalkthroughPlayer', () => {
@@ -110,9 +132,17 @@ describe('WalkthroughPlayer', () => {
     expect(controls.getAttribute('role')).toBe('group');
     expect(controls.getAttribute('aria-label')).toBe('Walkthrough controls');
     const parts = [...controls.children].map(
-      (child) => child.getAttribute('aria-label') ?? child.className.split(' ')[0] ?? child.localName,
+      (child) =>
+        child.getAttribute('aria-label') ?? child.className.split(' ')[0] ?? child.localName,
     );
-    expect(parts).toEqual(['Previous step', 'play', 'Next step', 'scrubber', 'step-count', 'Restart from the first step']);
+    expect(parts).toEqual([
+      'Previous step',
+      'play',
+      'Next step',
+      'scrubber',
+      'step-count',
+      'Restart from the first step',
+    ]);
     expect(element.querySelectorAll('.controls')).toHaveLength(1);
     // Pinned under the page header while the column scrolls: the bar computes as sticky.
     expect(getComputedStyle(controls).position).toBe('sticky');
@@ -126,7 +156,9 @@ describe('WalkthroughPlayer', () => {
     ]);
     // The step count names the position.
     expect(element.querySelector('.step-count')?.textContent?.trim()).toBe('Step 1 of 5');
-    expect(element.querySelector('input[type="range"]')?.getAttribute('aria-valuetext')).toBe('Step 1 of 5');
+    expect(element.querySelector('input[type="range"]')?.getAttribute('aria-valuetext')).toBe(
+      'Step 1 of 5',
+    );
   });
 
   it('announces each step politely, and stays silent while playing', () => {
@@ -141,35 +173,40 @@ describe('WalkthroughPlayer', () => {
     expect(element.querySelector('.caption')?.getAttribute('aria-live')).toBe('off');
   });
 
-  it('keeps the stage from pushing the caption away: "+N more views below" scrolls to the next', () => {
-    const { fixture, element } = render();
-    const stage = element.querySelector<HTMLElement>('.wt-stage')!;
-    const at = (top: number, height: number) => () => ({ top, bottom: top + height, left: 0, right: 100, width: 100, height }) as DOMRect;
-    const figures = [0, 200, 420, 640].map((top) => {
-      const figure = document.createElement('figure');
-      figure.getBoundingClientRect = at(top, 180);
-      return figure;
-    });
-    stage.prepend(...figures);
-    stage.getBoundingClientRect = at(0, 300);
-    Object.defineProperty(stage, 'clientHeight', { configurable: true, value: 300 });
-    Object.defineProperty(stage, 'scrollHeight', { configurable: true, value: 820 });
-    const scrolled: number[] = [];
-    stage.scrollTo = ((options: ScrollToOptions) => scrolled.push(options.top ?? -1)) as typeof stage.scrollTo;
-    stage.dispatchEvent(new Event('scroll'));
-    fixture.detectChanges();
-    const more = element.querySelector<HTMLButtonElement>('.more-below')!;
-    expect(more.textContent?.trim()).toBe('+2 more views below');
-    more.click();
-    // The second view is cut at the stage's bottom edge: it scrolls to its top.
-    expect(scrolled).toEqual([192]);
-    // Everything in view: the cue goes.
-    Object.defineProperty(stage, 'scrollHeight', { configurable: true, value: 300 });
-    stage.dispatchEvent(new Event('scroll'));
-    fixture.detectChanges();
-    expect(element.querySelector('.more-below')).toBeNull();
-    figures.forEach((figure) => figure.remove());
-  });
+  it(
+    'keeps the stage from pushing the caption away: "+N more views below" scrolls to the ' + 'next',
+    () => {
+      const { fixture, element } = render();
+      const stage = element.querySelector<HTMLElement>('.wt-stage')!;
+      const at = (top: number, height: number) => () =>
+        ({ top, bottom: top + height, left: 0, right: 100, width: 100, height }) as DOMRect;
+      const figures = [0, 200, 420, 640].map((top) => {
+        const figure = document.createElement('figure');
+        figure.getBoundingClientRect = at(top, 180);
+        return figure;
+      });
+      stage.prepend(...figures);
+      stage.getBoundingClientRect = at(0, 300);
+      Object.defineProperty(stage, 'clientHeight', { configurable: true, value: 300 });
+      Object.defineProperty(stage, 'scrollHeight', { configurable: true, value: 820 });
+      const scrolled: number[] = [];
+      stage.scrollTo = ((options: ScrollToOptions) =>
+        scrolled.push(options.top ?? -1)) as typeof stage.scrollTo;
+      stage.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      const more = element.querySelector<HTMLButtonElement>('.more-below')!;
+      expect(more.textContent?.trim()).toBe('+2 more views below');
+      more.click();
+      // The second view is cut at the stage's bottom edge: it scrolls to its top.
+      expect(scrolled).toEqual([192]);
+      // Everything in view: the cue goes.
+      Object.defineProperty(stage, 'scrollHeight', { configurable: true, value: 300 });
+      stage.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      expect(element.querySelector('.more-below')).toBeNull();
+      figures.forEach((figure) => figure.remove());
+    },
+  );
 
   it('reports steps, play and the mode switch, and hides the switch without a trace', () => {
     const { fixture, element, emitted } = render({ index: 2 });
@@ -221,7 +258,8 @@ describe('WalkthroughPlayer', () => {
         { name: 'right', value: '8', drawn: true },
       ],
     });
-    const names = () => [...element.querySelectorAll('.variable dt')].map((node) => node.textContent?.trim());
+    const names = () =>
+      [...element.querySelectorAll('.variable dt')].map((node) => node.textContent?.trim());
     expect(names()).toEqual(['left']);
     const toggle = element.querySelector<HTMLButtonElement>('.drawn-toggle')!;
     expect(toggle.textContent?.trim()).toBe('+2 drawn above');
@@ -259,7 +297,11 @@ describe('WalkthroughPlayer', () => {
     fixture.componentInstance.languageChange.subscribe((value) => chosen.push(value));
     const tabs = [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
     expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['Java', 'Python', 'Go']);
-    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual(['true', 'false', 'false']);
+    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'true',
+      'false',
+      'false',
+    ]);
     tabs[2].click();
     tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     expect(chosen).toEqual(['go', 'python']);
@@ -275,8 +317,13 @@ describe('WalkthroughPlayer', () => {
     switchButtons[1].click();
     fixture.detectChanges();
     expect(walkthrough.getAttribute('data-pane')).toBe('code');
-    expect(switchButtons.map((button) => button.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
-    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n');
+    expect(switchButtons.map((button) => button.getAttribute('aria-pressed'))).toEqual([
+      'false',
+      'true',
+    ]);
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n');
     expect(css).toContain('@container walkthrough (max-width: 760px)');
   });
 
@@ -302,31 +349,58 @@ describe('WalkthroughPlayer', () => {
 
     it('gives the code box the right column first; the idea list shrinks and scrolls', () => {
       const css = styles();
-      expect(css).toMatch(/\.wt-right\[[^\]]+\] \.ideas\[[^\]]+\] \{ flex: 0 12 auto; min-height: min\(7\.5rem, 30dvh\);/);
+      expect(css).toMatch(
+        new RegExp(
+          '\\.wt-right\\[[^\\]]+\\] \\.ideas\\[[^\\]]+\\] \\{ flex: 0 12 auto; min-height: ' +
+            'min\\(7\\.5rem, 30dvh\\);',
+        ),
+      );
     });
 
     it('keeps drawing and code as two columns inside the centred page frame, never a third', () => {
       const css = styles();
-      expect(css).toMatch(/\.wt-grid\[[^\]]+\] \{ display: grid; grid-template-columns: minmax\(0, 1\.25fr\) minmax\(300px, 1fr\);/);
+      expect(css).toMatch(
+        new RegExp(
+          '\\.wt-grid\\[[^\\]]+\\] \\{ display: grid; grid-template-columns: minmax\\(0, ' +
+            '1\\.25fr\\) minmax\\(300px, 1fr\\);',
+        ),
+      );
       expect(css).not.toContain('@container walkthrough (min-width');
     });
 
-    it('keeps the step controls and caption pinned above the code it steps through on a narrow player', () => {
-      const narrow = block(styles(), '@container walkthrough (max-width: 760px)');
-      expect(narrow).toMatch(/\.walkthrough\[data-pane='?code'?\]\[[^\]]+\] \.wt-left\[[^\]]+\] \{ position: sticky; top: var\(--wt-pin\); z-index: 4; \}/);
-      // The code box fits the window under them, so the current line and the controls share a screen.
-      expect(narrow).toMatch(
-        /--wt-code-height: max\(10\.5em, calc\(100dvh - var\(--wt-pin\) - var\(--wt-controls-h, 60px\) - var\(--wt-caption-h, 96px\) - 5em\)\)/,
-      );
-    });
+    it(
+      'keeps the step controls and caption pinned above the code it steps through on a ' +
+        'narrow player',
+      () => {
+        const narrow = block(styles(), '@container walkthrough (max-width: 760px)');
+        expect(narrow).toMatch(
+          new RegExp(
+            "\\.walkthrough\\[data-pane='?code'?\\]\\[[^\\]]+\\] \\.wt-left\\[[^\\]]+\\] " +
+              '\\{ position: sticky; top: var\\(--wt-pin\\); z-index: 4; \\}',
+          ),
+        );
+        // The code box fits the window under them, so the current line and the controls share a
+        // screen.
+        expect(narrow).toMatch(
+          new RegExp(
+            '--wt-code-height: max\\(10\\.5em, calc\\(100dvh - var\\(--wt-pin\\) - ' +
+              'var\\(--wt-controls-h, 60px\\) - var\\(--wt-caption-h, 96px\\) - 5em\\)\\)',
+          ),
+        );
+      },
+    );
 
-    it('wraps the controls naturally on a zoomed-in player; the scrubber takes its own row only at phone width', () => {
-      const css = styles();
-      const narrow = block(css, '@container walkthrough (max-width: 760px)');
-      expect(narrow).not.toContain('flex-basis: 100%');
-      const phone = block(css, '@container walkthrough (max-width: 520px)');
-      expect(phone).toMatch(/\.scrubber\[[^\]]+\] \{ order: 3; flex-basis: 100%; \}/);
-    });
+    it(
+      'wraps the controls naturally on a zoomed-in player; the scrubber takes its own row ' +
+        'only at phone width',
+      () => {
+        const css = styles();
+        const narrow = block(css, '@container walkthrough (max-width: 760px)');
+        expect(narrow).not.toContain('flex-basis: 100%');
+        const phone = block(css, '@container walkthrough (max-width: 520px)');
+        expect(phone).toMatch(/\.scrubber\[[^\]]+\] \{ order: 3; flex-basis: 100%; \}/);
+      },
+    );
 
     it('sizes every player text in px that browser zoom scales, never a viewport unit', () => {
       const css = styles();
@@ -342,7 +416,9 @@ describe('WalkthroughPlayer', () => {
     fixture.componentRef.setInput('source', 'print(1)');
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('pre')?.getAttribute('aria-label')).toBe('Python reference solution');
+    expect(element.querySelector('pre')?.getAttribute('aria-label')).toBe(
+      'Python reference solution',
+    );
     expect(element.querySelector('app-code-copy-button')).not.toBeNull();
     expect(element.querySelector('.sr-only')?.textContent?.trim()).toBe('Current line 3.');
   });

@@ -61,31 +61,39 @@ const progress = {
   completedAssignmentIds: ['execution'],
   completedContentIds: ['execution'],
 };
-it('finds a real 50-minute slot without spending the reserved 20-minute recall or splitting the original', () => {
-  const plan = fixture(),
-    before = JSON.stringify(plan);
-  const queue = studyDayQueue(plan, 4, new Set(['execution']));
-  expect(queue).toMatchObject({ budget: 60, spent: 0, minutes: 20, remaining: 40 });
-  const proposal = suggestStudyPlanAdjustment(plan, progress, queue, new Set(['java']));
-  expect(proposal).not.toBeNull();
-  expect(proposal!.moved).toContainEqual({ assignmentId: 'java', fromDay: 3, toDay: 6 });
-  expect(proposal!.snapshot.days[3].assignments[0].id).toBe('execution:review:v2:1');
-  expect(proposal!.snapshot.days[5].assignments[0].minutes).toBe(50);
-  expect(proposal!.snapshot.days.every((day) => day.focusedMinutes <= 60)).toBe(true);
-  expect(proposal!.deferred).toEqual([]);
-  expect(JSON.stringify(plan)).toBe(before);
-});
-it('does not offer an adjustment when remaining days still cannot fit the original and its recalls', () => {
-  const plan = fixture(5);
-  expect(
-    suggestStudyPlanAdjustment(
-      plan,
-      progress,
-      studyDayQueue(plan, 4, new Set(['execution'])),
-      new Set(['java']),
-    ),
-  ).toBeNull();
-});
+it(
+  'finds a real 50-minute slot without spending the reserved 20-minute recall or ' +
+    'splitting the original',
+  () => {
+    const plan = fixture(),
+      before = JSON.stringify(plan);
+    const queue = studyDayQueue(plan, 4, new Set(['execution']));
+    expect(queue).toMatchObject({ budget: 60, spent: 0, minutes: 20, remaining: 40 });
+    const proposal = suggestStudyPlanAdjustment(plan, progress, queue, new Set(['java']));
+    expect(proposal).not.toBeNull();
+    expect(proposal!.moved).toContainEqual({ assignmentId: 'java', fromDay: 3, toDay: 6 });
+    expect(proposal!.snapshot.days[3].assignments[0].id).toBe('execution:review:v2:1');
+    expect(proposal!.snapshot.days[5].assignments[0].minutes).toBe(50);
+    expect(proposal!.snapshot.days.every((day) => day.focusedMinutes <= 60)).toBe(true);
+    expect(proposal!.deferred).toEqual([]);
+    expect(JSON.stringify(plan)).toBe(before);
+  },
+);
+it(
+  'does not offer an adjustment when remaining days still cannot fit the original and its ' +
+    'recalls',
+  () => {
+    const plan = fixture(5);
+    expect(
+      suggestStudyPlanAdjustment(
+        plan,
+        progress,
+        studyDayQueue(plan, 4, new Set(['execution'])),
+        new Set(['java']),
+      ),
+    ).toBeNull();
+  },
+);
 it('does not treat unused buffer or inaccessible/blocked work as an automatic mismatch', () => {
   const plan = fixture();
   expect(

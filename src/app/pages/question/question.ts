@@ -1,5 +1,10 @@
 import { htmlText } from '../../core/html-text';
-import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
+import {
+  ContentRecovery,
+  RecoveryKind,
+  RecoveryPreview,
+  recoveryKind,
+} from '../../core/content-recovery/content-recovery';
 import { LearningCode } from '../../core/learning-code';
 import { highlightLearningCode } from '../../core/focus-studio/code-presentation';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
@@ -91,7 +96,9 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
 
 @Component({
   selector: 'app-question',
-  imports: [ContentRecovery, LearningCode,
+  imports: [
+    ContentRecovery,
+    LearningCode,
     PageSidebarContextDirective,
     StudyPlanReaderNavigation,
     PlatformHeader,
@@ -256,7 +263,8 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
         margin: 8px 0;
         line-height: 1.6;
       }
-      /* Reference answer: a full-width card toggle; the revealed answer sits in a framed panel joined to it. */
+      /* Reference answer: a full-width card toggle; the revealed answer sits in a framed panel
+         joined to it. */
       .practice-reference {
         margin: 4px 0 0;
       }
@@ -274,7 +282,9 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
         background: var(--surface);
         cursor: pointer;
         list-style: none;
-        transition: background-color 150ms ease, border-color 150ms ease;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease;
       }
       .practice-reference > summary::-webkit-details-marker {
         display: none;
@@ -1079,7 +1089,9 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
         gap: 12px 24px;
         margin: 16px 0 24px;
       }
-      .question-review-navigation .practice-return { margin: 0; }
+      .question-review-navigation .practice-return {
+        margin: 0;
+      }
       .question-review-navigation .related-theory-link {
         margin: 0 0 0 auto;
         min-width: 0;
@@ -1261,7 +1273,11 @@ export class Question implements OnInit {
             : this.sourcePositions()[link.problemId];
       const meaning = number
         ? label === 'Pattern order'
-          ? `Pattern order ${number} in ${this.patternRevealed() ? (this.handsOnPatternTitles()[pattern] ?? 'this pattern') : 'this practice sequence'}`
+          ? `Pattern order ${number} ` +
+            'in ' +
+            (this.patternRevealed()
+              ? (this.handsOnPatternTitles()[pattern] ?? 'this pattern')
+              : 'this practice sequence')
           : `${label.split(' · ')[0]} ${number} of ${this.releaseTotal()}`
         : label;
       return {
@@ -1358,7 +1374,8 @@ export class Question implements OnInit {
         return [
           'Clarify the requirements, constraints, and success criteria.',
           'Sketch the components, data flow, interfaces, and ownership boundaries.',
-          'Compare a credible alternative, identify failure modes, and explain how you would test the design.',
+          'Compare a credible alternative, identify failure modes, and explain how you ' +
+            'would test the design.',
         ];
       case 'debug':
         return [
@@ -1376,14 +1393,18 @@ export class Question implements OnInit {
         return [
           'Write down the input, expected output, constraints, and edge cases.',
           'Implement or outline the requested exercise and explain the state it maintains.',
-          'Check the result against concrete cases before opening the reference code and explanation.',
+          'Check the result against concrete cases before opening the reference code ' +
+            'and explanation.',
         ];
       default:
         return [];
     }
   }
   private readonly destroyRef = inject(DestroyRef);
-  /** Drives the "pattern : pills" strip shown in the sticky bar once the reader scrolls past the title. */
+  /**
+   * Drives the "pattern : pills" strip shown in the sticky bar once the reader scrolls past the
+   * title.
+   */
   protected readonly scrolled = signal(false);
   protected readonly activeSectionIndex = signal(0);
 
@@ -1430,12 +1451,17 @@ export class Question implements OnInit {
   protected readonly handsOnGroup = catalogGroupForCourse('learn', 'hands-on-dsa');
 
   /**
-   * The lesson's place above its course in the sidebar outline: the path, the course's group and the next
-   * group. When the next course is listed in the next group, the outline shows it inside that group.
+   * The lesson's place above its course in the sidebar outline: the path, the course's group and
+   * the next group. When the next course is listed in the next group, the outline shows it inside
+   * that group.
    */
-  private lessonNavPlace(nextCourseId: string | null): Pick<SidebarLessonNav, 'path' | 'group' | 'nextGroup' | 'nextCourseInNextGroup'> {
+  private lessonNavPlace(
+    nextCourseId: string | null,
+  ): Pick<SidebarLessonNav, 'path' | 'group' | 'nextGroup' | 'nextCourseInNextGroup'> {
     const pathId = this.pathId();
-    const pathTitle = ({ learn: 'Learn', grow: 'Grow', 'blaze': 'Blaze' } as Record<string, string>)[pathId];
+    const pathTitle = ({ learn: 'Learn', grow: 'Grow', blaze: 'Blaze' } as Record<string, string>)[
+      pathId
+    ];
     const group = this.courseGroup();
     const following = group ? nextCatalogGroup(pathId, group.id) : null;
     const groupLink = (target: { id: string; title: string }) => ({
@@ -1464,7 +1490,8 @@ export class Question implements OnInit {
   protected readonly lessonNav = computed<SidebarLessonNav | null>(() => {
     const item = this.question();
     const course = this.course();
-    if (!item || item.contentType !== 'theory' || !course || course.id !== this.courseId()) return null;
+    if (!item || item.contentType !== 'theory' || !course || course.id !== this.courseId())
+      return null;
     const lessonRoute = (link: ReaderLink) => ['/', this.pathId(), this.courseId(), link.id];
     const previous = this.previousArticle();
     const next = this.nextArticle();
@@ -1472,8 +1499,16 @@ export class Question implements OnInit {
     return {
       course: { title: course.title, route: ['/', this.pathId(), this.courseId()] },
       current: navTitle(item),
-      previous: previous ? { title: previous.title, route: lessonRoute(previous), queryParams: this.returnQueryParams() } : null,
-      next: next ? { title: next.title, route: lessonRoute(next), queryParams: this.returnQueryParams() } : null,
+      previous: previous
+        ? {
+            title: previous.title,
+            route: lessonRoute(previous),
+            queryParams: this.returnQueryParams(),
+          }
+        : null,
+      next: next
+        ? { title: next.title, route: lessonRoute(next), queryParams: this.returnQueryParams() }
+        : null,
       nextCourse:
         nextCourse?.id && nextCourse.available !== false
           ? { title: nextCourse.title, route: ['/', this.pathId(), nextCourse.id] }
@@ -1484,25 +1519,55 @@ export class Question implements OnInit {
   });
   private readonly baseSidebarContext = computed<PageSidebarContextValue>(() => {
     const item = this.question();
-    if (!item || this.isCodingPractice(item) || this.studioPilot() || this.focusStudio()) return { excluded: true };
-    if (this.pathId() === 'learn' && this.courseId() === 'solid-design-patterns' && item.id === 'mediator-pattern') {
+    if (!item || this.isCodingPractice(item) || this.studioPilot() || this.focusStudio())
+      return { excluded: true };
+    if (
+      this.pathId() === 'learn' &&
+      this.courseId() === 'solid-design-patterns' &&
+      item.id === 'mediator-pattern'
+    ) {
       return { excluded: false, hideNavigation: true };
     }
     const pattern = this.patternLesson(item);
     const foundation = this.foundationLesson(item);
-    const teachingGuide = foundation?.teachingGuide ?? foundation?.beginnerGuide ?? pattern?.beginnerGuide;
+    const teachingGuide =
+      foundation?.teachingGuide ?? foundation?.beginnerGuide ?? pattern?.beginnerGuide;
     // DLV-408: system lessons recall the real interview questions (concept first, the lesson's
     // example as one supporting line), not the guide's scenario exercise.
     if (teachingGuide && !(foundation && lessonPatternDefinition(foundation))) {
-      return { excluded: false, recall: [{
-        id: `${item.id}-first-steps`,
-        prompt: teachingGuide.try,
-        answer: teachingGuide.answer,
-      }] };
+      return {
+        excluded: false,
+        recall: [
+          {
+            id: `${item.id}-first-steps`,
+            prompt: teachingGuide.try,
+            answer: teachingGuide.answer,
+          },
+        ],
+      };
     }
-    const checks = pattern ? this.patternChecks(pattern) : foundation ? this.foundationChecks(foundation) : [];
-    const recall = checks.length ? checks : this.embeddedUnderstanding(item).map((question) => ({ id: question.id, prompt: question.title, answer: question.interviewAnswer }));
-    return { excluded: false, recall: recall.length ? recall : item.followUps.map((followUp, index) => ({ id: `${item.id}-follow-up-${index}`, prompt: followUp.question, answer: followUp.answer })) };
+    const checks = pattern
+      ? this.patternChecks(pattern)
+      : foundation
+        ? this.foundationChecks(foundation)
+        : [];
+    const recall = checks.length
+      ? checks
+      : this.embeddedUnderstanding(item).map((question) => ({
+          id: question.id,
+          prompt: question.title,
+          answer: question.interviewAnswer,
+        }));
+    return {
+      excluded: false,
+      recall: recall.length
+        ? recall
+        : item.followUps.map((followUp, index) => ({
+            id: `${item.id}-follow-up-${index}`,
+            prompt: followUp.question,
+            answer: followUp.answer,
+          })),
+    };
   });
   /**
    * Scene of the learning unit that owns this lesson or practice/round question, shown in the
@@ -1537,10 +1602,13 @@ export class Question implements OnInit {
   protected readonly patternRevealed = signal(false);
   protected readonly patternHelpOpen = signal(false);
 
-  /** Back link above a DSA problem title: where the learner came from, or the Hands-On DSA catalog. */
+  /**
+   * Back link above a DSA problem title: where the learner came from, or the Hands-On DSA catalog.
+   */
   protected backLabel(): string {
     const label = this.returnLabel();
-    if (!this.returnDestination() || label === 'Return to DSA problems') return 'Hands-On DSA problems';
+    if (!this.returnDestination() || label === 'Return to DSA problems')
+      return 'Hands-On DSA problems';
     return label.replace(/^(Return|Back) to /, '').replace(/^./, (first) => first.toUpperCase());
   }
 
@@ -1561,13 +1629,17 @@ export class Question implements OnInit {
   >({});
   private readonly catalogPatternByProblemId = signal<Record<string, string>>({});
 
-  /** Index of the walkthrough body paragraph a step table follows; defaults to the last paragraph. */
+  /**
+   * Index of the walkthrough body paragraph a step table follows; defaults to the last paragraph.
+   */
   protected walkthroughTableAfter(step: QuestionWalkthroughStep): number {
     const last = step.body.length - 1;
     return Math.min(Math.max(step.table?.afterParagraph ?? last, 0), last);
   }
 
-  /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
+  /**
+   * Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout.
+   */
   protected shouldShowHint(item: InterviewQuestion): boolean {
     return (
       item.tags.includes('Common Problem') || item.tags.some((tag) => tag.startsWith('LeetCode'))
@@ -1597,13 +1669,21 @@ export class Question implements OnInit {
     if (!problem || !family?.siblings?.length) return null;
     return {
       problemId: problem.id,
-      siblingRoutes: family.siblings.map((sibling) => ['/', sibling.path, sibling.courseId, sibling.questionId]),
+      siblingRoutes: family.siblings.map((sibling) => [
+        '/',
+        sibling.path,
+        sibling.courseId,
+        sibling.questionId,
+      ]),
     };
   });
 
   /** DLV-965: the problem's other equally optimal approaches, when it belongs to a family. */
   protected approachFamily(item: InterviewQuestion): DsaApproachFamily | null {
-    return (this.canonicalProblem(item) as { approachFamily?: DsaApproachFamily } | null)?.approachFamily ?? null;
+    return (
+      (this.canonicalProblem(item) as { approachFamily?: DsaApproachFamily } | null)
+        ?.approachFamily ?? null
+    );
   }
 
   protected canonicalNavigation(item: InterviewQuestion): DsaProblemNavigation | null {
@@ -1770,11 +1850,13 @@ export class Question implements OnInit {
 
   protected questionBankReturnUnit(item: InterviewQuestion): string {
     // Course pages render anchors on the containing unit, not its nested lessons.
-    return (this.course()?.learningUnits ?? []).find(
-      (unit) => flattenLearningUnits([unit]).some(
-        (candidate) => candidate.theoryModuleId === item.moduleId,
-      ),
-    )?.id ?? '';
+    return (
+      (this.course()?.learningUnits ?? []).find((unit) =>
+        flattenLearningUnits([unit]).some(
+          (candidate) => candidate.theoryModuleId === item.moduleId,
+        ),
+      )?.id ?? ''
+    );
   }
 
   protected questionBankModuleId(item: InterviewQuestion): string | null {
@@ -1845,10 +1927,13 @@ export class Question implements OnInit {
   }
 
   protected lessonSubtitle(item: InterviewQuestion): string | null {
-    return isFoundationLessonV1(item) ? item.subtitle ?? null : null;
+    return isFoundationLessonV1(item) ? (item.subtitle ?? null) : null;
   }
 
-  /** Reference code with lines too long for a half-width column (e.g. aligned state tables) gets the full width. */
+  /**
+   * Reference code with lines too long for a half-width column (e.g. aligned state tables) gets the
+   * full width.
+   */
   protected wideCode(source: string): boolean {
     return source.split('\n').some((line) => line.length > 64);
   }
@@ -1867,11 +1952,13 @@ export class Question implements OnInit {
   protected patternNavigation(item: InterviewQuestion): { label: string; target: string }[] {
     if (isPatternLesson(item)) {
       return [
-        ...(item.learningFlow ? [
-          { label: 'Before you start', target: 'pattern-start' },
-          { label: 'Why & what', target: 'pattern-purpose' },
-          { label: 'Small example', target: 'pattern-first-example' },
-        ] : []),
+        ...(item.learningFlow
+          ? [
+              { label: 'Before you start', target: 'pattern-start' },
+              { label: 'Why & what', target: 'pattern-purpose' },
+              { label: 'Small example', target: 'pattern-first-example' },
+            ]
+          : []),
         { label: 'What', target: 'pattern-what' },
         { label: 'Why', target: 'pattern-why' },
         { label: 'Recognize', target: 'pattern-where' },
@@ -1894,28 +1981,48 @@ export class Question implements OnInit {
     if (isFoundationLessonV1(item)) {
       if (lessonPatternDefinition(item)) {
         // DLV-408: one entry per team stage; each stage wrapper is the scroll target.
-        return systemLessonStages(item).map((stage) => ({ label: stage.label, target: `stage-${stage.id}` }));
+        return systemLessonStages(item).map((stage) => ({
+          label: stage.label,
+          target: `stage-${stage.id}`,
+        }));
       }
       if (item.learningFlow) {
         return [
           { label: 'Before you start', target: 'foundation-start' },
           { label: 'Why & what', target: 'foundation-why' },
-          ...(item.beginnerGuide || item.teachingGuide ? [{ label: 'Worked example', target: 'foundation-example' }] : []),
-          ...item.sections.map(section => ({ label: section.navLabel ?? section.heading, target: section.id })),
+          ...(item.beginnerGuide || item.teachingGuide
+            ? [{ label: 'Worked example', target: 'foundation-example' }]
+            : []),
+          ...item.sections.map((section) => ({
+            label: section.navLabel ?? section.heading,
+            target: section.id,
+          })),
           { label: 'How it works', target: 'foundation-model' },
           { label: 'Remember', target: 'foundation-remember' },
           { label: 'Common mistakes', target: 'foundation-pitfalls' },
           { label: 'Check understanding', target: 'foundation-understand' },
           { label: 'Try it yourself', target: 'foundation-try' },
-          ...((item.practice?.length ?? 0) > 0 ? [{ label: 'More practice', target: 'foundation-practice' }] : []),
+          ...((item.practice?.length ?? 0) > 0
+            ? [{ label: 'More practice', target: 'foundation-practice' }]
+            : []),
         ];
       }
-      const introduction = item.teachingGuide || item.beginnerGuide ? [
-          { label: 'Before you start', target: 'foundation-start' },
-          { label: item.teachingGuide ? 'Worked scenario' : 'Worked example', target: 'foundation-example' },
-          { label: item.teachingGuide && this.pathId() === 'blaze' ? 'Make the decision' : 'Try it', target: 'foundation-try' },
-          { label: 'Remember', target: 'foundation-remember' },
-        ] : [];
+      const introduction =
+        item.teachingGuide || item.beginnerGuide
+          ? [
+              { label: 'Before you start', target: 'foundation-start' },
+              {
+                label: item.teachingGuide ? 'Worked scenario' : 'Worked example',
+                target: 'foundation-example',
+              },
+              {
+                label:
+                  item.teachingGuide && this.pathId() === 'blaze' ? 'Make the decision' : 'Try it',
+                target: 'foundation-try',
+              },
+              { label: 'Remember', target: 'foundation-remember' },
+            ]
+          : [];
       return [
         ...introduction,
         ...item.sections.map((section) => ({
@@ -2077,9 +2184,13 @@ export class Question implements OnInit {
 
   protected readonly reviewModuleDestination = signal<UrlTree | null>(null);
   private readonly reviewModuleId = signal('');
-  protected readonly reviewModuleLabel = computed(() =>
-    this.course()?.modules.find((module) => module.id === this.reviewModuleId())?.title
-      ?? this.reviewModuleId().split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+  protected readonly reviewModuleLabel = computed(
+    () =>
+      this.course()?.modules.find((module) => module.id === this.reviewModuleId())?.title ??
+      this.reviewModuleId()
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' '),
   );
 
   ngOnInit(): void {
@@ -2104,18 +2215,27 @@ export class Question implements OnInit {
           ) {
             this.returnDestination.set(destination);
             const { path, course, module, kind, unit } = destination.queryParams;
-            if (kind === 'practice' && ['learn', 'grow', 'blaze'].includes(path)
-              && [course, module, unit || module].every((value) => typeof value === 'string' && /^[a-zA-Z0-9_-]+$/.test(value))) {
+            if (
+              kind === 'practice' &&
+              ['learn', 'grow', 'blaze'].includes(path) &&
+              [course, module, unit || module].every(
+                (value) => typeof value === 'string' && /^[a-zA-Z0-9_-]+$/.test(value),
+              )
+            ) {
               this.reviewModuleId.set(module);
-              this.reviewModuleDestination.set(this.router.createUrlTree(['/', path, course], {
-                fragment: 'unit-' + (unit || module),
-              }));
+              this.reviewModuleDestination.set(
+                this.router.createUrlTree(['/', path, course], {
+                  fragment: 'unit-' + (unit || module),
+                }),
+              );
             }
             this.returnLabel.set(
               isDsaCatalog
                 ? 'Return to DSA problems'
                 : segments![0].path === 'search'
-                  ? this.reviewModuleDestination() ? 'Back to review questions' : 'Return to search results'
+                  ? this.reviewModuleDestination()
+                    ? 'Back to review questions'
+                    : 'Return to search results'
                   : 'Return to interview practice',
             );
           }
@@ -2231,7 +2351,7 @@ export class Question implements OnInit {
               problem.route[2] === questionId,
           );
           if (!summary) continue;
-          this.recoveryPreview.set({title: summary.title});
+          this.recoveryPreview.set({ title: summary.title });
           return this.contentService.getDsaProblem(summary.id, summary.version).pipe(
             map((problem) => {
               const module: CourseModule = {
@@ -2304,7 +2424,11 @@ export class Question implements OnInit {
   ) {
     const selected = result.course.questions.find(({ id }) => id === questionId);
     if (!selected) return throwError(() => ({ status: 404 }));
-    this.recoveryPreview.set({title: selected.title, premium: selected.access?.tier === 'premium', planned: selected.reviewStatus === 'planned'});
+    this.recoveryPreview.set({
+      title: selected.title,
+      premium: selected.access?.tier === 'premium',
+      planned: selected.reviewStatus === 'planned',
+    });
     if (selected.detailRef.kind === 'canonical-dsa') {
       return this.contentService
         .getDsaProblem(selected.canonicalProblemRef?.problemId ?? '', selected.detailRef.version)
@@ -2642,11 +2766,7 @@ export class Question implements OnInit {
   }
 
   protected pathLabel(): string {
-    return this.pathId() === 'grow'
-      ? 'Grow'
-      : this.pathId() === 'blaze'
-        ? 'Blaze'
-        : 'Learn';
+    return this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'blaze' ? 'Blaze' : 'Learn';
   }
 
   protected conceptReviewTitle(item: InterviewQuestion): string {
@@ -2738,37 +2858,43 @@ export class Question implements OnInit {
       },
       'core-ds-reverse-linked-list': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html#reverse-list',
+          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html' +
+          '#reverse-list',
         alt: 'Language-specific trace for reversing a linked list.',
         caption: 'Follow each pointer update while the list reverses.',
       },
       'core-ds-linked-list-cycle-ii': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html#cycle-entry',
+          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html' +
+          '#cycle-entry',
         alt: 'Language-specific trace for cycle entry detection.',
         caption: 'Follow slow and fast pointers, then the entry search.',
       },
       'core-ds-merge-two-sorted-lists': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html#merge-lists',
+          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html' +
+          '#merge-lists',
         alt: 'Language-specific trace for merging two sorted lists.',
         caption: 'See the tail attach nodes while preserving sorted order.',
       },
       'core-ds-copy-random-list': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html#copy-random',
+          '/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html' +
+          '#copy-random',
         alt: 'Language-specific trace for cloning random-pointer links.',
         caption: 'See the original-to-copy map establish every link.',
       },
       'core-ds-valid-parentheses': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html#valid-parentheses',
+          '/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html' +
+          '#valid-parentheses',
         alt: 'Language-specific trace for delimiter matching.',
         caption: 'See opening tokens pushed and matching tokens popped.',
       },
       'core-ds-daily-temperatures': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html#daily-temperatures',
+          '/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html' +
+          '#daily-temperatures',
         alt: 'Language-specific trace for the decreasing temperature stack.',
         caption: 'Resolve each colder day when a warmer temperature arrives.',
       },
@@ -2780,19 +2906,22 @@ export class Question implements OnInit {
       },
       'core-ds-sliding-window-maximum': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html#sliding-window',
+          '/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html' +
+          '#sliding-window',
         alt: 'Language-specific trace for a monotonic window deque.',
         caption: 'See expired and dominated candidates leave opposite ends.',
       },
       'core-ds-contains-duplicate': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/hash-table-code-debugger.html#contains-duplicate',
+          '/content/learn/core-data-structures/visuals/hash-table-code-debugger.html' +
+          '#contains-duplicate',
         alt: 'Language-specific trace for duplicate detection using a set.',
         caption: 'See the set gain values until a repeated key is found.',
       },
       'core-ds-longest-consecutive': {
         assetPath:
-          '/content/learn/core-data-structures/visuals/hash-table-code-debugger.html#longest-consecutive',
+          '/content/learn/core-data-structures/visuals/hash-table-code-debugger.html' +
+          '#longest-consecutive',
         alt: 'Language-specific trace for longest consecutive sequence.',
         caption: 'See the set and sequence-start state drive the scan.',
       },
@@ -2882,7 +3011,8 @@ export class Question implements OnInit {
         assetPath: '/content/learn/core-data-structures/visuals/graph-bfs-dfs-lab.html',
         alt: 'Step-through BFS queue state with visited tracking.',
         caption:
-          'See the queue drain one level at a time, the same mechanic level-order traversal relies on.',
+          'See the queue drain one level at a time, the same mechanic level-order ' +
+          'traversal relies on.',
       },
       'algorithmic-clone-graph': {
         assetPath: '/content/learn/core-data-structures/visuals/graph-bfs-dfs-lab.html',
@@ -2935,7 +3065,8 @@ export class Question implements OnInit {
         assetPath: '/content/learn/algorithmic-patterns/visuals/greedy-choice-lab.html',
         alt: 'Step-through greedy running-tank reset logic for the Gas Station problem.',
         caption:
-          'Step through the running tank: watch it reset to a new candidate start the moment it goes negative.',
+          'Step through the running tank: watch it reset to a new candidate start the ' +
+          'moment it goes negative.',
       },
       'algorithmic-house-robber': {
         assetPath: '/content/learn/algorithmic-patterns/visuals/dp-table-lab.html',
@@ -2946,13 +3077,17 @@ export class Question implements OnInit {
         assetPath: '/content/learn/algorithmic-patterns/visuals/dp-table-lab.html',
         alt: 'Step-through 1D DP table filling for Climbing Stairs.',
         caption:
-          'Step through the table: watch each cell depend only on the two cells directly before it.',
+          'Step through the table: watch each cell depend only on the two cells ' +
+          'directly before it.',
       },
       'algorithmic-jump-game': {
         assetPath: '/content/learn/algorithmic-patterns/visuals/algorithm-family-lab.html',
-        alt: 'Step-through comparison of brute-force search, dynamic programming, and greedy for Jump Game.',
+        alt:
+          'Step-through comparison of brute-force search, dynamic programming, and greedy ' +
+          'for Jump Game.',
         caption:
-          'Step through the decision order: see why the DP-correct answer can be replaced by a cheaper, still-correct greedy one.',
+          'Step through the decision order: see why the DP-correct answer can be ' +
+          'replaced by a cheaper, still-correct greedy one.',
       },
     };
     const visual = arrayWalkthroughs[item.id];

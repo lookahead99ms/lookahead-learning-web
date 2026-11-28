@@ -267,7 +267,10 @@ button svg {
      taller drawings scroll inside (measured heights, see WalkthroughPlayer). */
   max-height: max(
     240px,
-    calc(100dvh - var(--wt-pin) - var(--wt-controls-h, 60px) - var(--wt-caption-h, 96px) - var(--wt-more-h, 0px) - 8px)
+    calc(
+      100dvh - var(--wt-pin) - var(--wt-controls-h, 60px) - var(--wt-caption-h, 96px) -
+        var(--wt-more-h, 0px) - 8px
+    )
   );
   overflow: auto;
 }
@@ -483,7 +486,9 @@ button svg {
     z-index: 4;
   }
   .walkthrough[data-pane='code'] .wt-right {
-    --wt-code-height: max(10.5em, calc(100dvh - var(--wt-pin) - var(--wt-controls-h, 60px) - var(--wt-caption-h, 96px) - 5em));
+    /* prettier-ignore */
+    --wt-code-height: max(10.5em, calc(100dvh - var(--wt-pin) - var(--wt-controls-h, 60px)
+      - var(--wt-caption-h, 96px) - 5em));
   }
   .wt-stage {
     padding: 10px;

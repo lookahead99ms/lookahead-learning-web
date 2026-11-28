@@ -4,8 +4,8 @@ import { CardScene } from '../../core/card-scene/card-scene';
 export type StudyPlanType = 'authored' | 'custom';
 
 /**
- * Create a study plan, first step: start with an authored preparation path or build a custom plan. The host is
- * the page's `section.plan-type-panel`; the page opens the chosen flow.
+ * Create a study plan, first step: start with an authored preparation path or build a custom plan.
+ * The host is the page's `section.plan-type-panel`; the page opens the chosen flow.
  */
 @Component({
   selector: 'section[appStudyPlanTypeChoice]',

@@ -332,11 +332,7 @@ export class Course implements OnInit {
   }
 
   protected pathLabel(): string {
-    return this.pathId() === 'grow'
-      ? 'Grow'
-      : this.pathId() === 'blaze'
-        ? 'Blaze'
-        : 'Learn';
+    return this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'blaze' ? 'Blaze' : 'Learn';
   }
 
   ngOnInit(): void {

@@ -16,7 +16,13 @@ import {
 describe('membership plan catalog (DLV-209)', () => {
   it('holds exactly the agreed plans, names and prices', () => {
     expect(
-      PLANS.map((plan) => [plan.group, plan.name, priceLabel(plan), scopeLabel(plan.scope), durationLabel(plan.duration)]),
+      PLANS.map((plan) => [
+        plan.group,
+        plan.name,
+        priceLabel(plan),
+        scopeLabel(plan.scope),
+        durationLabel(plan.duration),
+      ]),
     ).toEqual([
       ['regular', 'Free', '$0', 'Open and Free with account lessons', 'Ongoing'],
       ['regular', 'Learn', '$69.99/year', 'Learn', '1 year'],
@@ -42,9 +48,9 @@ describe('membership plan catalog (DLV-209)', () => {
 
   it('keeps offers with undecided terms off sale', () => {
     // Promo plans are complete offers now; they appear only while a sale runs (sale-preview.ts).
-    expect(PLANS.filter((plan) => !isOfferComplete(plan)).map((plan) => [plan.id, plan.pending])).toEqual([
-      ['course-pass', ['Duration']],
-    ]);
+    expect(
+      PLANS.filter((plan) => !isOfferComplete(plan)).map((plan) => [plan.id, plan.pending]),
+    ).toEqual([['course-pass', ['Duration']]]);
   });
 
   it('reads prices aloud in words', () => {
@@ -75,8 +81,14 @@ describe('membership plan catalog (DLV-209)', () => {
   });
 
   it('names the yearly plans that include a catalog, with the lowest price', () => {
-    expect(plansIncluding('learn')).toEqual({ names: ['Learn', 'Advance', 'Complete'], from: '$69.99/year' });
-    expect(plansIncluding('grow')).toEqual({ names: ['Grow', 'Advance', 'Complete'], from: '$99.99/year' });
+    expect(plansIncluding('learn')).toEqual({
+      names: ['Learn', 'Advance', 'Complete'],
+      from: '$69.99/year',
+    });
+    expect(plansIncluding('grow')).toEqual({
+      names: ['Grow', 'Advance', 'Complete'],
+      from: '$99.99/year',
+    });
     expect(plansIncluding('blaze')).toEqual({ names: ['Complete'], from: '$279.99/year' });
   });
 });

@@ -60,8 +60,9 @@ const questionIds = new Set();
 const questionsById = new Map();
 // Course directory of each question, e.g. learn/algorithmic-patterns.
 const questionCourseDirs = new Map();
-// Theory module files whose learning unit has no practice module of its own (a course-wide lesson such as
-// Recognize the Pattern). Their lessons may point practice at problems owned by other lessons of the course.
+// Theory module files whose learning unit has no practice module of its own (a course-wide lesson
+// such as Recognize the Pattern). Their lessons may point practice at problems owned by other
+// lessons of the course.
 const theoryModulesWithoutPractice = new Set();
 const patternLessons = [];
 const foundationLessons = [];
@@ -630,7 +631,9 @@ async function glossaryLessonTitle(pathId, courseId) {
     const courseRoot = join(contentRoot, pathId, courseId);
     if (await fileExists(join(courseRoot, 'course.json'))) {
       const manifest = JSON.parse(await readFile(join(courseRoot, 'course.json'), 'utf8'));
-      const moduleTitles = new Map((manifest.modules ?? []).map((module) => [module.id, module.title]));
+      const moduleTitles = new Map(
+        (manifest.modules ?? []).map((module) => [module.id, module.title]),
+      );
       for (const moduleFile of await filesWithExtension(join(courseRoot, 'modules'), '.json')) {
         for (const record of JSON.parse(await readFile(moduleFile, 'utf8'))) {
           if (record?.contentType === 'theory' && typeof record.id === 'string') {
@@ -665,41 +668,74 @@ async function validateGlossary(glossary, label, pathId) {
   const forms = new Map();
   for (const term of glossary.terms) {
     const termLabel = `${label}: term ${term?.id ?? 'unknown'}`;
-    requireValue(typeof term?.id === 'string' && /^[a-z0-9-]+$/.test(term.id) && !ids.has(term.id), `${termLabel}: id missing or repeated`);
+    requireValue(
+      typeof term?.id === 'string' && /^[a-z0-9-]+$/.test(term.id) && !ids.has(term.id),
+      `${termLabel}: id missing or repeated`,
+    );
     ids.add(term.id);
     requireValue(typeof term.term === 'string' && term.term.trim(), `${termLabel}: label is empty`);
     requireValue(
-      typeof term.definition === 'string' && term.definition.trim() && !/[<>]/.test(term.definition),
+      typeof term.definition === 'string' &&
+        term.definition.trim() &&
+        !/[<>]/.test(term.definition),
       `${termLabel}: definition must be plain text`,
     );
-    requireValue(term.definition.split(/\s+/).length <= 60, `${termLabel}: definition is over 60 words`);
-    requireValue(Array.isArray(term.match) && term.match.length > 0, `${termLabel}: match list is empty`);
+    requireValue(
+      term.definition.split(/\s+/).length <= 60,
+      `${termLabel}: definition is over 60 words`,
+    );
+    requireValue(
+      Array.isArray(term.match) && term.match.length > 0,
+      `${termLabel}: match list is empty`,
+    );
     for (const form of term.match) {
-      requireValue(typeof form === 'string' && form.trim() && form === form.trim(), `${termLabel}: bad match form`);
+      requireValue(
+        typeof form === 'string' && form.trim() && form === form.trim(),
+        `${termLabel}: bad match form`,
+      );
       const key = form === form.toUpperCase() ? form : form.toLowerCase();
-      requireValue(!forms.has(key) || forms.get(key) === term.id, `${termLabel}: match "${form}" is already used by ${forms.get(key)}`);
+      requireValue(
+        !forms.has(key) || forms.get(key) === term.id,
+        `${termLabel}: match "${form}" is already used by ${forms.get(key)}`,
+      );
       forms.set(key, term.id);
     }
-    requireValue(Array.isArray(term.lessons) && term.lessons.length > 0, `${termLabel}: no lessons linked`);
+    requireValue(
+      Array.isArray(term.lessons) && term.lessons.length > 0,
+      `${termLabel}: no lessons linked`,
+    );
     for (const skipped of term.skipLessons ?? []) {
-      requireValue(typeof skipped === 'string' && /^[a-z0-9-]+$/.test(skipped), `${termLabel}: bad skipLessons entry`);
+      requireValue(
+        typeof skipped === 'string' && /^[a-z0-9-]+$/.test(skipped),
+        `${termLabel}: bad skipLessons entry`,
+      );
       const [courseId] = skipped.split('-');
       let known = false;
-      for (const candidate of await glossaryCoursesForLesson(pathId, skipped)) known = known || candidate;
+      for (const candidate of await glossaryCoursesForLesson(pathId, skipped))
+        known = known || candidate;
       requireValue(known || courseId, `${termLabel}: unknown skipped lesson ${skipped}`);
     }
     for (const lesson of term.lessons) {
       requireValue(
-        typeof lesson?.courseId === 'string' && /^[a-z0-9-]+$/.test(lesson.courseId) && typeof lesson.lessonId === 'string',
+        typeof lesson?.courseId === 'string' &&
+          /^[a-z0-9-]+$/.test(lesson.courseId) &&
+          typeof lesson.lessonId === 'string',
         `${termLabel}: lesson link needs courseId and lessonId`,
       );
       const linkPath = lesson.path ?? pathId;
-      requireValue(/^(learn|grow|blaze)$/.test(linkPath), `${termLabel}: bad lesson path ${linkPath}`);
+      requireValue(
+        /^(learn|grow|blaze)$/.test(linkPath),
+        `${termLabel}: bad lesson path ${linkPath}`,
+      );
       const titles = await glossaryLessonTitle(linkPath, lesson.courseId);
-      requireValue(titles.has(lesson.lessonId), `${termLabel}: unknown lesson ${lesson.courseId}/${lesson.lessonId}`);
+      requireValue(
+        titles.has(lesson.lessonId),
+        `${termLabel}: unknown lesson ${lesson.courseId}/${lesson.lessonId}`,
+      );
       requireValue(
         titles.get(lesson.lessonId) === lesson.title,
-        `${termLabel}: lesson ${lesson.lessonId} is titled "${titles.get(lesson.lessonId)}", not "${lesson.title}"`,
+        `${termLabel}: lesson ${lesson.lessonId} is titled ` +
+          `"${titles.get(lesson.lessonId)}", not "${lesson.title}"`,
       );
     }
   }
@@ -757,7 +793,9 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
       );
     }
     if (!unit.practiceModuleId) {
-      theoryModulesWithoutPractice.add(`${dirname(courseLabel)}/modules/${unit.theoryModuleId}.json`);
+      theoryModulesWithoutPractice.add(
+        `${dirname(courseLabel)}/modules/${unit.theoryModuleId}.json`,
+      );
     }
     if (unit.questionModuleId) discoverableModuleIds.add(unit.questionModuleId);
     if (unit.practiceModuleId) discoverableModuleIds.add(unit.practiceModuleId);
@@ -907,7 +945,8 @@ try {
   await access(contentRoot);
 } catch {
   throw new Error(
-    `Content root not found at ${contentRoot}. Restore the selected source or use the tracked demo content.`,
+    `Content root not found at ${contentRoot}. Restore the selected source or use the ` +
+      `tracked demo content.`,
   );
 }
 
@@ -967,7 +1006,10 @@ for (const file of contentFiles) {
     continue;
   if (label === accessLevelsFile) {
     // DLV-942: unit IDs and levels only, derived in the content repository from its sample policy.
-    for (const error of accessLevelErrors(JSON.parse(await readFile(file, 'utf8')), unitIdsByCourse))
+    for (const error of accessLevelErrors(
+      JSON.parse(await readFile(file, 'utf8')),
+      unitIdsByCourse,
+    ))
       requireValue(false, error);
     continue;
   }
@@ -985,7 +1027,10 @@ for (const file of contentFiles) {
     // Option B problem stories. The full runtime check lives in the content repository:
     // python3 tools/validate_option_b_stories.py
     const story = JSON.parse(await readFile(file, 'utf8'));
-    requireValue(/^learn\/dsa-stories\/[a-z0-9-]+\.json$/.test(label), `${label}: unexpected story path`);
+    requireValue(
+      /^learn\/dsa-stories\/[a-z0-9-]+\.json$/.test(label),
+      `${label}: unexpected story path`,
+    );
     requireValue(story.schemaVersion === 'dsa-story/v1', `${label}: unsupported story schema`);
     requireValue(
       label === `learn/dsa-stories/${story.problemId}.json` &&
@@ -1009,11 +1054,23 @@ for (const file of contentFiles) {
     // Lesson project bundles (2026-10-05): the page packs them into a .zip. Built and verified by
     // python3 tools/curriculum/build_lesson_projects.py --verify in the content repository.
     const project = JSON.parse(await readFile(file, 'utf8'));
-    requireValue(/\/downloads\/[a-z0-9-]+-project\.json$/.test(label), `${label}: unexpected download path`);
-    requireValue(project.schemaVersion === 'lesson-project/v1', `${label}: unsupported project schema`);
-    // DLV-935: a two-language lesson has one bundle per language, <lessonId>-<language>-project.json.
-    const bundleName = label.slice(label.lastIndexOf('/downloads/') + '/downloads/'.length, -'-project.json'.length);
-    const bundleLanguage = bundleName.startsWith(`${project.lessonId}-`) ? bundleName.slice(project.lessonId.length + 1) : '';
+    requireValue(
+      /\/downloads\/[a-z0-9-]+-project\.json$/.test(label),
+      `${label}: unexpected download path`,
+    );
+    requireValue(
+      project.schemaVersion === 'lesson-project/v1',
+      `${label}: unsupported project schema`,
+    );
+    // DLV-935: a two-language lesson has one bundle per language,
+    // <lessonId>-<language>-project.json.
+    const bundleName = label.slice(
+      label.lastIndexOf('/downloads/') + '/downloads/'.length,
+      -'-project.json'.length,
+    );
+    const bundleLanguage = bundleName.startsWith(`${project.lessonId}-`)
+      ? bundleName.slice(project.lessonId.length + 1)
+      : '';
     requireValue(
       (bundleName === project.lessonId || ['java', 'python', 'go'].includes(bundleLanguage)) &&
         project.zipName === `${bundleName}.zip` &&
@@ -1023,7 +1080,13 @@ for (const file of contentFiles) {
     requireValue(
       Array.isArray(project.files) &&
         project.files.length > 0 &&
-        project.files.every((entry) => typeof entry.path === 'string' && !entry.path.startsWith('/') && !entry.path.includes('..') && typeof entry.content === 'string'),
+        project.files.every(
+          (entry) =>
+            typeof entry.path === 'string' &&
+            !entry.path.startsWith('/') &&
+            !entry.path.includes('..') &&
+            typeof entry.content === 'string',
+        ),
       `${label}: a project needs relative text files`,
     );
     continue;
@@ -1128,44 +1191,63 @@ for (const file of contentFiles) {
         // (java, python, go), with its own label, requirements and steps, and a bundle that exists.
         const downloads = question.runLocally.downloads;
         requireValue(
-          question.runLocally.download === undefined && Array.isArray(downloads) && downloads.length >= 2,
-          `${moduleLabel}: ${question.id} runLocally needs either download or two or more downloads`,
+          question.runLocally.download === undefined &&
+            Array.isArray(downloads) &&
+            downloads.length >= 2,
+          `${moduleLabel}: ${question.id} runLocally needs either download or two or ` +
+            `more downloads`,
         );
         const languages = downloads.map((entry) => entry.language);
         requireValue(
-          languages.join() === ['java', 'python', 'go'].filter((language) => languages.includes(language)).join() &&
+          languages.join() ===
+            ['java', 'python', 'go'].filter((language) => languages.includes(language)).join() &&
             new Set(languages).size === languages.length,
-          `${moduleLabel}: ${question.id} runLocally.downloads languages must be unique, in java, python, go order`,
+          `${moduleLabel}: ${question.id} runLocally.downloads languages must be ` +
+            `unique, in java, python, go order`,
         );
         for (const entry of downloads) {
-          const expectedHref = `/content/${manifest.path}/${manifest.id}/downloads/${question.id}-${entry.language}-project.json`;
+          const expectedHref =
+            `/content/${manifest.path}/${manifest.id}/downloads/${question.id}-` +
+            `${entry.language}-project.json`;
           requireValue(
             entry.href === expectedHref,
-            `${moduleLabel}: ${question.id} ${entry.language} download href must be ${expectedHref} (found ${entry.href})`,
+            `${moduleLabel}: ${question.id} ${entry.language} download href must ` +
+              `be ${expectedHref} (found ${entry.href})`,
           );
           requireValue(
-            typeof entry.label === 'string' && entry.label.trim() &&
-              [entry.requirements, entry.steps].every((list) => Array.isArray(list) && list.length > 0 && list.every((item) => typeof item === 'string' && item.trim())),
-            `${moduleLabel}: ${question.id} ${entry.language} download needs a label, requirements and steps`,
+            typeof entry.label === 'string' &&
+              entry.label.trim() &&
+              [entry.requirements, entry.steps].every(
+                (list) =>
+                  Array.isArray(list) &&
+                  list.length > 0 &&
+                  list.every((item) => typeof item === 'string' && item.trim()),
+              ),
+            `${moduleLabel}: ${question.id} ${entry.language} download needs a label, ` +
+              `requirements and steps`,
           );
           requireValue(
             await fileExists(join(contentRoot, entry.href.slice('/content/'.length))),
-            `${moduleLabel}: ${question.id} ${entry.language} download ${entry.href} does not exist under the content root`,
+            `${moduleLabel}: ${question.id} ${entry.language} download ${entry.href} ` +
+              `does not exist under the content root`,
           );
         }
       } else if (question.runLocally !== undefined) {
-        // "Run it yourself" download (2026-10-05): the bundle belongs to this lesson's own path and course,
-        // and build_lesson_projects.py must have written it. A runLocally copied from another course's
-        // lesson keeps that course in the href, and the page link 404s.
+        // "Run it yourself" download (2026-10-05): the bundle belongs to this lesson's own path and
+        // course, and build_lesson_projects.py must have written it. A runLocally copied from
+        // another course's lesson keeps that course in the href, and the page link 404s.
         const href = question.runLocally?.download?.href;
-        const expectedHref = `/content/${manifest.path}/${manifest.id}/downloads/${question.id}-project.json`;
+        const expectedHref =
+          `/content/${manifest.path}/${manifest.id}/downloads/${question.id}-` + `project.json`;
         requireValue(
           href === expectedHref,
-          `${moduleLabel}: ${question.id} runLocally.download.href must be ${expectedHref} (found ${href})`,
+          `${moduleLabel}: ${question.id} runLocally.download.href must ` +
+            `be ${expectedHref} (found ${href})`,
         );
         requireValue(
           await fileExists(join(contentRoot, href.slice('/content/'.length))),
-          `${moduleLabel}: ${question.id} runLocally download ${href} does not exist under the content root`,
+          `${moduleLabel}: ${question.id} runLocally download ${href} does not exist ` +
+            `under the content root`,
         );
       }
       requireValue(
@@ -1244,7 +1326,8 @@ for (const file of contentFiles) {
         );
         requireValue(
           question.contentType !== 'theory' && question.contentType !== 'dsa-problem',
-          `${moduleLabel}: ${question.id} applies experience evidence to an unsuitable content type`,
+          `${moduleLabel}: ${question.id} applies experience evidence to an unsuitable ` +
+            `content type`,
         );
       }
       if (question.practiceProblem !== undefined) {
@@ -1279,7 +1362,8 @@ for (const file of contentFiles) {
             Array.isArray(practice.testCases) &&
               practice.testCases.length >= 3 &&
               new Set(practice.testCases.map((testCase) => testCase.category)).size >= 3,
-            `${moduleLabel}: practice-ready ${question.id} needs representative, boundary, and failure tests`,
+            `${moduleLabel}: practice-ready ${question.id} needs representative, ` +
+              `boundary, and failure tests`,
           );
           requireValue(
             Array.isArray(practice.hints) && practice.hints.length >= 2,
@@ -1452,7 +1536,8 @@ for (const [id, problem] of canonicalDsaProblems) {
   for (const placement of problem.placements) {
     if (placement.role === 'essential') {
       const lesson = questionsById.get(placement.lessonId);
-      // A pattern lesson rewritten as algo-pattern-v1 (foundation-lesson/v1) keeps its essential problems.
+      // A pattern lesson rewritten as algo-pattern-v1 (foundation-lesson/v1) keeps its essential
+      // problems.
       requireValue(
         (lesson?.schemaVersion === 'pattern-lesson/v2' ||
           (lesson?.schemaVersion === 'foundation-lesson/v1' &&
@@ -1513,7 +1598,8 @@ for (const [id, problem] of canonicalDsaProblems) {
       );
       requireValue(
         targetContext?.[reciprocal]?.problemId === id,
-        `${id} and ${link.problemId} navigation links are not reciprocal in ${navigation.handsOnPatternId}`,
+        `${id} and ${link.problemId} navigation links are not reciprocal ` +
+          `in ${navigation.handsOnPatternId}`,
       );
     }
   }
@@ -1636,7 +1722,9 @@ function validateSectionCards(cards, label) {
   }
 }
 
-/** Optional Design Rounds walkthrough: ordered timed steps, each with a body and optional diagram. */
+/**
+ * Optional Design Rounds walkthrough: ordered timed steps, each with a body and optional diagram.
+ */
 async function validateWalkthrough(steps, label) {
   if (steps === undefined) return;
   requireValue(
@@ -1699,9 +1787,9 @@ async function validateWalkthrough(steps, label) {
 }
 
 /**
- * A storyboard visual (TheoryVisual type "storyboard"): frames the lesson page plays, and an optional narrow
- * drawing that exists. The content repository checks the SVG's data attributes against the frames
- * (apply_system_lessons.py, check_storyboard).
+ * A storyboard visual (TheoryVisual type "storyboard"): frames the lesson page plays, and an
+ * optional narrow drawing that exists. The content repository checks the SVG's data attributes
+ * against the frames (apply_system_lessons.py, check_storyboard).
  */
 async function validateStoryboard(visual, label) {
   if (visual.type !== 'storyboard') return;
@@ -1712,7 +1800,9 @@ async function validateStoryboard(visual, label) {
   );
   for (const frame of board.frames) {
     requireValue(
-      Number.isInteger(frame?.ms) && frame.ms >= 0 && (frame.wait === undefined || (Number.isInteger(frame.wait) && frame.wait >= 0)),
+      Number.isInteger(frame?.ms) &&
+        frame.ms >= 0 &&
+        (frame.wait === undefined || (Number.isInteger(frame.wait) && frame.wait >= 0)),
       `${label} storyboard frame needs ms (and an optional wait) in whole milliseconds`,
     );
   }
@@ -1725,7 +1815,9 @@ async function validateStoryboard(visual, label) {
     `${label} storyboard narrowAssetPath and narrowBelow go together`,
   );
   if (board.narrowAssetPath !== undefined) {
-    const narrowPath = String(board.narrowAssetPath).split(/[?#]/, 1)[0].replace(/^\/content\//, '');
+    const narrowPath = String(board.narrowAssetPath)
+      .split(/[?#]/, 1)[0]
+      .replace(/^\/content\//, '');
     try {
       await access(join(contentRoot, narrowPath));
     } catch {
@@ -1734,7 +1826,9 @@ async function validateStoryboard(visual, label) {
   }
 }
 
-/** algo-pattern-v1 practice ladder: each rung is a practice page of the canonical problem it names. */
+/**
+ * algo-pattern-v1 practice ladder: each rung is a practice page of the canonical problem it names.
+ */
 function validateLadder(ladder, label) {
   if (ladder === undefined) return;
   requireValue(
@@ -1870,9 +1964,10 @@ function isDebuggerInstruction(line, language) {
   }
   if (/^}\s*else\b/.test(text) || /^else\b/.test(text)) return false;
   if (language === 'go') return !/^func\s/.test(text);
-  return !/^(?:(?:public|private|protected|static|final|synchronized)\s+)*[\w<>\[\],.?]+\s+\w+\s*\([^)]*\)\s*{$/.test(
-    text,
-  );
+  return !new RegExp(
+    '^(?:(?:public|private|protected|static|final|synchronized)\\s+)*[\\w<>\\[\\],' +
+      '.?]+\\s+\\w+\\s*\\([^)]*\\)\\s*{$',
+  ).test(text);
 }
 
 for (const { lesson, moduleLabel } of [...foundationLessons, ...patternLessons]) {
@@ -2335,7 +2430,8 @@ for (const { lesson, moduleLabel } of patternLessons) {
             !isDebuggerInstruction(line, language) ||
               transitionAnchors.has(line.id) ||
               terminalAnchors.has(line.id),
-            `${problemLabel} ${language} omits executable source anchor ${line.id} from debugger control flow`,
+            `${problemLabel} ${language} omits executable source anchor ${line.id} from ` +
+              `debugger control flow`,
           );
         }
       }
@@ -2475,13 +2571,15 @@ for (const { lesson, moduleLabel } of patternLessons) {
             const sourceLine = implementation.lines.find(({ id }) => id === step?.sourceAnchor);
             requireValue(
               sourceLine && isDebuggerInstruction(sourceLine, language),
-              `${problemLabel} trace ${trace.id} has non-executable ${language} path anchor ${step?.sourceAnchor}`,
+              `${problemLabel} trace ${trace.id} has non-executable ${language} path ` +
+                `anchor ${step?.sourceAnchor}`,
             );
             requireValue(
               Number.isInteger(step?.eventIndex) &&
                 step.eventIndex >= 0 &&
                 step.eventIndex < trace.events.length,
-              `${problemLabel} trace ${trace.id} has invalid ${language} state event ${step?.eventIndex}`,
+              `${problemLabel} trace ${trace.id} has invalid ${language} state ` +
+                `event ${step?.eventIndex}`,
             );
             requireValue(
               step.stateUnavailable === undefined || typeof step.stateUnavailable === 'boolean',
@@ -2539,22 +2637,26 @@ for (const { lesson, moduleLabel } of patternLessons) {
             if (pathIndex === 0) {
               requireValue(
                 step.sourceAnchor === controlFlow.entryAnchor,
-                `${problemLabel} trace ${trace.id} must start at the ${language} runtime entry anchor`,
+                `${problemLabel} trace ${trace.id} must start at the ${language} ` +
+                  `runtime entry anchor`,
               );
             } else {
               const previousStep = path[pathIndex - 1];
               const previousAnchor = path[pathIndex - 1].sourceAnchor;
               requireValue(
                 previousAnchor !== step.sourceAnchor,
-                `${problemLabel} trace ${trace.id} repeats ${language} path anchor ${step.sourceAnchor} without advancing`,
+                `${problemLabel} trace ${trace.id} repeats ${language} path ` +
+                  `anchor ${step.sourceAnchor} without advancing`,
               );
               requireValue(
                 step.eventIndex >= previousStep.eventIndex,
-                `${problemLabel} trace ${trace.id} moves ${language} state backward at ${step.sourceAnchor}`,
+                `${problemLabel} trace ${trace.id} moves ${language} state backward ` +
+                  `at ${step.sourceAnchor}`,
               );
               requireValue(
                 controlFlow.transitions[previousAnchor]?.includes(step.sourceAnchor),
-                `${problemLabel} trace ${trace.id} has illegal ${language} runtime transition ${previousAnchor} -> ${step.sourceAnchor}`,
+                `${problemLabel} trace ${trace.id} has illegal ${language} runtime ` +
+                  `transition ${previousAnchor} -> ${step.sourceAnchor}`,
               );
             }
           }
@@ -2569,7 +2671,8 @@ for (const { lesson, moduleLabel } of patternLessons) {
           const fixture = problem.fixtures.find(({ id }) => id === trace.fixtureId);
           requireValue(
             path.at(-1).result === fixture.expectedOutput,
-            `${problemLabel} trace ${trace.id} ${language} result does not match fixture ${fixture.id}`,
+            `${problemLabel} trace ${trace.id} ${language} result does not match ` +
+              `fixture ${fixture.id}`,
           );
         }
       }
@@ -2662,7 +2765,8 @@ for (const { lesson, moduleLabel } of patternLessons) {
           practice.canonicalApproach?.whyOptimal &&
           practice.canonicalApproach?.whenAssumptionChanges &&
           practice.approaches === undefined,
-        `${problemLabel} practice needs one canonical approach rationale without an alternatives catalogue`,
+        `${problemLabel} practice needs one canonical approach rationale without an ` +
+          `alternatives catalogue`,
       );
       const variantRationale = practice.canonicalApproach.whyThisApproach.trim();
       requireValue(
@@ -2770,16 +2874,19 @@ for (const { lesson, moduleLabel } of patternLessons) {
     if (reference.sourceLessonId !== undefined) {
       requireValue(
         lesson.practiceSetPolicy === 'guided-plus-distinct-transfer',
-        `${label} practice ${reference.questionId} cannot declare a source lesson without the transfer policy`,
+        `${label} practice ${reference.questionId} cannot declare a source lesson ` +
+          `without the transfer policy`,
       );
       requireValue(
         reference.sourceLessonId !== lesson.id && questionsById.has(reference.sourceLessonId),
-        `${label} practice ${reference.questionId} has invalid source lesson ${reference.sourceLessonId}`,
+        `${label} practice ${reference.questionId} has invalid source ` +
+          `lesson ${reference.sourceLessonId}`,
       );
     }
     requireValue(
       question.relatedArticleId === expectedRelatedArticleId,
-      `${label} practice ${reference.questionId} is not explicitly related to ${expectedRelatedArticleId}`,
+      `${label} practice ${reference.questionId} is not explicitly related ` +
+        `to ${expectedRelatedArticleId}`,
     );
   }
   requireStringArray(lesson.keyTakeaways, `${label} keyTakeaways`, 3);
@@ -2805,5 +2912,10 @@ for (const { lesson, moduleLabel } of patternLessons) {
 }
 
 console.log(
-  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${canonicalDsaProblemCount} canonical DSA problem(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} trace problem(s), ${deliveryPlanCount} delivery plan(s), and ${readyMadeTemplateCount} ready-made study-plan template(s).`,
+  `Validated ${courseCount} course manifest(s), ${questionCount} ` +
+    `question(s), ${canonicalDsaProblemCount} canonical DSA ` +
+    `problem(s), ${patternLessons.length} versioned pattern ` +
+    `lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} ` +
+    `trace problem(s), ${deliveryPlanCount} delivery plan(s), ` +
+    `and ${readyMadeTemplateCount} ready-made study-plan template(s).`,
 );

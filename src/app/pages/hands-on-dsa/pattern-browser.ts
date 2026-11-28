@@ -14,7 +14,11 @@ import {
   untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { HandsOnDsaIndexGroup, HandsOnDsaIndexProblem, HandsOnSort } from '../../content/hands-on-dsa';
+import {
+  HandsOnDsaIndexGroup,
+  HandsOnDsaIndexProblem,
+  HandsOnSort,
+} from '../../content/hands-on-dsa';
 import { PracticeProgressService } from '../../core/practice-progress/practice-progress';
 import { PracticeStatusMark } from '../../core/practice-progress/practice-status-mark';
 import { patternContextQuery } from '../../content/pattern-context';
@@ -27,7 +31,9 @@ import {
   columnSortLabel,
 } from './catalog-sort';
 
-/** One pattern in the grouped view: its problems after the filters, and its progress on this device. */
+/**
+ * One pattern in the grouped view: its problems after the filters, and its progress on this device.
+ */
 export interface PatternEntry {
   group: HandsOnDsaIndexGroup;
   /** Problems that match the current filters, in the table's current sort. */
@@ -59,8 +65,11 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
           (keydown)="onListKeydown($event)"
         >
           @for (course of courses(); track course.id) {
-            <div role="group" [attr.aria-labelledby]="namesHidden() ? null : 'pattern-course-' + $index"
-              [attr.aria-label]="namesHidden() ? 'Patterns ' + course.range : null">
+            <div
+              role="group"
+              [attr.aria-labelledby]="namesHidden() ? null : 'pattern-course-' + $index"
+              [attr.aria-label]="namesHidden() ? 'Patterns ' + course.range : null"
+            >
               @if (!namesHidden()) {
                 <p class="course-label" role="presentation" [id]="'pattern-course-' + $index">
                   {{ course.title }}
@@ -81,7 +90,11 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
                   (click)="choose(id)"
                 >
                   <span class="option-order" aria-hidden="true">{{ orderLabel(entry.group) }}</span>
-                  <span class="option-name" [class.hidden-name]="!nameShown(entry.group)" aria-hidden="true">
+                  <span
+                    class="option-name"
+                    [class.hidden-name]="!nameShown(entry.group)"
+                    aria-hidden="true"
+                  >
                     {{ patternName(entry.group) }}
                   </span>
                   <span class="option-count" aria-hidden="true">{{ entry.problems.length }}</span>
@@ -112,7 +125,8 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
             </button>
             <div class="detail-title-row">
               <h3 id="pattern-detail-title" tabindex="-1">
-                <span class="detail-order">{{ orderLabel(group) }}</span>&ngsp;<span [class.hidden-name]="!nameShown(group)">{{ patternName(group) }}</span>
+                <span class="detail-order">{{ orderLabel(group) }}</span
+                >&ngsp;<span [class.hidden-name]="!nameShown(group)">{{ patternName(group) }}</span>
               </h3>
               @if (!nameShown(group)) {
                 <button type="button" class="show-name" (click)="showName(group.id)">
@@ -125,7 +139,8 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
             }
             <div class="detail-facts">
               <span class="detail-count">
-                {{ entry.problems.length }} {{ entry.problems.length === 1 ? 'problem' : 'problems' }}
+                {{ entry.problems.length }}
+                {{ entry.problems.length === 1 ? 'problem' : 'problems' }}
                 @if (entry.problems.length !== entry.total) {
                   <span class="of-total">of {{ entry.total }}</span>
                 }
@@ -144,7 +159,9 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
               </span>
               <span class="detail-progress">
                 <span class="meter" aria-hidden="true"
-                  ><span [style.width.%]="entry.total ? (entry.solved / entry.total) * 100 : 0"></span
+                  ><span
+                    [style.width.%]="entry.total ? (entry.solved / entry.total) * 100 : 0"
+                  ></span
                 ></span>
                 {{ entry.solved }} of {{ entry.total }} solved
               </span>
@@ -174,7 +191,11 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
           <p class="visually-hidden" role="status" aria-live="polite">{{ status() }}</p>
 
           @if (entry.problems.length) {
-            <table class="pattern-problems" role="table" [attr.aria-label]="patternName(group) + ' problems'">
+            <table
+              class="pattern-problems"
+              role="table"
+              [attr.aria-label]="patternName(group) + ' problems'"
+            >
               <thead role="rowgroup">
                 <!-- The flat table's sortable headers: one sort, shared by both views. -->
                 <tr role="row">
@@ -206,7 +227,8 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
                   @let previewOpen = openPreviewId() === problem.id;
                   <tr class="pattern-problem-row" role="row" [class.is-previewing]="previewOpen">
                     <td class="cell-learning" role="cell">
-                      <span class="cell-tag" aria-hidden="true">Learning order </span>{{ problem.studyOrder ?? '—' }}
+                      <span class="cell-tag" aria-hidden="true">Learning order </span
+                      >{{ problem.studyOrder ?? '—' }}
                     </td>
                     <td class="cell-title" role="cell">
                       <div class="title-layout">
@@ -221,18 +243,25 @@ type PendingFocus = { kind: 'detail' } | { kind: 'list'; id: string } | { kind: 
                           class="preview-toggle"
                           [attr.aria-expanded]="previewOpen"
                           [attr.aria-controls]="previewRowId(problem.id)"
-                          [attr.aria-label]="(previewOpen ? 'Hide preview of ' : 'Preview ') + problem.title"
+                          [attr.aria-label]="
+                            (previewOpen ? 'Hide preview of ' : 'Preview ') + problem.title
+                          "
                           (click)="previewToggle.emit(problem)"
                         >
                           {{ previewOpen ? 'Hide preview' : 'Preview' }}
                         </button>
                       </div>
                     </td>
-                    <td class="cell-difficulty" role="cell" [attr.data-difficulty]="problem.difficulty">
+                    <td
+                      class="cell-difficulty"
+                      role="cell"
+                      [attr.data-difficulty]="problem.difficulty"
+                    >
                       {{ problem.difficulty }}
                     </td>
                     <td class="cell-interview" role="cell">
-                      <span class="cell-tag" aria-hidden="true">Interview priority </span>{{ problem.interviewRank ?? '—' }}
+                      <span class="cell-tag" aria-hidden="true">Interview priority </span
+                      >{{ problem.interviewRank ?? '—' }}
                     </td>
                     <td class="cell-status" role="cell">
                       <app-practice-status-mark
@@ -309,7 +338,12 @@ export class PatternBrowser {
       const last = courses.at(-1);
       if (last && last.id === entry.group.courseId) last.entries.push(entry);
       else
-        courses.push({ id: entry.group.courseId, title: entry.group.courseTitle, range: '', entries: [entry] });
+        courses.push({
+          id: entry.group.courseId,
+          title: entry.group.courseTitle,
+          range: '',
+          entries: [entry],
+        });
     }
     for (const course of courses) {
       const first = course.entries[0].group.preparationOrder;
@@ -324,13 +358,18 @@ export class PatternBrowser {
     return this.selected()?.problems.find(({ id }) => !solved.has(id)) ?? null;
   });
   protected readonly nextUnsolvedHelp = computed(
-    () => `The first unsolved problem in this pattern, in the current order: ${this.sortDescription()}.`,
+    () =>
+      `The first unsolved problem in this pattern, in the current ` +
+      `order: ${this.sortDescription()}.`,
   );
   protected readonly status = computed(() => {
     const entry = this.selected();
     if (!entry) return '';
     const count = entry.problems.length;
-    return `${this.patternName(entry.group)}: ${count} ${count === 1 ? 'problem' : 'problems'} shown, ${entry.solved} of ${entry.total} solved.`;
+    return (
+      `${this.patternName(entry.group)}: ${count} ${count === 1 ? 'problem' : 'problems'} ` +
+      `shown, ${entry.solved} of ${entry.total} solved.`
+    );
   });
   private pendingFocus: PendingFocus | null = null;
 
@@ -374,7 +413,9 @@ export class PatternBrowser {
     const name = this.nameShown(entry.group)
       ? `${entry.group.preparationOrder}. ${entry.group.title}`
       : `Pattern ${entry.group.preparationOrder}`;
-    const matches = count ? `${count} ${count === 1 ? 'problem' : 'problems'}` : 'no matching problems';
+    const matches = count
+      ? `${count} ${count === 1 ? 'problem' : 'problems'}`
+      : 'no matching problems';
     return `${name}, ${matches}, ${entry.solved} of ${entry.total} solved`;
   }
 
@@ -505,9 +546,7 @@ export class PatternBrowser {
   private revealSelectedOption(): void {
     const id = this.selectedId();
     if (!id || this.listHidden()) return;
-    const option = this.host.nativeElement.querySelector<HTMLElement>(
-      `[data-pattern-id="${id}"]`,
-    );
+    const option = this.host.nativeElement.querySelector<HTMLElement>(`[data-pattern-id="${id}"]`);
     if (option) this.revealOption(option);
   }
 

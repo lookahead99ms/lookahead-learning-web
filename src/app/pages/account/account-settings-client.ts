@@ -24,9 +24,13 @@ export interface ManagedAccountProfile {
   username: string;
   /** 'google' when this session signed in through Google (DLV-969). */
   signInMethod?: string;
-  /** Every sign-in method of the account, once the Domain reports them (DLV-969 account linking). */
+  /**
+   * Every sign-in method of the account, once the Domain reports them (DLV-969 account linking).
+   */
   signInMethods?: AccountSignInMethod[];
-  /** The provider-verified email, for a Google account its Gmail; absent when the service has none. */
+  /**
+   * The provider-verified email, for a Google account its Gmail; absent when the service has none.
+   */
   email?: string;
   /** Absent when Identity does not report it (older service). */
   themePreference?: ThemePreference;

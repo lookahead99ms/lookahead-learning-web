@@ -16,14 +16,21 @@ export interface LessonSpotPick {
   template: `
     @for (item of drill().items; track item.statement; let index = $index) {
       <li class="spot-item">
-        <p class="spot-statement" [id]="sectionId() + '-spot-' + index"><span class="rich" [innerHTML]="item.statement"></span></p>
-        <div class="spot-options" role="group" [attr.aria-labelledby]="sectionId() + '-spot-' + index">
+        <p class="spot-statement" [id]="sectionId() + '-spot-' + index"
+          ><span class="rich" [innerHTML]="item.statement"></span
+        ></p>
+        <div
+          class="spot-options"
+          role="group"
+          [attr.aria-labelledby]="sectionId() + '-spot-' + index"
+        >
           @for (option of drill().options; track option) {
             <button
               type="button"
               [attr.aria-pressed]="picked(index) === option"
               (click)="pick.emit({ index, option })"
-            >{{ option }}</button>
+              >{{ option }}</button
+            >
           }
         </div>
         <p class="spot-result" aria-live="polite">

@@ -10,7 +10,12 @@ const MAP = [
   {
     sections: [
       {
-        table: { rows: [['1', '<strong>Two pointers</strong>'], ['2', 'Sliding window']] },
+        table: {
+          rows: [
+            ['1', '<strong>Two pointers</strong>'],
+            ['2', 'Sliding window'],
+          ],
+        },
         patternMap: {
           signals: [
             {
@@ -60,21 +65,26 @@ describe('PatternHelp', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     fixture.componentInstance.open.set(true);
-    // The dialog opens from an effect and its content loads asynchronously; under a busy full-suite run one
-    // change-detection pass is not always enough, so settle until the dialog is open and the load has finished.
+    // The dialog opens from an effect and its content loads asynchronously; under a busy full-suite
+    // run one change-detection pass is not always enough, so settle until the dialog is open and
+    // the load has finished.
     const root = fixture.nativeElement as HTMLElement;
     for (let attempt = 0; attempt < 20; attempt++) {
       fixture.detectChanges();
       await fixture.whenStable();
       await new Promise((resolve) => setTimeout(resolve));
       const dialog = root.querySelector('dialog');
-      if (dialog?.hasAttribute('open') && (root.querySelector('.chip') || root.textContent?.includes('did not load'))) break;
+      if (
+        dialog?.hasAttribute('open') &&
+        (root.querySelector('.chip') || root.textContent?.includes('did not load'))
+      )
+        break;
     }
     fixture.detectChanges();
     return { fixture, root };
   }
 
-  it('opens with the problem and lets the learner pick a signal without choosing for them', async () => {
+  it('opens with the problem and lets the learner pick a signal without choosing', async () => {
     const { fixture, root } = await setup();
     expect(root.querySelector('dialog')?.hasAttribute('open')).toBe(true);
     expect(root.querySelector('h2')?.textContent).toBe('Pair Sum');
@@ -97,16 +107,22 @@ describe('PatternHelp', () => {
     // One compact row (user, 2026-10-16): the name once, then a small "Learn more" button.
     const answer = root.querySelector<HTMLElement>('.answer')!;
     expect(answer.querySelector('h4')).toBeNull();
-    expect(answer.querySelector('.answer-name')?.textContent).toBe("This problem's pattern: Two Pointers");
+    expect(answer.querySelector('.answer-name')?.textContent).toBe(
+      "This problem's pattern: Two Pointers",
+    );
     const visibleText = (element: Element): string =>
       [...element.childNodes]
-        .filter((node) => !(node instanceof HTMLElement && node.classList.contains('visually-hidden')))
+        .filter(
+          (node) => !(node instanceof HTMLElement && node.classList.contains('visually-hidden')),
+        )
         .map((node) => (node instanceof HTMLElement ? visibleText(node) : (node.textContent ?? '')))
         .join('');
     expect(visibleText(answer).match(/Two Pointers/g)).toHaveLength(1);
     const link = root.querySelector<HTMLAnchorElement>('.lesson-link')!;
     expect(visibleText(link).trim()).toBe('Learn more');
-    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Learn more about Two Pointers (opens in a new tab)');
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Learn more about Two Pointers (opens in a new tab)',
+    );
     expect(link.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(link.classList).not.toContain('action-link');
     expect(link.getAttribute('href')).toBe('/learn/algorithmic-patterns/two-pointers');

@@ -121,7 +121,8 @@ test('card drawings may carry words coloured from the scene tokens', () => {
     '<style>.sw-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}</style>',
     '<text class="sw-t" x="160" y="28">window slides along</text>',
     '<text x="20" y="60" font-size="14" fill="var(--scene-muted,#536970)">add one, drop one</text>',
-    '<text x="20" y="80" style="font:600 12px ui-monospace;fill:var(--scene-good,#1f7a4d)">200 OK</text>',
+    '<text x="20" y="80" style="font:600 12px ' +
+      'ui-monospace;fill:var(--scene-good,#1f7a4d)">200 OK</text>',
     '<text x="20" y="100" font-size="16" fill="#fff">7</text>',
     '<text x="20" y="120" font-size="16" fill="var(--scene-card,#fff)">Pay</text>',
     '<g fill="var(--scene-text,#28434a)"><text x="1" y="1" font-size="10">Madrid</text></g>',
@@ -257,7 +258,8 @@ test('card drawing words use their own tokens, never the title colour or weight'
     assert.match(
       styles,
       new RegExp(
-        `\\.${path}-catalog-reader,\\s*\\.learning-map\\[data-path='${path}'\\]\\s*\\{\\s*--card-title-color: var\\(--card-title-${path}\\);`,
+        `\\.${path}-catalog-reader,\\s*\\.learning-map\\[data-path='` +
+          `${path}'\\]\\s*\\{\\s*--card-title-color: var\\(--card-title-${path}\\);`,
       ),
       path,
     );
@@ -276,7 +278,10 @@ test('card drawing words use their own tokens, never the title colour or weight'
   for (const source of [catalog, unitMap]) {
     assert.doesNotMatch(
       source.replace(/\/\*[\s\S]*?\*\//g, ''),
-      /(?:catalog-path-title|catalog-course-title|unit-card-title) \{[^}]*font-size: (?!var\(--card-title-size)/,
+      new RegExp(
+        '(?:catalog-path-title|catalog-course-title|unit-card-title) \\{[^}]*font-size: ' +
+          '(?!var\\(--card-title-size)',
+      ),
     );
   }
   const component = readFileSync(join(webRoot, 'src/app/core/card-scene/card-scene.ts'), 'utf8');

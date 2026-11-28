@@ -1,4 +1,9 @@
-import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
+import {
+  ContentRecovery,
+  RecoveryKind,
+  RecoveryPreview,
+  recoveryKind,
+} from '../../core/content-recovery/content-recovery';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';

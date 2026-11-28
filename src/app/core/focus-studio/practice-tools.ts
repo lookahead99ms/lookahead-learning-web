@@ -64,7 +64,10 @@ export class PracticeTimer {
   readonly low = computed(() => this.remaining() < 5 * 60);
   readonly clock = computed(() => {
     const seconds = this.remaining();
-    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    return (
+      `${String(Math.floor(seconds / 60)).padStart(2, '0')}:` +
+      `${String(seconds % 60).padStart(2, '0')}`
+    );
   });
   private problemId = '';
   private interval?: ReturnType<typeof setInterval>;

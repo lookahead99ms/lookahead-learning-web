@@ -869,6 +869,28 @@ npm run build
 Private content verification uses `npm run validate:content:private` and
 `npm run build:private` with an authorized sibling content checkout.
 
+### Code style (DLV-1026)
+
+TypeScript, JavaScript, HTML and CSS under `src/`, `scripts/` and `.github/pipeline/` are
+formatted by the Prettier version locked in `package-lock.json`, with `.prettierrc` (100 columns,
+single quotes, the Angular parser for templates). `htmlWhitespaceSensitivity` is `strict`: the
+default `css` mode adds spaces inside elements and changes the rendered text. A few template nodes
+that mix text with `@if`/`@for` blocks carry `<!-- prettier-ignore -->`, because Prettier moves the
+whitespace at those block edges in either mode. `npm run format` formats; CI runs
+`npm run format:check` and `npm run test:line-length` (`scripts/line-length.test.mjs`). That test
+fails on any TypeScript, JavaScript, CSS or Angular template line over 100 columns except an import
+or `export … from` line and a line whose only long part is one URL (the exceptions of the Google
+style guides); there is no list of allowed lines. Prettier does not break strings, regular
+expressions or comments: split a long string into `'…' + '…'` pieces (in a template too, with a
+binding such as `[attr.alt]="'…' + '…'"` for a long static attribute), build a long pattern with
+`new RegExp`, and wrap a long comment by hand. `src/index.html`, the static page shell, keeps its
+two long meta descriptions: a line break would change the attribute value.
+
+Python under `.github/pipeline/` follows PEP 8: formatted (Black-compatible, 88 columns) and linted
+(rules E, W, F, I) by Ruff with `ruff.toml` at the repository root. CI installs the hash-locked
+Ruff from `.github/pipeline/shared/requirements-style.txt` and runs `ruff format --check .` and
+`ruff check .`; locally `ruff format .` formats.
+
 See [Architecture](docs/architecture.md),
 [Content Boundary](docs/content-boundary.md), and the
 [Public Repository Runbook](docs/public-repository-runbook.md).

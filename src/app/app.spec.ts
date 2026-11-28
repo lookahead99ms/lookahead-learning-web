@@ -48,7 +48,10 @@ describe('App', () => {
 });
 
 it('sends an expired session to sign-in without redirecting anonymous browsing', async () => {
-  await TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] }).compileComponents();
+  await TestBed.configureTestingModule({
+    imports: [App],
+    providers: [provideRouter([])],
+  }).compileComponents();
   const router = TestBed.inject(Router);
   const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
   const fixture = TestBed.createComponent(App);
@@ -57,12 +60,16 @@ it('sends an expired session to sign-in without redirecting anonymous browsing',
   TestBed.inject(StudyPlanAccount).sessionExpired.set(true);
   fixture.detectChanges();
   expect(navigate).toHaveBeenCalledExactlyOnceWith(['/sign-in'], {
-    queryParams: { error: 'session-expired' }, replaceUrl: true,
+    queryParams: { error: 'session-expired' },
+    replaceUrl: true,
   });
 });
 
 it('keeps rejected credentials on the existing sign-in page', async () => {
-  await TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] }).compileComponents();
+  await TestBed.configureTestingModule({
+    imports: [App],
+    providers: [provideRouter([])],
+  }).compileComponents();
   const router = TestBed.inject(Router);
   vi.spyOn(router, 'url', 'get').mockReturnValue('/sign-in');
   const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -73,7 +80,10 @@ it('keeps rejected credentials on the existing sign-in page', async () => {
 });
 
 it('never sends a waiting person away from /welcome (DLV-969)', async () => {
-  await TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] }).compileComponents();
+  await TestBed.configureTestingModule({
+    imports: [App],
+    providers: [provideRouter([])],
+  }).compileComponents();
   const router = TestBed.inject(Router);
   vi.spyOn(router, 'url', 'get').mockReturnValue('/welcome?access=pending');
   const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);

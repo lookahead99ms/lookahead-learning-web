@@ -1,9 +1,11 @@
 /**
- * Word matching shared by the pattern map's typing box and the pattern finder. Framework-free, so the
- * finder's coverage report can run the same code outside Angular.
+ * Word matching shared by the pattern map's typing box and the pattern finder. Framework-free, so
+ * the finder's coverage report can run the same code outside Angular.
  */
 
-/** One word as a pattern that also accepts its singular or plural form (pair/pairs, query/queries). */
+/**
+ * One word as a pattern that also accepts its singular or plural form (pair/pairs, query/queries).
+ */
 function wordForms(word: string): string {
   const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (word.length <= 3 || !/^[a-z]+$/.test(word)) return escaped;
@@ -21,7 +23,11 @@ function wordForms(word: string): string {
  * words, so "linked list" finds "linked-list" and "in place" finds "in-place" (DLV-964).
  */
 export function hasWords(text: string, phrase: string): boolean {
-  const words = phrase.trim().toLowerCase().split(/[\s-]+/).filter(Boolean);
+  const words = phrase
+    .trim()
+    .toLowerCase()
+    .split(/[\s-]+/)
+    .filter(Boolean);
   if (!words.length) return false;
   const pattern = words.map(wordForms).join('[\\s-]+');
   return new RegExp(`(^|[^a-z])${pattern}([^a-z]|$)`, 'i').test(text);
@@ -35,7 +41,8 @@ export function editDistance(a: string, b: string): number {
     for (let j = 1; j <= b.length; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
-      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1])
+        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
     }
   }
   return d[a.length][b.length];
@@ -48,19 +55,28 @@ export function editDistance(a: string, b: string): number {
  */
 export function closestSpelling(query: string, vocabulary: ReadonlySet<string>): string | null {
   let changed = false;
-  const words = query.trim().toLowerCase().split(/\s+/).map((word) => {
-    if (word.length < 4 || !/^[a-z]+$/.test(word) || [...vocabulary].some((known) => hasWords(known, word))) return word;
-    const limit = word.length >= 7 ? 2 : 1;
-    let best = '';
-    let bestDistance = limit + 1;
-    for (const known of vocabulary) {
-      if (Math.abs(known.length - word.length) > limit) continue;
-      const distance = editDistance(word, known);
-      if (distance < bestDistance) [best, bestDistance] = [known, distance];
-    }
-    if (!best) return word;
-    changed = true;
-    return best;
-  });
+  const words = query
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => {
+      if (
+        word.length < 4 ||
+        !/^[a-z]+$/.test(word) ||
+        [...vocabulary].some((known) => hasWords(known, word))
+      )
+        return word;
+      const limit = word.length >= 7 ? 2 : 1;
+      let best = '';
+      let bestDistance = limit + 1;
+      for (const known of vocabulary) {
+        if (Math.abs(known.length - word.length) > limit) continue;
+        const distance = editDistance(word, known);
+        if (distance < bestDistance) [best, bestDistance] = [known, distance];
+      }
+      if (!best) return word;
+      changed = true;
+      return best;
+    });
   return changed ? words.join(' ') : null;
 }

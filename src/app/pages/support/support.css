@@ -79,7 +79,8 @@ h2 {
 .intro-panel app-report-tips {
   margin-bottom: 0;
 }
-/* DLV-971 (owner, 2026-11-06): the intro card: two headings as plain text with a thin rule between them. */
+/* DLV-971 (owner, 2026-11-06): the intro card: two headings as plain text with a thin rule between
+   them. */
 .intro-headings {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

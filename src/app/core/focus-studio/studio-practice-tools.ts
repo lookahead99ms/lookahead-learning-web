@@ -51,12 +51,27 @@ const BASE = `
         timer().clock()
       }}</span>
       @if (timer().running()) {
-        <button type="button" title="Stop the countdown and unlock hints and the solution" (click)="timer().stop()">Stop</button>
+        <button
+          type="button"
+          title="Stop the countdown and unlock hints and the solution"
+          (click)="timer().stop()"
+          >Stop</button
+        >
       } @else {
         @if (!timer().expired()) {
-          <button type="button" title="Resume the countdown and lock hints and the solution again" (click)="timer().resume()">Resume</button>
+          <button
+            type="button"
+            title="Resume the countdown and lock hints and the solution again"
+            (click)="timer().resume()"
+            >Resume</button
+          >
         }
-        <button type="button" title="Clear this timed attempt and choose a new attempt length" (click)="timer().reset()">Reset</button>
+        <button
+          type="button"
+          title="Clear this timed attempt and choose a new attempt length"
+          (click)="timer().reset()"
+          >Reset</button
+        >
       }
     } @else if (available()) {
       <select
@@ -71,7 +86,12 @@ const BASE = `
           </option>
         }
       </select>
-      <button type="button" class="start" title="Start the countdown; hints and the solution stay locked until you stop it" (click)="start.emit()">
+      <button
+        type="button"
+        class="start"
+        title="Start the countdown; hints and the solution stay locked until you stop it"
+        (click)="start.emit()"
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <circle cx="12" cy="13" r="8" />
           <path d="M12 9v4l2.5 2.5M9 2h6" />
@@ -137,8 +157,19 @@ export class StudioTimer {
       Continue anyway?
     </p>
     <div role="group" aria-label="Timed attempt">
-      <button type="button" class="primary" title="Open this learning mode while the countdown continues" (click)="proceed.emit()">Continue anyway</button>
-      <button type="button" title="Keep the timer running and return to your draft" (click)="back.emit()">Back to Try it yourself</button>
+      <button
+        type="button"
+        class="primary"
+        title="Open this learning mode while the countdown continues"
+        (click)="proceed.emit()"
+        >Continue anyway</button
+      >
+      <button
+        type="button"
+        title="Keep the timer running and return to your draft"
+        (click)="back.emit()"
+        >Back to Try it yourself</button
+      >
     </div>`,
   host: { role: 'note', 'aria-label': 'Timed attempt running' },
   styles: [
@@ -179,7 +210,9 @@ export class StudioTimerGate {
   readonly back = output<void>();
 }
 
-/** Predict time and space before opening the solution; the reference chips are marked against it. */
+/**
+ * Predict time and space before opening the solution; the reference chips are marked against it.
+ */
 @Component({
   selector: 'app-studio-prediction',
   template: `<p class="title">Predict the complexity before you open the solution</p>
@@ -200,7 +233,11 @@ export class StudioTimerGate {
           }
         </select></label
       >
-      <button type="button" title="Save your predicted time and space complexity before revealing the solution" (click)="save.emit({ time: time(), space: space() })">
+      <button
+        type="button"
+        title="Save your predicted time and space complexity before revealing the solution"
+        (click)="save.emit({ time: time(), space: space() })"
+      >
         Save my prediction
       </button>
       <span role="status">{{
@@ -378,7 +415,10 @@ export class StudioComplexity {
   });
 }
 
-/** One line under the editor and its prediction box; the keys themselves are handled by Focus Studio. */
+/**
+ * One line under the editor and its prediction box; the keys themselves are handled by Focus
+ * Studio.
+ */
 @Component({
   selector: 'app-studio-shortcuts',
   template: `<span>Shortcuts outside the editor</span>

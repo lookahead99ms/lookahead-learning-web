@@ -128,8 +128,9 @@ export interface ShowcaseCourse {
 /**
  * DLV-209 "What you're missing" (user, 2026-10-15): a curated bento of catchy, in-demand courses,
  * mostly not tied to one language. Mixed sizes fill a 4×6 grid exactly: one big (2×2), two wide
- * (2×1), three tall (1×2, courses with long lists) and eleven small (1×1). Tiles have fixed heights; each lists as many
- * lessons as fit and counts the rest in "and N more" (fitShowcase), so every tile is full.
+ * (2×1), three tall (1×2, courses with long lists) and eleven small (1×1). Tiles have fixed
+ * heights; each lists as many lessons as fit and counts the rest in "and N more" (fitShowcase), so
+ * every tile is full.
  */
 export const MISSING_SHOWCASE: readonly ShowcaseCourse[] = [
   { key: 'learn/algorithmic-patterns', area: 'alg', size: 'wide', shown: 60, columns: 2 },
@@ -153,7 +154,6 @@ export const MISSING_SHOWCASE: readonly ShowcaseCourse[] = [
 /** Desktop row length of the lesson cards (start-free.css). */
 const CARDS_PER_ROW = 4;
 
-
 export interface PaidCourse {
   key: string;
   path: string;
@@ -176,7 +176,9 @@ export interface PaidCourse {
 }
 
 function joinNames(names: readonly string[]): string {
-  return names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+  return names.length < 2
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 }
 
 /**
@@ -190,7 +192,9 @@ export function startFreeShowcase(
   hasAccess: (path: string, courseId: string) => boolean,
   showcase: readonly ShowcaseCourse[] = MISSING_SHOWCASE,
 ): PaidCourse[] {
-  const listed = new Set(levels.entries().map((entry) => `${entry.path}/${entry.courseId}/${entry.unitId}`));
+  const listed = new Set(
+    levels.entries().map((entry) => `${entry.path}/${entry.courseId}/${entry.unitId}`),
+  );
   return showcase.flatMap((tile) => {
     const [path, courseId] = tile.key.split('/');
     const course = outlines.get(tile.key);
@@ -319,7 +323,6 @@ export class StartFreePage implements OnInit {
   });
   protected readonly paidShown = computed(() => paidLessonsShown(this.counts().paid));
 
-
   private readonly showcase = viewChild<ElementRef<HTMLElement>>('showcase');
 
   constructor() {
@@ -345,7 +348,9 @@ export class StartFreePage implements OnInit {
   /** Full rows of four; the rest waits behind "Show N more" until the learner asks. */
   protected visibleItems(group: StartFreeGroup): StartFreeItem[] {
     const full = group.items.length - (group.items.length % CARDS_PER_ROW);
-    return group.items.length <= CARDS_PER_ROW || this.expanded().has(group.level) || full === group.items.length
+    return group.items.length <= CARDS_PER_ROW ||
+      this.expanded().has(group.level) ||
+      full === group.items.length
       ? group.items
       : group.items.slice(0, full);
   }

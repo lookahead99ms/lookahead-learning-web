@@ -28,12 +28,16 @@ export interface DeliveryStage {
 }
 
 /**
- * DLV-971 runtime stores (owner, 2026-11-06): where a ticket was created or last changed. The Domain stamps `dev`; the
- * local editor leaves the fields out, which reads as `local`, never as an error.
+ * DLV-971 runtime stores (owner, 2026-11-06): where a ticket was created or last changed. The
+ * Domain stamps `dev`; the local editor leaves the fields out, which reads as `local`, never as an
+ * error.
  */
 export type DeliveryEnvironment = 'local' | 'dev';
 
-/** The Support tickets and feedback item a ticket was promoted from: a staff review (REV-000001) or a learner request (SUP-000001). */
+/**
+ * The Support tickets and feedback item a ticket was promoted from: a staff review (REV-000001) or
+ * a learner request (SUP-000001).
+ */
 export interface DeliveryOrigin {
   id: string;
   kind: 'review' | 'request';
@@ -58,7 +62,10 @@ export interface DeliveryWorkItem {
   createdIn?: DeliveryEnvironment;
   updatedIn?: DeliveryEnvironment;
   origin?: DeliveryOrigin | null;
-  /** The owner's local edit of this ticket when the inbox merge found it changed on DEV too; resolved on the page. */
+  /**
+   * The owner's local edit of this ticket when the inbox merge found it changed on DEV too;
+   * resolved on the page.
+   */
   pendingLocal?: DeliveryWorkItem | null;
 }
 
@@ -97,7 +104,10 @@ export interface DeliveryWindow {
 export interface DeliveryPlan {
   schemaVersion: 'delivery-plan/v1';
   id: string;
-  /** Raised by every write of the DEV plan; sent back as `expectedVersion` so two edits cannot lose each other. */
+  /**
+   * Raised by every write of the DEV plan; sent back as `expectedVersion` so two edits cannot lose
+   * each other.
+   */
   version?: number;
   title: string;
   summary: string;

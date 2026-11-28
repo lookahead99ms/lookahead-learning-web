@@ -84,8 +84,10 @@
   background:
     linear-gradient(to right, var(--surface) 40%, transparent) left / 28px 100% no-repeat local,
     linear-gradient(to left, var(--surface) 40%, transparent) right / 28px 100% no-repeat local,
-    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.22), transparent) left / 12px 100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.22), transparent) right / 12px 100% no-repeat scroll;
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.22), transparent) left / 12px 100%
+      no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.22), transparent) right / 12px 100%
+      no-repeat scroll;
 }
 .empty {
   margin: 0;

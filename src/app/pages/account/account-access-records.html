@@ -8,8 +8,12 @@
         }
       </div>
       <dl class="record-facts">
-        <div><dt>Includes</dt><dd>{{ record.includes }}</dd></div>
-        <div><dt>Length</dt><dd>{{ record.duration }}</dd></div>
+        <div
+          ><dt>Includes</dt><dd>{{ record.includes }}</dd></div
+        >
+        <div
+          ><dt>Length</dt><dd>{{ record.duration }}</dd></div
+        >
         <div>
           <dt>Paid</dt>
           <dd>
@@ -20,7 +24,9 @@
           </dd>
         </div>
         @if (record.started) {
-          <div><dt>Started</dt><dd>{{ record.started }}</dd></div>
+          <div
+            ><dt>Started</dt><dd>{{ record.started }}</dd></div
+          >
         }
       </dl>
       @if (record.changeFrom) {
@@ -29,10 +35,16 @@
       @if (record.canRenew || record.upgrades.length) {
         <div class="record-actions">
           @if (record.canRenew) {
-            <a class="action-link" routerLink="/pricing" [attr.aria-label]="'Renew ' + record.name">Renew</a>
+            <a class="action-link" routerLink="/pricing" [attr.aria-label]="'Renew ' + record.name"
+              >Renew</a
+            >
           }
           @if (record.upgrades.length) {
-            <a class="action-link" routerLink="/pricing" [attr.aria-label]="'Upgrade ' + record.name + ' to ' + record.upgrades.join(' or ')">
+            <a
+              class="action-link"
+              routerLink="/pricing"
+              [attr.aria-label]="'Upgrade ' + record.name + ' to ' + record.upgrades.join(' or ')"
+            >
               Upgrade to {{ record.upgrades.join(' or ') }}
             </a>
           }

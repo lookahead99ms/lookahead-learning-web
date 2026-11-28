@@ -23,7 +23,9 @@
   --home-panel-top: color-mix(in srgb, var(--panel-background) 82%, #000);
   --home-glow-strength: 34%;
   --home-track: color-mix(in srgb, var(--text-strong) 14%, transparent);
-  --home-hero-shadow: 0 30px 60px -28px color-mix(in srgb, var(--panel-background) 70%, transparent);
+  /* prettier-ignore */
+  --home-hero-shadow: 0 30px 60px -28px
+    color-mix(in srgb, var(--panel-background) 70%, transparent);
   /* Path colors that stay readable on the dark hero card (the light-theme path tokens are dark). */
   --home-panel-learn: #83d8b9;
   --home-panel-grow: #f4ad92;
@@ -33,8 +35,7 @@
   --home-grad-bar: linear-gradient(90deg, #0a8f8a, #4f46e5 60%, #f59e0b);
   --home-paths-block:
     radial-gradient(55% 80% at 0% 0%, #7fd6cf47, transparent 60%),
-    radial-gradient(50% 80% at 100% 100%, #a5b4fc4d, transparent 60%),
-    #f8fafc;
+    radial-gradient(50% 80% at 100% 100%, #a5b4fc4d, transparent 60%), #f8fafc;
   --home-paths-shadow: 0 18px 40px -28px #1e1b4b80;
   --home-brand-block: #fbf6ee;
   /* Bento tiles. */
@@ -64,8 +65,7 @@
   --home-grad-bar: linear-gradient(90deg, #70d6cd, #a5a3ff 60%, #ffba87);
   --home-paths-block:
     radial-gradient(55% 80% at 0% 0%, #0f766e40, transparent 60%),
-    radial-gradient(50% 80% at 100% 100%, #4338ca4d, transparent 60%),
-    #131f38;
+    radial-gradient(50% 80% at 100% 100%, #4338ca4d, transparent 60%), #131f38;
   --home-paths-shadow: 0 18px 40px -28px #000000b3;
   --home-brand-block: #15213a;
   /* Shadows stay dark (the light text token would make them glow). */
@@ -263,7 +263,8 @@ main.landing-page > * {
   margin: 0.32em 0 0.36em;
   text-wrap: balance;
 }
-/* The AI Builds headline is longer than the others; a smaller size keeps it on two or three lines. */
+/* The AI Builds headline is longer than the others; a smaller size keeps it on two or three lines.
+*/
 .hero-slide[data-visual='build'] .slide-title {
   font-size: clamp(2.125rem, 2rem + 2.1cqi, 5.25rem);
 }
@@ -559,7 +560,8 @@ main.landing-page > * {
     sans-serif;
   letter-spacing: -0.02em;
   margin: 0 0 8px;
-  /* The path's own colour (DLV-922, owner 2026-11-05): dark on the light theme, pastel on the dark one, like the card's top edge. */
+  /* The path's own colour (DLV-922, owner 2026-11-05): dark on the light theme, pastel on the dark
+     one, like the card's top edge. */
   color: var(--path-color);
 }
 .home-paths .path-badge {
@@ -731,7 +733,9 @@ app-engineering-challenge.home-challenge {
   font-size: 14px;
   font-weight: 750;
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .home-explore .feature-action:hover {
   background: var(--accent-strong);
@@ -766,7 +770,8 @@ app-engineering-challenge.home-challenge {
 .home-footer p {
   margin: 0;
 }
-/* The reasoning pair, next to "Learn. Grow. Blaze.": the only place it appears (user, 2026-10-17). */
+/* The reasoning pair, next to "Learn. Grow. Blaze.": the only place it appears (user, 2026-10-17).
+*/
 .home-footer .footer-statements {
   display: flex;
   flex-wrap: wrap;
@@ -1022,7 +1027,9 @@ app-engineering-challenge.home-challenge {
   font-size: 14px;
   font-weight: 750;
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .access-pending .access-pending-action:hover {
   background: var(--accent-strong);

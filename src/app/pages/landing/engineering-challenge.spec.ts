@@ -51,57 +51,68 @@ describe('EngineeringChallenge', () => {
     );
   });
 
-  it('supports every prediction branch, bounded reasoning steps and intentional challenge reset', () => {
-    const { fixture, root, buttons, next } = setup();
-    const correct = [1, 0, 2];
-    const questions: string[] = [];
-    for (let example = 0; example < 3; example++) {
-      questions.push(root.querySelector('h3')!.textContent!);
-      for (let answer = 0; answer < 3; answer++) {
-        buttons()[answer].click();
+  it(
+    'supports every prediction branch, bounded reasoning steps and intentional challenge ' +
+      'reset',
+    () => {
+      const { fixture, root, buttons, next } = setup();
+      const correct = [1, 0, 2];
+      const questions: string[] = [];
+      for (let example = 0; example < 3; example++) {
+        questions.push(root.querySelector('h3')!.textContent!);
+        for (let answer = 0; answer < 3; answer++) {
+          buttons()[answer].click();
+          fixture.detectChanges();
+          expect(root.querySelector('.feedback')?.textContent).toContain(
+            answer === correct[example] ? 'That fits the evidence' : 'not supported here',
+          );
+          expect(root.querySelector('.step-controls button')?.hasAttribute('disabled')).toBe(true);
+          next();
+          next();
+          next();
+          expect(root.querySelector('.step-controls .small')?.textContent).toBe('3 / 3');
+          expect(root.querySelector('.rule')).not.toBeNull();
+        }
+        root.querySelector<HTMLButtonElement>('.challenge-end button')!.click();
         fixture.detectChanges();
-        expect(root.querySelector('.feedback')?.textContent).toContain(
-          answer === correct[example] ? 'That fits the evidence' : 'not supported here',
+        expect(root.querySelector('.challenge-evidence')).toBeNull();
+        expect(buttons().some((button) => button.getAttribute('aria-pressed') === 'true')).toBe(
+          false,
         );
-        expect(root.querySelector('.step-controls button')?.hasAttribute('disabled')).toBe(true);
-        next();
-        next();
-        next();
-        expect(root.querySelector('.step-controls .small')?.textContent).toBe('3 / 3');
-        expect(root.querySelector('.rule')).not.toBeNull();
       }
-      root.querySelector<HTMLButtonElement>('.challenge-end button')!.click();
-      fixture.detectChanges();
-      expect(root.querySelector('.challenge-evidence')).toBeNull();
-      expect(buttons().some((button) => button.getAttribute('aria-pressed') === 'true')).toBe(
-        false,
+      expect(new Set(questions).size).toBe(3);
+      expect(root.querySelector('h3')?.textContent).toBe(questions[0]);
+    },
+  );
+
+  it(
+    'resets transient reflection on a new page instance and exposes no execution or login ' +
+      'simulation',
+    () => {
+      const { fixture, root } = setup();
+      expect(root.textContent).not.toContain('Simulate next login');
+      expect(root.querySelector('iframe, form')).toBeNull();
+      fixture.destroy();
+      const fresh = setup();
+      expect(fresh.root.querySelector('details')!.open).toBe(false);
+      expect(fresh.root.querySelector('.challenge-evidence')).toBeNull();
+    },
+  );
+
+  it(
+    'shows the decision scene beside the invitation without adding a control to the ' + 'summary',
+    () => {
+      const { root } = setup();
+      const summary = root.querySelector('summary')!;
+      const scene = summary.querySelector('app-card-scene .la-card-scene');
+
+      expect(scene?.getAttribute('role')).toBe('img');
+      expect(scene?.getAttribute('aria-label')).toContain('provider is down');
+      expect(summary.querySelector('app-card-scene')?.getAttribute('src')).toBe(
+        '/assets/scenes/landing/decision.svg',
       );
-    }
-    expect(new Set(questions).size).toBe(3);
-    expect(root.querySelector('h3')?.textContent).toBe(questions[0]);
-  });
-
-  it('resets transient reflection on a new page instance and exposes no execution or login simulation', () => {
-    const { fixture, root } = setup();
-    expect(root.textContent).not.toContain('Simulate next login');
-    expect(root.querySelector('iframe, form')).toBeNull();
-    fixture.destroy();
-    const fresh = setup();
-    expect(fresh.root.querySelector('details')!.open).toBe(false);
-    expect(fresh.root.querySelector('.challenge-evidence')).toBeNull();
-  });
-
-  it('shows the decision scene beside the invitation without adding a control to the summary', () => {
-    const { root } = setup();
-    const summary = root.querySelector('summary')!;
-    const scene = summary.querySelector('app-card-scene .la-card-scene');
-
-    expect(scene?.getAttribute('role')).toBe('img');
-    expect(scene?.getAttribute('aria-label')).toContain('provider is down');
-    expect(summary.querySelector('app-card-scene')?.getAttribute('src')).toBe(
-      '/assets/scenes/landing/decision.svg',
-    );
-    expect(summary.querySelector('a, button, input, select, textarea, [tabindex]')).toBeNull();
-    expect(summary.querySelector('.challenge-toggle')?.textContent).toContain('Open challenge');
-  });
+      expect(summary.querySelector('a, button, input, select, textarea, [tabindex]')).toBeNull();
+      expect(summary.querySelector('.challenge-toggle')?.textContent).toContain('Open challenge');
+    },
+  );
 });

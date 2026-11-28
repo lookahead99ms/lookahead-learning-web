@@ -13,7 +13,6 @@ import { pageTarget, staticPageMeta } from './page-meta-routes';
 import { publicCourseMetadata } from './public-page-metadata';
 import { protectedBodyFixture, clearHead, head, locatorFixture } from './page-meta.fixture';
 
-
 function course(): PublicCourseMetadata {
   return publicCourseMetadata(locatorFixture(), 'learn', 'core-java')!;
 }
@@ -54,7 +53,10 @@ describe('route classification', () => {
       pageTarget('learn/:courseId/section/:sectionId', { courseId: 'sql', sectionId: 'practice' }),
     ).toEqual({ kind: 'section', path: 'learn', courseId: 'sql', sectionId: 'practice' });
     expect(
-      pageTarget('blaze/:courseId/:questionId', { courseId: 'design-systems', questionId: 'cache' }),
+      pageTarget('blaze/:courseId/:questionId', {
+        courseId: 'design-systems',
+        questionId: 'cache',
+      }),
     ).toEqual({ kind: 'lesson', path: 'blaze', courseId: 'design-systems', itemId: 'cache' });
   });
 
@@ -149,12 +151,17 @@ describe('course-scoped page meta (public metadata only)', () => {
   it('rejects a locator for another course or schema', () => {
     expect(publicCourseMetadata(locatorFixture(), 'grow', 'core-java')).toBeNull();
     expect(publicCourseMetadata(locatorFixture(), 'learn', 'sql')).toBeNull();
-    expect(publicCourseMetadata({ ...locatorFixture(), schemaVersion: 'x' }, 'learn', 'core-java')).toBeNull();
+    expect(
+      publicCourseMetadata({ ...locatorFixture(), schemaVersion: 'x' }, 'learn', 'core-java'),
+    ).toBeNull();
     expect(publicCourseMetadata(null, 'learn', 'core-java')).toBeNull();
   });
 
   it('describes a course with its catalog description and course scene', () => {
-    const page = dynamicPageMeta({ kind: 'course', path: 'learn', courseId: 'core-java' }, course());
+    const page = dynamicPageMeta(
+      { kind: 'course', path: 'learn', courseId: 'core-java' },
+      course(),
+    );
     expect(page.title).toBe('Java Foundations | Learn | LookAhead');
     expect(metaText(page.description)).toBe('LEARN Java from your first program.');
     expect(page.image).toBe('/assets/scenes/courses/learn-core-java.svg');
@@ -162,13 +169,19 @@ describe('course-scoped page meta (public metadata only)', () => {
 
   it('describes a lesson by its title, course and unit description', () => {
     const page = dynamicPageMeta(
-      { kind: 'lesson', path: 'learn', courseId: 'core-java', itemId: 'java-platform-execution-model' },
+      {
+        kind: 'lesson',
+        path: 'learn',
+        courseId: 'core-java',
+        itemId: 'java-platform-execution-model',
+      },
       course(),
     );
     expect(page).toEqual({
       title: 'How Java runs your code | Java Foundations | LookAhead',
       description:
-        'Lesson from Java Foundations: How Java runs your code. How a Java file becomes a running program.',
+        'Lesson from Java Foundations: How Java runs your code. How a Java file becomes ' +
+        'a running program.',
       image: '/assets/scenes/units/learn/core-java/java-platform.svg',
       type: 'article',
     });
@@ -180,28 +193,43 @@ describe('course-scoped page meta (public metadata only)', () => {
       course(),
     );
     expect(page.description).toBe(
-      'Interview question from Java Foundations: Is Java compiled or interpreted? Typed collections without casts.',
+      'Interview question from Java Foundations: Is Java compiled or interpreted? Typed ' +
+        'collections without casts.',
     );
     expect(page.image).toBe('/assets/scenes/courses/learn-core-java.svg');
   });
 
-  it('never names a coding problem\'s pattern: no unit or module description or scene (no spoilers)', () => {
-    const metadata = course();
-    metadata.items.push({ id: 'synthetic-problem', moduleId: 'java-platform', title: 'Synthetic Problem', contentType: 'dsa-problem' });
-    const page = dynamicPageMeta(
-      { kind: 'lesson', path: 'learn', courseId: 'core-java', itemId: 'synthetic-problem' },
-      metadata,
-    );
-    expect(page).toEqual({
-      title: 'Synthetic Problem | Java Foundations | LookAhead',
-      description: `Coding problem from Java Foundations: Synthetic Problem. ${metadata.description}`,
-      image: '/assets/scenes/courses/learn-core-java.svg',
-      type: 'article',
-    });
-    for (const hidden of [metadata.units[0].description, metadata.modules[0].title, metadata.modules[0].description]) {
-      expect(JSON.stringify(page)).not.toContain(hidden);
-    }
-  });
+  it(
+    "never names a coding problem's pattern: no unit or module description or scene (no " +
+      'spoilers)',
+    () => {
+      const metadata = course();
+      metadata.items.push({
+        id: 'synthetic-problem',
+        moduleId: 'java-platform',
+        title: 'Synthetic Problem',
+        contentType: 'dsa-problem',
+      });
+      const page = dynamicPageMeta(
+        { kind: 'lesson', path: 'learn', courseId: 'core-java', itemId: 'synthetic-problem' },
+        metadata,
+      );
+      expect(page).toEqual({
+        title: 'Synthetic Problem | Java Foundations | LookAhead',
+        description:
+          `Coding problem from Java Foundations: Synthetic ` + `Problem. ${metadata.description}`,
+        image: '/assets/scenes/courses/learn-core-java.svg',
+        type: 'article',
+      });
+      for (const hidden of [
+        metadata.units[0].description,
+        metadata.modules[0].title,
+        metadata.modules[0].description,
+      ]) {
+        expect(JSON.stringify(page)).not.toContain(hidden);
+      }
+    },
+  );
 
   it('describes modules and sections, and falls back to the course for unknown ids', () => {
     const module = dynamicPageMeta(

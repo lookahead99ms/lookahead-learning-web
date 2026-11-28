@@ -33,7 +33,13 @@ export class HomePricing {
     const find = (id: string) => plans.find((plan) => plan.id === id)!;
     const yearly = ['learn', 'grow', 'advance', 'complete'].map((id) => {
       const plan = find(id);
-      return { id, name: plan.name, amount: formatUsd(plan.priceCents), period: '/year', includes: scopeLabel(plan.scope) };
+      return {
+        id,
+        name: plan.name,
+        amount: formatUsd(plan.priceCents),
+        period: '/year',
+        includes: scopeLabel(plan.scope),
+      };
     });
     const sale = this.sales.activeSale();
     const saleId = sale?.planIds.includes('annual-promo') ? 'annual-promo' : sale?.planIds[0];

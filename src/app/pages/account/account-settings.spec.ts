@@ -87,15 +87,19 @@ describe('Manage account', () => {
     }
   }
 
-  it('shows only editable name and read-only sign-in identity, with no inferred method or internals', () => {
-    const text = fixture.nativeElement.textContent;
-    expect(text).toContain(profile.displayName);
-    expect(text).toContain(profile.username);
-    expect(text).not.toMatch(
-      /private-account-id|authorPreview|Sign-in method|Subscription|Delete account|MFA/,
-    );
-    expect(fixture.nativeElement.querySelector('input:not([type="radio"])')).toBeNull();
-  });
+  it(
+    'shows only editable name and read-only sign-in identity, with no inferred method or ' +
+      'internals',
+    () => {
+      const text = fixture.nativeElement.textContent;
+      expect(text).toContain(profile.displayName);
+      expect(text).toContain(profile.username);
+      expect(text).not.toMatch(
+        /private-account-id|authorPreview|Sign-in method|Subscription|Delete account|MFA/,
+      );
+      expect(fixture.nativeElement.querySelector('input:not([type="radio"])')).toBeNull();
+    },
+  );
 
   it('saves a trimmed name and announces it while keeping username and grants intact', async () => {
     button('Edit name').click();
@@ -176,36 +180,41 @@ describe('Manage account', () => {
     expect(store.account()?.displayName).toBe('Other learner');
   });
 
-  it('explains global sign-out before submission and gives every password its own reveal control', () => {
-    openPassword();
-    enterPasswords();
-    expect(fixture.nativeElement.textContent).toContain(
-      'Changing your password ends all sign-ins, including this one. Sign in again with your new password.',
-    );
-    for (const [name, label, autocomplete] of [
-      ['currentPassword', 'current password', 'current-password'],
-      ['newPassword', 'new password', 'new-password'],
-      ['confirmPassword', 'confirm new password', 'new-password'],
-    ]) {
-      const input = fixture.nativeElement.querySelector(
-        `input[name="${name}"]`,
-      ) as HTMLInputElement;
-      const toggle = fixture.nativeElement.querySelector(
-        `button[aria-label="Show ${label}"]`,
-      ) as HTMLButtonElement;
-      expect(input.autocomplete).toBe(autocomplete);
-      expect(input.hasAttribute('maxlength')).toBe(false);
-      expect(toggle.getAttribute('aria-controls')).toBe(input.id);
-      toggle.click();
-      fixture.detectChanges();
-      expect(input.type).toBe('text');
-      expect(toggle.getAttribute('aria-label')).toBe(`Hide ${label}`);
-      toggle.click();
-      fixture.detectChanges();
-      expect(input.type).toBe('password');
-    }
-    expect(client.changePassword).not.toHaveBeenCalled();
-  });
+  it(
+    'explains global sign-out before submission and gives every password its own reveal ' +
+      'control',
+    () => {
+      openPassword();
+      enterPasswords();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Changing your password ends all sign-ins, including this one. Sign in again with ' +
+          'your new password.',
+      );
+      for (const [name, label, autocomplete] of [
+        ['currentPassword', 'current password', 'current-password'],
+        ['newPassword', 'new password', 'new-password'],
+        ['confirmPassword', 'confirm new password', 'new-password'],
+      ]) {
+        const input = fixture.nativeElement.querySelector(
+          `input[name="${name}"]`,
+        ) as HTMLInputElement;
+        const toggle = fixture.nativeElement.querySelector(
+          `button[aria-label="Show ${label}"]`,
+        ) as HTMLButtonElement;
+        expect(input.autocomplete).toBe(autocomplete);
+        expect(input.hasAttribute('maxlength')).toBe(false);
+        expect(toggle.getAttribute('aria-controls')).toBe(input.id);
+        toggle.click();
+        fixture.detectChanges();
+        expect(input.type).toBe('text');
+        expect(toggle.getAttribute('aria-label')).toBe(`Hide ${label}`);
+        toggle.click();
+        fixture.detectChanges();
+        expect(input.type).toBe('password');
+      }
+      expect(client.changePassword).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(['😀'.repeat(14), 'a'.repeat(129)])(
     'counts Unicode code points for password limits',
@@ -222,22 +231,26 @@ describe('Manage account', () => {
     },
   );
 
-  it('accepts 128 Unicode code points and does not apply the new policy to the current password', async () => {
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    openPassword();
-    enterPasswords('😀'.repeat(128));
-    button('Save new password').click();
-    await settle();
-    expect(client.changePassword).toHaveBeenCalledExactlyOnceWith({
-      currentPassword: 'legacy',
-      newPassword: '😀'.repeat(128),
-      confirmPassword: '😀'.repeat(128),
-    });
-    expect(navigate).toHaveBeenCalledWith(['/sign-in'], {
-      state: { passwordChanged: true },
-    });
-    expectPasswordsCleared();
-  });
+  it(
+    'accepts 128 Unicode code points and does not apply the new policy to the current ' +
+      'password',
+    async () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      openPassword();
+      enterPasswords('😀'.repeat(128));
+      button('Save new password').click();
+      await settle();
+      expect(client.changePassword).toHaveBeenCalledExactlyOnceWith({
+        currentPassword: 'legacy',
+        newPassword: '😀'.repeat(128),
+        confirmPassword: '😀'.repeat(128),
+      });
+      expect(navigate).toHaveBeenCalledWith(['/sign-in'], {
+        state: { passwordChanged: true },
+      });
+      expectPasswordsCleared();
+    },
+  );
 
   it('rejects mismatched passwords and clears all fields', async () => {
     openPassword();
@@ -324,71 +337,114 @@ describe('Manage account', () => {
     expect(fixture.nativeElement.textContent).toContain('could not save it to your account');
   });
 
-  it('shows each profile by its logo with an Add button, and no Google row among the links (DLV-969)', () => {
-    const rows = [...fixture.nativeElement.querySelectorAll('.connection-list li')] as HTMLElement[];
-    // Google is a sign-in method, listed under Profile; linking happens at sign-in, so there is no Connect button.
-    expect(rows.map((row) => row.dataset['platform'])).toEqual(['github', 'linkedin', 'x', 'website']);
-    // No visible platform names: the logo carries it, with the name kept for assistive technology.
-    expect(rows.map((row) => row.querySelector('.visually-hidden')?.textContent?.trim())).toEqual([
-      'GitHub:',
-      'LinkedIn:',
-      'X (Twitter):',
-      'Portfolio:',
-    ]);
-    for (const row of rows) {
-      expect(row.querySelector('.connection-logo svg')).not.toBeNull();
-      expect(row.querySelector('.connection-logo')?.getAttribute('aria-hidden')).toBe('true');
-    }
-    expect(rows.map((row) => row.querySelector('button')?.getAttribute('aria-label'))).toEqual([
-      'Add GitHub',
-      'Add LinkedIn',
-      'Add X (Twitter)',
-      'Add Portfolio',
-    ]);
-    const root = fixture.nativeElement as HTMLElement;
-    expect([...root.querySelectorAll('button')].some((button) => /Connect/.test(button.textContent ?? ''))).toBe(false);
-    expect(root.textContent).not.toMatch(/Google sign-in isn’t available yet|Linking Google/);
-  });
+  it(
+    'shows each profile by its logo with an Add button, and no Google row among the links ' +
+      '(DLV-969)',
+    () => {
+      const rows = [
+        ...fixture.nativeElement.querySelectorAll('.connection-list li'),
+      ] as HTMLElement[];
+      // Google is a sign-in method, listed under Profile; linking happens at sign-in, so there is
+      // no Connect button.
+      expect(rows.map((row) => row.dataset['platform'])).toEqual([
+        'github',
+        'linkedin',
+        'x',
+        'website',
+      ]);
+      // No visible platform names: the logo carries it, with the name kept for assistive
+      // technology.
+      expect(rows.map((row) => row.querySelector('.visually-hidden')?.textContent?.trim())).toEqual(
+        ['GitHub:', 'LinkedIn:', 'X (Twitter):', 'Portfolio:'],
+      );
+      for (const row of rows) {
+        expect(row.querySelector('.connection-logo svg')).not.toBeNull();
+        expect(row.querySelector('.connection-logo')?.getAttribute('aria-hidden')).toBe('true');
+      }
+      expect(rows.map((row) => row.querySelector('button')?.getAttribute('aria-label'))).toEqual([
+        'Add GitHub',
+        'Add LinkedIn',
+        'Add X (Twitter)',
+        'Add Portfolio',
+      ]);
+      const root = fixture.nativeElement as HTMLElement;
+      expect(
+        [...root.querySelectorAll('button')].some((button) =>
+          /Connect/.test(button.textContent ?? ''),
+        ),
+      ).toBe(false);
+      expect(root.textContent).not.toMatch(/Google sign-in isn’t available yet|Linking Google/);
+    },
+  );
 
   async function render(details: Record<string, unknown>): Promise<HTMLElement> {
     client.loadProfile.mockResolvedValue({ ...profile, ...details });
     fixture = TestBed.createComponent(AccountSettings);
-    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
   function detail(root: HTMLElement, label: string): string | undefined {
     return [...root.querySelectorAll('.profile-details > div')]
-      .find((row) => row.querySelector('dt')?.textContent?.trim() === label)?.querySelector('dd')?.textContent?.replace(/\s+/g, ' ').trim();
+      .find((row) => row.querySelector('dt')?.textContent?.trim() === label)
+      ?.querySelector('dd')
+      ?.textContent?.replace(/\s+/g, ' ')
+      .trim();
   }
   function methods(root: HTMLElement): string[] {
-    return [...root.querySelectorAll('.sign-in-methods li')].map((row) => row.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+    return [...root.querySelectorAll('.sign-in-methods li')].map(
+      (row) => row.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+    );
   }
   const note = 'Signing in with Google or with your email and password reaches this same account.';
   const hasChangePassword = (root: HTMLElement) =>
-    [...root.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Change password');
+    [...root.querySelectorAll('button')].some(
+      (button) => button.textContent?.trim() === 'Change password',
+    );
 
-  it('shows a Google account its Gmail, Google as its sign-in method, and no password to change (DLV-969)', async () => {
-    const root = await render({ username: 'Google_109384756', signInMethod: 'google', email: 'learner@gmail.example' });
-    expect(detail(root, 'Sign-in email or username')).toContain('learner@gmail.example');
-    expect(detail(root, 'Sign-in email or username')).not.toContain('Google_109384756');
-    // No list from the service: the method of this session stands in.
-    expect(methods(root)).toEqual(['Google · learner@gmail.example']);
-    expect(root.querySelector('.sign-in-methods')?.getAttribute('aria-labelledby')).toBe('sign-in-methods-label');
-    expect(root.querySelector('#sign-in-methods-label')?.textContent?.trim()).toBe('Sign-in methods');
-    expect(root.querySelector('.sign-in-note')?.textContent?.trim()).toBe(note);
-    expect(root.querySelector('.connection-list li[data-platform="google"]')).toBeNull();
-    expect(root.textContent).not.toContain('Connected as');
-    expect(root.textContent).toContain('You sign in with Google, so there is no Look Ahead password to change.');
-    expect(hasChangePassword(root)).toBe(false);
-  });
+  it(
+    'shows a Google account its Gmail, Google as its sign-in method, and no password to ' +
+      'change (DLV-969)',
+    async () => {
+      const root = await render({
+        username: 'Google_109384756',
+        signInMethod: 'google',
+        email: 'learner@gmail.example',
+      });
+      expect(detail(root, 'Sign-in email or username')).toContain('learner@gmail.example');
+      expect(detail(root, 'Sign-in email or username')).not.toContain('Google_109384756');
+      // No list from the service: the method of this session stands in.
+      expect(methods(root)).toEqual(['Google · learner@gmail.example']);
+      expect(root.querySelector('.sign-in-methods')?.getAttribute('aria-labelledby')).toBe(
+        'sign-in-methods-label',
+      );
+      expect(root.querySelector('#sign-in-methods-label')?.textContent?.trim()).toBe(
+        'Sign-in methods',
+      );
+      expect(root.querySelector('.sign-in-note')?.textContent?.trim()).toBe(note);
+      expect(root.querySelector('.connection-list li[data-platform="google"]')).toBeNull();
+      expect(root.textContent).not.toContain('Connected as');
+      expect(root.textContent).toContain(
+        'You sign in with Google, so there is no Look Ahead password to change.',
+      );
+      expect(hasChangePassword(root)).toBe(false);
+    },
+  );
 
-  it('shows "Your Google account" and a bare Google method when the service has no Gmail for a Google account', async () => {
-    const root = await render({ username: 'Google_109384756', signInMethod: 'google' });
-    const details = [...root.querySelectorAll('.profile-details')].map((list) => list.textContent).join(' ');
-    expect(details).toContain('Your Google account');
-    expect(details).not.toContain('Google_109384756');
-    expect(methods(root)).toEqual(['Google']);
-  });
+  it(
+    'shows "Your Google account" and a bare Google method when the service has no Gmail ' +
+      'for a Google account',
+    async () => {
+      const root = await render({ username: 'Google_109384756', signInMethod: 'google' });
+      const details = [...root.querySelectorAll('.profile-details')]
+        .map((list) => list.textContent)
+        .join(' ');
+      expect(details).toContain('Your Google account');
+      expect(details).not.toContain('Google_109384756');
+      expect(methods(root)).toEqual(['Google']);
+    },
+  );
 
   it('keeps the password row and shows no guessed sign-in method for an email account', () => {
     const root = fixture.nativeElement as HTMLElement;
@@ -397,49 +453,95 @@ describe('Manage account', () => {
     expect(root.querySelector('.profile-details')?.textContent).not.toContain('Sign-in method');
   });
 
-  it('lists one email-and-password method from the service, without the Google note for another address (DLV-969)', async () => {
-    const root = await render({ email: 'sample@example.test', signInMethods: [{ provider: 'cognito', email: 'sample@example.test' }] });
-    expect(methods(root)).toEqual(['Email and password · sample@example.test']);
-    expect(root.querySelector('.sign-in-note')).toBeNull();
-    expect(hasChangePassword(root)).toBe(true);
-  });
+  it(
+    'lists one email-and-password method from the service, without the Google note for ' +
+      'another address (DLV-969)',
+    async () => {
+      const root = await render({
+        email: 'sample@example.test',
+        signInMethods: [{ provider: 'cognito', email: 'sample@example.test' }],
+      });
+      expect(methods(root)).toEqual(['Email and password · sample@example.test']);
+      expect(root.querySelector('.sign-in-note')).toBeNull();
+      expect(hasChangePassword(root)).toBe(true);
+    },
+  );
 
-  it('shows the note to an email-and-password account on a Gmail, and a password method without an email alone', async () => {
-    let root = await render({ username: 'learner@gmail.com', signInMethods: [{ provider: 'cognito', email: 'learner@gmail.com' }] });
-    expect(root.querySelector('.sign-in-note')?.textContent?.trim()).toBe(note);
-    root = await render({ signInMethods: [{ provider: 'cognito' }] });
-    expect(methods(root)).toEqual(['Email and password']);
-    expect(root.querySelector('.sign-in-methods')?.textContent).not.toContain('sample@example.test');
-  });
+  it(
+    'shows the note to an email-and-password account on a Gmail, and a password method ' +
+      'without an email alone',
+    async () => {
+      let root = await render({
+        username: 'learner@gmail.com',
+        signInMethods: [{ provider: 'cognito', email: 'learner@gmail.com' }],
+      });
+      expect(root.querySelector('.sign-in-note')?.textContent?.trim()).toBe(note);
+      root = await render({ signInMethods: [{ provider: 'cognito' }] });
+      expect(methods(root)).toEqual(['Email and password']);
+      expect(root.querySelector('.sign-in-methods')?.textContent).not.toContain(
+        'sample@example.test',
+      );
+    },
+  );
 
-  it('lets a "Google_…" account that signed in with its password change the password (DLV-969)', async () => {
-    const root = await render({ username: 'Google_109384756', signInMethod: 'cognito' });
-    expect(hasChangePassword(root)).toBe(true);
-    expect(root.textContent).not.toContain('You signed in with Google this time');
-    expect(methods(root)).toEqual(['Email and password']);
-    // Cognito's internal name is never shown, not even as the sign-in name.
-    expect(root.textContent).not.toContain('Google_109384756');
-  });
+  it(
+    'lets a "Google_…" account that signed in with its password change the password ' + '(DLV-969)',
+    async () => {
+      const root = await render({ username: 'Google_109384756', signInMethod: 'cognito' });
+      expect(hasChangePassword(root)).toBe(true);
+      expect(root.textContent).not.toContain('You signed in with Google this time');
+      expect(methods(root)).toEqual(['Email and password']);
+      // Cognito's internal name is never shown, not even as the sign-in name.
+      expect(root.textContent).not.toContain('Google_109384756');
+    },
+  );
 
-  it('lists both linked methods, Google first, and changes the password only from a password sign-in (DLV-969)', async () => {
-    const both = [{ provider: 'cognito', email: 'learner@gmail.com' }, { provider: 'google', email: 'learner@gmail.com' }];
-    let root = await render({ email: 'learner@gmail.com', signInMethods: both });
-    expect(methods(root)).toEqual(['Google · learner@gmail.com', 'Email and password · learner@gmail.com']);
-    expect(root.querySelector('.sign-in-methods li')?.getAttribute('data-provider')).toBe('google');
-    expect(root.querySelector('.sign-in-note')?.textContent?.trim()).toBe(note);
-    // Signed in with the password: Change password as before. No add or remove buttons for methods.
-    expect(hasChangePassword(root)).toBe(true);
-    expect(root.querySelector('.sign-in-methods button')).toBeNull();
-    // Signed in through Google: the password belongs to the other method.
-    root = await render({ username: 'Google_109384756', signInMethod: 'google', email: 'learner@gmail.com', signInMethods: both });
-    expect(methods(root)).toEqual(['Google · learner@gmail.com', 'Email and password · learner@gmail.com']);
-    expect(root.textContent).toContain('You signed in with Google this time. To change your password, sign in with your email and password.');
-    expect(root.textContent).not.toContain('there is no Look Ahead password');
-    expect(hasChangePassword(root)).toBe(false);
-  });
+  it(
+    'lists both linked methods, Google first, and changes the password only from a ' +
+      'password sign-in (DLV-969)',
+    async () => {
+      const both = [
+        { provider: 'cognito', email: 'learner@gmail.com' },
+        { provider: 'google', email: 'learner@gmail.com' },
+      ];
+      let root = await render({ email: 'learner@gmail.com', signInMethods: both });
+      expect(methods(root)).toEqual([
+        'Google · learner@gmail.com',
+        'Email and password · learner@gmail.com',
+      ]);
+      expect(root.querySelector('.sign-in-methods li')?.getAttribute('data-provider')).toBe(
+        'google',
+      );
+      expect(root.querySelector('.sign-in-note')?.textContent?.trim()).toBe(note);
+      // Signed in with the password: Change password as before. No add or remove buttons for
+      // methods.
+      expect(hasChangePassword(root)).toBe(true);
+      expect(root.querySelector('.sign-in-methods button')).toBeNull();
+      // Signed in through Google: the password belongs to the other method.
+      root = await render({
+        username: 'Google_109384756',
+        signInMethod: 'google',
+        email: 'learner@gmail.com',
+        signInMethods: both,
+      });
+      expect(methods(root)).toEqual([
+        'Google · learner@gmail.com',
+        'Email and password · learner@gmail.com',
+      ]);
+      expect(root.textContent).toContain(
+        'You signed in with Google this time. To change your password, sign in with your ' +
+          'email and password.',
+      );
+      expect(root.textContent).not.toContain('there is no Look Ahead password');
+      expect(hasChangePassword(root)).toBe(false);
+    },
+  );
 
-  it('never shows Cognito\'s internal name for a password method without an email', async () => {
-    const root = await render({ username: 'Google_109384756', signInMethods: [{ provider: 'cognito' }, { provider: 'google' }] });
+  it("never shows Cognito's internal name for a password method without an email", async () => {
+    const root = await render({
+      username: 'Google_109384756',
+      signInMethods: [{ provider: 'cognito' }, { provider: 'google' }],
+    });
     expect(methods(root)).toEqual(['Google', 'Email and password']);
   });
 
@@ -457,7 +559,9 @@ describe('Manage account', () => {
     expect(membership.textContent).toContain(
       'Access to 2 individual courses across Learn and Grow. This is not a paid plan.',
     );
-    expect(membership.textContent).not.toMatch(/Standard|Plus|Pro\b|Select|Upgrade now|renews (each|every)/);
+    expect(membership.textContent).not.toMatch(
+      /Standard|Plus|Pro\b|Select|Upgrade now|renews (each|every)/,
+    );
     // No purchase records from the server, so no plan rows and no Renew action.
     expect(membership.querySelector('app-account-access-records')).toBeNull();
     // Only the paths the grants cover, as path buttons.
@@ -479,7 +583,9 @@ describe('Manage account', () => {
     );
     fixture.detectChanges();
     const note = fixture.nativeElement.querySelector('.membership-note') as HTMLElement;
-    expect(note.textContent).toContain('Local purchases are simulated; nothing is charged or renewed automatically.');
+    expect(note.textContent).toContain(
+      'Local purchases are simulated; nothing is charged or renewed automatically.',
+    );
     expect(fixture.nativeElement.querySelector('.membership-level')?.textContent?.trim()).toBe(
       'Free account',
     );
@@ -489,10 +595,13 @@ describe('Manage account', () => {
     expect(link.getAttribute('href')).toBe('/pricing');
   });
 
-  // DLV-969 (owner, 2026-11-04): a DEV test account's purchases are requests the owner or an admin approves.
+  // DLV-969 (owner, 2026-11-04): a DEV test account's purchases are requests the owner or an admin
+  // approves.
   describe('DEV purchase requests', () => {
     function learner(): HTMLElement {
-      store.account.update((account) => (account ? { ...account, authorPreview: false, topicGrants: [] } : account));
+      store.account.update((account) =>
+        account ? { ...account, authorPreview: false, topicGrants: [] } : account,
+      );
       fixture.detectChanges();
       return fixture.nativeElement.querySelector('.membership') as HTMLElement;
     }
@@ -506,7 +615,8 @@ describe('Manage account', () => {
       const waiting = membership.querySelector('.membership-request')!;
       expect(waiting.getAttribute('role')).toBe('status');
       expect(waiting.textContent?.trim()).toBe(
-        'A request is already waiting for the owner or an admin. Your plan changes once it is approved.',
+        'A request is already waiting for the owner or an admin. Your plan changes once ' +
+          'it is approved.',
       );
     });
 
@@ -514,14 +624,21 @@ describe('Manage account', () => {
       store.authOptions.set({ registration: false, google: false, managedLogin: true });
       let membership = learner();
       // A real DEV account keeps the administrator note and no plan button.
-      expect(membership.querySelector('.membership-note')?.textContent).toContain('For more course access, contact the account administrator.');
+      expect(membership.querySelector('.membership-note')?.textContent).toContain(
+        'For more course access, contact the account administrator.',
+      );
       expect(membership.querySelector('.membership-buy')).toBeNull();
       TestBed.inject(DevSession).gated.set(true);
-      TestBed.inject(TestSessions).status.set({ active: true, canReturn: true, holderName: 'Owner' });
+      TestBed.inject(TestSessions).status.set({
+        active: true,
+        canReturn: true,
+        holderName: 'Owner',
+      });
       fixture.detectChanges();
       membership = fixture.nativeElement.querySelector('.membership') as HTMLElement;
       expect(membership.querySelector('.membership-note')?.textContent?.trim()).toBe(
-        'In DEV, purchases for test accounts are requests: the owner or an admin approves them, and nothing is charged.',
+        'In DEV, purchases for test accounts are requests: the owner or an admin ' +
+          'approves them, and nothing is charged.',
       );
       const link = membership.querySelector('.membership-buy a') as HTMLAnchorElement;
       expect(link.textContent?.trim()).toBe('Choose a plan');
@@ -551,7 +668,7 @@ describe('Manage account', () => {
       expect(links[0].textContent).toContain('(opens in a new tab)');
     });
 
-    it('rejects a wrong address without calling the server, then saves normalized links', async () => {
+    it('rejects a wrong address without calling the server, then saves normal links', async () => {
       fixture.nativeElement.querySelector('[data-link-button="linkedin"]').click();
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('input[name="github"]').value).toBe(
@@ -561,7 +678,9 @@ describe('Manage account', () => {
       fixture.nativeElement.querySelector('.links-form').dispatchEvent(new Event('submit'));
       fixture.detectChanges();
       expect(client.updateProfileLinks).not.toHaveBeenCalled();
-      expect(fixture.nativeElement.querySelector('#links-error')?.textContent).toContain('LinkedIn');
+      expect(fixture.nativeElement.querySelector('#links-error')?.textContent).toContain(
+        'LinkedIn',
+      );
       expect(
         fixture.nativeElement.querySelector('input[name="linkedin"]').getAttribute('aria-invalid'),
       ).toBe('true');
@@ -579,7 +698,9 @@ describe('Manage account', () => {
       });
       expect(fixture.nativeElement.querySelectorAll('.connection-text a')).toHaveLength(2);
       expect(
-        fixture.nativeElement.querySelector('[data-link-button="linkedin"]').getAttribute('aria-label'),
+        fixture.nativeElement
+          .querySelector('[data-link-button="linkedin"]')
+          .getAttribute('aria-label'),
       ).toBe('Edit LinkedIn');
       expect(fixture.nativeElement.textContent).toContain('Your links have been saved.');
     });

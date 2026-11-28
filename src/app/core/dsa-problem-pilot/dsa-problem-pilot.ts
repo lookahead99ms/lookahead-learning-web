@@ -46,10 +46,16 @@ export class DsaProblemPilot {
   readonly problem = input.required<PatternProblemV1>();
   readonly entryMode = input<'guided' | 'practice'>('practice');
   readonly showProblemHeading = input(true);
-  /** Unset: start in the learner's reference language (shared with DSA core Learn lessons; Java by default). */
+  /**
+   * Unset: start in the learner's reference language (shared with DSA core Learn lessons; Java by
+   * default).
+   */
   readonly initialLanguage = input<PatternLanguage | undefined>(undefined);
   private readonly referenceLanguage = inject(ReferenceLanguageService);
-  /** Read once per problem: switching language inside the page must not reset the studio or the trace. */
+  /**
+   * Read once per problem: switching language inside the page must not reset the studio or the
+   * trace.
+   */
   protected readonly startLanguage = computed(
     () => this.initialLanguage() ?? untracked(() => this.referenceLanguage.selected()),
   );
@@ -215,7 +221,8 @@ export class DsaProblemPilot {
     if (!dialog) return;
     const focusable = [
       ...dialog.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], ' +
+          '[tabindex]:not([tabindex="-1"])',
       ),
     ].filter((element) => element.tabIndex >= 0 && !element.closest('[hidden], [inert]'));
     if (focusable.length === 0) return;

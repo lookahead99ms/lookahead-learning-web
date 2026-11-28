@@ -14,7 +14,14 @@ export function twoSumStory(): DsaStoryV1 {
     ideas: ['seen starts empty.', 'need = target − value.', 'Return when need is in seen.'],
     views: [
       { id: 'values', kind: 'array', title: 'values', var: 'values', pointers: [{ var: 'index' }] },
-      { id: 'seen', kind: 'map', title: 'seen', var: 'seen', keyLabel: 'value', valueLabel: 'index' },
+      {
+        id: 'seen',
+        kind: 'map',
+        title: 'seen',
+        var: 'seen',
+        keyLabel: 'value',
+        valueLabel: 'index',
+      },
     ],
     variables: ['values', 'target', 'seen', 'index', 'value', 'need'],
     ms: 1000,
@@ -64,11 +71,32 @@ export function twoSumStory(): DsaStoryV1 {
 export function twoSumProblem(): PatternProblemV1 {
   const python = ['py-1', 'py-2', 'py-3', 'py-4', 'py-5', 'py-6', 'py-7', 'py-8'];
   const java = ['j-1', 'j-2', 'j-3', 'j-4', 'j-5', 'j-6', 'j-7', 'j-9'];
-  const path = ['py-2', 'py-3', 'py-4', 'py-5', 'py-6', 'py-8', 'py-3', 'py-4', 'py-5', 'py-6', 'py-7'];
+  const path = [
+    'py-2',
+    'py-3',
+    'py-4',
+    'py-5',
+    'py-6',
+    'py-8',
+    'py-3',
+    'py-4',
+    'py-5',
+    'py-6',
+    'py-7',
+  ];
   // Java names two native lines for event 4 (the check and the store), like the real record.
   const javaPath: [string, number][] = [
-    ['j-2', 0], ['j-3', 1], ['j-4', 2], ['j-5', 3], ['j-6', 4], ['j-9', 4],
-    ['j-3', 6], ['j-4', 7], ['j-5', 8], ['j-6', 9], ['j-7', 10],
+    ['j-2', 0],
+    ['j-3', 1],
+    ['j-4', 2],
+    ['j-5', 3],
+    ['j-6', 4],
+    ['j-9', 4],
+    ['j-3', 6],
+    ['j-4', 7],
+    ['j-5', 8],
+    ['j-6', 9],
+    ['j-7', 10],
   ];
   return {
     id: 'algorithmic-two-sum',
@@ -78,11 +106,22 @@ export function twoSumProblem(): PatternProblemV1 {
     variation: '',
     invariantAdaptation: '',
     complexity: { time: 'O(n)', space: 'O(n)', why: '' },
-    fixtures: [{ id: 'standard', label: 'Standard', input: 'values = [2,7,11,15], target = 26', expectedOutput: '[2,3]' }],
+    fixtures: [
+      {
+        id: 'standard',
+        label: 'Standard',
+        input: 'values = [2,7,11,15], target = 26',
+        expectedOutput: '[2,3]',
+      },
+    ],
     implementations: [
       { language: 'python', title: 'Python', lines: python.map((id) => ({ id, text: `# ${id}` })) },
       { language: 'java', title: 'Java', lines: java.map((id) => ({ id, text: `// ${id}` })) },
-      { language: 'go', title: 'Go', lines: java.map((id) => ({ id: id.replace('j', 'g'), text: `// ${id}` })) },
+      {
+        language: 'go',
+        title: 'Go',
+        lines: java.map((id) => ({ id: id.replace('j', 'g'), text: `// ${id}` })),
+      },
     ],
     trace: {
       schemaVersion: 'guided-trace/v1',
@@ -104,7 +143,10 @@ export function twoSumProblem(): PatternProblemV1 {
       languagePaths: {
         python: path.map((sourceAnchor, eventIndex) => ({ sourceAnchor, eventIndex })),
         java: javaPath.map(([sourceAnchor, eventIndex]) => ({ sourceAnchor, eventIndex })),
-        go: javaPath.map(([sourceAnchor, eventIndex]) => ({ sourceAnchor: sourceAnchor.replace('j', 'g'), eventIndex })),
+        go: javaPath.map(([sourceAnchor, eventIndex]) => ({
+          sourceAnchor: sourceAnchor.replace('j', 'g'),
+          eventIndex,
+        })),
       },
     },
   } as unknown as PatternProblemV1;

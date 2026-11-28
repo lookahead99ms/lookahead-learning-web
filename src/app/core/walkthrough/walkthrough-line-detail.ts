@@ -20,7 +20,8 @@ import { StudioInspector } from '../focus-studio/studio-inspector';
   template: `<details class="line-detail">
       <summary>State inspector and all recorded locals</summary>
       <div class="body">
-        <!-- The player's three type sizes (13, 14, 16 px); the studio's own sizes stay elsewhere. -->
+        <!-- The player's three type sizes (13, 14, 16 px); the studio's own sizes stay elsewhere.
+        -->
         <app-studio-essential-state
           scale="player"
           [problem]="problem()"
@@ -116,7 +117,10 @@ export class WalkthroughLineDetail {
     return this.snapshot().events.map((event) => {
       const index = lines.findIndex((line) => line.id === event.sourceAnchor[language]);
       return {
-        label: index >= 0 ? `${event.phase} · line ${index + 1}: ${lines[index].text.trim()}` : event.label,
+        label:
+          index >= 0
+            ? `${event.phase} · line ${index + 1}: ${lines[index].text.trim()}`
+            : event.label,
         what: /^Execute .+ (at source line \d+:|in the selected implementation\.)/u.test(event.what)
           ? event.result !== undefined
             ? `Returns ${event.result}.`

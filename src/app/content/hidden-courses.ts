@@ -14,7 +14,10 @@ export function isHiddenCourse(path: string, courseId: string | undefined | null
   return !!courseId && HIDDEN.has(`${path}:${courseId}`);
 }
 
-export function withoutHiddenCourses<T extends { id?: string }>(path: string, items: readonly T[]): T[] {
+export function withoutHiddenCourses<T extends { id?: string }>(
+  path: string,
+  items: readonly T[],
+): T[] {
   return items.filter((item) => !isHiddenCourse(path, item.id));
 }
 

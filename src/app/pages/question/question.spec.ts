@@ -330,31 +330,53 @@ describe('Question canonical DSA navigation', () => {
   it('resolves the originating lesson unit rather than a shared review module', () => {
     const fixture = TestBed.createComponent(Question);
     const page = fixture.componentInstance as any;
-    page.course.set({ learningUnits: [
-      { id: 'foundations', theoryModuleId: 'theory-foundations', questionModuleId: 'shared-checks' },
-      { id: 'calculate', theoryModuleId: 'theory-calculate', questionModuleId: 'shared-checks' },
-    ] });
+    page.course.set({
+      learningUnits: [
+        {
+          id: 'foundations',
+          theoryModuleId: 'theory-foundations',
+          questionModuleId: 'shared-checks',
+        },
+        { id: 'calculate', theoryModuleId: 'theory-calculate', questionModuleId: 'shared-checks' },
+      ],
+    });
     expect(page.questionBankReturnUnit({ moduleId: 'theory-calculate' })).toBe('calculate');
     expect(page.questionBankReturnUnit({ moduleId: 'unknown' })).toBe('');
   });
 
-  it('returns nested lessons to the containing course section while preserving their review module', () => {
-    const fixture = TestBed.createComponent(Question);
-    const page = fixture.componentInstance as any;
-    page.course.set({ learningUnits: [{ id: 'design-practice', subUnits: [
-      { id: 'booking', theoryModuleId: 'booking', questionModuleId: 'booking' },
-      { id: 'commerce', theoryModuleId: 'commerce', questionModuleId: 'commerce' },
-    ] }] });
-    expect(page.questionBankReturnUnit({ moduleId: 'booking' })).toBe('design-practice');
-    expect(page.questionBankReturnUnit({ moduleId: 'commerce' })).toBe('design-practice');
-  });
+  it(
+    'returns nested lessons to the containing course section while preserving their ' +
+      'review module',
+    () => {
+      const fixture = TestBed.createComponent(Question);
+      const page = fixture.componentInstance as any;
+      page.course.set({
+        learningUnits: [
+          {
+            id: 'design-practice',
+            subUnits: [
+              { id: 'booking', theoryModuleId: 'booking', questionModuleId: 'booking' },
+              { id: 'commerce', theoryModuleId: 'commerce', questionModuleId: 'commerce' },
+            ],
+          },
+        ],
+      });
+      expect(page.questionBankReturnUnit({ moduleId: 'booking' })).toBe('design-practice');
+      expect(page.questionBankReturnUnit({ moduleId: 'commerce' })).toBe('design-practice');
+    },
+  );
 
   it('uses the guided example for navigation and recall instead of advanced checks', () => {
     const fixture = TestBed.createComponent(Question);
     const page = fixture.componentInstance as any;
     const item = {
-      id: 'first-example', moduleId: 'basics', contentType: 'theory',
-      schemaVersion: 'foundation-lesson/v1', tags: [], checks: [], followUps: [],
+      id: 'first-example',
+      moduleId: 'basics',
+      contentType: 'theory',
+      schemaVersion: 'foundation-lesson/v1',
+      tags: [],
+      checks: [],
+      followUps: [],
       sections: [{ id: 'actual-lesson', heading: 'Actual lesson' }],
       beginnerGuide: { try: 'Predict the result.', answer: 'The result is 2.' },
     };
@@ -362,66 +384,125 @@ describe('Question canonical DSA navigation', () => {
     page.courseId.set('sample-foundations');
     page.question.set(item);
     expect(page.patternNavigation(item).map((entry: { target: string }) => entry.target)).toEqual([
-      'foundation-start', 'foundation-example', 'foundation-try',
-      'foundation-remember', 'actual-lesson', 'foundation-model',
-      'foundation-pitfalls', 'foundation-understand', 'foundation-recall',
+      'foundation-start',
+      'foundation-example',
+      'foundation-try',
+      'foundation-remember',
+      'actual-lesson',
+      'foundation-model',
+      'foundation-pitfalls',
+      'foundation-understand',
+      'foundation-recall',
     ]);
-    expect(page.sidebarContext().recall).toEqual([{
-      id: 'first-example-first-steps', prompt: 'Predict the result.', answer: 'The result is 2.',
-    }]);
+    expect(page.sidebarContext().recall).toEqual([
+      {
+        id: 'first-example-first-steps',
+        prompt: 'Predict the result.',
+        answer: 'The result is 2.',
+      },
+    ]);
   });
 
-  it('recalls the real interview questions for system lessons instead of the guide exercise', () => {
-    const fixture = TestBed.createComponent(Question);
-    const page = fixture.componentInstance as any;
-    const item = {
-      id: 'system-lesson', moduleId: 'basics', contentType: 'theory', lessonPattern: 'system-v1',
-      schemaVersion: 'foundation-lesson/v1', tags: [], followUps: [],
-      checks: [{ questionId: 'what-is-a-lambda', category: 'core' }],
-      sections: [{ id: 'actual-lesson', heading: 'Actual lesson' }],
-      beginnerGuide: { try: 'Change the rating limit.', answer: 'D1, D2 and D4.' },
-    };
-    page.pathId.set('learn');
-    page.courseId.set('sample-foundations');
-    page.relatedQuestions.set(new Map([['what-is-a-lambda', {
-      id: 'what-is-a-lambda', title: 'What is a lambda?', interviewAnswer: 'A small implementation of one method.', explanation: [],
-    }]]));
-    page.question.set(item);
-    expect(page.sidebarContext().recall.map((check: { prompt: string }) => check.prompt)).toEqual(['What is a lambda?']);
-  });
+  it(
+    'recalls the real interview questions for system lessons instead of the guide ' + 'exercise',
+    () => {
+      const fixture = TestBed.createComponent(Question);
+      const page = fixture.componentInstance as any;
+      const item = {
+        id: 'system-lesson',
+        moduleId: 'basics',
+        contentType: 'theory',
+        lessonPattern: 'system-v1',
+        schemaVersion: 'foundation-lesson/v1',
+        tags: [],
+        followUps: [],
+        checks: [{ questionId: 'what-is-a-lambda', category: 'core' }],
+        sections: [{ id: 'actual-lesson', heading: 'Actual lesson' }],
+        beginnerGuide: { try: 'Change the rating limit.', answer: 'D1, D2 and D4.' },
+      };
+      page.pathId.set('learn');
+      page.courseId.set('sample-foundations');
+      page.relatedQuestions.set(
+        new Map([
+          [
+            'what-is-a-lambda',
+            {
+              id: 'what-is-a-lambda',
+              title: 'What is a lambda?',
+              interviewAnswer: 'A small implementation of one method.',
+              explanation: [],
+            },
+          ],
+        ]),
+      );
+      page.question.set(item);
+      expect(page.sidebarContext().recall.map((check: { prompt: string }) => check.prompt)).toEqual(
+        ['What is a lambda?'],
+      );
+    },
+  );
 
   it('orders approved-flow anchors without linking a missing example or recall block', () => {
     const fixture = TestBed.createComponent(Question);
     const page = fixture.componentInstance as any;
-    const item = { schemaVersion: 'foundation-lesson/v1', learningFlow: {}, sections: [{id:'small-example', heading:'Small example'}] };
-    expect(page.patternNavigation(item).map((entry: {target:string}) => entry.target)).toEqual([
-      'foundation-start', 'foundation-why', 'small-example', 'foundation-model', 'foundation-remember',
-      'foundation-pitfalls', 'foundation-understand', 'foundation-try',
+    const item = {
+      schemaVersion: 'foundation-lesson/v1',
+      learningFlow: {},
+      sections: [{ id: 'small-example', heading: 'Small example' }],
+    };
+    expect(page.patternNavigation(item).map((entry: { target: string }) => entry.target)).toEqual([
+      'foundation-start',
+      'foundation-why',
+      'small-example',
+      'foundation-model',
+      'foundation-remember',
+      'foundation-pitfalls',
+      'foundation-understand',
+      'foundation-try',
     ]);
   });
 
   it('keeps theory articles out of previous and next question navigation', () => {
     const theory: InterviewQuestion = {
-      id: 'ownership-guide', moduleId: 'ownership', order: 1,
-      title: 'Production Ownership Guide', difficulty: 'Beginner', tags: ['Ownership'],
-      interviewAnswer: '', explanation: [], versionNotes: [], followUps: [],
-      contentType: 'theory', schemaVersion: 'foundation-lesson/v1',
+      id: 'ownership-guide',
+      moduleId: 'ownership',
+      order: 1,
+      title: 'Production Ownership Guide',
+      difficulty: 'Beginner',
+      tags: ['Ownership'],
+      interviewAnswer: '',
+      explanation: [],
+      versionNotes: [],
+      followUps: [],
+      contentType: 'theory',
+      schemaVersion: 'foundation-lesson/v1',
       sections: [{ id: 'model', heading: 'Model', body: ['Own the outcome.'] }],
     };
     const firstQuestion: InterviewQuestion = {
-      ...theory, id: 'ownership-question-1', order: 2,
-      title: 'How do you handle a production incident?', contentType: 'q-and-a',
+      ...theory,
+      id: 'ownership-question-1',
+      order: 2,
+      title: 'How do you handle a production incident?',
+      contentType: 'q-and-a',
       interviewAnswer: 'Stabilize, communicate, and learn.',
-      schemaVersion: undefined, sections: undefined,
+      schemaVersion: undefined,
+      sections: undefined,
     };
     const secondQuestion: InterviewQuestion = {
-      ...firstQuestion, id: 'ownership-question-2', order: 3,
+      ...firstQuestion,
+      id: 'ownership-question-2',
+      order: 3,
       title: 'How do you prevent recurrence?',
     };
     const mixedCourse: CourseContent = {
-      id: 'technical-scenarios', path: 'grow', title: 'Production Scenarios',
-      description: 'Practice ownership decisions.', version: '1',
-      modules: [{ id: 'ownership', order: 1, title: 'Production ownership', description: 'Own it.' }],
+      id: 'technical-scenarios',
+      path: 'grow',
+      title: 'Production Scenarios',
+      description: 'Practice ownership decisions.',
+      version: '1',
+      modules: [
+        { id: 'ownership', order: 1, title: 'Production ownership', description: 'Own it.' },
+      ],
       questions: [theory, firstQuestion, secondQuestion],
     };
     const fixture = TestBed.createComponent(Question);
@@ -452,12 +533,21 @@ describe('Question canonical DSA navigation', () => {
 
   it('keeps review results and the original course unit one click away', async () => {
     const harness = await RouterTestingHarness.create();
-    const returnUrl = '/search?kind=practice&path=learn&course=algorithmic-patterns&module=hashing&unit=original-unit';
-    await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl), Question);
+    const returnUrl =
+      '/search?kind=practice&path=learn&course=algorithmic-patterns&module=hashing' +
+      '&unit=original-unit';
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl),
+      Question,
+    );
     const page = harness.routeNativeElement!;
     expect(linkWithText(page, 'Back to review questions')?.getAttribute('href')).toBe(returnUrl);
-    expect(page.querySelector('.practice-return')?.closest('.question-review-navigation')).not.toBeNull();
-    expect(page.querySelector('a[href="/learn/algorithmic-patterns#unit-original-unit"]')).not.toBeNull();
+    expect(
+      page.querySelector('.practice-return')?.closest('.question-review-navigation'),
+    ).not.toBeNull();
+    expect(
+      page.querySelector('a[href="/learn/algorithmic-patterns#unit-original-unit"]'),
+    ).not.toBeNull();
     expect(linkWithText(page, 'Search all content')?.getAttribute('href')).toBe('/search');
   });
 
@@ -519,7 +609,9 @@ describe('Question canonical DSA navigation', () => {
       const returnUrl = `/learn/hands-on-dsa?sort=${sort}&scope=782&difficulty=All&page=4`;
 
       await harness.navigateByUrl(
-        `/learn/${selected.courseId}/${selected.problemId}?pattern=algorithmic-patterns:hashing-lookup&returnTo=` +
+        `/learn/${selected.courseId}/` +
+          `${selected.problemId}?pattern=algorithmic-patterns:hashing-lookup` +
+          `&returnTo=` +
           encodeURIComponent(returnUrl),
         Question,
       );
@@ -527,9 +619,8 @@ describe('Question canonical DSA navigation', () => {
       const previous = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
         '.problem-nav-card.previous',
       );
-      const next = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-        '.problem-nav-card.next',
-      );
+      const next =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.problem-nav-card.next');
       expect(previous?.textContent).toContain(twoSum.title);
       const expectedNumber = sort === 'interview-rank' ? 10 : 2;
       expect(previous?.textContent).toContain(`${expectedNumber}.`);
@@ -559,10 +650,19 @@ describe('Question canonical DSA navigation', () => {
         harness.routeNativeElement!.querySelectorAll('.source-navigation-rows nav'),
       ).toHaveLength(1);
       expect(harness.routeNativeElement!.querySelector('.source-order-label')).toBeNull();
-      expect(harness.routeNativeElement!.querySelector('.source-navigation-rows nav')?.getAttribute('aria-label')).toBe('Learning order problem navigation');
-      const currentPrevious = harness.routeNativeElement!.querySelector('.source-navigation-rows .previous');
-      const currentNext = harness.routeNativeElement!.querySelector('.source-navigation-rows .next');
-      if (currentPrevious) expect(getComputedStyle(currentPrevious).justifyContent).toBe('flex-start');
+      expect(
+        harness
+          .routeNativeElement!.querySelector('.source-navigation-rows nav')
+          ?.getAttribute('aria-label'),
+      ).toBe('Learning order problem navigation');
+      const currentPrevious = harness.routeNativeElement!.querySelector(
+        '.source-navigation-rows .previous',
+      );
+      const currentNext = harness.routeNativeElement!.querySelector(
+        '.source-navigation-rows .next',
+      );
+      if (currentPrevious)
+        expect(getComputedStyle(currentPrevious).justifyContent).toBe('flex-start');
       if (currentNext) expect(getComputedStyle(currentNext).justifyContent).toBe('flex-end');
     },
   );
@@ -600,8 +700,22 @@ describe('Question canonical DSA navigation', () => {
       index.totals = { groups: 1, problemPlacements: 3, distinctProblems: 3 };
       const template = index.groups[0].problems[0];
       index.groups[0].problems = [
-        { ...template, id: containsDuplicate.problemId, title: containsDuplicate.title, questionId: containsDuplicate.questionId, route: ['/learn', containsDuplicate.courseId, containsDuplicate.questionId], studyOrder: 1 },
-        { ...template, id: twoSum.problemId, title: twoSum.title, questionId: twoSum.questionId, route: ['/learn', twoSum.courseId, twoSum.questionId], studyOrder: 2 },
+        {
+          ...template,
+          id: containsDuplicate.problemId,
+          title: containsDuplicate.title,
+          questionId: containsDuplicate.questionId,
+          route: ['/learn', containsDuplicate.courseId, containsDuplicate.questionId],
+          studyOrder: 1,
+        },
+        {
+          ...template,
+          id: twoSum.problemId,
+          title: twoSum.title,
+          questionId: twoSum.questionId,
+          route: ['/learn', twoSum.courseId, twoSum.questionId],
+          studyOrder: 2,
+        },
         { ...template, studyOrder: 3 },
       ];
       content.getHandsOnDsaIndex.mockReturnValueOnce(of(index));
@@ -621,7 +735,7 @@ describe('Question canonical DSA navigation', () => {
     }
   });
 
-  it('ticks solved study-plan neighbours, resolving plan entries to problems by route', async () => {
+  it('ticks solved study-plan neighbours, resolving plan entries by route', async () => {
     const storageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
     const values = new Map<string, string>();
     Object.defineProperty(window, 'localStorage', {
@@ -662,8 +776,16 @@ describe('Question canonical DSA navigation', () => {
                 day: 1,
                 assignments: [
                   // Plan activity ids are not problem ids.
-                  step('plan-two-sum', twoSum.title, ['/learn', twoSum.courseId, twoSum.questionId]),
-                  step('plan-current', firstUnique.title, ['/learn', firstUnique.courseId, firstUnique.questionId]),
+                  step('plan-two-sum', twoSum.title, [
+                    '/learn',
+                    twoSum.courseId,
+                    twoSum.questionId,
+                  ]),
+                  step('plan-current', firstUnique.title, [
+                    '/learn',
+                    firstUnique.courseId,
+                    firstUnique.questionId,
+                  ]),
                   step('plan-renamed', 'Renamed Question', renamedRoute),
                 ],
               },
@@ -699,7 +821,8 @@ describe('Question canonical DSA navigation', () => {
       content.getDsaProblem.mockReturnValueOnce(of(canonicalProblem(firstUnique)));
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl(
-        `/learn/${firstUnique.courseId}/${firstUnique.questionId}?plan=browser&day=1&activity=plan-current`,
+        `/learn/${firstUnique.courseId}/${firstUnique.questionId}?plan=browser&day=1` +
+          `&activity=plan-current`,
         Question,
       );
       await harness.fixture.whenStable();
@@ -720,7 +843,7 @@ describe('Question canonical DSA navigation', () => {
     }
   });
 
-  it('uses exact release values in the shared header and associates the full concept title', async () => {
+  it('uses exact release values in the shared header with the full concept title', async () => {
     const selected: CanonicalRouteCase = {
       problemId: 'dsa-catalog-meeting-rooms',
       title: 'Meeting Rooms',
@@ -734,9 +857,7 @@ describe('Question canonical DSA navigation', () => {
     content.getHandsOnDsaIndex.mockReturnValueOnce(of(index));
     const headerProblem = canonicalProblem(selected);
     headerProblem.navigation!.lesson.title = 'Hashing: Retain the useful lookup state';
-    content.getDsaProblem.mockReturnValueOnce(
-      of({ ...headerProblem, difficulty: 'Intermediate' }),
-    );
+    content.getDsaProblem.mockReturnValueOnce(of({ ...headerProblem, difficulty: 'Intermediate' }));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
     const root = harness.routeNativeElement!;
@@ -748,8 +869,9 @@ describe('Question canonical DSA navigation', () => {
       root.querySelector('.problem-title-metadata [aria-label="Difficulty: Intermediate"]'),
     ).not.toBeNull();
     expect(
-      root.querySelector('.problem-title-metadata [aria-label="Rank 30 of 782 in interview priority"]')
-        ?.textContent,
+      root.querySelector(
+        '.problem-title-metadata [aria-label="Rank 30 of 782 in interview priority"]',
+      )?.textContent,
     ).toBe('Rank 30');
     expect(root.querySelector('.problem-release-order')).toBeNull();
     const back = root.querySelector<HTMLAnchorElement>('.problem-back')!;
@@ -757,7 +879,11 @@ describe('Question canonical DSA navigation', () => {
     expect(back.getAttribute('href')).toBe('/learn/hands-on-dsa');
     const titleCluster = root.querySelector('.article-title-row')!;
     expect([...titleCluster.children].map((element) => element.tagName)).toEqual(['H1', 'P']);
-    expect([...titleCluster.querySelectorAll('.problem-title-metadata > span')].map(element => element.textContent)).toEqual(['Intermediate', 'Rank 30', 'Problem 616 of 782']);
+    expect(
+      [...titleCluster.querySelectorAll('.problem-title-metadata > span')].map(
+        (element) => element.textContent,
+      ),
+    ).toEqual(['Intermediate', 'Rank 30', 'Problem 616 of 782']);
     expect(getComputedStyle(titleCluster).flexDirection).toBe('column');
     expect(getComputedStyle(titleCluster).alignItems).toBe('flex-start');
     expect(getComputedStyle(titleCluster).textAlign).toBe('start');
@@ -782,17 +908,25 @@ describe('Question canonical DSA navigation', () => {
     await revealPattern(harness);
     // After reveal, the header offers only the named lesson link with its new-tab cue: one element,
     // "Learn more about <pattern>" (user, 2026-10-16), the name shown once.
-    expect(root.querySelector('app-pattern-help .answer .answer-name')?.textContent).toContain('Hashing');
+    expect(root.querySelector('app-pattern-help .answer .answer-name')?.textContent).toContain(
+      'Hashing',
+    );
     expect(root.querySelector('.pattern-help-open')).toBeNull();
     const lesson = root.querySelector<HTMLAnchorElement>('.pattern-lesson-open')!;
-    expect(lesson.textContent?.replace(/\s+/g, ' ').trim()).toBe('Learn more about Hashing (opens in a new tab)');
+    expect(lesson.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Learn more about Hashing (opens in a new tab)',
+    );
     expect(lesson.textContent).not.toContain('lesson');
     expect(lesson.textContent).not.toContain('Open the');
     expect(lesson.textContent).toContain('(opens in a new tab)');
-    expect(lesson.getAttribute('href')).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
+    expect(lesson.getAttribute('href')).toBe(
+      '/learn/algorithmic-patterns/algorithmic-hashing-lookup',
+    );
     expect(lesson.getAttribute('target')).toBe('_blank');
     expect(root.querySelector('.pattern-hide')).toBeNull();
-    expect(root.querySelector('.problem-pattern-actions')?.querySelectorAll('a, button')).toHaveLength(1);
+    expect(
+      root.querySelector('.problem-pattern-actions')?.querySelectorAll('a, button'),
+    ).toHaveLength(1);
     expect(root.querySelector('.breadcrumbs')?.textContent).toContain('Hashing');
     expect(root.querySelector('.question-context-panel')).toBeNull();
     await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-two-sum', Question);
@@ -800,60 +934,76 @@ describe('Question canonical DSA navigation', () => {
     expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();
   });
 
-  it('names no pattern or method anywhere on a problem page before the learner asks (user, 2026-10-16)', async () => {
-    const selected: CanonicalRouteCase = {
-      problemId: 'dsa-catalog-meeting-rooms',
-      title: 'Meeting Rooms',
-      courseId: 'algorithmic-patterns',
-    };
-    content.getHandsOnDsaIndex.mockReturnValueOnce(of(indexFor(selected)));
-    const problem = canonicalProblem(selected);
-    problem.navigation!.lesson.title = 'Hashing: Retain the useful lookup state';
-    problem.approachFamily = {
-      approach: 1,
-      bestProblemId: selected.problemId,
-      siblings: [
-        {
-          problemId: 'dsa-catalog-meeting-rooms-approach-2',
-          approach: 2,
-          title: 'Meeting Rooms (Approach-2)',
-          path: 'learn',
-          courseId: 'algorithmic-patterns',
-          questionId: 'dsa-catalog-meeting-rooms-approach-2',
-          pattern: 'Sweep Line',
-          complexity: { time: 'O(n)', space: 'O(n)' },
-          whenToPrefer: 'Prefer the sweep when overlaps are counted.',
-        },
-      ],
-    };
-    content.getDsaProblem.mockReturnValueOnce(of(problem));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    const root = harness.routeNativeElement!;
-    const SPOILER = /Hashing|Sweep|sweep|variation|Retain useful prior state|Track the required state/;
-    const attributes = [...root.querySelectorAll('*')]
-      .flatMap((element) => ['title', 'aria-label', 'aria-description', 'alt'].map((name) => element.getAttribute(name) ?? ''))
-      .join(' ');
-    // Not in the text, not in any title or accessible name, not even in hidden markup.
-    expect(root.textContent).not.toMatch(SPOILER);
-    expect(attributes).not.toMatch(SPOILER);
-    expect(root.innerHTML).not.toMatch(SPOILER);
-    expect(document.title).not.toMatch(SPOILER);
-    expect(root.querySelector('.breadcrumbs')?.textContent?.replace(/\s+/g, '')).toContain('Hands-OnDSA/MeetingRooms');
-    // The approach switch is in the workspace, not the title row, and says only "Approach N".
-    expect(root.querySelector('.problem-pattern-actions app-optimal-approaches')).toBeNull();
-    const segments = [...root.querySelectorAll('.workspace-actions .approach-switch .segment')];
-    expect(segments.map((segment) => segment.textContent?.trim())).toEqual(['Approach 1', 'Approach 2']);
-    expect(segments[0].getAttribute('aria-label')).toBe('Approach 1 of 2, this page');
-    // After the learner reveals, the pattern shows as before.
-    root.querySelector<HTMLButtonElement>('.pattern-help-open')!.click();
-    harness.detectChanges();
-    await revealPattern(harness);
-    expect(root.querySelector('.breadcrumbs')?.textContent).toContain('Hashing');
-    expect(root.querySelector('.pattern-lesson-open')?.textContent).toContain('Learn more about Hashing');
-  });
+  it(
+    'names no pattern or method anywhere on a problem page before the learner asks (user, ' +
+      '2026-10-16)',
+    async () => {
+      const selected: CanonicalRouteCase = {
+        problemId: 'dsa-catalog-meeting-rooms',
+        title: 'Meeting Rooms',
+        courseId: 'algorithmic-patterns',
+      };
+      content.getHandsOnDsaIndex.mockReturnValueOnce(of(indexFor(selected)));
+      const problem = canonicalProblem(selected);
+      problem.navigation!.lesson.title = 'Hashing: Retain the useful lookup state';
+      problem.approachFamily = {
+        approach: 1,
+        bestProblemId: selected.problemId,
+        siblings: [
+          {
+            problemId: 'dsa-catalog-meeting-rooms-approach-2',
+            approach: 2,
+            title: 'Meeting Rooms (Approach-2)',
+            path: 'learn',
+            courseId: 'algorithmic-patterns',
+            questionId: 'dsa-catalog-meeting-rooms-approach-2',
+            pattern: 'Sweep Line',
+            complexity: { time: 'O(n)', space: 'O(n)' },
+            whenToPrefer: 'Prefer the sweep when overlaps are counted.',
+          },
+        ],
+      };
+      content.getDsaProblem.mockReturnValueOnce(of(problem));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      const root = harness.routeNativeElement!;
+      const SPOILER =
+        /Hashing|Sweep|sweep|variation|Retain useful prior state|Track the required state/;
+      const attributes = [...root.querySelectorAll('*')]
+        .flatMap((element) =>
+          ['title', 'aria-label', 'aria-description', 'alt'].map(
+            (name) => element.getAttribute(name) ?? '',
+          ),
+        )
+        .join(' ');
+      // Not in the text, not in any title or accessible name, not even in hidden markup.
+      expect(root.textContent).not.toMatch(SPOILER);
+      expect(attributes).not.toMatch(SPOILER);
+      expect(root.innerHTML).not.toMatch(SPOILER);
+      expect(document.title).not.toMatch(SPOILER);
+      expect(root.querySelector('.breadcrumbs')?.textContent?.replace(/\s+/g, '')).toContain(
+        'Hands-OnDSA/MeetingRooms',
+      );
+      // The approach switch is in the workspace, not the title row, and says only "Approach N".
+      expect(root.querySelector('.problem-pattern-actions app-optimal-approaches')).toBeNull();
+      const segments = [...root.querySelectorAll('.workspace-actions .approach-switch .segment')];
+      expect(segments.map((segment) => segment.textContent?.trim())).toEqual([
+        'Approach 1',
+        'Approach 2',
+      ]);
+      expect(segments[0].getAttribute('aria-label')).toBe('Approach 1 of 2, this page');
+      // After the learner reveals, the pattern shows as before.
+      root.querySelector<HTMLButtonElement>('.pattern-help-open')!.click();
+      harness.detectChanges();
+      await revealPattern(harness);
+      expect(root.querySelector('.breadcrumbs')?.textContent).toContain('Hashing');
+      expect(root.querySelector('.pattern-lesson-open')?.textContent).toContain(
+        'Learn more about Hashing',
+      );
+    },
+  );
 
   it('navigates from the last result on one page to the first on the next', async () => {
     const selected = routeCases[2];
@@ -944,17 +1094,27 @@ describe('Question canonical DSA navigation', () => {
       const reference = root.querySelector<HTMLDetailsElement>('.practice-reference')!;
       expect(reference.open).toBe(false);
       const referenceSummary = reference.querySelector('summary')!;
-      expect(referenceSummary.querySelector('.reference-toggle-label')?.textContent).toBe('Reference answer');
-      expect(referenceSummary.querySelector('.reference-toggle-hint')?.textContent).toBe('Try it on your own first, then compare.');
-      expect(referenceSummary.querySelector('.reference-toggle-action')?.textContent?.trim()).toBe('Show');
-      expect(reference.querySelector(':scope > .practice-reference-body .non-dsa-answer-layout')).not.toBeNull();
+      expect(referenceSummary.querySelector('.reference-toggle-label')?.textContent).toBe(
+        'Reference answer',
+      );
+      expect(referenceSummary.querySelector('.reference-toggle-hint')?.textContent).toBe(
+        'Try it on your own first, then compare.',
+      );
+      expect(referenceSummary.querySelector('.reference-toggle-action')?.textContent?.trim()).toBe(
+        'Show',
+      );
+      expect(
+        reference.querySelector(':scope > .practice-reference-body .non-dsa-answer-layout'),
+      ).not.toBeNull();
       expect(reference.textContent).toContain('Canonical reference');
       expect(reference.textContent).toContain('What changes under load?');
       reference.querySelector('summary')!.click();
       expect(reference.open).toBe(true);
       reference.dispatchEvent(new Event('toggle'));
       harness.fixture.detectChanges();
-      expect(referenceSummary.querySelector('.reference-toggle-action')?.textContent?.trim()).toBe('Hide');
+      expect(referenceSummary.querySelector('.reference-toggle-action')?.textContent?.trim()).toBe(
+        'Hide',
+      );
       expect(referenceSummary.getAttribute('aria-expanded')).toBe('true');
     },
   );
@@ -988,15 +1148,14 @@ describe('Question canonical DSA navigation', () => {
         '/learn/algorithmic-patterns/algorithmic-hashing-lookup',
       );
 
-      const previous = root.querySelector<HTMLAnchorElement>(
-        '.problem-nav-cards .previous',
-      );
+      const previous = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .previous');
       const next = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .next');
       if (testCase.previous) {
         expect(previous?.classList.contains('problem-nav-card')).toBe(true);
         expect(previous?.textContent).toContain(testCase.previous.title);
         expect(previous?.getAttribute('href')).toBe(
-          `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
+          `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=` +
+            `${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
         );
       } else {
         expect(previous).toBeNull();
@@ -1005,7 +1164,8 @@ describe('Question canonical DSA navigation', () => {
         expect(next?.classList.contains('problem-nav-card')).toBe(true);
         expect(next?.textContent).toContain(testCase.next.title);
         expect(next?.getAttribute('href')).toBe(
-          `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
+          `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=` +
+            `${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
         );
       } else {
         expect(next).toBeNull();
@@ -1058,10 +1218,12 @@ describe('Question canonical DSA navigation', () => {
     );
     expect(
       breadcrumbs.find((link) => link.textContent.trim() === 'Graphs')?.getAttribute('href'),
-    ).toBe(`/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`);
+    ).toBe(
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
+    );
   });
 
-  it('does not fetch unrelated course modules when indexed problem detail loading fails', async () => {
+  it('does not fetch unrelated course modules when problem detail loading fails', async () => {
     const selected = routeCases[1];
     content.getHandsOnDsaIndex.mockReturnValueOnce(of(indexFor(selected)));
     content.getDsaProblem.mockReturnValueOnce(throwError(() => new Error('404')));
@@ -1071,9 +1233,7 @@ describe('Question canonical DSA navigation', () => {
 
     expect(content.getCourseOutline).not.toHaveBeenCalled();
     expect(content.getCatalog).not.toHaveBeenCalled();
-    expect(harness.routeNativeElement?.textContent).toContain(
-      'We couldn’t load this content',
-    );
+    expect(harness.routeNativeElement?.textContent).toContain('We couldn’t load this content');
   });
 
   it('uses the requested navigation context for a cross-pattern problem', async () => {
@@ -1141,331 +1301,447 @@ describe('Question canonical DSA navigation', () => {
       }
     });
 
-    it('keeps Previous/Next on the same list, with opaque links, when opened from an opaque link', async () => {
+    it(
+      'keeps Previous/Next on the same list, with opaque links, when opened from an ' +
+        'opaque link',
+      async () => {
+        const selected = routeCases[1];
+        const harness = await RouterTestingHarness.create();
+        await harness.navigateByUrl(
+          `/learn/${selected.courseId}/${selected.problemId}?pattern=` +
+            `${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
+          Question,
+        );
+        const root = harness.routeNativeElement!;
+        const previous = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .previous');
+        const next = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .next');
+        const hashing = patternContextToken('algorithmic-patterns:hashing-lookup');
+        expect(previous?.getAttribute('href')).toBe(
+          `/learn/${containsDuplicate.courseId}/${containsDuplicate.questionId}?pattern=${hashing}`,
+        );
+        expect(next?.getAttribute('href')).toBe(
+          `/learn/${firstUnique.courseId}/${firstUnique.questionId}?pattern=${hashing}`,
+        );
+        for (const value of exposed(harness)) expect(value).not.toContain('hashing-lookup');
+      },
+    );
+
+    it(
+      'opens the opaque URL directly (reload, shared link, new tab) in the same context, ' +
+        'and keeps it on Back',
+      async () => {
+        const harness = await RouterTestingHarness.create();
+        const router = TestBed.inject(Router);
+        router.setUpLocationChangeListener();
+        const url = `/learn/algorithmic-patterns/algorithmic-two-sum?pattern=${token}`;
+        await harness.navigateByUrl(url, Question);
+        expect(router.url).toBe(url);
+        await revealPattern(harness);
+        const crumbs = () =>
+          [
+            ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
+          ].map((link) => link.textContent.trim());
+        expect(crumbs()).toContain('Prefix State');
+
+        await harness.navigateByUrl(
+          '/learn/algorithmic-patterns/algorithmic-first-unique-character',
+          Question,
+        );
+        TestBed.inject(Location).back();
+        await vi.waitFor(() => expect(router.url).toBe(url));
+        harness.detectChanges();
+        await harness.fixture.whenStable();
+        await revealPattern(harness);
+        expect(crumbs()).toContain('Prefix State');
+      },
+    );
+  });
+
+  it(
+    'preserves authored Arrays context, discovery and adjacent links in the selected V12 ' +
+      'pilot',
+    async () => {
       const selected = routeCases[1];
+      const problem = canonicalProblem(selected);
+      const arrays = {
+        ...problem.navigation,
+        handsOnPatternId: 'core-data-structures:arrays',
+        lesson: {
+          path: 'learn' as const,
+          courseId: 'core-data-structures',
+          questionId: 'arrays-lesson',
+          title: 'Arrays',
+        },
+      };
+      problem.navigation.alternates = [arrays];
+      const index = indexFor(selected);
+      index.groups[0].id = 'core-data-structures:arrays';
+      index.groups[0].problems[0].studyOrder = 1;
+      index.groups[0].problems[0].interviewRank = 1;
+      index.groups[0].problems.push({
+        ...index.groups[0].problems[0],
+        id: firstUnique.problemId,
+        title: firstUnique.title,
+        questionId: firstUnique.questionId,
+        route: ['/learn', firstUnique.courseId, firstUnique.questionId],
+        interviewRank: 2,
+        studyOrder: 2,
+      });
+      content.getHandsOnDsaIndex.mockReturnValue(of(index));
+      content.getDsaProblem.mockReturnValueOnce(of(problem));
       const harness = await RouterTestingHarness.create();
+      const returnTo = '/learn/hands-on-dsa?pattern=core-data-structures%3Aarrays&page=2';
       await harness.navigateByUrl(
-        `/learn/${selected.courseId}/${selected.problemId}?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
+        '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=core-data-structures:arrays' +
+          '&returnTo=' +
+          encodeURIComponent(returnTo),
         Question,
       );
       const root = harness.routeNativeElement!;
-      const previous = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .previous');
-      const next = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .next');
-      const hashing = patternContextToken('algorithmic-patterns:hashing-lookup');
-      expect(previous?.getAttribute('href')).toBe(
-        `/learn/${containsDuplicate.courseId}/${containsDuplicate.questionId}?pattern=${hashing}`,
+      expect(root.querySelector('.focus-studio-page')).not.toBeNull();
+      expect(root.querySelector('.problem-toggle')?.textContent).toContain('Problem');
+      expect(root.querySelector('.problem-toggle')?.getAttribute('aria-expanded')).toBe('true');
+      const returnLink = new URL(
+        root.querySelector('.problem-back')!.getAttribute('href')!,
+        'http://localhost',
       );
-      expect(next?.getAttribute('href')).toBe(
-        `/learn/${firstUnique.courseId}/${firstUnique.questionId}?pattern=${hashing}`,
+      expect(returnLink.pathname).toBe('/learn/hands-on-dsa');
+      expect(returnLink.searchParams.get('pattern')).toBe(
+        patternContextToken('core-data-structures:arrays'),
       );
-      for (const value of exposed(harness)) expect(value).not.toContain('hashing-lookup');
-    });
+      expect(returnLink.searchParams.get('page')).toBe('2');
+      expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
+        `pattern=${patternContextToken('core-data-structures:arrays')}`,
+      );
+      expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(4);
+      await harness.navigateByUrl(
+        '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=algorithmic-' +
+          'patterns:hashing-lookup',
+        Question,
+      );
+      expect(harness.routeNativeElement!.querySelector('.studio-pilot-page')).not.toBeNull();
+      expect(harness.routeNativeElement!.querySelector('.problem-toggle')).not.toBeNull();
+      expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();
+      await revealPattern(harness);
+      expect(
+        harness.routeNativeElement!.querySelector('.pattern-lesson-open')?.getAttribute('href'),
+      ).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
+    },
+  );
 
-    it('opens the opaque URL directly (reload, shared link, new tab) in the same context, and keeps it on Back', async () => {
+  it(
+    'derives Arrays neighbors from the catalog when a canonical record only names its ' + 'lesson',
+    async () => {
+      const selected = routeCases[1];
+      const problem = canonicalProblem(selected);
+      problem.navigation = {
+        lesson: problem.navigation.lesson,
+        handsOnPatternId: 'core-data-structures:arrays',
+      };
+      const index = indexFor(selected);
+      index.groups[0].id = 'core-data-structures:arrays';
+      index.groups[0].problems = routeCases
+        .map((item, position) => ({
+          ...indexFor(item).groups[0].problems[0],
+          studyOrder: position + 1,
+        }))
+        .reverse();
+      content.getHandsOnDsaIndex.mockReturnValue(of(index));
+      content.getDsaProblem.mockReturnValue(of(problem));
       const harness = await RouterTestingHarness.create();
-      const router = TestBed.inject(Router);
-      router.setUpLocationChangeListener();
-      const url = `/learn/algorithmic-patterns/algorithmic-two-sum?pattern=${token}`;
-      await harness.navigateByUrl(url, Question);
-      expect(router.url).toBe(url);
-      await revealPattern(harness);
-      const crumbs = () =>
-        [...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a')].map(
-          (link) => link.textContent.trim(),
-        );
-      expect(crumbs()).toContain('Prefix State');
+      await harness.navigateByUrl(
+        '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=core-data-structures:arrays',
+        Question,
+      );
+      const root = harness.routeNativeElement!;
+      expect(root.querySelector('.problem-nav-card.previous')?.textContent).toContain(
+        containsDuplicate.title,
+      );
+      expect(root.querySelector('.problem-nav-card.next')?.textContent).toContain(
+        firstUnique.title,
+      );
+      expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
+        `pattern=${patternContextToken('core-data-structures:arrays')}`,
+      );
+    },
+  );
 
-      await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-first-unique-character', Question);
-      TestBed.inject(Location).back();
-      await vi.waitFor(() => expect(router.url).toBe(url));
-      harness.detectChanges();
-      await harness.fixture.whenStable();
-      await revealPattern(harness);
-      expect(crumbs()).toContain('Prefix State');
-    });
-  });
+  it(
+    'keeps the subtitle line but no longer renders legacy subtitle points (the Overview ' +
+      'stage replaces them)',
+    async () => {
+      const lesson = {
+        id: 'design-fundamentals-caching',
+        moduleId: 'caching',
+        order: 1,
+        title: 'Caching: Where Reads Stop',
+        difficulty: 'Beginner',
+        tags: ['Caching'],
+        contentType: 'theory',
+        schemaVersion: 'foundation-lesson/v1',
+        subtitle: 'Decide what a cache may get wrong.',
+        subtitlePoints: [
+          'Pick a cache layer',
+          '  Set a TTL you can defend ',
+          '',
+          'Plan for a cold start',
+        ],
+        summary: 'A cache trades freshness for speed.',
+        interviewAnswer: 'Cache what is read often and can be slightly stale.',
+        explanation: [],
+        versionNotes: [],
+        followUps: [],
+        learningOutcomes: ['Pick a layer.', 'Set a TTL.', 'Warm a cache.'],
+        memoryAnchor: {
+          phrase: 'Stale on purpose.',
+          mentalModel: 'A copy.',
+          retrievalCue: 'Reads beat writes.',
+        },
+        foundationModel: {
+          heading: 'Copies',
+          representation: 'Key to value.',
+          invariant: 'TTL bounds staleness.',
+          operationLens: 'Read-through.',
+          selectionRule: 'Cache hot reads.',
+        },
+        sections: [
+          {
+            id: 'layers',
+            navLabel: 'Layers',
+            heading: 'Where a cache sits',
+            body: ['Browser, CDN, service.'],
+          },
+        ],
+        pitfalls: [],
+        checks: [],
+        practice: [],
+        keyTakeaways: ['TTL is a promise.'],
+        languageNotes: [],
+        interviewRecall: { prompt: 'Why cache?', answerFramework: ['Hot reads.'] },
+        reviewEvidence: {
+          technical: true,
+          editorial: true,
+          ux: true,
+          accessibility: true,
+          note: 'Fixture.',
+        },
+      } as unknown as InterviewQuestion;
+      const course: CourseContent = {
+        id: 'design-fundamentals',
+        path: 'blaze',
+        title: 'Fundamentals',
+        description: 'Building blocks.',
+        version: '1',
+        modules: [{ id: 'caching', order: 1, title: 'Caching', description: 'Caches.' }],
+        questions: [lesson],
+      };
+      content.getCatalog.mockReturnValueOnce(
+        of([{ id: 'design-fundamentals', title: 'Fundamentals' }]),
+      );
+      content.getCourseOutline.mockReturnValueOnce(of(outlineFor(course)));
+      content.getContentItem.mockReturnValueOnce(of(lesson));
+      const harness = await RouterTestingHarness.create();
 
-  it('preserves authored Arrays context, discovery and adjacent links in the selected V12 pilot', async () => {
-    const selected = routeCases[1];
-    const problem = canonicalProblem(selected);
-    const arrays = {
-      ...problem.navigation,
-      handsOnPatternId: 'core-data-structures:arrays',
-      lesson: {
-        path: 'learn' as const,
-        courseId: 'core-data-structures',
-        questionId: 'arrays-lesson',
-        title: 'Arrays',
-      },
-    };
-    problem.navigation.alternates = [arrays];
-    const index = indexFor(selected);
-    index.groups[0].id = 'core-data-structures:arrays';
-    index.groups[0].problems[0].studyOrder = 1;
-    index.groups[0].problems[0].interviewRank = 1;
-    index.groups[0].problems.push({
-      ...index.groups[0].problems[0],
-      id: firstUnique.problemId,
-      title: firstUnique.title,
-      questionId: firstUnique.questionId,
-      route: ['/learn', firstUnique.courseId, firstUnique.questionId],
-      interviewRank: 2,
-      studyOrder: 2,
-    });
-    content.getHandsOnDsaIndex.mockReturnValue(of(index));
-    content.getDsaProblem.mockReturnValueOnce(of(problem));
-    const harness = await RouterTestingHarness.create();
-    const returnTo = '/learn/hands-on-dsa?pattern=core-data-structures%3Aarrays&page=2';
-    await harness.navigateByUrl(
-      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=core-data-structures:arrays&returnTo=' +
-        encodeURIComponent(returnTo),
-      Question,
-    );
-    const root = harness.routeNativeElement!;
-    expect(root.querySelector('.focus-studio-page')).not.toBeNull();
-    expect(root.querySelector('.problem-toggle')?.textContent).toContain('Problem');
-    expect(root.querySelector('.problem-toggle')?.getAttribute('aria-expanded')).toBe('true');
-    const returnLink = new URL(
-      root.querySelector('.problem-back')!.getAttribute('href')!,
-      'http://localhost',
-    );
-    expect(returnLink.pathname).toBe('/learn/hands-on-dsa');
-    expect(returnLink.searchParams.get('pattern')).toBe(patternContextToken('core-data-structures:arrays'));
-    expect(returnLink.searchParams.get('page')).toBe('2');
-    expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
-      `pattern=${patternContextToken('core-data-structures:arrays')}`,
-    );
-    expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(4);
-    await harness.navigateByUrl(
-      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=algorithmic-patterns:hashing-lookup',
-      Question,
-    );
-    expect(harness.routeNativeElement!.querySelector('.studio-pilot-page')).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.problem-toggle')).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();
-    await revealPattern(harness);
-    expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')?.getAttribute('href')).toBe(
-      '/learn/algorithmic-patterns/algorithmic-hashing-lookup',
-    );
-  });
+      await harness.navigateByUrl(
+        '/blaze/design-fundamentals/design-fundamentals-caching',
+        Question,
+      );
 
-  it('derives Arrays neighbors from the catalog when a canonical record only names its lesson', async () => {
-    const selected = routeCases[1];
-    const problem = canonicalProblem(selected);
-    problem.navigation = {
-      lesson: problem.navigation.lesson,
-      handsOnPatternId: 'core-data-structures:arrays',
-    };
-    const index = indexFor(selected);
-    index.groups[0].id = 'core-data-structures:arrays';
-    index.groups[0].problems = routeCases
-      .map((item, position) => ({
-        ...indexFor(item).groups[0].problems[0],
-        studyOrder: position + 1,
-      }))
-      .reverse();
-    content.getHandsOnDsaIndex.mockReturnValue(of(index));
-    content.getDsaProblem.mockReturnValue(of(problem));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
-      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=core-data-structures:arrays',
-      Question,
-    );
-    const root = harness.routeNativeElement!;
-    expect(root.querySelector('.problem-nav-card.previous')?.textContent).toContain(
-      containsDuplicate.title,
-    );
-    expect(root.querySelector('.problem-nav-card.next')?.textContent).toContain(
-      firstUnique.title,
-    );
-    expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
-      `pattern=${patternContextToken('core-data-structures:arrays')}`,
-    );
-  });
-
-  it('keeps the subtitle line but no longer renders legacy subtitle points (the Overview stage replaces them)', async () => {
-    const lesson = {
-      id: 'design-fundamentals-caching',
-      moduleId: 'caching',
-      order: 1,
-      title: 'Caching: Where Reads Stop',
-      difficulty: 'Beginner',
-      tags: ['Caching'],
-      contentType: 'theory',
-      schemaVersion: 'foundation-lesson/v1',
-      subtitle: 'Decide what a cache may get wrong.',
-      subtitlePoints: ['Pick a cache layer', '  Set a TTL you can defend ', '', 'Plan for a cold start'],
-      summary: 'A cache trades freshness for speed.',
-      interviewAnswer: 'Cache what is read often and can be slightly stale.',
-      explanation: [],
-      versionNotes: [],
-      followUps: [],
-      learningOutcomes: ['Pick a layer.', 'Set a TTL.', 'Warm a cache.'],
-      memoryAnchor: { phrase: 'Stale on purpose.', mentalModel: 'A copy.', retrievalCue: 'Reads beat writes.' },
-      foundationModel: { heading: 'Copies', representation: 'Key to value.', invariant: 'TTL bounds staleness.', operationLens: 'Read-through.', selectionRule: 'Cache hot reads.' },
-      sections: [{ id: 'layers', navLabel: 'Layers', heading: 'Where a cache sits', body: ['Browser, CDN, service.'] }],
-      pitfalls: [],
-      checks: [],
-      practice: [],
-      keyTakeaways: ['TTL is a promise.'],
-      languageNotes: [],
-      interviewRecall: { prompt: 'Why cache?', answerFramework: ['Hot reads.'] },
-      reviewEvidence: { technical: true, editorial: true, ux: true, accessibility: true, note: 'Fixture.' },
-    } as unknown as InterviewQuestion;
-    const course: CourseContent = {
-      id: 'design-fundamentals',
-      path: 'blaze',
-      title: 'Fundamentals',
-      description: 'Building blocks.',
-      version: '1',
-      modules: [{ id: 'caching', order: 1, title: 'Caching', description: 'Caches.' }],
-      questions: [lesson],
-    };
-    content.getCatalog.mockReturnValueOnce(of([{ id: 'design-fundamentals', title: 'Fundamentals' }]));
-    content.getCourseOutline.mockReturnValueOnce(of(outlineFor(course)));
-    content.getContentItem.mockReturnValueOnce(of(lesson));
-    const harness = await RouterTestingHarness.create();
-
-    await harness.navigateByUrl('/blaze/design-fundamentals/design-fundamentals-caching', Question);
-
-    const root = harness.routeNativeElement!;
-    const lead = root.querySelector('.lesson-subtitle') as HTMLElement;
-    expect(lead.textContent?.trim()).toBe('Decide what a cache may get wrong.');
-    expect(root.querySelector('.lesson-subtitle-points')).toBeNull();
-    expect(root.textContent).not.toContain('Set a TTL you can defend');
-  });
+      const root = harness.routeNativeElement!;
+      const lead = root.querySelector('.lesson-subtitle') as HTMLElement;
+      expect(lead.textContent?.trim()).toBe('Decide what a cache may get wrong.');
+      expect(root.querySelector('.lesson-subtitle-points')).toBeNull();
+      expect(root.textContent).not.toContain('Set a TTL you can defend');
+    },
+  );
 
   it('keeps the plain subtitle line for foundation lessons only', () => {
     const fixture = TestBed.createComponent(Question);
     const page = fixture.componentInstance as any;
-    expect(page.lessonSubtitle({ schemaVersion: 'foundation-lesson/v1', subtitle: 'Only a line.' })).toBe('Only a line.');
+    expect(
+      page.lessonSubtitle({ schemaVersion: 'foundation-lesson/v1', subtitle: 'Only a line.' }),
+    ).toBe('Only a line.');
     expect(page.lessonSubtitle({ subtitle: 'Ignored for non-foundation items' })).toBeNull();
   });
 
   it('gives reference code with long aligned lines the full width instead of a half column', () => {
     const page = TestBed.createComponent(Question).componentInstance as any;
     expect(page.wideCode('short line\nanother')).toBe(false);
-    expect(page.wideCode('Seat (Reservation)   AVAILABLE -> HELD -> PAYING -> SOLD   expiry job or cancel')).toBe(true);
+    expect(
+      page.wideCode(
+        'Seat (Reservation)   AVAILABLE -> HELD -> PAYING -> SOLD   expiry job or cancel',
+      ),
+    ).toBe(true);
     expect(navTitle({ title: 'Full title: with detail', navTitle: '  Short  ' })).toBe('Short');
     expect(navTitle({ title: 'Full title', navTitle: '   ' })).toBe('Full title');
   });
 
-  it('renders a Design Round walkthrough before the written answer and uses navTitle for navigation', async () => {
-    const round = {
-      id: 'design-rounds-reservation-design',
-      moduleId: 'reservation-round',
-      order: 1,
-      title: 'Design a reservation system with payment: 60,000 seats, 2 million fans',
-      navTitle: 'Design a reservation system',
-      difficulty: 'Advanced',
-      tags: ['Design Rounds'],
-      contentType: 'practice',
-      practiceFormat: 'design',
-      interviewAnswer: '<strong>Requirements.</strong> Hold seats.',
-      walkthrough: [
-        {
-          id: 'requirements',
-          label: '0-5 min',
-          heading: 'Requirements',
-          body: ['Fans hold up to <code>4</code> seats for <strong>5 minutes</strong>.'],
-          cards: [
-            { title: 'Functional requirements', points: ['Hold up to <code>4</code> seats.', 'Pay once.'] },
-            { title: 'Non-functional requirements', points: ['No double booking.'] },
-          ],
-        },
-        {
-          id: 'architecture',
-          label: '10-20 min',
-          heading: 'Architecture',
-          body: ['Three services.', 'Pick a side per part.'],
-          table: {
-            caption: 'Consistency or availability',
-            columns: ['Part', 'We choose', 'Why'],
-            rows: [
-              ['Seat holds', 'Consistency', 'No <strong>double</strong> booking.'],
-              ['Seat map', 'Availability', 'Stale for a second is fine.'],
+  it(
+    'renders a Design Round walkthrough before the written answer and uses navTitle for ' +
+      'navigation',
+    async () => {
+      const round = {
+        id: 'design-rounds-reservation-design',
+        moduleId: 'reservation-round',
+        order: 1,
+        title: 'Design a reservation system with payment: 60,000 seats, 2 million fans',
+        navTitle: 'Design a reservation system',
+        difficulty: 'Advanced',
+        tags: ['Design Rounds'],
+        contentType: 'practice',
+        practiceFormat: 'design',
+        interviewAnswer: '<strong>Requirements.</strong> Hold seats.',
+        walkthrough: [
+          {
+            id: 'requirements',
+            label: '0-5 min',
+            heading: 'Requirements',
+            body: ['Fans hold up to <code>4</code> seats for <strong>5 minutes</strong>.'],
+            cards: [
+              {
+                title: 'Functional requirements',
+                points: ['Hold up to <code>4</code> seats.', 'Pay once.'],
+              },
+              { title: 'Non-functional requirements', points: ['No double booking.'] },
             ],
-            afterParagraph: 0,
           },
-          visual: { type: 'diagram', assetPath: '/content/blaze/design-rounds/visuals/arch.svg', alt: 'Three services' },
-          visualTranscript: ['Gateway calls Checkout.', 'Checkout calls Reservation.'],
-        },
-      ],
-      explanation: ['Why the numbers come first.'],
-      versionNotes: [],
-      followUps: [],
-    } as unknown as InterviewQuestion;
-    const second = {
-      ...round,
-      id: 'design-rounds-second',
-      order: 2,
-      title: 'Design a second system: with a very long subtitle',
-      navTitle: 'Design a second system',
-      walkthrough: undefined,
-    } as unknown as InterviewQuestion;
-    const course: CourseContent = {
-      id: 'design-rounds',
-      path: 'blaze',
-      title: 'Design Rounds',
-      description: 'Rounds.',
-      version: '1',
-      modules: [{ id: 'reservation-round', order: 1, title: 'Reservation System', description: 'A round.' }],
-      questions: [round, second],
-    };
-    content.getCatalog.mockReturnValueOnce(of([{ id: 'design-rounds', title: 'Design Rounds' }]));
-    content.getCourseOutline.mockReturnValueOnce(of(outlineFor(course)));
-    content.getContentItem.mockReturnValueOnce(of(round));
-    const harness = await RouterTestingHarness.create();
+          {
+            id: 'architecture',
+            label: '10-20 min',
+            heading: 'Architecture',
+            body: ['Three services.', 'Pick a side per part.'],
+            table: {
+              caption: 'Consistency or availability',
+              columns: ['Part', 'We choose', 'Why'],
+              rows: [
+                ['Seat holds', 'Consistency', 'No <strong>double</strong> booking.'],
+                ['Seat map', 'Availability', 'Stale for a second is fine.'],
+              ],
+              afterParagraph: 0,
+            },
+            visual: {
+              type: 'diagram',
+              assetPath: '/content/blaze/design-rounds/visuals/arch.svg',
+              alt: 'Three services',
+            },
+            visualTranscript: ['Gateway calls Checkout.', 'Checkout calls Reservation.'],
+          },
+        ],
+        explanation: ['Why the numbers come first.'],
+        versionNotes: [],
+        followUps: [],
+      } as unknown as InterviewQuestion;
+      const second = {
+        ...round,
+        id: 'design-rounds-second',
+        order: 2,
+        title: 'Design a second system: with a very long subtitle',
+        navTitle: 'Design a second system',
+        walkthrough: undefined,
+      } as unknown as InterviewQuestion;
+      const course: CourseContent = {
+        id: 'design-rounds',
+        path: 'blaze',
+        title: 'Design Rounds',
+        description: 'Rounds.',
+        version: '1',
+        modules: [
+          {
+            id: 'reservation-round',
+            order: 1,
+            title: 'Reservation System',
+            description: 'A round.',
+          },
+        ],
+        questions: [round, second],
+      };
+      content.getCatalog.mockReturnValueOnce(of([{ id: 'design-rounds', title: 'Design Rounds' }]));
+      content.getCourseOutline.mockReturnValueOnce(of(outlineFor(course)));
+      content.getContentItem.mockReturnValueOnce(of(round));
+      const harness = await RouterTestingHarness.create();
 
-    await harness.navigateByUrl('/blaze/design-rounds/design-rounds-reservation-design', Question);
+      await harness.navigateByUrl(
+        '/blaze/design-rounds/design-rounds-reservation-design',
+        Question,
+      );
 
-    const root = harness.routeNativeElement!;
-    const heading = root.querySelector('h1.reader-question-title') as HTMLElement;
-    expect(heading.textContent).toContain('60,000 seats');
-    expect(heading.dataset['sidebarTitle']).toBe('Design a reservation system');
-    const walkthrough = root.querySelector('.question-walkthrough') as HTMLElement;
-    expect(walkthrough.querySelector('h2')?.textContent).toBe('Walk through it');
-    const answer = root.querySelector('.reader-interview-panel') as HTMLElement;
-    expect(walkthrough.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const steps = Array.from(walkthrough.querySelectorAll('.walkthrough-step'));
-    expect(steps.map((step) => step.querySelector('.walkthrough-time')?.textContent?.trim())).toEqual(['0-5 min', '10-20 min']);
-    expect(steps.map((step) => step.querySelector('h3')?.textContent?.trim())).toEqual(['Requirements', 'Architecture']);
-    expect(steps[0].querySelector('p:not(.walkthrough-time) code')?.textContent).toBe('4');
-    expect(steps[0].querySelector('strong')?.textContent).toBe('5 minutes');
-    const image = steps[1].querySelector('figure img') as HTMLImageElement;
-    expect(image.getAttribute('src')).toBe('/content/blaze/design-rounds/visuals/arch.svg');
-    expect(image.alt).toBe('Three services');
-    expect(Array.from(steps[1].querySelectorAll('.walkthrough-transcript li')).map((li) => li.textContent)).toEqual([
-      'Gateway calls Checkout.',
-      'Checkout calls Reservation.',
-    ]);
-    expect(steps[0].querySelector('figure')).toBeNull();
-    const cards = Array.from(steps[0].querySelectorAll('.walkthrough-cards .section-card'));
-    expect(steps[0].querySelector('.section-card-grid')?.getAttribute('data-card-count')).toBe('2');
-    expect(cards.map((card) => card.querySelector('h4')?.textContent?.trim())).toEqual([
-      'Functional requirements',
-      'Non-functional requirements',
-    ]);
-    expect(Array.from(cards[0].querySelectorAll('li')).map((li) => li.textContent)).toEqual(['Hold up to 4 seats.', 'Pay once.']);
-    expect(cards[0].querySelector('code')?.textContent).toBe('4');
-    const lastBodyParagraph = steps[0].querySelector('p:not(.walkthrough-time)') as HTMLElement;
-    expect(lastBodyParagraph.compareDocumentPosition(cards[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(steps[1].querySelector('.walkthrough-cards')).toBeNull();
-    const table = steps[1].querySelector('.walkthrough-table table') as HTMLTableElement;
-    expect(table.caption?.textContent).toBe('Consistency or availability');
-    expect(Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent)).toEqual(['Part', 'We choose', 'Why']);
-    expect(Array.from(table.querySelectorAll('tbody th[scope="row"]')).map((th) => th.textContent)).toEqual(['Seat holds', 'Seat map']);
-    expect(table.querySelector('tbody td strong')?.textContent).toBe('double');
-    const tableFrame = steps[1].querySelector('.walkthrough-table') as HTMLElement;
-    expect(tableFrame.getAttribute('tabindex')).toBe('0');
-    expect(tableFrame.getAttribute('aria-label')).toBe('Consistency or availability');
-    const stepParagraphs = Array.from(steps[1].querySelectorAll('p:not(.walkthrough-time)'));
-    expect(stepParagraphs[0].compareDocumentPosition(tableFrame) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(tableFrame.compareDocumentPosition(stepParagraphs[1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(steps[0].querySelector('.walkthrough-table')).toBeNull();
-    expect(root.querySelector('.inner-navigation-link.next strong')?.textContent).toContain('Design a second system');
-    expect(root.querySelector('.inner-navigation-link.next strong')?.textContent).not.toContain('very long subtitle');
-  });
+      const root = harness.routeNativeElement!;
+      const heading = root.querySelector('h1.reader-question-title') as HTMLElement;
+      expect(heading.textContent).toContain('60,000 seats');
+      expect(heading.dataset['sidebarTitle']).toBe('Design a reservation system');
+      const walkthrough = root.querySelector('.question-walkthrough') as HTMLElement;
+      expect(walkthrough.querySelector('h2')?.textContent).toBe('Walk through it');
+      const answer = root.querySelector('.reader-interview-panel') as HTMLElement;
+      expect(
+        walkthrough.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      const steps = Array.from(walkthrough.querySelectorAll('.walkthrough-step'));
+      expect(
+        steps.map((step) => step.querySelector('.walkthrough-time')?.textContent?.trim()),
+      ).toEqual(['0-5 min', '10-20 min']);
+      expect(steps.map((step) => step.querySelector('h3')?.textContent?.trim())).toEqual([
+        'Requirements',
+        'Architecture',
+      ]);
+      expect(steps[0].querySelector('p:not(.walkthrough-time) code')?.textContent).toBe('4');
+      expect(steps[0].querySelector('strong')?.textContent).toBe('5 minutes');
+      const image = steps[1].querySelector('figure img') as HTMLImageElement;
+      expect(image.getAttribute('src')).toBe('/content/blaze/design-rounds/visuals/arch.svg');
+      expect(image.alt).toBe('Three services');
+      expect(
+        Array.from(steps[1].querySelectorAll('.walkthrough-transcript li')).map(
+          (li) => li.textContent,
+        ),
+      ).toEqual(['Gateway calls Checkout.', 'Checkout calls Reservation.']);
+      expect(steps[0].querySelector('figure')).toBeNull();
+      const cards = Array.from(steps[0].querySelectorAll('.walkthrough-cards .section-card'));
+      expect(steps[0].querySelector('.section-card-grid')?.getAttribute('data-card-count')).toBe(
+        '2',
+      );
+      expect(cards.map((card) => card.querySelector('h4')?.textContent?.trim())).toEqual([
+        'Functional requirements',
+        'Non-functional requirements',
+      ]);
+      expect(Array.from(cards[0].querySelectorAll('li')).map((li) => li.textContent)).toEqual([
+        'Hold up to 4 seats.',
+        'Pay once.',
+      ]);
+      expect(cards[0].querySelector('code')?.textContent).toBe('4');
+      const lastBodyParagraph = steps[0].querySelector('p:not(.walkthrough-time)') as HTMLElement;
+      expect(
+        lastBodyParagraph.compareDocumentPosition(cards[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(steps[1].querySelector('.walkthrough-cards')).toBeNull();
+      const table = steps[1].querySelector('.walkthrough-table table') as HTMLTableElement;
+      expect(table.caption?.textContent).toBe('Consistency or availability');
+      expect(Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent)).toEqual([
+        'Part',
+        'We choose',
+        'Why',
+      ]);
+      expect(
+        Array.from(table.querySelectorAll('tbody th[scope="row"]')).map((th) => th.textContent),
+      ).toEqual(['Seat holds', 'Seat map']);
+      expect(table.querySelector('tbody td strong')?.textContent).toBe('double');
+      const tableFrame = steps[1].querySelector('.walkthrough-table') as HTMLElement;
+      expect(tableFrame.getAttribute('tabindex')).toBe('0');
+      expect(tableFrame.getAttribute('aria-label')).toBe('Consistency or availability');
+      const stepParagraphs = Array.from(steps[1].querySelectorAll('p:not(.walkthrough-time)'));
+      expect(
+        stepParagraphs[0].compareDocumentPosition(tableFrame) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(
+        tableFrame.compareDocumentPosition(stepParagraphs[1]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(steps[0].querySelector('.walkthrough-table')).toBeNull();
+      expect(root.querySelector('.inner-navigation-link.next strong')?.textContent).toContain(
+        'Design a second system',
+      );
+      expect(root.querySelector('.inner-navigation-link.next strong')?.textContent).not.toContain(
+        'very long subtitle',
+      );
+    },
+  );
 
   it('renders an authentic debugger for a code-answer question without solution tabs', async () => {
     const streamQuestion: InterviewQuestion = {
@@ -1523,7 +1799,7 @@ describe('Question canonical DSA navigation', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Trace the practical pipeline.');
   });
 
-  it('shows the catalog group between the path and the course in the lesson breadcrumb', async () => {
+  it('shows the catalog group between path and course in the lesson breadcrumb', async () => {
     const lesson: InterviewQuestion = {
       id: 'stream-basics',
       moduleId: 'streams',

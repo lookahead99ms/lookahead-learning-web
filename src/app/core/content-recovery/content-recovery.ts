@@ -1,12 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  computed,
-  inject,
-  input,
-  output,
-  viewChild,
-} from '@angular/core';
+import { Component, ElementRef, computed, inject, input, output, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { safeAccountReturn } from '../../pages/account/account-navigation';
 import { CatalogId, plansIncluding } from '../../content/membership-plans';
@@ -50,14 +42,16 @@ export class ContentRecovery {
   protected readonly backUrl = this.router.parseUrl(
     safeAccountReturn(
       this.router.currentNavigation()?.previousNavigation?.finalUrl?.toString() ??
-        this.router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl?.toString() ?? '/',
+        this.router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl?.toString() ??
+        '/',
     ),
   );
   protected readonly heading = computed(
     () =>
       ({
         'sign-in': 'Sign in to continue',
-        // DLV-969 (owner, 2026-11-04): a lesson outside your plan is a subscription, never an approval or an access request.
+        // DLV-969 (owner, 2026-11-04): a lesson outside your plan is a subscription, never an
+        // approval or an access request.
         locked: 'Subscribe to read this',
         planned: 'This lesson isn’t available yet',
         temporary: 'We couldn’t load this content',
@@ -69,8 +63,10 @@ export class ContentRecovery {
       ({
         'sign-in': 'Sign in to check your access. We’ll bring you back to this page.',
         locked: this.preview().premium
-          ? 'This lesson is part of a paid plan. Subscribe to a plan that includes it to keep reading.'
-          : 'Your plan doesn’t include this lesson. Subscribe to a plan that includes it to read it.',
+          ? 'This lesson is part of a paid plan. Subscribe to a plan that includes it to ' +
+            'keep reading.'
+          : 'Your plan doesn’t include this lesson. Subscribe to a plan that includes it ' +
+            'to read it.',
         planned: 'Explore other published lessons while this content is being prepared.',
         temporary: 'Please try again. You can also go back or explore from Home.',
         missing: 'The link may be out of date. Go back or explore from Home.',
@@ -78,8 +74,8 @@ export class ContentRecovery {
   );
   /**
    * DLV-209: for premium content, the plans that include its catalog (read from the address,
-   * /learn/... -> Learn). Everyone may see prices (user, 2026-10-15): signed-out visitors as well as
-   * signed-in learners without access; buying still needs an account. Never shown for temporary,
+   * /learn/... -> Learn). Everyone may see prices (user, 2026-10-15): signed-out visitors as well
+   * as signed-in learners without access; buying still needs an account. Never shown for temporary,
    * missing or planned content.
    */
   protected readonly includedIn = computed(() => {
@@ -89,13 +85,15 @@ export class ContentRecovery {
       ? plansIncluding(catalog as CatalogId)
       : null;
     if (!plans) return null;
-    const names = plans.names.length < 2
-      ? plans.names[0]
-      : `${plans.names.slice(0, -1).join(', ')} and ${plans.names.at(-1)}`;
+    const names =
+      plans.names.length < 2
+        ? plans.names[0]
+        : `${plans.names.slice(0, -1).join(', ')} and ${plans.names.at(-1)}`;
     return `Included in ${names}, from ${plans.from}.`;
   });
   constructor() {
-    // DLV-969 (owner, 2026-11-04): the page shows the way in and the Essence; the options dialog opens only when asked.
+    // DLV-969 (owner, 2026-11-04): the page shows the way in and the Essence; the options dialog
+    // opens only when asked.
     keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
   }
   protected openDialog(): void {

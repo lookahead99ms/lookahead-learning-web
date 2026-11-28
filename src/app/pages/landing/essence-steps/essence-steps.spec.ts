@@ -17,7 +17,9 @@ describe('EssenceSteps', () => {
     frame.getBoundingClientRect = () => rect(10, 20, 400, 300);
     root.querySelectorAll<HTMLElement>('.essence-stairs > li').forEach((step, index) => {
       step.getBoundingClientRect = () =>
-        climbing ? rect(10 + index * 100, 20 + 52 + (3 - index) * 64, 100, 100) : rect(10, 20 + index * 150, 400, 100);
+        climbing
+          ? rect(10 + index * 100, 20 + 52 + (3 - index) * 64, 100, 100)
+          : rect(10, 20 + index * 150, 400, 100);
     });
   }
 
@@ -61,14 +63,16 @@ describe('EssenceSteps', () => {
 
   it('climbs the platform sentence over the four ways of thinking, in order', () => {
     const steps = [...render().querySelectorAll<HTMLElement>('.essence-stairs > li')];
-    expect(steps.map((step) => clean(step.querySelector('.essence-step-label')?.textContent))).toEqual([
-      'Learn to Code',
-      'And Explore',
-      'AI Algorithms Architecture',
-      'Look Ahead',
-    ]);
     expect(
-      steps.map((step) => clean(`${step.querySelector('.essence-verb')?.textContent} ${step.querySelector('.essence-word')?.textContent}`)),
+      steps.map((step) => clean(step.querySelector('.essence-step-label')?.textContent)),
+    ).toEqual(['Learn to Code', 'And Explore', 'AI Algorithms Architecture', 'Look Ahead']);
+    expect(
+      steps.map((step) =>
+        clean(
+          `${step.querySelector('.essence-verb')?.textContent} ` +
+            `${step.querySelector('.essence-word')?.textContent}`,
+        ),
+      ),
     ).toEqual([
       'Understand the obstacle',
       'Find the way',
@@ -85,7 +89,12 @@ describe('EssenceSteps', () => {
       'var(--identity-h)',
       'var(--identity-ai)',
     ]);
-    expect(steps.map((step) => step.style.getPropertyValue('--step'))).toEqual(['0', '1', '2', '3']);
+    expect(steps.map((step) => step.style.getPropertyValue('--step'))).toEqual([
+      '0',
+      '1',
+      '2',
+      '3',
+    ]);
   });
 
   it('marks the emphasised words and puts "Ahead" on the gradient', () => {
@@ -106,7 +115,9 @@ describe('EssenceSteps', () => {
       'Strengthen your competencies',
       'Build expertise in your chosen specializations',
     ]);
-    expect(lines.map((line) => [...line.querySelectorAll('strong')].map((word) => word.textContent))).toEqual([
+    expect(
+      lines.map((line) => [...line.querySelectorAll('strong')].map((word) => word.textContent)),
+    ).toEqual([
       ['Grow', 'capabilities'],
       ['Strengthen', 'competencies'],
       ['Build', 'specializations'],
@@ -155,30 +166,46 @@ describe('EssenceSteps', () => {
     expect(root.getAttribute('data-state')).toBe('hidden');
   });
 
-  it('keeps the line and the arrow in the frame\'s own units when the Essence is zoomed to fit the screen', () => {
-    // DLV-969 (owner, 2026-11-04): /welcome and locked pages scale the Essence with CSS zoom; on-screen boxes shrink with
-    // it but the drawing does not, so measurements are divided by the scale (here 0.5: 400px on screen, 800px own width).
-    const { fixture, resized } = renderWithObservers();
-    const frame = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.essence-stairs-frame')!;
-    Object.defineProperty(frame, 'offsetWidth', { configurable: true, value: 800 });
-    resized();
-    const traveller = (fixture.componentInstance as unknown as { traveller(): StairTraveller }).traveller();
-    expect(traveller.route).toBe('M0 488 H200 V360 H400 V232 H600 V104 H800');
-    // Same proportions as unzoomed (the one-pixel rest before each corner is a smaller share of a longer line).
-    [16.7, 44.4, 72.1, 100].forEach((stop, index) => expect(traveller.stops[index]).toBeCloseTo(stop, 0));
-    expect(traveller.stops.at(-1)).toBe(100);
-  });
+  it(
+    "keeps the line and the arrow in the frame's own units when the Essence is zoomed to " +
+      'fit the screen',
+    () => {
+      // DLV-969 (owner, 2026-11-04): /welcome and locked pages scale the Essence with CSS zoom;
+      // on-screen boxes shrink with it but the drawing does not, so measurements are divided by the
+      // scale (here 0.5: 400px on screen, 800px own width).
+      const { fixture, resized } = renderWithObservers();
+      const frame = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+        '.essence-stairs-frame',
+      )!;
+      Object.defineProperty(frame, 'offsetWidth', { configurable: true, value: 800 });
+      resized();
+      const traveller = (
+        fixture.componentInstance as unknown as { traveller(): StairTraveller }
+      ).traveller();
+      expect(traveller.route).toBe('M0 488 H200 V360 H400 V232 H600 V104 H800');
+      // Same proportions as unzoomed (the one-pixel rest before each corner is a smaller share of a
+      // longer line).
+      [16.7, 44.4, 72.1, 100].forEach((stop, index) =>
+        expect(traveller.stops[index]).toBeCloseTo(stop, 0),
+      );
+      expect(traveller.stops.at(-1)).toBe(100);
+    },
+  );
 
   it('sends one arrow along the whole line, stopping where each step ends', () => {
     const { fixture } = renderWithObservers();
-    const traveller = (fixture.componentInstance as unknown as { traveller(): StairTraveller }).traveller();
+    const traveller = (
+      fixture.componentInstance as unknown as { traveller(): StairTraveller }
+    ).traveller();
     expect(traveller.route).toBe('M0 244 H100 V180 H200 V116 H300 V52 H400');
     // Treads of 100px and risers of 64px: steps end at 100, 264 and 428 of 592px. The arrow rests
     // at the end of each step, a pixel short of the corner, so it points right, not up.
     expect(traveller.stops).toEqual([16.7, 44.4, 72.1, 100]);
     // Each step's dot sits mid-tread: 50, 214, 378 and 542 of 592px.
     expect(traveller.dots).toEqual([8.4, 36.1, 63.9, 91.6]);
-    const arrow = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.essence-traveller')!;
+    const arrow = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.essence-traveller',
+    )!;
     expect([0, 1, 2, 3].map((index) => arrow.style.getPropertyValue(`--stop-${index}`))).toEqual([
       '16.7%',
       '44.4%',
@@ -196,7 +223,12 @@ describe('EssenceSteps', () => {
 
   it('makes "Look ahead" the larger, final label', () => {
     const labels = [...render().querySelectorAll('.essence-step-label')];
-    expect(labels.map((label) => label.classList.contains('is-final'))).toEqual([false, false, false, true]);
+    expect(labels.map((label) => label.classList.contains('is-final'))).toEqual([
+      false,
+      false,
+      false,
+      true,
+    ]);
   });
 
   it('drops the drawn line when the steps stack, and redraws it when they climb again', () => {
@@ -221,7 +253,9 @@ describe('EssenceSteps', () => {
     expect(root.getAttribute('data-state')).toBe('hidden');
     expect(root.querySelector('.essence-line')).toBeNull();
     expect(
-      [...root.querySelectorAll<HTMLElement>('.essence-growth li')].map((line) => line.style.getPropertyValue('--phrase')),
+      [...root.querySelectorAll<HTMLElement>('.essence-growth li')].map((line) =>
+        line.style.getPropertyValue('--phrase'),
+      ),
     ).toEqual(['0', '1', '2']);
     fixture.componentRef.setInput('play', true);
     fixture.detectChanges();
@@ -274,7 +308,9 @@ describe('EssenceSteps', () => {
     expect(root.querySelectorAll('.essence-dot .essence-pulse')).toHaveLength(4);
     // Each pulse leaves its dot as the running arrow passes it.
     expect(
-      [...root.querySelectorAll<HTMLElement>('.essence-stairs > li')].map((step) => step.style.getPropertyValue('--pulse-at')),
+      [...root.querySelectorAll<HTMLElement>('.essence-stairs > li')].map((step) =>
+        step.style.getPropertyValue('--pulse-at'),
+      ),
     ).toEqual(['168ms', '722ms', '1278ms', '1832ms']);
     const pulse = root.querySelector('.essence-pulse');
     fixture.componentRef.setInput('loop', 2);
@@ -282,29 +318,36 @@ describe('EssenceSteps', () => {
     expect(root.querySelector('.essence-pulse')).not.toBe(pulse);
   });
 
-  it('runs the arrow up the whole staircase in one go on a loop round, taking each step colour', () => {
-    const animate = vi.fn();
-    const original = HTMLElement.prototype.animate;
-    HTMLElement.prototype.animate = animate as unknown as typeof HTMLElement.prototype.animate;
-    const { fixture } = renderWithObservers();
-    fixture.componentRef.setInput('loop', 1);
-    fixture.detectChanges();
-    TestBed.tick();
-    expect(animate).toHaveBeenCalledTimes(1);
-    const [frames, options] = animate.mock.calls[0];
-    expect(options).toEqual({ duration: LOOP_DASH_MS, easing: 'linear', fill: 'forwards' });
-    expect(frames.map((frame: Keyframe) => `${frame['offset']}:${frame['offsetDistance']}:${frame['color']}`)).toEqual([
-      '0:0%:var(--identity-wall)',
-      '0.167:16.7%:var(--identity-wall)',
-      '0.167:16.7%:var(--identity-arrow)',
-      '0.444:44.4%:var(--identity-arrow)',
-      '0.444:44.4%:var(--identity-h)',
-      '0.721:72.1%:var(--identity-h)',
-      '0.721:72.1%:var(--identity-ai)',
-      '1:100%:var(--identity-ai)',
-    ]);
-    HTMLElement.prototype.animate = original;
-  });
+  it(
+    'runs the arrow up the whole staircase in one go on a loop round, taking each step ' + 'colour',
+    () => {
+      const animate = vi.fn();
+      const original = HTMLElement.prototype.animate;
+      HTMLElement.prototype.animate = animate as unknown as typeof HTMLElement.prototype.animate;
+      const { fixture } = renderWithObservers();
+      fixture.componentRef.setInput('loop', 1);
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(animate).toHaveBeenCalledTimes(1);
+      const [frames, options] = animate.mock.calls[0];
+      expect(options).toEqual({ duration: LOOP_DASH_MS, easing: 'linear', fill: 'forwards' });
+      expect(
+        frames.map(
+          (frame: Keyframe) => `${frame['offset']}:${frame['offsetDistance']}:${frame['color']}`,
+        ),
+      ).toEqual([
+        '0:0%:var(--identity-wall)',
+        '0.167:16.7%:var(--identity-wall)',
+        '0.167:16.7%:var(--identity-arrow)',
+        '0.444:44.4%:var(--identity-arrow)',
+        '0.444:44.4%:var(--identity-h)',
+        '0.721:72.1%:var(--identity-h)',
+        '0.721:72.1%:var(--identity-ai)',
+        '1:100%:var(--identity-ai)',
+      ]);
+      HTMLElement.prototype.animate = original;
+    },
+  );
 
   it('shows everything finished at once when the reader skips to the end', () => {
     vi.useFakeTimers();

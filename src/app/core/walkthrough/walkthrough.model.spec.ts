@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { PatternProblemV1 } from '../../content/content.models';
 import { codeScrollTop, compactRecorded, hasLineTrace, lineView } from './walkthrough.model';
 
-const variable = (name: string, type: string, value: string, changed = false) => ({ name, type, value, changed });
+const variable = (name: string, type: string, value: string, changed = false) => ({
+  name,
+  type,
+  value,
+  changed,
+});
 
 /** A two-line trace with an array local, an index and a node, in Python only. */
 function problem(): PatternProblemV1 {
@@ -18,7 +23,12 @@ function problem(): PatternProblemV1 {
       variables: [
         variable('values', 'array', '[4,7]', true),
         variable('i', 'integer', '1', true),
-        variable('node', 'object', '{"val":9,"left":null,"right":{"val":3,"left":null,"right":null}}', true),
+        variable(
+          'node',
+          'object',
+          '{"val":9,"left":null,"right":{"val":3,"left":null,"right":null}}',
+          true,
+        ),
       ],
       rows: [],
     },
@@ -45,7 +55,14 @@ function problem(): PatternProblemV1 {
     complexity: { time: 'O(n)', space: 'O(1)', why: '' },
     fixtures: [{ id: 'first', label: 'First', input: 'values = [4,7]', expectedOutput: '7' }],
     implementations: [
-      { language: 'python', title: 'Python', lines: [{ id: 'p1', text: 'values = [4, 7]' }, { id: 'p2', text: 'return 7' }] },
+      {
+        language: 'python',
+        title: 'Python',
+        lines: [
+          { id: 'p1', text: 'values = [4, 7]' },
+          { id: 'p2', text: 'return 7' },
+        ],
+      },
     ],
     trace: {
       schemaVersion: 'guided-trace/v1',
@@ -54,7 +71,12 @@ function problem(): PatternProblemV1 {
       invariant: '',
       legend: [],
       events,
-      languagePaths: { python: [{ sourceAnchor: 'p1', eventIndex: 0 }, { sourceAnchor: 'p2', eventIndex: 1 }] },
+      languagePaths: {
+        python: [
+          { sourceAnchor: 'p1', eventIndex: 0 },
+          { sourceAnchor: 'p2', eventIndex: 1 },
+        ],
+      },
     },
   } as unknown as PatternProblemV1;
 }
@@ -62,7 +84,9 @@ function problem(): PatternProblemV1 {
 describe('walkthrough model', () => {
   it('reads tree and list nodes as their values, keeping other values', () => {
     expect(compactRecorded('{"val":9,"left":null,"right":null}')).toBe('node(9)');
-    expect(compactRecorded('[{"Val":3,"Left":"<main.TreeNode>","Next":null},{"value":4}]')).toBe('[node(3), node(4)]');
+    expect(compactRecorded('[{"Val":3,"Left":"<main.TreeNode>","Next":null},{"value":4}]')).toBe(
+      '[node(3), node(4)]',
+    );
     expect(compactRecorded('{"a":1,"b":[2,3]}')).toBe('{a: 1, b: [2, 3]}');
     expect(compactRecorded('["x","y"]')).toBe('["x", "y"]');
     expect(compactRecorded('42')).toBe('42');
@@ -93,7 +117,10 @@ describe('walkthrough model', () => {
     const last = lineView(problem(), problem().fixtures[0], 'python', 1);
     expect(last.ran).toEqual(['p1']);
     expect(last.detail).toBe('The loop has seen every value.');
-    expect(last.values.find((value) => value.kind === 'result')).toMatchObject({ value: '7', changed: true });
+    expect(last.values.find((value) => value.kind === 'result')).toMatchObject({
+      value: '7',
+      changed: true,
+    });
   });
 
   it('knows when an example has no line trace in a language', () => {
@@ -108,6 +135,8 @@ describe('walkthrough model', () => {
     expect(codeScrollTop(box, 400, 24)).toBeNull();
     expect(codeScrollTop(box, 400, 24, { top: 0, bottom: 300 })).toBe(300);
     // Hidden under the pinned header at the top: move down.
-    expect(codeScrollTop({ scrollTop: 200, clientHeight: 560 }, 220, 24, { top: 100, bottom: 560 })).toBe(0);
+    expect(
+      codeScrollTop({ scrollTop: 200, clientHeight: 560 }, 220, 24, { top: 100, bottom: 560 }),
+    ).toBe(0);
   });
 });

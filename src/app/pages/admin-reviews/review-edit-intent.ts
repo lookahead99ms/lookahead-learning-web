@@ -1,8 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 
 /**
- * DLV-971 (owner, 2026-11-06): Edit on an own New item on Support tickets and feedback hands the item id to the Give feedback
- * instance, which lives on the other tab of /support. The id is kept until that instance takes it on init.
+ * DLV-971 (owner, 2026-11-06): Edit on an own New item on Support tickets and feedback hands the
+ * item id to the Give feedback instance, which lives on the other tab of /support. The id is kept
+ * until that instance takes it on init.
  */
 @Injectable({ providedIn: 'root' })
 export class ReviewEditIntent {

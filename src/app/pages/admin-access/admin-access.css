@@ -180,7 +180,8 @@ h3 {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
-/* Refresh and, for the owner, Clean up admissions side by side at the heading's right (owner, 2026-11-07). */
+/* Refresh and, for the owner, Clean up admissions side by side at the heading's right (owner,
+   2026-11-07). */
 .heading-actions {
   display: flex;
   flex-wrap: wrap;
@@ -392,7 +393,8 @@ button:disabled {
   color: var(--warning);
   font-weight: 650;
 }
-/* Course access when the role already includes every course (DLV-999): the explanation first, the controls muted. */
+/* Course access when the role already includes every course (DLV-999): the explanation first, the
+   controls muted. */
 .included-note {
   margin: 0 0 12px;
   padding: 12px 14px;
@@ -675,8 +677,9 @@ button:disabled {
   font-size: 14px;
   font-weight: 700;
 }
-/* Saved assignments read as table rows when the column has room: person (name over email), state, access,
-   then the actions stacked on the right (DLV-969: by the column's width, not the window's). */
+/* Saved assignments read as table rows when the column has room: person (name over email), state,
+   access, then the actions stacked on the right (DLV-969: by the column's width, not the window's).
+*/
 @container access-panel (min-width: 640px) {
   .assignment-text {
     display: grid;
@@ -804,8 +807,8 @@ button:disabled {
   line-height: 1.5;
 }
 
-/* DLV-969 (owner, DEV test 2026-11-04): Waiting for access → DEV access | Purchase requests, in the switcher's look:
-   underlined tabs with a count pill, under the section heading. */
+/* DLV-969 (owner, DEV test 2026-11-04): Waiting for access → DEV access | Purchase requests, in the
+   switcher's look: underlined tabs with a count pill, under the section heading. */
 .waiting-tabs {
   display: flex;
   gap: 4px;
@@ -904,7 +907,8 @@ button:disabled {
   font-size: 13px;
   font-weight: 700;
 }
-/* A menu beside its button (owner, 2026-11-09): a fixed 12px between them, the same height, centred. */
+/* A menu beside its button (owner, 2026-11-09): a fixed 12px between them, the same height,
+   centred. */
 .admit-cell {
   display: flex;
   align-items: center;
@@ -1133,9 +1137,10 @@ button:disabled {
   }
 }
 
-/* Owner, 2026-11-08: the person panel. Manage access on a row opens it in place of the list: a heading with the
-   gate state, Manage DEV admission (one card), Manage platform access (three numbered cards), then the save bar.
-   Manage admission, Downgrade and Review & confirm are dialogs over the page. */
+/* Owner, 2026-11-08: the person panel. Manage access on a row opens it in place of the list: a
+   heading with the gate state, Manage DEV admission (one card), Manage platform access (three
+   numbered cards), then the save bar. Manage admission, Downgrade and Review & confirm are dialogs
+   over the page. */
 .person-panel {
   display: grid;
   gap: 8px;
@@ -1513,7 +1518,8 @@ button:disabled {
   }
 }
 
-/* DLV-969: the first method shows, the rest open on "+N" (Google, then Email and password, Apple, GitHub as Cognito adds them). */
+/* DLV-969: the first method shows, the rest open on "+N" (Google, then Email and password, Apple,
+   GitHub as Cognito adds them). */
 .sign-in-labels .more-methods {
   display: inline-flex;
   flex-wrap: wrap;

@@ -3,7 +3,18 @@
   color: var(--text-strong);
   min-width: 0;
 }
-.sidebar-header.visually-hidden { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+.sidebar-header.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 .sidebar-header {
   display: flex;
   align-items: center;
@@ -60,7 +71,9 @@ h2 {
   text-decoration: none;
   overflow-wrap: anywhere;
 }
-.heading-outline a:hover { color: var(--accent-strong); }
+.heading-outline a:hover {
+  color: var(--accent-strong);
+}
 .heading-outline a[aria-current='location'] {
   color: var(--accent-strong);
   border-bottom-color: var(--accent-strong);

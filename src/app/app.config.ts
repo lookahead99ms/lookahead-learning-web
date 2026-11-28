@@ -1,6 +1,11 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { provideRouter, TitleStrategy, UrlSerializer, withInMemoryScrolling } from '@angular/router';
+import {
+  provideRouter,
+  TitleStrategy,
+  UrlSerializer,
+  withInMemoryScrolling,
+} from '@angular/router';
 import { routes } from './app.routes';
 import { CatalogUrlSerializer } from './core/catalog-url';
 import { PageTitleStrategy } from './core/page-meta/page-title-strategy';

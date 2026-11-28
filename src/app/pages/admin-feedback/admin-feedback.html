@@ -10,7 +10,10 @@
     } @else if (state() === 'denied') {
       <section class="state-panel" role="alert">
         <h2>Feedback access required</h2>
-        <p>This account is not set up to see tickets and feedback. Ask the platform owner for access.</p>
+        <p
+          >This account is not set up to see tickets and feedback. Ask the platform owner for
+          access.</p
+        >
       </section>
     } @else {
       <section class="panel" id="feedback-backlog" aria-labelledby="feedback-heading">
@@ -18,20 +21,36 @@
           <div class="title-row">
             <div>
               <h1 id="feedback-heading">Support tickets and feedback</h1>
-              </div>
+            </div>
           </div>
           @if (seesAll()) {
             <div class="view-tabs" role="group" aria-label="View">
-              <button type="button" [attr.aria-pressed]="view() === 'all' && !kindFilter()" (click)="showView('all')">
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'all' && !kindFilter()"
+                (click)="showView('all')"
+              >
                 All <span class="tab-count">{{ items().length }}</span>
               </button>
-              <button type="button" [attr.aria-pressed]="view() === 'all' && kindFilter() === 'ticket'" (click)="showView('all', 'ticket')">
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'all' && kindFilter() === 'ticket'"
+                (click)="showView('all', 'ticket')"
+              >
                 Support tickets <span class="tab-count">{{ ticketItems().length }}</span>
               </button>
-              <button type="button" [attr.aria-pressed]="view() === 'all' && kindFilter() === 'feedback'" (click)="showView('all', 'feedback')">
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'all' && kindFilter() === 'feedback'"
+                (click)="showView('all', 'feedback')"
+              >
                 Feedback <span class="tab-count">{{ feedbackItems().length }}</span>
               </button>
-              <button type="button" [attr.aria-pressed]="view() === 'mine'" (click)="showView('mine')">
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'mine'"
+                (click)="showView('mine')"
+              >
                 Mine <span class="tab-count">{{ ownItems().length }}</span>
               </button>
             </div>
@@ -51,7 +70,13 @@
           <div class="filters">
             <label class="search"
               >Search
-              <input type="search" name="search" placeholder="Search by key or words…" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+              <input
+                type="search"
+                name="search"
+                placeholder="Search by key or words…"
+                [ngModel]="search()"
+                (ngModelChange)="search.set($event)"
+              />
             </label>
             <label
               >Kind
@@ -72,7 +97,11 @@
             </label>
             <label
               >Status
-              <select name="status" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+              <select
+                name="status"
+                [ngModel]="statusFilter()"
+                (ngModelChange)="statusFilter.set($event)"
+              >
                 <option value="">All statuses</option>
                 @for (status of statuses; track status.id) {
                   <option [value]="status.id">{{ status.label }}</option>
@@ -87,12 +116,17 @@
                   <option [value]="category.id">{{ category.label }}</option>
                 }
                 @for (type of requestTypes; track type.id) {
-                  <option [value]="ticketTypePrefix + type.id">Support ticket: {{ type.label }}</option>
+                  <option [value]="ticketTypePrefix + type.id"
+                    >Support ticket: {{ type.label }}</option
+                  >
                 }
               </select>
             </label>
           </div>
-          <p class="result-count" role="status">{{ rows().length }} of {{ items().length }} items · sorted by last update, newest first</p>
+          <p class="result-count" role="status"
+            >{{ rows().length }} of {{ items().length }} items · sorted by last update, newest
+            first</p
+          >
           @if (rows().length) {
             <div class="table-scroll" role="region" aria-label="Backlog" tabindex="0">
               <table class="backlog">
@@ -115,7 +149,9 @@
                     <th scope="col">Status</th>
                     <th scope="col" class="sticky-right sticky-ticket">Ticket</th>
                     <th scope="col" class="right sticky-right sticky-updated">Updated</th>
-                    <th scope="col" class="sticky-right sticky-act"><span class="visually-hidden">Open</span></th>
+                    <th scope="col" class="sticky-right sticky-act"
+                      ><span class="visually-hidden">Open</span></th
+                    >
                   </tr>
                 </thead>
                 <tbody>
@@ -130,12 +166,22 @@
                       (keydown)="onRowKey($event, item.id, row)"
                     >
                       <td class="key sticky-left">
-                        <span class="kind-badge" [class.ticket]="isRequest(item)">{{ kindLabel(item) }}</span>&ngsp;<span class="item-id">{{ item.id }}</span>
+                        <span class="kind-badge" [class.ticket]="isRequest(item)">{{
+                          kindLabel(item)
+                        }}</span
+                        >&ngsp;<span class="item-id">{{ item.id }}</span>
                       </td>
-                      <td class="summary"><span class="summary-text">{{ item.title }}</span>&ngsp;<span class="summary-meta">{{ item.page }}</span></td>
+                      <td class="summary"
+                        ><span class="summary-text">{{ item.title }}</span
+                        >&ngsp;<span class="summary-meta">{{ item.page }}</span></td
+                      >
                       <td>{{ item.reviewerName }}</td>
                       <td>{{ typeLabel(item) }}</td>
-                      <td><span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span></td>
+                      <td
+                        ><span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{
+                          statusLabel(item)
+                        }}</span></td
+                      >
                       <td class="ticket sticky-right sticky-ticket">
                         @if (item.ticketId) {
                           {{ item.ticketId }}
@@ -143,9 +189,19 @@
                           <span class="dim">—</span>
                         }
                       </td>
-                      <td class="updated sticky-right sticky-updated">{{ updated(item.updatedAt) }}</td>
+                      <td class="updated sticky-right sticky-updated">{{
+                        updated(item.updatedAt)
+                      }}</td>
                       <td class="act sticky-right sticky-act">
-                        <a class="new-tab" [routerLink]="['/admin/feedback', item.id]" target="_blank" rel="noopener" [attr.aria-label]="'Open ' + item.id + ' in a new tab'" title="Open in a new tab">↗</a>
+                        <a
+                          class="new-tab"
+                          [routerLink]="['/admin/feedback', item.id]"
+                          target="_blank"
+                          rel="noopener"
+                          [attr.aria-label]="'Open ' + item.id + ' in a new tab'"
+                          title="Open in a new tab"
+                          >↗</a
+                        >
                       </td>
                     </tr>
                   }
@@ -157,7 +213,12 @@
           }
           @if (nextBefore()) {
             <div class="older">
-              <button type="button" class="secondary" [disabled]="loadingOlder()" (click)="loadOlder()">
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="loadingOlder()"
+                (click)="loadOlder()"
+              >
                 {{ loadingOlder() ? 'Loading older days…' : 'Show older days' }}
               </button>
             </div>
@@ -168,7 +229,8 @@
   </div>
 </main>
 
-<!-- The item on top of the list; the page behind it does not scroll (html.feedback-dialog-open). -->
+<!-- The item on top of the list; the page behind it does not scroll (html.feedback-dialog-open).
+-->
 <dialog
   #itemDialog
   appScrollLock
@@ -182,10 +244,18 @@
   @if (openId(); as id) {
     <div class="dialog-box">
       <div class="dialog-bar">
-        <span class="kind-badge" [class.ticket]="id.startsWith('SUP-')">{{ id.startsWith('SUP-') ? 'Ticket' : 'Feedback' }}</span>
+        <span class="kind-badge" [class.ticket]="id.startsWith('SUP-')">{{
+          id.startsWith('SUP-') ? 'Ticket' : 'Feedback'
+        }}</span>
         <span class="item-key">{{ id }}</span>
         <span class="grow"></span>
-        <a class="secondary small" [routerLink]="['/admin/feedback', id]" target="_blank" rel="noopener">Open in new tab ↗</a>
+        <a
+          class="secondary small"
+          [routerLink]="['/admin/feedback', id]"
+          target="_blank"
+          rel="noopener"
+          >Open in new tab ↗</a
+        >
         <button type="button" class="close" aria-label="Close" (click)="close()">✕</button>
       </div>
       <app-feedback-item [itemId]="id" [viewer]="viewer()" (changed)="onChanged($event)" />

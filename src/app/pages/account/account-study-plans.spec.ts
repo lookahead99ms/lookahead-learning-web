@@ -62,56 +62,67 @@ describe('Manage account learning summary', () => {
     expect(store.active()).toBeNull();
     expect(transport).not.toHaveBeenCalled();
   });
-  it('renders authoritative progress and schedule with a native link to the exact owned plan', () => {
-    store.plans.set([structuredClone(plan)]);
-    store.planSummariesState.set('ready');
-    const element: HTMLElement = render().nativeElement;
-    expect(element.textContent).toContain('1 saved study plan');
-    const create = element.querySelector('.summary-heading .create-plan-action');
-    expect(create?.textContent?.trim()).toBe('Create study plan');
-    expect(create?.getAttribute('href')).toBe('/study-plan?create=1');
-    expect(element.querySelector('h3')?.textContent).toBe('Prepare Java');
-    expect(element.querySelector('.plan-progress')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      '2 of 8 sessions completed',
-    );
-    const meter = element.querySelector<HTMLElement>('.plan-meter')!;
-    expect(meter.getAttribute('aria-hidden')).toBe('true');
-    expect(meter.querySelector<HTMLElement>('span')!.style.inlineSize).toBe('25%');
-    expect(element.querySelector('.plan-heading a')?.getAttribute('href')).toBe('/study-plan?plan=owned-plan');
-    expect(element.querySelector('.plan-heading a')?.getAttribute('aria-label')).toBe('Open plan: Prepare Java');
-    expect(element.querySelector('time')?.getAttribute('datetime')).toBe(plan.updatedAt);
-    expect(element.textContent).toContain('14 days');
-    expect(element.textContent).toContain('45 min');
-    expect(element.textContent).not.toMatch(/Active|Lifecycle/);
-    expect(store.active()).toBeNull();
-    expect(transport).not.toHaveBeenCalled();
-  });
-  it('preserves multiple plans and does not infer progress from old dates or unavailable metadata', () => {
-    store.planSummariesState.set('ready');
-    store.plans.set([
-      plan,
-      {
-        ...plan,
-        planId: 'second & owned',
-        goal: 'Prepare architecture',
-        updatedAt: '2020-01-01T00:00:00Z',
-        card: { ...plan.card!, metadataStatus: 'unavailable' },
-      },
-      { ...plan, planId: 'legacy', goal: 'Legacy plan', card: undefined },
-    ]);
-    const element: HTMLElement = render().nativeElement;
-    expect(element.textContent).toContain('3 saved study plans');
-    expect(element.querySelectorAll('li')).toHaveLength(3);
-    expect(element.querySelectorAll('.navigation-card [data-card-primary]')).toHaveLength(3);
-    expect(element.querySelector('.navigation-card a a')).toBeNull();
-    expect(element.querySelectorAll('.unavailable')).toHaveLength(2);
-    expect(element.querySelectorAll('.plan-heading a')[1].getAttribute('href')).toBe(
-      '/study-plan?plan=second%20%26%20owned',
-    );
-    expect(element.querySelectorAll('li')[1].querySelectorAll('dt')).toHaveLength(1);
-    expect(element.querySelectorAll('li')[1].textContent).not.toContain('completed');
-    expect(store.active()).toBeNull();
-  });
+  it(
+    'renders authoritative progress and schedule with a native link to the exact owned ' + 'plan',
+    () => {
+      store.plans.set([structuredClone(plan)]);
+      store.planSummariesState.set('ready');
+      const element: HTMLElement = render().nativeElement;
+      expect(element.textContent).toContain('1 saved study plan');
+      const create = element.querySelector('.summary-heading .create-plan-action');
+      expect(create?.textContent?.trim()).toBe('Create study plan');
+      expect(create?.getAttribute('href')).toBe('/study-plan?create=1');
+      expect(element.querySelector('h3')?.textContent).toBe('Prepare Java');
+      expect(
+        element.querySelector('.plan-progress')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe('2 of 8 sessions completed');
+      const meter = element.querySelector<HTMLElement>('.plan-meter')!;
+      expect(meter.getAttribute('aria-hidden')).toBe('true');
+      expect(meter.querySelector<HTMLElement>('span')!.style.inlineSize).toBe('25%');
+      expect(element.querySelector('.plan-heading a')?.getAttribute('href')).toBe(
+        '/study-plan?plan=owned-plan',
+      );
+      expect(element.querySelector('.plan-heading a')?.getAttribute('aria-label')).toBe(
+        'Open plan: Prepare Java',
+      );
+      expect(element.querySelector('time')?.getAttribute('datetime')).toBe(plan.updatedAt);
+      expect(element.textContent).toContain('14 days');
+      expect(element.textContent).toContain('45 min');
+      expect(element.textContent).not.toMatch(/Active|Lifecycle/);
+      expect(store.active()).toBeNull();
+      expect(transport).not.toHaveBeenCalled();
+    },
+  );
+  it(
+    'preserves multiple plans and does not infer progress from old dates or unavailable ' +
+      'metadata',
+    () => {
+      store.planSummariesState.set('ready');
+      store.plans.set([
+        plan,
+        {
+          ...plan,
+          planId: 'second & owned',
+          goal: 'Prepare architecture',
+          updatedAt: '2020-01-01T00:00:00Z',
+          card: { ...plan.card!, metadataStatus: 'unavailable' },
+        },
+        { ...plan, planId: 'legacy', goal: 'Legacy plan', card: undefined },
+      ]);
+      const element: HTMLElement = render().nativeElement;
+      expect(element.textContent).toContain('3 saved study plans');
+      expect(element.querySelectorAll('li')).toHaveLength(3);
+      expect(element.querySelectorAll('.navigation-card [data-card-primary]')).toHaveLength(3);
+      expect(element.querySelector('.navigation-card a a')).toBeNull();
+      expect(element.querySelectorAll('.unavailable')).toHaveLength(2);
+      expect(element.querySelectorAll('.plan-heading a')[1].getAttribute('href')).toBe(
+        '/study-plan?plan=second%20%26%20owned',
+      );
+      expect(element.querySelectorAll('li')[1].querySelectorAll('dt')).toHaveLength(1);
+      expect(element.querySelectorAll('li')[1].textContent).not.toContain('completed');
+      expect(store.active()).toBeNull();
+    },
+  );
   it.each([
     [-1, 8],
     [9, 8],

@@ -348,8 +348,9 @@ export function filterHandsOnDsaIndexGroups(
   matchPatternText = true,
 ): HandsOnDsaIndexGroup[] {
   const normalizedQuery = query.trim().toLowerCase();
-  // Full Library ('782', and the retired '730' value) means every released problem, so a catalogue that
-  // grows past 782 (DLV-965 Approach-N problems) stays visible; the numbered tiers are rank cut-offs.
+  // Full Library ('782', and the retired '730' value) means every released problem, so a catalogue
+  // that grows past 782 (DLV-965 Approach-N problems) stays visible; the numbered tiers are rank
+  // cut-offs.
   const scopeLimit = scope === '782' || scope === '730' ? Number.POSITIVE_INFINITY : Number(scope);
   const filtered = groups.flatMap((group) => {
     const groupMatches =
@@ -424,7 +425,12 @@ function problemComparator(
             ? -1
             : (leftOrder - rightOrder) * (sort.endsWith('-descending') ? -1 : 1);
       // Approach-N problems share their original's interview rank (DLV-965): keep approach order.
-      if (result === 0 && field === 'interviewRank' && left.studyOrder != null && right.studyOrder != null) {
+      if (
+        result === 0 &&
+        field === 'interviewRank' &&
+        left.studyOrder != null &&
+        right.studyOrder != null
+      ) {
         result = left.studyOrder - right.studyOrder;
       }
     } else if (sort === 'difficulty-ascending') {

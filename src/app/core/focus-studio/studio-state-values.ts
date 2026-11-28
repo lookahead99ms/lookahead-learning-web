@@ -134,7 +134,9 @@ export class StudioStateValues {
   readonly name = input.required<string>();
   readonly active = input<number[]>([]);
   readonly showCurrentLabel = input(true);
-  /** 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs. */
+  /**
+   * 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs.
+   */
   readonly scale = input<'studio' | 'player'>('studio');
   protected readonly collection = computed(() =>
     Array.isArray(this.value()) ? (this.value() as unknown[]) : null,

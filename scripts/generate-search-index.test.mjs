@@ -23,7 +23,7 @@ async function testRoot(context) {
   return root;
 }
 
-test('uses canonical DSA identity and metadata without indexing stale placeholder guidance', async (context) => {
+test('uses canonical DSA identity and metadata, with no stale placeholders', async (context) => {
   const root = await testRoot(context);
   await writeJson(root, 'learn/catalog.json', [
     { id: 'algorithmic-patterns', title: 'Algorithmic Patterns', available: true },
@@ -114,7 +114,7 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   assert.equal(overview.moduleCount, 2);
 });
 
-test('indexes special catalog experiences as tools and classifies every practice format', async (context) => {
+test('indexes special catalog experiences as tools; classifies each practice', async (context) => {
   const root = await testRoot(context);
   await writeJson(root, 'grow/catalog.json', [
     { id: 'sample', title: 'Sample course', available: true },
@@ -268,32 +268,35 @@ async function addCourse(root, path, chips) {
   ]);
 }
 
-test('Grow previews use normalized authored topics without fetching full courses in the browser', async (context) => {
-  const root = await testRoot(context);
-  await addCourse(root, 'grow', [' REST ', 'GraphQL', 'rest', '', 'CSRF', 'Rate limiting']);
-  await generateSearchIndex(root);
-  const [course, unavailable] = JSON.parse(
-    await readFile(join(root, 'grow/catalog-overview.json')),
-  );
-  assert.deepEqual(course.topicPreview, ['REST', 'GraphQL', 'CSRF', 'Rate limiting']);
-  assert.equal(course.moduleCount, 1);
-  assert.equal(course.questionCount, 1);
-  assert.deepEqual(unavailable.topicPreview, []);
-  const detail = JSON.parse(
-    await readFile(join(root, 'details/grow/sample/intro/sample-question.json'), 'utf8'),
-  );
-  assert.equal(detail.interviewAnswer, 'Describe the contract.');
-  const shardText = await readFile(join(root, 'indexes/grow.json'), 'utf8');
-  const shard = JSON.parse(shardText);
-  const question = shard.documents.find(({ id }) => id === 'grow:sample:sample-question');
-  assert.equal(question.preview, '');
-  assert.doesNotMatch(shardText, /Describe the contract/);
-  assert.doesNotMatch(shardText, /followUps|explanation|solutions/);
-  await assert.rejects(readFile(join(root, 'search-index.json')), { code: 'ENOENT' });
-  await assert.rejects(readFile(join(root, 'interview-question-index.json')), { code: 'ENOENT' });
-});
+test(
+  'Grow previews use normalized authored topics without fetching full courses in the ' + 'browser',
+  async (context) => {
+    const root = await testRoot(context);
+    await addCourse(root, 'grow', [' REST ', 'GraphQL', 'rest', '', 'CSRF', 'Rate limiting']);
+    await generateSearchIndex(root);
+    const [course, unavailable] = JSON.parse(
+      await readFile(join(root, 'grow/catalog-overview.json')),
+    );
+    assert.deepEqual(course.topicPreview, ['REST', 'GraphQL', 'CSRF', 'Rate limiting']);
+    assert.equal(course.moduleCount, 1);
+    assert.equal(course.questionCount, 1);
+    assert.deepEqual(unavailable.topicPreview, []);
+    const detail = JSON.parse(
+      await readFile(join(root, 'details/grow/sample/intro/sample-question.json'), 'utf8'),
+    );
+    assert.equal(detail.interviewAnswer, 'Describe the contract.');
+    const shardText = await readFile(join(root, 'indexes/grow.json'), 'utf8');
+    const shard = JSON.parse(shardText);
+    const question = shard.documents.find(({ id }) => id === 'grow:sample:sample-question');
+    assert.equal(question.preview, '');
+    assert.doesNotMatch(shardText, /Describe the contract/);
+    assert.doesNotMatch(shardText, /followUps|explanation|solutions/);
+    await assert.rejects(readFile(join(root, 'search-index.json')), { code: 'ENOENT' });
+    await assert.rejects(readFile(join(root, 'interview-question-index.json')), { code: 'ENOENT' });
+  },
+);
 
-test('uses authored summaries without repeating a reference answer in discovery', async (context) => {
+test('uses authored summaries without repeating a reference answer in search', async (context) => {
   const root = await testRoot(context);
   await addCourse(root, 'learn');
   await writeJson(root, 'learn/sample/modules/intro.json', [
@@ -339,61 +342,65 @@ test('Grow falls back to real module titles when authored topics are absent', as
   assert.deepEqual(course.topicPreview, ['Introduction']);
 });
 
-test('counts lessons and questions separately from lesson/practice module containers and topic highlights', async (context) => {
-  const root = await testRoot(context);
-  await addCourse(root, 'grow');
-  await writeJson(root, 'grow/sample/course.json', {
-    id: 'sample',
-    path: 'grow',
-    title: 'Sample course',
-    chips: ['Contracts', 'State', 'Recovery'],
-    learningUnits: [{ id: 'intro', theoryModuleId: 'intro', practiceModuleId: 'intro-practice' }],
-    modules: [
-      { id: 'intro', title: 'Introduction', order: 1 },
-      { id: 'intro-practice', title: 'Introduction Practice', order: 2 },
-    ],
-  });
-  const base = { difficulty: 'Beginner', tags: [], followUps: [] };
-  await writeJson(root, 'grow/sample/modules/intro.json', [
-    {
-      ...base,
-      id: 'lesson',
-      moduleId: 'intro',
-      title: 'Read the lesson',
-      contentType: 'theory',
-      sections: [{ heading: 'Contracts', body: ['State the invariant.'] }],
-    },
-    {
-      ...base,
-      id: 'interview',
-      moduleId: 'intro',
-      title: 'Explain the invariant',
-      contentType: 'q-and-a',
-      interviewAnswer: 'State the invariant and its boundary.',
-    },
-  ]);
-  await writeJson(root, 'grow/sample/modules/intro-practice.json', [
-    {
-      ...base,
-      id: 'practice',
-      moduleId: 'intro-practice',
-      title: 'Apply the invariant',
-      interviewAnswer: 'Apply the invariant at the production boundary.',
-    },
-  ]);
-  await generateSearchIndex(root);
-  const [course] = JSON.parse(await readFile(join(root, 'grow/catalog-overview.json')));
-  const shard = JSON.parse(await readFile(join(root, 'indexes/grow.json'), 'utf8'));
-  const lesson = shard.documents.find((item) => item.contentId === 'lesson');
-  const practice = shard.documents.find((item) => item.contentId === 'practice');
-  assert.deepEqual(practice.studyRelatedLessonIds, ['grow:sample:lesson']);
-  assert.equal(practice.studySequence, lesson.studySequence);
-  assert.equal(lesson.studyRelatedLessonIds, undefined);
-  assert.equal(course.lessonCount, 1);
-  assert.equal(course.questionCount, 2);
-  assert.equal(course.moduleCount, 2);
-  assert.deepEqual(course.topicPreview, ['Contracts', 'State', 'Recovery']);
-});
+test(
+  'counts lessons and questions separately from lesson/practice module containers and ' +
+    'topic highlights',
+  async (context) => {
+    const root = await testRoot(context);
+    await addCourse(root, 'grow');
+    await writeJson(root, 'grow/sample/course.json', {
+      id: 'sample',
+      path: 'grow',
+      title: 'Sample course',
+      chips: ['Contracts', 'State', 'Recovery'],
+      learningUnits: [{ id: 'intro', theoryModuleId: 'intro', practiceModuleId: 'intro-practice' }],
+      modules: [
+        { id: 'intro', title: 'Introduction', order: 1 },
+        { id: 'intro-practice', title: 'Introduction Practice', order: 2 },
+      ],
+    });
+    const base = { difficulty: 'Beginner', tags: [], followUps: [] };
+    await writeJson(root, 'grow/sample/modules/intro.json', [
+      {
+        ...base,
+        id: 'lesson',
+        moduleId: 'intro',
+        title: 'Read the lesson',
+        contentType: 'theory',
+        sections: [{ heading: 'Contracts', body: ['State the invariant.'] }],
+      },
+      {
+        ...base,
+        id: 'interview',
+        moduleId: 'intro',
+        title: 'Explain the invariant',
+        contentType: 'q-and-a',
+        interviewAnswer: 'State the invariant and its boundary.',
+      },
+    ]);
+    await writeJson(root, 'grow/sample/modules/intro-practice.json', [
+      {
+        ...base,
+        id: 'practice',
+        moduleId: 'intro-practice',
+        title: 'Apply the invariant',
+        interviewAnswer: 'Apply the invariant at the production boundary.',
+      },
+    ]);
+    await generateSearchIndex(root);
+    const [course] = JSON.parse(await readFile(join(root, 'grow/catalog-overview.json')));
+    const shard = JSON.parse(await readFile(join(root, 'indexes/grow.json'), 'utf8'));
+    const lesson = shard.documents.find((item) => item.contentId === 'lesson');
+    const practice = shard.documents.find((item) => item.contentId === 'practice');
+    assert.deepEqual(practice.studyRelatedLessonIds, ['grow:sample:lesson']);
+    assert.equal(practice.studySequence, lesson.studySequence);
+    assert.equal(lesson.studyRelatedLessonIds, undefined);
+    assert.equal(course.lessonCount, 1);
+    assert.equal(course.questionCount, 2);
+    assert.equal(course.moduleCount, 2);
+    assert.deepEqual(course.topicPreview, ['Contracts', 'State', 'Recovery']);
+  },
+);
 
 test('passes a learning unit card through to the course locator unchanged', async (context) => {
   const root = await testRoot(context);
@@ -423,20 +430,18 @@ test('passes a learning unit card through to the course locator unchanged', asyn
   assert.deepEqual(locator.course.learningUnits[0].card, card);
 });
 
-test('Learn uses authored important topics while Blaze retains its module preview', async (context) => {
+test('Learn uses authored important topics; Blaze keeps its module preview', async (context) => {
   const root = await testRoot(context);
   await addCourse(root, 'learn', [' Runtime contracts ', 'Exceptions', 'runtime contracts']);
   await addCourse(root, 'blaze', ['Do not replace modules']);
   await generateSearchIndex(root);
   const [learnCourse] = JSON.parse(await readFile(join(root, 'learn/catalog-overview.json')));
-  const [blazeCourse] = JSON.parse(
-    await readFile(join(root, 'blaze/catalog-overview.json')),
-  );
+  const [blazeCourse] = JSON.parse(await readFile(join(root, 'blaze/catalog-overview.json')));
   assert.deepEqual(learnCourse.topicPreview, ['Runtime contracts', 'Exceptions']);
   assert.deepEqual(blazeCourse.topicPreview, ['Introduction']);
 });
 
-test('generates only four authored course highlights and available course links', async (context) => {
+test('generates only four authored course highlights and available links', async (context) => {
   const root = await testRoot(context);
   await writeJson(root, 'learn/catalog.json', [
     { id: 'core-java', title: 'Java Foundations', available: true },
@@ -517,7 +522,8 @@ test('reads the app redirect table for retired ids by default', async () => {
 test('reads every redirect entry of a course, not only the first', async () => {
   const { readRetiredCourses, isRetiredDocument } = await import('./generate-search-index.mjs');
   const courses = await readRetiredCourses();
-  // Object-Oriented Design has two entries: one question went to core-java, one to solid-design-patterns.
+  // Object-Oriented Design has two entries: one question went to core-java, one to
+  // solid-design-patterns.
   const oop = courses.filter((course) => course.path === 'learn' && course.courseId === 'oop');
   assert.deepEqual(
     oop.map((course) => course.targetCourseId),
@@ -534,7 +540,10 @@ test('reads every redirect entry of a course, not only the first', async () => {
   assert.equal(isRetiredDocument(document('oop', 'solid-principles'), courses), false);
   // The moved questions stay searchable in the courses they moved to.
   assert.equal(isRetiredDocument(document('core-java', 'java-pass-by-value'), courses), false);
-  assert.equal(isRetiredDocument(document('solid-design-patterns', 'singleton-pattern'), courses), false);
+  assert.equal(
+    isRetiredDocument(document('solid-design-patterns', 'singleton-pattern'), courses),
+    false,
+  );
 });
 
 test('preview text keeps comparison operators and generics that are not HTML tags', () => {
@@ -600,7 +609,9 @@ test('preview text decodes entities once, after tags are removed', () => {
 });
 
 test('compact previews keep operators when they are cut to length', () => {
-  const statement = `Return the number of pairs (i, j) with i<j and nums[i] > nums[j]. ${'More text. '.repeat(40)}`;
+  const statement =
+    `Return the number of pairs (i, j) with i<j and nums[i] > ` +
+    `nums[j]. ${'More text. '.repeat(40)}`;
   const preview = compactPreview(statement);
   assert.ok(
     preview.startsWith('Return the number of pairs (i, j) with i<j and nums[i] > nums[j].'),

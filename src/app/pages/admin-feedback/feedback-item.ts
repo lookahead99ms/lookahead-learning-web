@@ -1,6 +1,16 @@
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { environment } from '../../../environments/environment';
-import { Component, OnDestroy, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -19,11 +29,12 @@ import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 import { kindLabel, momentLabel, statusLabel, statusTone, typeLabel } from './feedback-backlog';
 
 /**
- * DLV-971 (owner, 2026-11-06): one item of Support tickets and feedback in two columns, shared by the backlog's
- * dialog and the item's own page (/admin/feedback/:id). Main: status, title, meta, description, screenshots, history
- * and, for whoever may set the status, the note with Save. Side: the Status select, the details and the Delivery Plan
- * box. Rules unchanged: the owner sets status and note on everything; an admin only on a learner support ticket; a
- * reviewer sees only their own feedback; Edit and Delete on own feedback while New (Edit opens /support).
+ * DLV-971 (owner, 2026-11-06): one item of Support tickets and feedback in two columns, shared by
+ * the backlog's dialog and the item's own page (/admin/feedback/:id). Main: status, title, meta,
+ * description, screenshots, history and, for whoever may set the status, the note with Save. Side:
+ * the Status select, the details and the Delivery Plan box. Rules unchanged: the owner sets status
+ * and note on everything; an admin only on a learner support ticket; a reviewer sees only their own
+ * feedback; Edit and Delete on own feedback while New (Edit opens /support).
  */
 @Component({
   selector: 'app-feedback-item',
@@ -42,8 +53,13 @@ export class FeedbackItemView implements OnDestroy {
   private readonly router = inject(Router);
   private readonly editIntent = inject(ReviewEditIntent);
   private readonly devSession = inject(DevSession);
-  /** Owner decision 2026-11-07: promoting writes the DEV plan, so the button exists on DEV and local only. */
-  protected readonly devOrLocal = computed(() => !environment.production || this.devSession.status() !== null || this.devSession.gated());
+  /**
+   * Owner decision 2026-11-07: promoting writes the DEV plan, so the button exists on DEV and local
+   * only.
+   */
+  protected readonly devOrLocal = computed(
+    () => !environment.production || this.devSession.status() !== null || this.devSession.gated(),
+  );
   protected readonly statuses = reviewStatuses;
   protected readonly kindLabel = kindLabel;
   protected readonly typeLabel = typeLabel;
@@ -66,26 +82,49 @@ export class FeedbackItemView implements OnDestroy {
   protected readonly promoteMessage = signal('');
 
   protected readonly canTriage = computed(() => {
-    const item = this.item(), role = this.who()?.role;
+    const item = this.item(),
+      role = this.who()?.role;
     if (!item) return false;
     return role === 'owner' || (role === 'admin' && isRequest(item));
   });
-  protected readonly canPromote = computed(() => this.devOrLocal() && this.canTriage() && !this.item()?.ticketId);
+  protected readonly canPromote = computed(
+    () => this.devOrLocal() && this.canTriage() && !this.item()?.ticketId,
+  );
   protected readonly canEdit = computed(() => {
     const item = this.item();
-    return !!item && item.reviewerId === this.who()?.reviewerId && !isRequest(item) && item.status === 'new';
+    return (
+      !!item &&
+      item.reviewerId === this.who()?.reviewerId &&
+      !isRequest(item) &&
+      item.status === 'new'
+    );
   });
   /** The history the record carries: when it was opened, and the last change when one followed. */
   protected readonly history = computed(() => {
     const item = this.item();
     if (!item) return [];
-    const rows = [{ what: 'Opened', who: item.reviewerName, when: momentLabel(item.createdAt), extra: item.reference ? 'reference sent by email' : '' }];
+    const rows = [
+      {
+        what: 'Opened',
+        who: item.reviewerName,
+        when: momentLabel(item.createdAt),
+        extra: item.reference ? 'reference sent by email' : '',
+      },
+    ];
     if (item.updatedAt !== item.createdAt)
-      rows.push({ what: statusLabel(item) === 'New' ? 'Updated' : `Status ${statusLabel(item)}`, who: '', when: momentLabel(item.updatedAt), extra: item.ownerNote ? 'with a note' : '' });
+      rows.push({
+        what: statusLabel(item) === 'New' ? 'Updated' : `Status ${statusLabel(item)}`,
+        who: '',
+        when: momentLabel(item.updatedAt),
+        extra: item.ownerNote ? 'with a note' : '',
+      });
     return rows;
   });
 
-  /** Loads the item whenever the key changes; nothing load() touches is tracked, so a load never re-triggers itself. */
+  /**
+   * Loads the item whenever the key changes; nothing load() touches is tracked, so a load never
+   * re-triggers itself.
+   */
   private readonly reload = effect(() => {
     const id = this.itemId();
     untracked(() => void this.load(id));
@@ -151,7 +190,10 @@ export class FeedbackItemView implements OnDestroy {
       if (kind === 'conflict') {
         this.promoteMessage.set('This item already has a ticket.');
         await this.load();
-      } else this.promoteMessage.set(kind === 'forbidden' ? 'Your role cannot promote this item.' : 'Not promoted. Try again.');
+      } else
+        this.promoteMessage.set(
+          kind === 'forbidden' ? 'Your role cannot promote this item.' : 'Not promoted. Try again.',
+        );
     } finally {
       this.promoting.set(false);
     }
@@ -200,6 +242,8 @@ export class FeedbackItemView implements OnDestroy {
   }
 
   protected size(bytes: number): string {
-    return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return bytes >= 1024 * 1024
+      ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+      : `${Math.max(1, Math.round(bytes / 1024))} KB`;
   }
 }

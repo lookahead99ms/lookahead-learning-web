@@ -359,7 +359,9 @@ export class LandingSearch {
   private loadIndex(): void {
     if (this.loaded) return;
     this.loaded = true;
-    this.content.getSearchIndex().subscribe({ next: (documents) => this.documents.set(withoutHiddenCourseDocuments(documents)) });
+    this.content.getSearchIndex().subscribe({
+      next: (documents) => this.documents.set(withoutHiddenCourseDocuments(documents)),
+    });
   }
 
   private buildSuggestions(

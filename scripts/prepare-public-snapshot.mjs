@@ -54,5 +54,6 @@ for (const path of candidates) {
 }
 
 console.log(
-  `Prepared ${copiedFiles} public snapshot file(s) in ${destinationRoot}. No Git history was copied.`,
+  `Prepared ${copiedFiles} public snapshot file(s) in ${destinationRoot}. No Git ` +
+    `history was copied.`,
 );

@@ -64,7 +64,9 @@
                 </a>
               }
             } @else {
-              <a class="module-catalog-link action-link" [routerLink]="catalogRoute()">📁 View all modules</a>
+              <a class="module-catalog-link action-link" [routerLink]="catalogRoute()"
+                >📁 View all modules</a
+              >
             }
           </div>
         </nav>
@@ -101,7 +103,11 @@
       </article>
     }
   } @else if (error()) {
-    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
+    <app-content-recovery
+      [kind]="recovery()"
+      [preview]="recoveryPreview()"
+      (retry)="retryLoad.next()"
+    />
   } @else {
     <section class="page-message"><p>Loading module…</p></section>
   }

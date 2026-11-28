@@ -47,7 +47,8 @@ export function findStudyActivity(
         requiredSessionId: original.id,
         reviewDueDay: day,
         instructions:
-          'Recall the main idea and explain it before reopening the answer. Record this recall separately from the original learning.',
+          'Recall the main idea and explain it before reopening the answer. Record this ' +
+          'recall separately from the original learning.',
       }
     : null;
 }
@@ -162,7 +163,8 @@ export function studyDayQueue(
         return item && isStudyReview(item) ? [source(item)] : [];
       }),
   );
-  // A short daily recall fills days without an eligible interval review. Rotate least-recently recalled originals.
+  // A short daily recall fills days without an eligible interval review. Rotate least-recently
+  // recalled originals.
   let daily: StudyPlanAssignment | null = null;
   if (
     !plan.template &&

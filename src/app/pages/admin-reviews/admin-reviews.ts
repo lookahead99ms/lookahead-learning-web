@@ -1,6 +1,18 @@
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { environment } from '../../../environments/environment';
-import { Component, computed, effect, ElementRef, inject, input, OnDestroy, OnInit, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -31,7 +43,10 @@ import { ReviewEditIntent } from './review-edit-intent';
 import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 import { ReportTips } from '../support/report-tips';
 
-/** A Type filter value for learner requests: "request:problem", "request:feedback" or "request:question". */
+/**
+ * A Type filter value for learner requests: "request:problem", "request:feedback" or
+ * "request:question".
+ */
 const requestFilterPrefix = 'request:';
 
 interface PendingFile {
@@ -46,12 +61,13 @@ interface DayGroup {
 }
 
 /**
- * DLV-927/928: each reviewer records their own items; the owner and admins see everyone's, the owner alone triages.
- * Shown under the Give feedback tab of /support and on the Support tickets and feedback admin page (/admin/feedback),
- * which own the page header and layout. Two nouns on the page (owner, 2026-11-06): a ticket (kind "request", a
- * learner needs a reply) and feedback (kind "review", staff say what should change); the ids and the API are unchanged.
- * Items are grouped by the day they were sent, newest first. A row shows the summary; opening it
- * loads the description, the owner's note and the images.
+ * DLV-927/928: each reviewer records their own items; the owner and admins see everyone's, the
+ * owner alone triages. Shown under the Give feedback tab of /support and on the Support tickets and
+ * feedback admin page (/admin/feedback), which own the page header and layout. Two nouns on the
+ * page (owner, 2026-11-06): a ticket (kind "request", a learner needs a reply) and feedback (kind
+ * "review", staff say what should change); the ids and the API are unchanged. Items are grouped by
+ * the day they were sent, newest first. A row shows the summary; opening it loads the description,
+ * the owner's note and the images.
  */
 @Component({
   selector: 'app-admin-reviews',
@@ -62,26 +78,35 @@ interface DayGroup {
 export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly accounts = inject(StudyPlanAccount);
   /**
-   * DLV-971 (owner, 2026-11-06): "submit" is the form under Give feedback on /support; "submitted" is what was
-   * submitted and where each item stands on Support tickets and feedback (the owner's overview and every reviewer's
-   * items, a reviewer's own). "all" is the whole panel, as before.
+   * DLV-971 (owner, 2026-11-06): "submit" is the form under Give feedback on /support; "submitted"
+   * is what was submitted and where each item stands on Support tickets and feedback (the owner's
+   * overview and every reviewer's items, a reviewer's own). "all" is the whole panel, as before.
    */
   readonly section = input<'submit' | 'submitted' | 'all'>('all');
   /**
-   * DLV-971 (owner, 2026-11-06): on Support the kind cards live in the page, so the form takes its category from here
-   * and shows no type picker; the page also owns the heading and the tips (compact), and the button says Send.
+   * DLV-971 (owner, 2026-11-06): on Support the kind cards live in the page, so the form takes its
+   * category from here and shows no type picker; the page also owns the heading and the tips
+   * (compact), and the button says Send.
    */
   readonly category$ = input<ReviewCategory | null>(null, { alias: 'category' });
   readonly compact = input(false);
-  /** The category of the item loaded for editing (Edit from the admin page), null when the form is cleared. */
+  /**
+   * The category of the item loaded for editing (Edit from the admin page), null when the form is
+   * cleared.
+   */
   readonly editing = output<ReviewCategory | null>();
   protected readonly client = inject(PLATFORM_REVIEW_CLIENT);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly editIntent = inject(ReviewEditIntent);
   private readonly devSession = inject(DevSession);
-  /** Owner decision 2026-11-07: promoting writes the DEV plan, so the button exists on DEV and local only. */
-  protected readonly devOrLocal = computed(() => !environment.production || this.devSession.status() !== null || this.devSession.gated());
+  /**
+   * Owner decision 2026-11-07: promoting writes the DEV plan, so the button exists on DEV and local
+   * only.
+   */
+  protected readonly devOrLocal = computed(
+    () => !environment.production || this.devSession.status() !== null || this.devSession.gated(),
+  );
   protected readonly categories = reviewCategories;
   protected readonly requestTypes = requestTypes;
   protected readonly requestFilterPrefix = requestFilterPrefix;
@@ -93,21 +118,26 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly limits = reviewLimits;
   protected readonly labelOf = labelOf;
 
-  protected readonly state = signal<'loading' | 'ready' | 'denied' | 'signed-out' | 'error'>('loading');
+  protected readonly state = signal<'loading' | 'ready' | 'denied' | 'signed-out' | 'error'>(
+    'loading',
+  );
   protected readonly viewer = signal<PlatformReviewViewer | null>(null);
   protected readonly items = signal<PlatformReviewSummary[]>([]);
   protected readonly nextBefore = signal<string | null>(null);
   protected readonly loadingOlder = signal(false);
   protected readonly olderError = signal('');
   /**
-   * DLV-971 (owner, 2026-11-06): the owner and admins see the overview, the filters and every reviewer's items;
-   * only the owner sets a status and writes the note on a review. An admin reads the note like a reviewer does.
+   * DLV-971 (owner, 2026-11-06): the owner and admins see the overview, the filters and every
+   * reviewer's items; only the owner sets a status and writes the note on a review. An admin reads
+   * the note like a reviewer does.
    */
-  protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
+  protected readonly seesAll = computed(
+    () => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin',
+  );
   protected readonly isOwner = computed(() => this.viewer()?.role === 'owner');
   /**
-   * Triage rule (owner, 2026-11-06): the owner sets the status of every item; an admin only of a learner request
-   * (kind "request"); nobody else.
+   * Triage rule (owner, 2026-11-06): the owner sets the status of every item; an admin only of a
+   * learner request (kind "request"); nobody else.
    */
   protected canTriage(item: PlatformReviewItem | PlatformReviewSummary): boolean {
     const role = this.viewer()?.role;
@@ -116,32 +146,58 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     return false;
   }
   /**
-   * DLV-971 runtime stores (owner, 2026-11-06): Promote adds a ticket to the DEV delivery plan. Whoever may set the
-   * status may promote (owner: any item; admin: a learner request), once; an item that already has a ticket shows
-   * the ticket pill instead.
+   * DLV-971 runtime stores (owner, 2026-11-06): Promote adds a ticket to the DEV delivery plan.
+   * Whoever may set the status may promote (owner: any item; admin: a learner request), once; an
+   * item that already has a ticket shows the ticket pill instead.
    */
   protected canPromote(item: PlatformReviewItem): boolean {
     return this.devOrLocal() && this.canTriage(item) && !item.ticketId;
   }
-  /** Reviews are edited and deleted by their reviewer while New; a learner request is never editable here. */
+  /**
+   * Reviews are edited and deleted by their reviewer while New; a learner request is never editable
+   * here.
+   */
   protected canEdit(item: PlatformReviewItem): boolean {
     return this.isOwn(item) && !isRequest(item) && item.status === 'new';
   }
-  /** The owner and admins switch between everyone's items (all, or one kind) and the reviewer view of their own. */
+  /**
+   * The owner and admins switch between everyone's items (all, or one kind) and the reviewer view
+   * of their own.
+   */
   protected readonly ownerView = signal<'all' | 'mine'>('all');
   protected readonly showAll = computed(() => this.seesAll() && this.ownerView() === 'all');
-  /** DLV-971 (owner, 2026-11-06): the Kind filter and the Support tickets / Feedback pills share this value. */
+  /**
+   * DLV-971 (owner, 2026-11-06): the Kind filter and the Support tickets / Feedback pills share
+   * this value.
+   */
   protected readonly kindFilter = signal<'' | 'ticket' | 'feedback'>('');
   protected readonly ticketItems = computed(() => this.items().filter(isRequest));
-  protected readonly feedbackItems = computed(() => this.items().filter((item) => !isRequest(item)));
-  /** The type cards of the feedback form: the review categories with an icon and a one-line hint, like the ticket kinds. */
+  protected readonly feedbackItems = computed(() =>
+    this.items().filter((item) => !isRequest(item)),
+  );
+  /**
+   * The type cards of the feedback form: the review categories with an icon and a one-line hint,
+   * like the ticket kinds.
+   */
   protected readonly categoryCards = [
     { id: 'problem', icon: '🐞', label: 'Problem', hint: 'Something broke or looks wrong' },
-    { id: 'change', icon: '🔧', label: 'Change request', hint: 'Works, but should work differently' },
+    {
+      id: 'change',
+      icon: '🔧',
+      label: 'Change request',
+      hint: 'Works, but should work differently',
+    },
     { id: 'idea', icon: '💡', label: 'Idea', hint: 'Something new worth adding' },
-    { id: 'content', icon: '📖', label: 'Content correction', hint: 'A lesson, text or example is wrong' },
+    {
+      id: 'content',
+      icon: '📖',
+      label: 'Content correction',
+      hint: 'A lesson, text or example is wrong',
+    },
   ] as const;
-  /** The viewer may edit or delete their own item while it is still New, whichever list shows it. */
+  /**
+   * The viewer may edit or delete their own item while it is still New, whichever list shows it.
+   */
   protected isOwn(item: PlatformReviewItem): boolean {
     return item.reviewerId === this.viewer()?.reviewerId;
   }
@@ -251,11 +307,12 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.detailState.set({});
     this.triageMessage.set({});
     try {
-      // DLV-971 (owner, 2026-11-06): the Give feedback form needs only the viewer's role, so it no longer waits for, or
-      // fails with, the item list; a list that cannot load is reported where the list is shown (Support tickets and feedback).
+      // DLV-971 (owner, 2026-11-06): the Give feedback form needs only the viewer's role, so it no
+      // longer waits for, or fails with, the item list; a list that cannot load is reported where
+      // the list is shown (Support tickets and feedback).
       const viewer = await this.client.viewer();
-      // "user" is the service's word for an account with no review role; this page denies it itself, wherever it is
-      // embedded, instead of relying on the Support page's filter.
+      // "user" is the service's word for an account with no review role; this page denies it
+      // itself, wherever it is embedded, instead of relying on the Support page's filter.
       if (viewer.role === 'user') {
         this.viewer.set(viewer);
         this.state.set('denied');
@@ -277,13 +334,15 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
       this.openRequestedItem();
     } catch (error) {
       const kind = error instanceof PlatformReviewError ? error.kind : 'unavailable';
-      this.state.set(kind === 'forbidden' ? 'denied' : kind === 'unauthorized' ? 'signed-out' : 'error');
+      this.state.set(
+        kind === 'forbidden' ? 'denied' : kind === 'unauthorized' ? 'signed-out' : 'error',
+      );
     }
   }
 
   /**
-   * A ticket's "From review REV-000001" link on the Delivery Plan opens /admin/feedback#<id>: the item named in
-   * the fragment opens and scrolls into view when it is in the loaded list.
+   * A ticket's "From review REV-000001" link on the Delivery Plan opens /admin/feedback#<id>: the
+   * item named in the fragment opens and scrolls into view when it is in the loaded list.
    */
   private openRequestedItem(): void {
     const requested = this.route.snapshot.fragment;
@@ -291,7 +350,9 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.targetId.set(requested);
     this.openId.set(requested);
     void this.loadDetail(requested);
-    setTimeout(() => document.getElementById(`review-${requested}`)?.scrollIntoView?.({ block: 'start' }));
+    setTimeout(() =>
+      document.getElementById(`review-${requested}`)?.scrollIntoView?.({ block: 'start' }),
+    );
   }
 
   protected async loadOlder(): Promise<void> {
@@ -485,14 +546,18 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * DLV-971 (owner, 2026-11-06): on Support tickets and feedback the form is on another page, so Edit records the id
-   * and opens /support, whose feedback form instance loads the item on init.
+   * DLV-971 (owner, 2026-11-06): on Support tickets and feedback the form is on another page, so
+   * Edit records the id and opens /support, whose feedback form instance loads the item on init.
    */
   protected edit(item: PlatformReviewItem): void {
     if (this.section() === 'submitted') {
       this.editIntent.set(item.id);
-      // The Support page's final shape is pending (owner, 2026-11-06); until then Edit opens its default tab.
-      void this.router.navigate(['/support'], { queryParams: { view: null }, queryParamsHandling: 'merge' });
+      // The Support page's final shape is pending (owner, 2026-11-06); until then Edit opens its
+      // default tab.
+      void this.router.navigate(['/support'], {
+        queryParams: { view: null },
+        queryParamsHandling: 'merge',
+      });
       return;
     }
     this.fillForm(item);
@@ -505,7 +570,10 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
       this.fillForm(item);
       void this.loadAttachmentUrls(item);
     } catch {
-      this.formStatus.set('The item could not be opened for editing. Open it again under Support tickets and feedback.');
+      this.formStatus.set(
+        'The item could not be opened for editing. Open it again under Support tickets ' +
+          'and feedback.',
+      );
     }
   }
 
@@ -518,7 +586,8 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.pageUrl = item.pageUrl;
     this.title = item.title;
     this.detailsText = item.details;
-    // DLV-971 (owner, 2026-11-06): no importance on the page; the stored value is ignored and the default sent back.
+    // DLV-971 (owner, 2026-11-06): no importance on the page; the stored value is ignored and the
+    // default sent back.
     this.keptAttachments.set([...item.attachments]);
     const heading = this.formHeading()?.nativeElement;
     heading?.scrollIntoView?.({ block: 'start' });
@@ -577,8 +646,8 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Promote to ticket: the Domain adds the ticket to the DEV plan and returns the item with its `ticketId`. A 409 means
-   * someone promoted it first; the item is reloaded so its pill shows.
+   * Promote to ticket: the Domain adds the ticket to the DEV plan and returns the item with its
+   * `ticketId`. A 409 means someone promoted it first; the item is reloaded so its pill shows.
    */
   protected async promote(item: PlatformReviewItem): Promise<void> {
     if (this.promoting()) return;
@@ -587,16 +656,25 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     try {
       const result = await this.client.promote(item.id);
       this.remember({ ...result.item, ticketId: result.item.ticketId ?? result.ticketId });
-      this.promoteMessage.update((messages) => ({ ...messages, [item.id]: `Ticket ${result.ticketId} created.` }));
+      this.promoteMessage.update((messages) => ({
+        ...messages,
+        [item.id]: `Ticket ${result.ticketId} created.`,
+      }));
     } catch (error) {
       const kind = error instanceof PlatformReviewError ? error.kind : 'unavailable';
       if (kind === 'conflict') {
-        this.promoteMessage.update((messages) => ({ ...messages, [item.id]: 'This item already has a ticket.' }));
+        this.promoteMessage.update((messages) => ({
+          ...messages,
+          [item.id]: 'This item already has a ticket.',
+        }));
         await this.loadDetail(item.id);
       } else {
         this.promoteMessage.update((messages) => ({
           ...messages,
-          [item.id]: kind === 'forbidden' ? 'Your role cannot promote this item.' : 'Not promoted. Try again.',
+          [item.id]:
+            kind === 'forbidden'
+              ? 'Your role cannot promote this item.'
+              : 'Not promoted. Try again.',
         }));
       }
     } finally {
@@ -617,7 +695,10 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     } catch {
       copied = false;
     }
-    this.copyStatus.update((status) => ({ ...status, [item.id]: copied ? 'Copied' : 'Copy failed' }));
+    this.copyStatus.update((status) => ({
+      ...status,
+      [item.id]: copied ? 'Copied' : 'Copy failed',
+    }));
   }
 
   protected countWith(items: PlatformReviewSummary[], status: ReviewStatus): number {
@@ -655,7 +736,9 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     const groups: DayGroup[] = [];
     for (const item of items) {
       const date = new Date(item.createdAt);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const key =
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-` +
+        `${String(date.getDate()).padStart(2, '0')}`;
       let group = groups.at(-1);
       if (group?.key !== key) {
         group = {

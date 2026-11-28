@@ -140,21 +140,25 @@ describe('DsaRunExamples lifecycle', () => {
     expect(document.activeElement).toBe(check);
     expect(check.getAttribute('aria-disabled')).toBe('false');
   });
-  it('escapes diagnostics, displays contract/results and flags edits against submitted snapshot', async () => {
-    account.account.set({ accountId: owner, authorPreview: true });
-    client.start.mockResolvedValue(await result());
-    await settle();
-    await (fixture.componentInstance as any).run();
-    await settle();
-    expect(fixture.nativeElement.textContent).toContain('Examples passed');
-    expect(fixture.nativeElement.textContent).toContain('Either index order');
-    expect(fixture.nativeElement.querySelector('img')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('<img');
-    fixture.componentRef.setInput('source', 'new draft');
-    await settle();
-    expect(fixture.nativeElement.textContent).toContain('editor has changed');
-    expect(client.start).toHaveBeenCalledTimes(1);
-  });
+  it(
+    'escapes diagnostics, displays contract/results and flags edits against submitted ' +
+      'snapshot',
+    async () => {
+      account.account.set({ accountId: owner, authorPreview: true });
+      client.start.mockResolvedValue(await result());
+      await settle();
+      await (fixture.componentInstance as any).run();
+      await settle();
+      expect(fixture.nativeElement.textContent).toContain('Examples passed');
+      expect(fixture.nativeElement.textContent).toContain('Either index order');
+      expect(fixture.nativeElement.querySelector('img')).toBeNull();
+      expect(fixture.nativeElement.textContent).toContain('<img');
+      fixture.componentRef.setInput('source', 'new draft');
+      await settle();
+      expect(fixture.nativeElement.textContent).toContain('editor has changed');
+      expect(client.start).toHaveBeenCalledTimes(1);
+    },
+  );
   it('rejects mismatched source results', async () => {
     account.account.set({ accountId: owner, authorPreview: true });
     client.start.mockResolvedValue(await result('other source'));
@@ -182,7 +186,7 @@ describe('DsaRunExamples lifecycle', () => {
     expect(client.cancel).toHaveBeenCalledWith(owner, 'job-1');
   });
 
-  it('gives a clear secure-context message without submitting when crypto is unavailable', async () => {
+  it('gives a clear secure-context message, no submit, when crypto is missing', async () => {
     account.account.set({ accountId: owner, authorPreview: true });
     await settle();
     const original = globalThis.crypto;

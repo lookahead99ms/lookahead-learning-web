@@ -22,7 +22,9 @@ export class PlatformThemeService {
   /** The theme on screen now (a `system` preference resolved to light or dark). */
   readonly selected = signal<PlatformTheme>('dark');
   readonly preference = signal<ThemePreference>('dark');
-  private readonly darkScheme = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)');
+  private readonly darkScheme = this.document.defaultView?.matchMedia?.(
+    '(prefers-color-scheme: dark)',
+  );
 
   constructor() {
     const view = this.document.defaultView;
@@ -56,7 +58,8 @@ export class PlatformThemeService {
   }
 
   private apply(preference: ThemePreference): void {
-    const theme = preference === 'system' ? (this.darkScheme?.matches ? 'dark' : 'light') : preference;
+    const theme =
+      preference === 'system' ? (this.darkScheme?.matches ? 'dark' : 'light') : preference;
     this.preference.set(preference);
     this.selected.set(theme);
     this.document.documentElement.dataset['theme'] = theme;

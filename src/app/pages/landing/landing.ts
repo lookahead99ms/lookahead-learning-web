@@ -16,7 +16,11 @@ import {
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
-import { HeroCandidate, HeroVariantId, heroVariantFrom } from '../landing-previews/hero/hero-candidate';
+import {
+  HeroCandidate,
+  HeroVariantId,
+  heroVariantFrom,
+} from '../landing-previews/hero/hero-candidate';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { EngineeringChallenge } from './engineering-challenge';
 import { HomePricing } from './home-pricing/home-pricing';
@@ -48,13 +52,25 @@ interface HeroSlide {
 @Component({
   selector: 'app-landing',
   imports: [
-    HeroCandidate, LandingHeroVisual, LearningPrompt, ReasoningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, CardScene, HomePricing, EssenceStory],
+    HeroCandidate,
+    LandingHeroVisual,
+    LearningPrompt,
+    ReasoningPrompt,
+    PlatformSignature,
+    PlatformHeader,
+    RouterLink,
+    EngineeringChallenge,
+    CardScene,
+    HomePricing,
+    EssenceStory,
+  ],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
 /**
  * The homepage: a six-slide hero (copy on the left, a card on the right, chapter tabs as timers),
- * then the Learn / Grow / Blaze path cards, the engineering challenge, Keep exploring and the essence.
+ * then the Learn / Grow / Blaze path cards, the engineering challenge, Keep exploring and the
+ * essence.
  */
 export class Landing {
   protected readonly tagline = (id: PathTaglineId): string => pathTaglineText(id);
@@ -69,7 +85,10 @@ export class Landing {
   protected readonly reducedMotion = signal(false);
   /** The visitor stopped the slideshow with the pause button. */
   protected readonly paused = signal(false);
-  /** Keyboard focus is inside the hero (APG carousel: rotation stops while a keyboard user is in it). */
+  /**
+   * Keyboard focus is inside the hero (APG carousel: rotation stops while a keyboard user is in
+   * it).
+   */
   protected readonly focusHold = signal(false);
   protected readonly pageHidden = signal(false);
   private readonly ready = signal(false);
@@ -115,7 +134,8 @@ export class Landing {
       eyebrow: 'For the engineer deciding where to begin',
       lines: ['Become the engineer', 'you can explain.'],
       description:
-        'Move from understanding a concept to applying it, defending a decision, and knowing what to practice next.',
+        'Move from understanding a concept to applying it, defending a decision, and ' +
+        'knowing what to practice next.',
       action: 'Choose a learning path',
       route: '/',
       fragment: 'paths',
@@ -128,7 +148,8 @@ export class Landing {
       eyebrow: 'Ambition, with room for real life',
       lines: ['A clear route through', 'everything you want', 'to become.'],
       description:
-        'Turn broad ambition into a workable week. Bring foundations, production practice, design, and leadership into one learning plan.',
+        'Turn broad ambition into a workable week. Bring foundations, production ' +
+        'practice, design, and leadership into one learning plan.',
       action: 'Shape my study plan',
       route: '/study-plan',
       fragment: undefined,
@@ -141,7 +162,8 @@ export class Landing {
       eyebrow: 'For engineers who learn by doing',
       lines: ['Read the idea.', 'Run the system.', 'Own the decision.'],
       description:
-        'Practice in code, inspect execution, and build complete AI applications. Then connect the implementation to the judgment behind it.',
+        'Practice in code, inspect execution, and build complete AI applications. Then ' +
+        'connect the implementation to the judgment behind it.',
       action: 'Explore hands-on practice',
       route: '/learn/hands-on-dsa',
       fragment: undefined,
@@ -154,7 +176,8 @@ export class Landing {
       eyebrow: 'Follow a better question',
       lines: ['Good answers', 'begin with', 'better thinking.'],
       description:
-        'A field guide to the models, failures, and trade-offs behind confident engineering. Read deeply. Try the idea. Explain what changed.',
+        'A field guide to the models, failures, and trade-offs behind confident ' +
+        'engineering. Read deeply. Try the idea. Explain what changed.',
       action: 'Find a question worth exploring',
       route: '/search',
       fragment: undefined,
@@ -167,7 +190,9 @@ export class Landing {
       eyebrow: 'AI Builds',
       lines: ['AI is part of your toolkit.', 'It does the heavy lifting. You make the call.'],
       description:
-        'Let AI automate the routine work and find patterns in your data, like flagging possible fraud, while you design the system and decide what ships. Guided projects in Java and Python.',
+        'Let AI automate the routine work and find patterns in your data, like flagging ' +
+        'possible fraud, while you design the system and decide what ships. Guided ' +
+        'projects in Java and Python.',
       action: 'Explore AI Builds',
       route: '/blaze/ai-systems-architecture',
       fragment: undefined,
@@ -180,7 +205,8 @@ export class Landing {
       eyebrow: 'For the conversations that raise the bar',
       lines: ['Practice the decisions', 'behind the title.'],
       description:
-        'Go beyond recalling answers. Rehearse production judgment, explain system-design trade-offs, and connect technical choices to leadership.',
+        'Go beyond recalling answers. Rehearse production judgment, explain ' +
+        'system-design trade-offs, and connect technical choices to leadership.',
       action: 'Find a scenario to practice',
       route: '/search',
       fragment: undefined,
@@ -189,7 +215,8 @@ export class Landing {
   ];
 
   constructor() {
-    // Owner, 2026-11-06: the Essence fits the screen below the header, scaled as one picture, instead of running past it.
+    // Owner, 2026-11-06: the Essence fits the screen below the header, scaled as one picture,
+    // instead of running past it.
     keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement, { screen: true });
     afterNextRender(() => {
       const view = this.document.defaultView;
@@ -330,7 +357,9 @@ export class Landing {
       .catch(() => {});
   }
 
-  /** The pause button: an explicit stop, or an explicit start that also lifts a keyboard-focus hold. */
+  /**
+   * The pause button: an explicit stop, or an explicit start that also lifts a keyboard-focus hold.
+   */
   protected toggleRotation(): void {
     if (this.reducedMotion()) return;
     if (this.rotationHeld()) {
@@ -390,5 +419,4 @@ export class Landing {
       `/#${fragment}`,
     );
   }
-
 }

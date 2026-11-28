@@ -97,8 +97,9 @@ iframe {
   min-height: 480px;
   border: 0;
 }
-/* The reference focuses its selected section inside the frame; that section shows its own focus ring, so the
-   frame element itself draws none (owner, 2026-11-09: the outer blue box read as a broken border). */
+/* The reference focuses its selected section inside the frame; that section shows its own focus
+   ring, so the frame element itself draws none (owner, 2026-11-09: the outer blue box read as a
+   broken border). */
 iframe:focus,
 iframe:focus-visible {
   outline: none;

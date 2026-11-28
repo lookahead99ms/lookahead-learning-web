@@ -61,9 +61,7 @@
       [class.open]="leftOpen()"
       [class.docked]="leftDocked()"
       [style.top.px]="headerBottom()"
-      [style.max-height]="
-        'calc(100dvh - ' + (headerBottom() + 8) + 'px)'
-      "
+      [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
       aria-label="Page sections"
     >
       @if (!homepage() && (leftDocked() || leftOpen())) {
@@ -151,9 +149,7 @@
       [class.open]="rightOpen()"
       [class.docked]="rightDocked()"
       [style.top.px]="headerBottom()"
-      [style.max-height]="
-        'calc(100dvh - ' + (headerBottom() + 8) + 'px)'
-      "
+      [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
       aria-label="Practice with this page"
     >
       @if (rightDocked() || rightOpen()) {
@@ -180,8 +176,9 @@
         [hidden]="!rightOpen()"
         [attr.inert]="rightOpen() ? null : ''"
       >
-        <!-- Practice & review (user review, 2026-10-05): one compact group at the top. Quick revision, Check
-             understanding and More practice jump within the page; Quick recall opens a dialog. -->
+        <!-- Practice & review (user review, 2026-10-05): one compact group at the top. Quick
+             revision, Check understanding and More practice jump within the page; Quick recall
+             opens a dialog. -->
         <ng-template #practiceIcon let-name>
           <svg viewBox="0 0 16 16">
             @switch (name) {
@@ -198,7 +195,10 @@
               }
               @case ('check') {
                 <path
-                  d="M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3.5a1 1 0 0 1-1-1Z"
+                  [attr.d]="
+                    'M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 ' +
+                    '2.5V11H3.5a1 1 0 0 1-1-1Z'
+                  "
                 />
                 <path d="M6.6 5.3a1.4 1.4 0 1 1 2 1.3c-.4.2-.6.5-.6.9M8 9.1h.01" />
               }
@@ -262,8 +262,9 @@
           </nav>
         }
         @if (lessonNav(); as nav) {
-          <!-- Where the lesson sits (outline, 2026-10-05): path, group, course and its lessons, then the next
-               course and the next group. Each level has its own type, colour and hover. -->
+          <!-- Where the lesson sits (outline, 2026-10-05): path, group, course and its lessons,
+               then the next course and the next group. Each level has its own type, colour and
+               hover. -->
           <nav
             class="sidebar-lesson-nav"
             aria-label="Where you are"
@@ -362,9 +363,10 @@
     </aside>
   }
   @if (recall().length) {
-    <!-- Quick recall (2026-10-05): one question at a time in a modal dialog; the answer stays hidden until
-         Reveal answer; the position is kept while the learner stays on the lesson. -->
-    <dialog appScrollLock
+    <!-- Quick recall (2026-10-05): one question at a time in a modal dialog; the answer stays
+         hidden until Reveal answer; the position is kept while the learner stays on the lesson. -->
+    <dialog
+      appScrollLock
       #recallDialog
       class="recall-dialog"
       aria-labelledby="recall-dialog-title"

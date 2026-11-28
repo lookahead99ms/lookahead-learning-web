@@ -67,7 +67,7 @@ describe('Catalog free lesson lines', () => {
     return harness.routeNativeElement as HTMLElement;
   }
 
-  it('shows the count only on courses with open or free units, as plain described text', async () => {
+  it('shows the count only on courses with open or free units, as plain text', async () => {
     const root = await render(levels);
 
     const coreJava = root.querySelector<HTMLAnchorElement>('a#core-java')!;

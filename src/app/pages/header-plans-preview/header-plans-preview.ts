@@ -83,7 +83,9 @@ export const HEADER_OPTIONS: readonly HeaderOption[] = [
     id: 'a',
     letter: 'A',
     name: 'Grouped pair',
-    idea: 'Study Plan and the plans link sit together in one bordered group on the right, so they read as one place for “what I study and what I can open”.',
+    idea:
+      'Study Plan and the plans link sit together in one bordered group on the right, so ' +
+      'they read as one place for “what I study and what I can open”.',
     pros: [
       'The two links are clustered, not scattered across the header.',
       '“Unlock all” says what you get rather than naming a price page.',
@@ -130,7 +132,9 @@ export const HEADER_OPTIONS: readonly HeaderOption[] = [
     id: 'b',
     letter: 'B',
     name: 'Account-led',
-    idea: 'The header keeps only Study Plan. Plans live in the account area: a small dot on the account button and “Unlock all” as the first item in its menu.',
+    idea:
+      'The header keeps only Study Plan. Plans live in the account area: a small dot on ' +
+      'the account button and “Unlock all” as the first item in its menu.',
     pros: [
       'The calmest header: nothing new except a small dot.',
       'The price shows where people already manage their account.',
@@ -150,7 +154,9 @@ export const HEADER_OPTIONS: readonly HeaderOption[] = [
       {
         state: 'free',
         label: 'Signed in, free, menu open',
-        summary: `The account button has a small dot. Its menu starts with Unlock all, from ${STARTING_PRICE}/year.`,
+        summary:
+          `The account button has a small dot. Its menu starts with Unlock all, ` +
+          `from ${STARTING_PRICE}/year.`,
         header: {
           studyPlan: true,
           account: { kind: 'chip', dot: true },
@@ -168,7 +174,9 @@ export const HEADER_OPTIONS: readonly HeaderOption[] = [
       {
         state: 'sale',
         label: 'During a sale',
-        summary: `A small greeting, ${SAMPLE_SALE.name}, sits just before the account button, which keeps its dot.`,
+        summary:
+          `A small greeting, ${SAMPLE_SALE.name}, sits just before the account button, ` +
+          `which keeps its dot.`,
         header: { studyPlan: true, greeting: saleGreeting, account: { kind: 'chip', dot: true } },
       },
       {
@@ -190,7 +198,9 @@ export const HEADER_OPTIONS: readonly HeaderOption[] = [
     id: 'c',
     letter: 'C',
     name: 'Slim strip',
-    idea: 'The header stays as it is, with Study Plan only. A thin strip just under it names what plans open and the starting price, and anyone can close it.',
+    idea:
+      'The header stays as it is, with Study Plan only. A thin strip just under it names ' +
+      'what plans open and the starting price, and anyone can close it.',
     pros: [
       'The header itself does not change at all.',
       'A full sentence with the starting price explains itself.',
@@ -205,7 +215,9 @@ export const HEADER_OPTIONS: readonly HeaderOption[] = [
       {
         state: 'free',
         label: 'Free or signed out',
-        summary: `A strip under the header reads: Unlock ${catalogList} from ${STARTING_PRICE}/year, See plans, with a close button.`,
+        summary:
+          `A strip under the header reads: Unlock ${catalogList} ` +
+          `from ${STARTING_PRICE}/year, See plans, with a close button.`,
         header: {
           studyPlan: true,
           account: { kind: 'sign-in' },

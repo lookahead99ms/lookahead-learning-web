@@ -11,7 +11,10 @@ export interface ProfileLinkField {
   error: string;
 }
 
-/** Same rules as Identity's POST /api/v1/account/links (DLV-932), checked here first for a quick answer. */
+/**
+ * Same rules as Identity's POST /api/v1/account/links (DLV-932), checked here first for a quick
+ * answer.
+ */
 export const profileLinkFields: readonly ProfileLinkField[] = [
   {
     key: 'github',
@@ -47,11 +50,15 @@ export const profileLinkFields: readonly ProfileLinkField[] = [
  * Normalizes one typed link: blank → null; a missing scheme gets https://. Returns undefined when
  * the address breaks the rules.
  */
-export function normalizeProfileLink(field: ProfileLinkField, typed: string): string | null | undefined {
+export function normalizeProfileLink(
+  field: ProfileLinkField,
+  typed: string,
+): string | null | undefined {
   const value = typed.trim();
   if (!value) return null;
   const candidate = /^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? value : 'https://' + value;
-  if (Array.from(candidate).length > 300 || /[\s\u0000-\u001f\u007f-\u009f]/.test(candidate)) return undefined;
+  if (Array.from(candidate).length > 300 || /[\s\u0000-\u001f\u007f-\u009f]/.test(candidate))
+    return undefined;
   let url: URL;
   try {
     url = new URL(candidate);

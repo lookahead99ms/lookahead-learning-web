@@ -1,18 +1,24 @@
 <app-platform-header />
-<main id="main-content" class="admin-workspace preview-page" [class.architecture-layout]="architectureOnly">
+<main
+  id="main-content"
+  class="admin-workspace preview-page"
+  [class.architecture-layout]="architectureOnly"
+>
   @if (architectureOnly) {
     <app-author-admin-menu pageId="architecture" />
-  <div class="workspace-content">
-<aside class="workspace-sidebar">
-      <app-author-workspace-nav [tabbed]="true"
-        pageTitle="Architecture"
-        pageId="architecture"
-        [outline]="architectureOutline()"
-        [embeddedFrame]="architectureFrame()?.nativeElement"
-        embeddedDocumentId="architecture-reference"
-        [embeddedHeight]="architectureFrameHeight()"
-        (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"></app-author-workspace-nav>
-    </aside>
+    <div class="workspace-content">
+      <aside class="workspace-sidebar">
+        <app-author-workspace-nav
+          [tabbed]="true"
+          pageTitle="Architecture"
+          pageId="architecture"
+          [outline]="architectureOutline()"
+          [embeddedFrame]="architectureFrame()?.nativeElement"
+          embeddedDocumentId="architecture-reference"
+          [embeddedHeight]="architectureFrameHeight()"
+          (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
+        ></app-author-workspace-nav>
+      </aside>
 
       @if (!canView() || accounts.sessionExpired()) {
         <section class="state-panel">
@@ -46,7 +52,11 @@
         </section>
         <footer class="reference-toolbar">
           <p>Platform structure and current local boundaries</p>
-          <a class="open-reference" [href]="architectureDocumentHref()!" target="_blank" rel="noopener noreferrer"
+          <a
+            class="open-reference"
+            [href]="architectureDocumentHref()!"
+            target="_blank"
+            rel="noopener noreferrer"
             ><span class="open-icon" aria-hidden="true">↗</span> Open full-page document
             <span class="new-tab">(new tab)</span></a
           >
@@ -58,13 +68,14 @@
   } @else {
     <app-author-admin-menu pageId="previews" />
     <div class="preview-content">
-<aside class="preview-outline">
-      <app-author-workspace-nav [tabbed]="true"
-        pageTitle="Previews"
-        pageId="previews"
-        [outline]="previewOutline()"
-      />
-    </aside>
+      <aside class="preview-outline">
+        <app-author-workspace-nav
+          [tabbed]="true"
+          pageTitle="Previews"
+          pageId="previews"
+          [outline]="previewOutline()"
+        />
+      </aside>
       <header>
         <p class="eyebrow">Private review</p>
         <h2 class="preview-intro-heading">Review the current product.</h2>

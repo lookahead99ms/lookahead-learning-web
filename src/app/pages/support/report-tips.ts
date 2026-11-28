@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 
 /**
- * DLV-971 (owner, 2026-11-06): the four things a useful report carries, as a compact strip. The Support page shows it
- * inside the request card for a learner and inside the private review card for staff, so the words live once.
+ * DLV-971 (owner, 2026-11-06): the four things a useful report carries, as a compact strip. The
+ * Support page shows it inside the request card for a learner and inside the private review card
+ * for staff, so the words live once.
  */
 @Component({
   selector: 'app-report-tips',

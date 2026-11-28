@@ -51,9 +51,7 @@ export class StudyDesk {
     () =>
       this.entries().find((entry) => entry.assignment.id === this.selectedId()) ??
       this.entries().find((entry) => entry.assignment.id === this.initialActivity()) ??
-      this.dayEntries().find(
-        (entry) => entry.assignment.id === this.resume()?.assignment.id,
-      ) ??
+      this.dayEntries().find((entry) => entry.assignment.id === this.resume()?.assignment.id) ??
       this.dayEntries()[0] ??
       this.resume() ??
       this.entries()[0] ??
@@ -195,7 +193,10 @@ export class StudyDesk {
   }
   protected approachLabel(entry: StudyDeskEntry, option: StudyDeskApproach): string {
     const total = entry.approaches?.length ?? 1;
-    return `Approach ${option.approach} of ${total}${option.chosen ? ', your choice' : ''}: ${entry.assignment.title}`;
+    return (
+      `Approach ${option.approach} ` +
+      `of ${total}${option.chosen ? ', your choice' : ''}: ${entry.assignment.title}`
+    );
   }
   protected offeringLabel(entry: StudyDeskEntry): string {
     const { courseTitle, topicTitle } = entry.assignment;

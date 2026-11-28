@@ -37,18 +37,27 @@ export class HeaderNavigation implements OnDestroy {
   private readonly router = inject(Router);
   readonly opened = output<void>();
   /**
-   * DLV-969 (owner, 2026-11-03): true for a DEV visitor not admitted yet. Learn, Grow and Blaze then only show their
-   * tagline: no link, no "Explore all", no course list (the gate would refuse it).
+   * DLV-969 (owner, 2026-11-03): true for a DEV visitor not admitted yet. Learn, Grow and Blaze
+   * then only show their tagline: no link, no "Explore all", no course list (the gate would refuse
+   * it).
    */
   readonly locked = input(false);
   protected readonly taglines = PATH_TAGLINES;
   protected readonly aiLabel = AI_LABEL;
   protected readonly aiSparkles = AI_SPARKLES_PATH;
-  protected readonly paths: { id: PathTaglineId; label: string; groups: typeof LEARN_COURSE_GROUPS }[] = [
-    { id: 'learn', label: 'Learn', groups: [
-      ...LEARN_COURSE_GROUPS.filter((group) => group.id !== 'computer-fundamentals'),
-      ...LEARN_COURSE_GROUPS.filter((group) => group.id === 'computer-fundamentals'),
-    ] },
+  protected readonly paths: {
+    id: PathTaglineId;
+    label: string;
+    groups: typeof LEARN_COURSE_GROUPS;
+  }[] = [
+    {
+      id: 'learn',
+      label: 'Learn',
+      groups: [
+        ...LEARN_COURSE_GROUPS.filter((group) => group.id !== 'computer-fundamentals'),
+        ...LEARN_COURSE_GROUPS.filter((group) => group.id === 'computer-fundamentals'),
+      ],
+    },
     { id: 'grow', label: 'Grow', groups: GROW_COURSE_GROUPS },
     { id: 'blaze', label: 'Blaze', groups: BLAZE_COURSE_GROUPS },
   ];

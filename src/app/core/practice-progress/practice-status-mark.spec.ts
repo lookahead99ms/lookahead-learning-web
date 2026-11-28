@@ -18,7 +18,10 @@ class Host {
 }
 
 describe('PracticeStatusMark', () => {
-  function render(status: PracticeDisplayStatus, options: { compact?: boolean; markOnly?: boolean }) {
+  function render(
+    status: PracticeDisplayStatus,
+    options: { compact?: boolean; markOnly?: boolean },
+  ) {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.status.set(status);
     fixture.componentInstance.compact.set(options.compact ?? false);

@@ -23,7 +23,8 @@
               {{ exchange.snapshot.id }} —
               {{
                 isStale(exchange.snapshot)
-                  ? 'Editor changed since submission. This response belongs to the earlier snapshot.'
+                  ? 'Editor changed since submission. This response belongs to the earlier ' +
+                    'snapshot.'
                   : 'Matches the current editor.'
               }}
             </p>

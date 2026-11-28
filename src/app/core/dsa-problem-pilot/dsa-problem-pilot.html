@@ -178,12 +178,13 @@
             [practicePrompt]="
               focusStudio()
                 ? 'Work from the contract. Reveal hints and the reference when you need them.'
-                : 'Implement the stated contract without changing the inputs. No code runner is enabled in this pilot.'
+                : 'Implement the stated contract without changing the inputs. No code ' +
+                  'runner is enabled in this pilot.'
             "
           />
         </div>
-        <!-- No spoilers (user, 2026-10-16): hints and the solution name the method, so they enter the
-             page only when the learner opens them. -->
+        <!-- No spoilers (user, 2026-10-16): hints and the solution name the method, so they enter
+             the page only when the learner opens them. -->
         <details #hintsPanel class="help-panel" (toggle)="hintsPanel.open && hintsOpened.set(true)">
           <summary>Need a hint? <span>Three progressive hints</span></summary>
           @if (hintsOpened()) {
@@ -195,7 +196,11 @@
             }
           }
         </details>
-        <details #solutionPanel class="help-panel" (toggle)="solutionPanel.open && solutionOpened.set(true)">
+        <details
+          #solutionPanel
+          class="help-panel"
+          (toggle)="solutionPanel.open && solutionOpened.set(true)"
+        >
           <summary>View solution <span>Java, Python, Go, and complexity</span></summary>
           @if (solutionOpened()) {
             <app-coding-solution-tabs
@@ -224,27 +229,27 @@
           </div>
         </div>
         @if (guidedOpened()) {
-        <section class="reasoning-frame" aria-label="Reasoning frame">
-          <div class="reasoning-invariant">
-            <span>Invariant</span>
-            <p>{{ activeTrace().invariant }}</p>
-          </div>
-          <div class="canonical-rationale">
-            <article>
-              <span>Why this variant</span>
-              <strong>{{ problem().variation }}</strong>
-              <p>{{ practice().canonicalApproach.whyThisApproach }}</p>
-            </article>
-            <article>
-              <span>Why it is optimal</span>
-              <p>{{ practice().canonicalApproach.whyOptimal }}</p>
-            </article>
-            <article>
-              <span>When this assumption changes</span>
-              <p>{{ practice().canonicalApproach.whenAssumptionChanges }}</p>
-            </article>
-          </div>
-        </section>
+          <section class="reasoning-frame" aria-label="Reasoning frame">
+            <div class="reasoning-invariant">
+              <span>Invariant</span>
+              <p>{{ activeTrace().invariant }}</p>
+            </div>
+            <div class="canonical-rationale">
+              <article>
+                <span>Why this variant</span>
+                <strong>{{ problem().variation }}</strong>
+                <p>{{ practice().canonicalApproach.whyThisApproach }}</p>
+              </article>
+              <article>
+                <span>Why it is optimal</span>
+                <p>{{ practice().canonicalApproach.whyOptimal }}</p>
+              </article>
+              <article>
+                <span>When this assumption changes</span>
+                <p>{{ practice().canonicalApproach.whenAssumptionChanges }}</p>
+              </article>
+            </div>
+          </section>
         }
         <div
           #focusDialog

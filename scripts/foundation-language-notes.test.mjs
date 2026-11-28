@@ -43,6 +43,9 @@ test('a lesson with Java and Python downloads covers exactly those languages (DL
     { language: 'Python', note: 'The MCP SDK runs the server in process for tests.' },
   ];
   assert.deepEqual(foundationLanguageNoteErrors(notes, 'blaze', ['java', 'python']), []);
-  assert.notEqual(foundationLanguageNoteErrors(notes.slice(0, 1), 'blaze', ['java', 'python']).length, 0);
+  assert.notEqual(
+    foundationLanguageNoteErrors(notes.slice(0, 1), 'blaze', ['java', 'python']).length,
+    0,
+  );
   assert.notEqual(foundationLanguageNoteErrors(notes, 'blaze').length, 0);
 });

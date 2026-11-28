@@ -31,10 +31,12 @@
       Nothing renews automatically: you renew by buying again.
     </p>
     @if (dev()) {
-      <!-- DLV-969 (owner, 2026-11-04): in DEV only test accounts buy, and each purchase waits for approval. -->
+      <!-- DLV-969 (owner, 2026-11-04): in DEV only test accounts buy, and each purchase waits for
+           approval. -->
       <p class="sample-note" role="note">
         <strong>DEV purchase requests.</strong>
-        Only test accounts can buy here. Each purchase is a request that the owner or an admin approves; nothing is charged.
+        Only test accounts can buy here. Each purchase is a request that the owner or an admin
+        approves; nothing is charged.
       </p>
     } @else {
       <p class="sample-note" role="note">
@@ -48,8 +50,8 @@
     <section class="pricing-section sale-section" id="sale" aria-labelledby="sale-heading">
       @if (current.preview) {
         <p class="preview-flag" role="note">
-          <strong>Sale.</strong> Server sale. Learners see no sale until sales are
-          supported on the server.
+          <strong>Sale.</strong> Server sale. Learners see no sale until sales are supported on the
+          server.
         </p>
       }
       <p class="sale-name">
@@ -61,7 +63,9 @@
       </p>
       <ul class="plan-grid" aria-label="Sale plans">
         @for (card of promos(); track card.plan.id) {
-          <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: false }" />
+          <ng-container
+            *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: false }"
+          />
         }
       </ul>
     </section>
@@ -77,7 +81,9 @@
       </p>
       <ul class="plan-grid" aria-label="Sale plans">
         @for (card of allPromos(); track card.plan.id) {
-          <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: true }" />
+          <ng-container
+            *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: true }"
+          />
         }
       </ul>
     </section>
@@ -94,7 +100,9 @@
       @for (feature of freeFeatures; track feature.title) {
         <li>
           <span class="check" aria-hidden="true"></span>
-          <span><strong>{{ feature.title }}</strong> {{ feature.detail }}</span>
+          <span
+            ><strong>{{ feature.title }}</strong> {{ feature.detail }}</span
+          >
         </li>
       }
     </ul>
@@ -111,7 +119,9 @@
     </p>
     <ul class="plan-grid two-up" aria-label="Yearly plans">
       @for (card of yearly(); track card.plan.id) {
-        <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: !!sale() }" />
+        <ng-container
+          *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: !!sale() }"
+        />
       }
     </ul>
   </section>
@@ -123,7 +133,9 @@
     </p>
     <ul class="plan-grid" aria-label="Passes">
       @for (card of passes(); track card.plan.id) {
-        <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: !!sale() }" />
+        <ng-container
+          *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: !!sale() }"
+        />
       }
     </ul>
   </section>
@@ -158,9 +170,7 @@
         }
       </ul>
       @if (!card.canChoose) {
-        <p class="off-sale-note">
-          <strong>Not on sale yet.</strong> {{ card.pendingNote }}
-        </p>
+        <p class="off-sale-note"> <strong>Not on sale yet.</strong> {{ card.pendingNote }} </p>
       } @else if (readOnly) {
         <p class="off-sale-note">Available again after the sale.</p>
       } @else {
@@ -168,9 +178,16 @@
              sees their plan, upgrades, and smaller plans only near renewal (user, 2026-10-16). -->
         @let state = stateOf(card);
         @if (state.kind === 'current') {
-          <p class="plan-state"><strong>Your plan.</strong> @if (state.ends) { Expires {{ state.ends }}. }</p>
+          <p class="plan-state"
+            ><strong>Your plan.</strong>
+            @if (state.ends) {
+              Expires {{ state.ends }}.
+            }
+          </p>
         } @else if (state.kind === 'later') {
-          <p class="off-sale-note">Available from {{ state.from }}, in the last 7 days of your plan.</p>
+          <p class="off-sale-note"
+            >Available from {{ state.from }}, in the last 7 days of your plan.</p
+          >
         } @else {
           <button
             type="button"
@@ -215,11 +232,14 @@
     </dl>
   </section>
 
-  <!-- DLV-969 (owner, 2026-11-04): one checkout that looks like production everywhere: Plan → Review → Payment. Only the
-       payment step differs: Local pays with the mock provider, production says payments are not enabled yet, and a DEV
-       test account sees the DEV checkout screen once its purchase is waiting for the owner or an admin. -->
-  <!-- role="dialog" restates the native role; the page outline skips it, so step headings never show in the sidebar. -->
-  <dialog appScrollLock
+  <!-- DLV-969 (owner, 2026-11-04): one checkout that looks like production everywhere: Plan →
+       Review → Payment. Only the payment step differs: Local pays with the mock provider,
+       production says payments are not enabled yet, and a DEV test account sees the DEV checkout
+       screen once its purchase is waiting for the owner or an admin. -->
+  <!-- role="dialog" restates the native role; the page outline skips it, so step headings never
+       show in the sidebar. -->
+  <dialog
+    appScrollLock
     #notice
     role="dialog"
     class="checkout"
@@ -239,7 +259,9 @@
                 [class.is-current]="index === stepIndex()"
                 [attr.aria-current]="index === stepIndex() ? 'step' : null"
               >
-                <span class="step-mark" aria-hidden="true">{{ index < stepIndex() ? '' : index + 1 }}</span>
+                <span class="step-mark" aria-hidden="true">{{
+                  index < stepIndex() ? '' : index + 1
+                }}</span>
                 <span class="step-label">{{ item.label }}</span>
                 @if (index < stepIndex()) {
                   <span class="visually-hidden">(done)</span>
@@ -263,7 +285,9 @@
         } @else if (step() === 'plan') {
           <h2 id="checkout-notice-title" #stepTitle tabindex="-1">Your plan</h2>
           @if (chosen(); as card) {
-            <p id="checkout-notice-description" class="checkout-lede">{{ card.plan.name }} opens {{ card.includes }}.</p>
+            <p id="checkout-notice-description" class="checkout-lede"
+              >{{ card.plan.name }} opens {{ card.includes }}.</p
+            >
             <ng-container *ngTemplateOutlet="planSummary; context: { $implicit: card }" />
           }
           @if (mode() !== 'real' && activeRecords().length) {
@@ -278,33 +302,46 @@
             </label>
           }
           <p class="checkout-aside">
-            Not ready? <a [routerLink]="startFree">Start free</a> or browse <a routerLink="/learn">Learn</a>,
-            <a routerLink="/grow">Grow</a> or <a routerLink="/blaze">Blaze</a>.
+            Not ready? <a [routerLink]="startFree">Start free</a> or browse
+            <a routerLink="/learn">Learn</a>, <a routerLink="/grow">Grow</a> or
+            <a routerLink="/blaze">Blaze</a>.
           </p>
         } @else if (step() === 'review') {
           <h2 id="checkout-notice-title" #stepTitle tabindex="-1">Review your order</h2>
-          <p id="checkout-notice-description" class="checkout-lede">Check the plan, the dates and the price before you pay.</p>
+          <p id="checkout-notice-description" class="checkout-lede"
+            >Check the plan, the dates and the price before you pay.</p
+          >
           <ng-container *ngTemplateOutlet="orderCard" />
         } @else {
           <h2 id="checkout-notice-title" #stepTitle tabindex="-1">Payment</h2>
           @switch (paymentKind()) {
             @case ('dev-test') {
               @if (devCheckout(); as checkout) {
-                <!-- DLV-969 (owner, 2026-11-04): DEV takes no payment; the owner or an admin completes the purchase. -->
+                <!-- DLV-969 (owner, 2026-11-04): DEV takes no payment; the owner or an admin
+                     completes the purchase. -->
                 <div class="dev-checkout" data-dev-checkout>
-                  <p class="env-badge"><span class="env-dot" aria-hidden="true"></span>DEV · Test account · No payment</p>
+                  <p class="env-badge"
+                    ><span class="env-dot" aria-hidden="true"></span>DEV · Test account · No
+                    payment</p
+                  >
                   @if (checkout.kind === 'sent') {
                     <ng-container *ngTemplateOutlet="orderCard; context: { $implicit: true }" />
                   }
                   <div id="checkout-notice-description" class="dev-checkout-text" role="status">
                     @if (checkout.kind === 'waiting') {
-                      <p class="dev-checkout-lead"><strong>A purchase for this account is already waiting for approval.</strong></p>
+                      <p class="dev-checkout-lead"
+                        ><strong
+                          >A purchase for this account is already waiting for approval.</strong
+                        ></p
+                      >
                     }
                     <p>
                       <strong>This is DEV, so no payment is taken.</strong>
-                      {{ checkout.name }} is a test account. The owner or an admin completes this purchase: go back to your
-                      own account, open
-                      <strong>People &amp; Access</strong> (admins: <strong>Test Accounts</strong>) <strong>→ Review requests → Purchase requests</strong>, and approve or decline it.
+                      {{ checkout.name }} is a test account. The owner or an admin completes this
+                      purchase: go back to your own account, open
+                      <strong>People &amp; Access</strong> (admins: <strong>Test Accounts</strong>)
+                      <strong>→ Review requests → Purchase requests</strong>, and approve or decline
+                      it.
                     </p>
                   </div>
                   @if (testSessions.error()) {
@@ -316,17 +353,23 @@
               }
             }
             @case ('dev-real') {
-              <p class="env-badge"><span class="env-dot" aria-hidden="true"></span>DEV · No payment</p>
+              <p class="env-badge"
+                ><span class="env-dot" aria-hidden="true"></span>DEV · No payment</p
+              >
               <div class="payment-panel">
-                <p id="checkout-notice-description" class="payment-lead"><strong>Purchases in DEV are for test accounts only.</strong></p>
+                <p id="checkout-notice-description" class="payment-lead"
+                  ><strong>Purchases in DEV are for test accounts only.</strong></p
+                >
                 <p>
-                  In DEV, purchases are for test accounts; the owner or an admin approves them. To try a plan, choose
-                  Switch to a test account in your account menu.
+                  In DEV, purchases are for test accounts; the owner or an admin approves them. To
+                  try a plan, choose Switch to a test account in your account menu.
                 </p>
               </div>
             }
             @case ('local') {
-              <p class="env-badge is-local"><span class="env-dot" aria-hidden="true"></span>Local · Mock payment</p>
+              <p class="env-badge is-local"
+                ><span class="env-dot" aria-hidden="true"></span>Local · Mock payment</p
+              >
               <ng-container *ngTemplateOutlet="orderCard; context: { $implicit: true }" />
               @if (outcome(); as result) {
                 <ng-container *ngTemplateOutlet="paymentResult; context: { $implicit: result }" />
@@ -344,36 +387,57 @@
             }
             @default {
               <div class="payment-panel">
-                <p id="checkout-notice-description" class="payment-lead"><strong>Payments are not enabled yet.</strong></p>
-                <p>You cannot buy a plan here yet, and nothing is charged. Open and Free with account lessons stay available.</p>
+                <p id="checkout-notice-description" class="payment-lead"
+                  ><strong>Payments are not enabled yet.</strong></p
+                >
+                <p
+                  >You cannot buy a plan here yet, and nothing is charged. Open and Free with
+                  account lessons stay available.</p
+                >
               </div>
             }
           }
         }
         @if (signedIn() && !devCheckout() && !outcome()) {
-          <p class="checkout-status" role="status">{{ purchaseStatus() || membershipApi.error() }}</p>
+          <p class="checkout-status" role="status">{{
+            purchaseStatus() || membershipApi.error()
+          }}</p>
         }
       </div>
 
       <footer class="checkout-foot">
         @if (!signedIn()) {
           <div class="action-row foot-centred">
-            <a class="action-button" routerLink="/sign-in" [queryParams]="{ returnTo: '/pricing' }">Sign in</a>
-            <button #noticeClose type="button" class="action-link" (click)="closeNotice()">Close</button>
+            <a class="action-button" routerLink="/sign-in" [queryParams]="{ returnTo: '/pricing' }"
+              >Sign in</a
+            >
+            <button #noticeClose type="button" class="action-link" (click)="closeNotice()"
+              >Close</button
+            >
           </div>
           <!-- New learners sign up here and come back to Pricing to choose. -->
           <p class="notice-signup">
             Don’t have an account?
-            <a routerLink="/sign-up" [queryParams]="{ returnTo: '/pricing' }">Create a free account</a>
+            <a routerLink="/sign-up" [queryParams]="{ returnTo: '/pricing' }"
+              >Create a free account</a
+            >
           </p>
         } @else if (step() === 'plan') {
           <div class="action-row foot-split">
-            <button #noticeClose type="button" class="action-link" (click)="closeNotice()">Close</button>
+            <button #noticeClose type="button" class="action-link" (click)="closeNotice()"
+              >Close</button
+            >
             <button type="button" class="action-button" (click)="goTo('review')">Continue</button>
           </div>
         } @else if (step() === 'review') {
           <div class="action-row foot-split">
-            <button type="button" class="action-link" [disabled]="purchasing()" (click)="goTo('plan')">Back</button>
+            <button
+              type="button"
+              class="action-link"
+              [disabled]="purchasing()"
+              (click)="goTo('plan')"
+              >Back</button
+            >
             <button
               type="button"
               class="action-button"
@@ -395,11 +459,24 @@
             >
               Go to Review requests
             </button>
-            <button #noticeClose type="button" class="action-link" [disabled]="testSessions.returning()" (click)="closeNotice()">Close</button>
+            <button
+              #noticeClose
+              type="button"
+              class="action-link"
+              [disabled]="testSessions.returning()"
+              (click)="closeNotice()"
+              >Close</button
+            >
           </div>
         } @else if (paymentKind() === 'local' && !outcome()) {
           <div class="action-row foot-split">
-            <button type="button" class="action-link" [disabled]="purchasing()" (click)="goTo('review')">Back</button>
+            <button
+              type="button"
+              class="action-link"
+              [disabled]="purchasing()"
+              (click)="goTo('review')"
+              >Back</button
+            >
             <button
               type="button"
               class="action-button"
@@ -413,12 +490,22 @@
         } @else if (outcome()?.ok) {
           <div class="action-row foot-centred">
             <a class="action-button" routerLink="/account">Open Manage account</a>
-            <button #noticeClose type="button" class="action-link" (click)="closeNotice()">Close</button>
+            <button #noticeClose type="button" class="action-link" (click)="closeNotice()"
+              >Close</button
+            >
           </div>
         } @else {
           <div class="action-row foot-split">
-            <button type="button" class="action-link" [disabled]="!!outcome()" (click)="goTo('review')">Back</button>
-            <button #noticeClose type="button" class="action-button" (click)="closeNotice()">Close</button>
+            <button
+              type="button"
+              class="action-link"
+              [disabled]="!!outcome()"
+              (click)="goTo('review')"
+              >Back</button
+            >
+            <button #noticeClose type="button" class="action-button" (click)="closeNotice()"
+              >Close</button
+            >
           </div>
         }
       </footer>
@@ -427,9 +514,17 @@
 
   <!-- The mock payment's answer. -->
   <ng-template #paymentResult let-result>
-    <div class="payment-result" [class.is-ok]="result.ok" role="status" id="checkout-notice-description">
+    <div
+      class="payment-result"
+      [class.is-ok]="result.ok"
+      role="status"
+      id="checkout-notice-description"
+    >
       <span class="result-mark" aria-hidden="true"></span>
-      <p><strong>{{ result.ok ? 'Payment complete' : 'Payment not completed' }}</strong> {{ result.message }}</p>
+      <p
+        ><strong>{{ result.ok ? 'Payment complete' : 'Payment not completed' }}</strong>
+        {{ result.message }}</p
+      >
     </div>
   </ng-template>
 
@@ -456,7 +551,12 @@
   <!-- The order summary: what it opens, the dates, the price, and an upgrade's credit. -->
   <ng-template #orderCard let-compact>
     @if (summary(); as order) {
-      <section class="order" [class.is-compact]="compact" [attr.data-plan]="chosen()?.plan?.id" aria-label="Order summary">
+      <section
+        class="order"
+        [class.is-compact]="compact"
+        [attr.data-plan]="chosen()?.plan?.id"
+        aria-label="Order summary"
+      >
         <div class="order-head">
           <div>
             <p class="order-label">Order summary</p>
@@ -502,7 +602,11 @@
         }
         <div class="order-total">
           <span class="order-total-label">{{ order.upgrade ? 'Due today' : 'Total' }}</span>
-          <span class="order-total-price" [class.is-pending]="!order.quoted" [attr.aria-busy]="quoting()">
+          <span
+            class="order-total-price"
+            [class.is-pending]="!order.quoted"
+            [attr.aria-busy]="quoting()"
+          >
             <span class="price-figure">{{ order.due }}</span>
             @if (!order.upgrade && order.period.startsWith('/')) {
               <span class="period">{{ order.period }}</span>
@@ -510,8 +614,10 @@
           </span>
         </div>
         @if (order.upgrade; as upgrade) {
+          <!-- prettier-ignore -->
           <p class="order-note">
-            You pay the difference for the time left.@if (upgrade.ends) { Your end date stays {{ upgrade.ends }}.}
+            You pay the difference for the time left.@if (upgrade.ends) { Your end date stays {{
+              upgrade.ends }}.}
           </p>
         }
       </section>

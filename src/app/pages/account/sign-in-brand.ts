@@ -4,20 +4,25 @@ import { PathMarks } from '../../core/path-marks/path-marks';
 import { PlatformSignature } from '../../core/platform-signature/platform-signature';
 
 /** Which step of the sign-in or sign-up flow the panel sits beside. */
-export type SignInBrandVariant = 'sign-in' | 'sign-up' | 'confirm' | 'forgot' | 'reset' | 'new-password' | 'code';
+export type SignInBrandVariant =
+  'sign-in' | 'sign-up' | 'confirm' | 'forgot' | 'reset' | 'new-password' | 'code';
 
-interface ProgressRow { label: string; state: 'done' | 'current' | 'next' }
+interface ProgressRow {
+  label: string;
+  state: 'done' | 'current' | 'next';
+}
 
 /**
- * DLV-969: the Look Ahead side of every sign-in and sign-up screen. The logo stays on every step; the rest changes with
- * the step so consecutive screens never repeat the same panel (user, 2026-11-02). On a phone only the logo and the
- * headline remain above the form.
+ * DLV-969: the Look Ahead side of every sign-in and sign-up screen. The logo stays on every step;
+ * the rest changes with the step so consecutive screens never repeat the same panel (user,
+ * 2026-11-02). On a phone only the logo and the headline remain above the form.
  */
 @Component({
   selector: 'app-sign-in-brand',
   imports: [PlatformSignature, PathMarks],
   template: `
-    <!-- No logo here (owner, 2026-11-06): the header above the card already carries it, with the DEV mark. -->
+    <!-- No logo here (owner, 2026-11-06): the header above the card already carries it, with the
+         DEV mark. -->
     <p class="brand-headline">{{ headline() }}</p>
     @switch (variant()) {
       @case ('sign-in') {
@@ -32,20 +37,32 @@ interface ProgressRow { label: string; state: 'done' | 'current' | 'next' }
         </ul>
       }
       @case ('forgot') {
-        <p class="brand-text brand-extra">Your study plans and progress stay exactly as they are.</p>
-        <p class="brand-text brand-extra">We email a short code. Enter it with a new password and you are back where you left off.</p>
+        <p class="brand-text brand-extra"
+          >Your study plans and progress stay exactly as they are.</p
+        >
+        <p class="brand-text brand-extra"
+          >We email a short code. Enter it with a new password and you are back where you left
+          off.</p
+        >
       }
       @case ('new-password') {
-        <p class="brand-text brand-extra">The owner set up this account for you. Choose your own password to finish your first sign-in.</p>
+        <p class="brand-text brand-extra"
+          >The owner set up this account for you. Choose your own password to finish your first
+          sign-in.</p
+        >
       }
       @case ('code') {
-        <p class="brand-text brand-extra">Enter the code we sent to finish signing in. It keeps your account yours.</p>
+        <p class="brand-text brand-extra"
+          >Enter the code we sent to finish signing in. It keeps your account yours.</p
+        >
       }
       @default {
         <ol class="brand-progress brand-extra" aria-label="Progress">
           @for (row of progress(); track row.label) {
             <li [class]="row.state" [attr.aria-current]="row.state === 'current' ? 'step' : null">
-              <span class="progress-mark" aria-hidden="true">{{ row.state === 'done' ? '✓' : '' }}</span>
+              <span class="progress-mark" aria-hidden="true">{{
+                row.state === 'done' ? '✓' : ''
+              }}</span>
               <span>{{ row.label }}</span>
             </li>
           }
@@ -161,16 +178,25 @@ interface ProgressRow { label: string; state: 'done' | 'current' | 'next' }
 export class SignInBrand {
   readonly variant = input<SignInBrandVariant>('sign-in');
   protected readonly devSession = inject(DevSession);
-  protected readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated?.() === true);
+  protected readonly dev = computed(
+    () => this.devSession.status() !== null || this.devSession.gated?.() === true,
+  );
   protected readonly headline = computed(() => {
     switch (this.variant()) {
-      case 'sign-up': return 'Start where you are.';
-      case 'confirm': return 'Almost there.';
-      case 'forgot': return 'Locked out happens.';
-      case 'reset': return 'Back in a minute.';
-      case 'new-password': return 'Make it yours.';
-      case 'code': return 'One more check.';
-      default: return 'Become the engineer you can explain.';
+      case 'sign-up':
+        return 'Start where you are.';
+      case 'confirm':
+        return 'Almost there.';
+      case 'forgot':
+        return 'Locked out happens.';
+      case 'reset':
+        return 'Back in a minute.';
+      case 'new-password':
+        return 'Make it yours.';
+      case 'code':
+        return 'One more check.';
+      default:
+        return 'Become the engineer you can explain.';
     }
   });
   protected readonly progress = computed<ProgressRow[]>(() =>
