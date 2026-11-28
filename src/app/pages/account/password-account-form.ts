@@ -24,7 +24,12 @@ export const PASSWORD_STEP_ROUTES = {
 /** Follows a step the Gateway returned: leave for the signed-in page, or open the next screen. */
 export async function followStep(
   step: PasswordStep,
-  context: { router: Router; document: Document; returnTo: string; after: 'sign-in' | 'sign-up' | 'reset' },
+  context: {
+    router: Router;
+    document: Document;
+    returnTo: string;
+    after: 'sign-in' | 'sign-up' | 'reset';
+  },
   api: PasswordSignInApi,
 ): Promise<void> {
   const queryParams = { returnTo: context.returnTo };
@@ -41,10 +46,16 @@ export async function followStep(
       return;
     case 'code-sent':
       api.destination.set(step.destination);
-      await context.router.navigate([context.after === 'reset' ? PASSWORD_STEP_ROUTES.reset : PASSWORD_STEP_ROUTES.confirm], { queryParams });
+      await context.router.navigate(
+        [context.after === 'reset' ? PASSWORD_STEP_ROUTES.reset : PASSWORD_STEP_ROUTES.confirm],
+        { queryParams },
+      );
       return;
     case 'sign-in':
-      await context.router.navigate(['/sign-in'], { queryParams, state: { passwordNotice: context.after } });
+      await context.router.navigate(['/sign-in'], {
+        queryParams,
+        state: { passwordNotice: context.after },
+      });
       return;
   }
 }
@@ -73,11 +84,17 @@ export class PasswordAccountForm {
   protected readonly passwordVisible = signal(false);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
-  /** DLV-969 S36.8: set when the sign-in reports another account with this email; the form gives way to "Check your inbox". */
+  /**
+   * DLV-969 S36.8: set when the sign-in reports another account with this email; the form gives way
+   * to "Check your inbox".
+   */
   protected readonly mergeNext = signal<string | null>(null);
   /** The last sign-in failed on a wrong email or password. */
   private readonly wrongCredentials = signal(false);
-  /** DLV-969: after a wrong password, remind people who joined with Google, when Google is offered here. */
+  /**
+   * DLV-969: after a wrong password, remind people who joined with Google, when Google is offered
+   * here.
+   */
   protected readonly googleHint = computed(
     () => this.mode() === 'signin' && this.google() && this.wrongCredentials() && !!this.error(),
   );
@@ -123,14 +140,21 @@ export class PasswordAccountForm {
       }
       await followStep(
         step,
-        { router: this.router, document: this.document, returnTo: this.returnTo(), after: this.mode() === 'signup' ? 'sign-up' : 'sign-in' },
+        {
+          router: this.router,
+          document: this.document,
+          returnTo: this.returnTo(),
+          after: this.mode() === 'signup' ? 'sign-up' : 'sign-in',
+        },
         this.api,
       );
     } catch (error) {
       this.password.set('');
       if (error instanceof PasswordSignInError && error.problem === 'not-confirmed') {
         this.api.destination.set('');
-        await this.router.navigate([PASSWORD_STEP_ROUTES.confirm], { queryParams: { returnTo: this.returnTo() } });
+        await this.router.navigate([PASSWORD_STEP_ROUTES.confirm], {
+          queryParams: { returnTo: this.returnTo() },
+        });
         return;
       }
       const problem = error instanceof PasswordSignInError ? error.problem : 'unavailable';

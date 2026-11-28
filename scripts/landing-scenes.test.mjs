@@ -10,7 +10,11 @@ const withoutAi = ['study-plan'];
 const dir = new URL('../public/assets/scenes/landing/', import.meta.url).pathname;
 const scenes = readdirSync(dir)
   .filter((file) => file.endsWith('.svg'))
-  .map((file) => ({ file, name: file.replace(/\.svg$/, ''), svg: readFileSync(join(dir, file), 'utf8') }));
+  .map((file) => ({
+    file,
+    name: file.replace(/\.svg$/, ''),
+    svg: readFileSync(join(dir, file), 'utf8'),
+  }));
 
 test('all eight landing scenes are present', () => {
   assert.deepEqual(scenes.map((scene) => scene.name).sort(), [
@@ -27,7 +31,10 @@ test('all eight landing scenes are present', () => {
 
 for (const { file, name, svg } of scenes) {
   test(`${file}: text is at least 12px in a 320-wide view box`, () => {
-    const [, , width] = svg.match(/viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/).slice(1).map(Number);
+    const [, , width] = svg
+      .match(/viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/)
+      .slice(1)
+      .map(Number);
     const minimum = 12 * (width / 320);
     const sizes = [...svg.matchAll(/font-size="([\d.]+)"/g)].map((match) => Number(match[1]));
     assert.ok(sizes.length > 0);
@@ -49,7 +56,8 @@ for (const { file, name, svg } of scenes) {
   });
 
   test(`${file}: each beat holds at most four words`, () => {
-    // Each beat is authored as one line: <g class="<name>-ai">…</g>, <g class="<name>-you">…</g> and so on.
+    // Each beat is authored as one line: <g class="<name>-ai">…</g>, <g class="<name>-you">…</g>
+    // and so on.
     const beat = new RegExp(`<g class="${name}-(ai|you|ask|slow|miss|plan)">`);
     const groups = svg.split('\n').filter((line) => beat.test(line));
     for (const group of groups) {
@@ -64,7 +72,9 @@ for (const { file, name, svg } of scenes) {
 
   test(`${file}: the "You" chip and the AI mark sit together as one exchange`, () => {
     const at = (re) => [...svg.matchAll(re)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
-    const ai = at(new RegExp(`<g class="${name}-ai-mark" transform="translate\\(([\\d.]+) ([\\d.]+)\\)"`, 'g'));
+    const ai = at(
+      new RegExp(`<g class="${name}-ai-mark" transform="translate\\(([\\d.]+) ([\\d.]+)\\)"`, 'g'),
+    );
     const you = at(new RegExp(`<rect class="${name}-you-bg" x="([\\d.]+)" y="([\\d.]+)"`, 'g'));
     if (!ai.length || !you.length) return;
     // A "You" chip in the same column, at most two rows away from an AI mark.
@@ -119,24 +129,43 @@ test('path-card scenes open on a large-type summary that names AI and you', () =
     }
     assert.match(summary, new RegExp(`${name}-ai-mark`));
     assert.match(summary, new RegExp(`${name}-you-bg`));
-    assert.match(svg, new RegExp(`@keyframes ${name}-kf-summary \\{ 0%, [\\d.]+% \\{ opacity: 1; \\}`));
+    assert.match(
+      svg,
+      new RegExp(`@keyframes ${name}-kf-summary \\{ 0%, [\\d.]+% \\{ opacity: 1; \\}`),
+    );
     // The landing page drives these scenes: nothing animates until it adds "<name>-play" to the
     // root, and then the story plays once (no infinite loop) for data-story-ms milliseconds.
     assert.match(svg, /^<svg [^>]*data-story-ms="\d+"/);
-    assert.match(svg, new RegExp(`\\.${name}-play \\.${name}-summary \\{ animation: ${name}-kf-summary [\\d.]+s 1; \\}`));
-    assert.match(svg, new RegExp(`\\.${name}-play\\.${name}-paused \\* \\{ animation-play-state: paused; \\}`));
+    assert.match(
+      svg,
+      new RegExp(
+        `\\.${name}-play \\.${name}-summary \\{ animation: ${name}-kf-summary [\\d.]+s 1; \\}`,
+      ),
+    );
+    assert.match(
+      svg,
+      new RegExp(`\\.${name}-play\\.${name}-paused \\* \\{ animation-play-state: paused; \\}`),
+    );
     assert.doesNotMatch(svg, /infinite/);
     for (const [, selector] of svg.matchAll(/\n([^\n{]+) \{ [^}]*animation: /g)) {
-      assert.ok(selector.startsWith(`.${name}-play .${name}-`), `${name}: ${selector} animates without the play class`);
+      assert.ok(
+        selector.startsWith(`.${name}-play .${name}-`),
+        `${name}: ${selector} animates without the play class`,
+      );
     }
   }
 });
 
 test('summary AI and You rows sit at the same height on all three path cards', () => {
   const rows = ['learn', 'grow', 'blaze'].map((name) => {
-    const summary = scenes.find((scene) => scene.name === name).svg.split('\n').find((line) => line.startsWith(`<g class="${name}-summary">`));
+    const summary = scenes
+      .find((scene) => scene.name === name)
+      .svg.split('\n')
+      .find((line) => line.startsWith(`<g class="${name}-summary">`));
     return [
-      summary.match(new RegExp(`<g class="${name}-ai-mark" transform="translate\\([\\d.]+ ([\\d.]+)\\)"`))[1],
+      summary.match(
+        new RegExp(`<g class="${name}-ai-mark" transform="translate\\([\\d.]+ ([\\d.]+)\\)"`),
+      )[1],
       summary.match(new RegExp(`<rect class="${name}-you-bg" x="[\\d.]+" y="([\\d.]+)"`))[1],
     ];
   });
@@ -161,13 +190,24 @@ test('learn and grow stories put AI lines on row 1 and You lines on row 2', () =
       .svg.split('\n')
       .filter((line) => !line.startsWith(`<g class="${name}-summary">`))
       .join('\n');
-    const you = [...story.matchAll(new RegExp(`<rect class="${name}-you-bg" x="([\\d.]+)" y="([\\d.]+)"`, 'g'))];
+    const you = [
+      ...story.matchAll(
+        new RegExp(`<rect class="${name}-you-bg" x="([\\d.]+)" y="([\\d.]+)"`, 'g'),
+      ),
+    ];
     // AI dialogue lines start at the band's x; the AI ranker component is centred in its own box.
-    const ai = [...story.matchAll(new RegExp(`<g class="${name}-ai-mark" transform="translate\\(([\\d.]+) ([\\d.]+)\\)"`, 'g'))].filter(
-      ([, x]) => x === '6',
-    );
+    const ai = [
+      ...story.matchAll(
+        new RegExp(
+          `<g class="${name}-ai-mark" transform="translate\\(([\\d.]+) ([\\d.]+)\\)"`,
+          'g',
+        ),
+      ),
+    ].filter(([, x]) => x === '6');
     assert.ok(you.length > 0, `${name}: no You line`);
-    for (const [, x, y] of you) assert.deepEqual([x, y], ['6', '27'], `${name}: You line at ${x},${y}`);
-    for (const [, x, y] of ai) assert.deepEqual([x, y], ['6', '4'], `${name}: AI line at ${x},${y}`);
+    for (const [, x, y] of you)
+      assert.deepEqual([x, y], ['6', '27'], `${name}: You line at ${x},${y}`);
+    for (const [, x, y] of ai)
+      assert.deepEqual([x, y], ['6', '4'], `${name}: AI line at ${x},${y}`);
   }
 });

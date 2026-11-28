@@ -15,11 +15,18 @@ import {
 } from './wordmark-key';
 
 describe('WordmarkKey', () => {
-  let observed: Array<{ callback: IntersectionObserverCallback; disconnect: ReturnType<typeof vi.fn> }>;
+  let observed: Array<{
+    callback: IntersectionObserverCallback;
+    disconnect: ReturnType<typeof vi.fn>;
+  }>;
 
   function stubBrowser(reduced: boolean, withObserver = true): void {
     observed = [];
-    vi.stubGlobal('matchMedia', () => ({ matches: reduced, addEventListener: () => {}, removeEventListener: () => {} }));
+    vi.stubGlobal('matchMedia', () => ({
+      matches: reduced,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
     class FakeObserver {
       readonly disconnect = vi.fn();
       constructor(callback: IntersectionObserverCallback) {
@@ -38,7 +45,8 @@ describe('WordmarkKey', () => {
     return fixture;
   }
   const root = (fixture: ComponentFixture<WordmarkKey>) => fixture.nativeElement as HTMLElement;
-  const state = (fixture: ComponentFixture<WordmarkKey>) => root(fixture).getAttribute('data-state');
+  const state = (fixture: ComponentFixture<WordmarkKey>) =>
+    root(fixture).getAttribute('data-state');
   /** A 500px card on a 1000px screen, with `share` of the card showing. */
   const cardEntry = (share: number) =>
     ({
@@ -57,15 +65,22 @@ describe('WordmarkKey', () => {
   };
   /** Move on to the start of change `id` (counting from the first word). */
   const msUntil = (id: string) =>
-    KEY_STAGES.slice(0, KEY_STAGES.findIndex((stage) => stage.id === id)).reduce((total, stage) => total + stage.ms, 0);
+    KEY_STAGES.slice(
+      0,
+      KEY_STAGES.findIndex((stage) => stage.id === id),
+    ).reduce((total, stage) => total + stage.ms, 0);
   const caption = (fixture: ComponentFixture<WordmarkKey>) =>
-    [...root(fixture).querySelectorAll('.key-caption.on > tspan')].map((line) => line.textContent?.trim()).join(' ');
-  const lit = (fixture: ComponentFixture<WordmarkKey>) => root(fixture).querySelectorAll('.lit').length;
+    [...root(fixture).querySelectorAll('.key-caption.on > tspan')]
+      .map((line) => line.textContent?.trim())
+      .join(' ');
+  const lit = (fixture: ComponentFixture<WordmarkKey>) =>
+    root(fixture).querySelectorAll('.lit').length;
   const replay = (fixture: ComponentFixture<WordmarkKey>) =>
     root(fixture).querySelector<HTMLButtonElement>('.key-replay');
   const pause = (fixture: ComponentFixture<WordmarkKey>) =>
     root(fixture).querySelector<HTMLButtonElement>('.key-control:not(.key-replay):not(.key-skip)');
-  const skip = (fixture: ComponentFixture<WordmarkKey>) => root(fixture).querySelector<HTMLButtonElement>('.key-skip');
+  const skip = (fixture: ComponentFixture<WordmarkKey>) =>
+    root(fixture).querySelector<HTMLButtonElement>('.key-skip');
 
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => {
@@ -77,7 +92,9 @@ describe('WordmarkKey', () => {
     stubBrowser(false);
     const fixture = render();
     expect(root(fixture).querySelector('h3')?.textContent).toBe('Inside the wordmark');
-    expect([...root(fixture).querySelectorAll('.key-list li')].map((item) => item.textContent?.trim())).toEqual([
+    expect(
+      [...root(fixture).querySelectorAll('.key-list li')].map((item) => item.textContent?.trim()),
+    ).toEqual([
       'OO Look, the eyes',
       'K The obstacle, a wall',
       '‹ › Code, in the K and the H',
@@ -92,15 +109,31 @@ describe('WordmarkKey', () => {
     expect(KEY_STORY_MS).toBe(1500 + 7 * 2600 + 3400 + 5000);
   });
 
-  it('measures how much of the card shows, against the card or the screen, whichever is smaller', () => {
-    expect(shownShare(cardEntry(0.5), 1000)).toBe(0.5);
-    const tall = { boundingClientRect: { height: 2000 }, rootBounds: { height: 800 }, intersectionRect: { height: 600 } };
-    expect(shownShare(tall as unknown as IntersectionObserverEntry, 0)).toBe(0.75);
-    const noRoot = { boundingClientRect: { height: 900 }, rootBounds: null, intersectionRect: { height: 300 } };
-    expect(shownShare(noRoot as unknown as IntersectionObserverEntry, 600)).toBe(0.5);
-    const empty = { boundingClientRect: { height: 0 }, rootBounds: { height: 800 }, intersectionRect: { height: 0 } };
-    expect(shownShare(empty as unknown as IntersectionObserverEntry, 800)).toBe(0);
-  });
+  it(
+    'measures how much of the card shows, against the card or the screen, whichever is ' +
+      'smaller',
+    () => {
+      expect(shownShare(cardEntry(0.5), 1000)).toBe(0.5);
+      const tall = {
+        boundingClientRect: { height: 2000 },
+        rootBounds: { height: 800 },
+        intersectionRect: { height: 600 },
+      };
+      expect(shownShare(tall as unknown as IntersectionObserverEntry, 0)).toBe(0.75);
+      const noRoot = {
+        boundingClientRect: { height: 900 },
+        rootBounds: null,
+        intersectionRect: { height: 300 },
+      };
+      expect(shownShare(noRoot as unknown as IntersectionObserverEntry, 600)).toBe(0.5);
+      const empty = {
+        boundingClientRect: { height: 0 },
+        rootBounds: { height: 800 },
+        intersectionRect: { height: 0 },
+      };
+      expect(shownShare(empty as unknown as IntersectionObserverEntry, 800)).toBe(0);
+    },
+  );
 
   it('waits until most of the card is on screen, then shows the plain word', () => {
     stubBrowser(false);
@@ -118,27 +151,34 @@ describe('WordmarkKey', () => {
     expect(observed[0].disconnect).not.toHaveBeenCalled();
   });
 
-  it('with autoplay, starts as soon as any of the card shows, without waiting for a scroll (/welcome)', () => {
-    stubBrowser(false);
-    const fixture = TestBed.createComponent(WordmarkKey);
-    fixture.componentRef.setInput('autoplay', true);
-    fixture.detectChanges();
-    TestBed.tick();
-    fixture.detectChanges();
-    scrollIntoView(fixture, 0);
-    advance(fixture, KEY_RESET_MS);
-    expect(state(fixture)).toBe('hidden');
-    scrollIntoView(fixture, 0.2);
-    advance(fixture, KEY_RESET_MS);
-    expect(state(fixture)).toBe('telling');
-  });
+  it(
+    'with autoplay, starts as soon as any of the card shows, without waiting for a scroll ' +
+      '(/welcome)',
+    () => {
+      stubBrowser(false);
+      const fixture = TestBed.createComponent(WordmarkKey);
+      fixture.componentRef.setInput('autoplay', true);
+      fixture.detectChanges();
+      TestBed.tick();
+      fixture.detectChanges();
+      scrollIntoView(fixture, 0);
+      advance(fixture, KEY_RESET_MS);
+      expect(state(fixture)).toBe('hidden');
+      scrollIntoView(fixture, 0.2);
+      advance(fixture, KEY_RESET_MS);
+      expect(state(fixture)).toBe('telling');
+    },
+  );
 
   it('brings each symbol down onto its letter, one at a time, each with its own caption', () => {
     stubBrowser(false);
     const fixture = render();
     scrollIntoView(fixture);
     advance(fixture, KEY_RESET_MS + msUntil('eyes'));
-    const symbols = () => [...root(fixture).querySelectorAll('.key-symbol')].map((symbol) => symbol.classList.contains('lit'));
+    const symbols = () =>
+      [...root(fixture).querySelectorAll('.key-symbol')].map((symbol) =>
+        symbol.classList.contains('lit'),
+      );
     const seen: string[] = [];
     for (const stage of KEY_STAGES.slice(1, 8)) {
       seen.push(`${caption(fixture)}: ${symbols().filter(Boolean).length}`);
@@ -160,30 +200,37 @@ describe('WordmarkKey', () => {
     ]);
   });
 
-  it('then shows every meaning together, and only then draws the path, reading the whole sentence', () => {
-    stubBrowser(false);
-    const fixture = render();
-    scrollIntoView(fixture);
-    const shaft = () => root(fixture).querySelector('.key-shaft')!;
-    advance(fixture, KEY_RESET_MS + msUntil('door'));
-    expect(shaft().classList.contains('lit')).toBe(false);
-    advance(fixture, KEY_STAGES[7].ms);
-    expect(caption(fixture)).toBe(KEY_SUMMARY.map((item) => item.lines.join(' ')).join(' '));
-    expect(root(fixture).querySelectorAll('.key-summary.on')).toHaveLength(KEY_SUMMARY.length);
-    expect(shaft().classList.contains('lit')).toBe(false);
-    advance(fixture, KEY_STAGES[8].ms);
-    // The path draws with no caption of its own; the whole sentence reads instead.
-    expect(caption(fixture)).toBe(
-      'Look ahead to the obstacle, put AI to work in your code, explore and engineer with algorithms and architecture, and find the way through.',
-    );
-    expect(shaft().classList.contains('lit')).toBe(true);
-    expect(root(fixture).querySelector('.key-arrowhead')?.classList.contains('lit')).toBe(true);
-    expect(root(fixture).querySelector('[d="M8 60 V138 H36"]')?.classList.contains('lit')).toBe(true);
-    advance(fixture, KEY_STAGES[9].ms);
-    expect(state(fixture)).toBe('joined');
-    expect(caption(fixture)).toBe('');
-  });
-  it('colours the sentence\'s key words like their symbols', () => {
+  it(
+    'then shows every meaning together, and only then draws the path, reading the whole ' +
+      'sentence',
+    () => {
+      stubBrowser(false);
+      const fixture = render();
+      scrollIntoView(fixture);
+      const shaft = () => root(fixture).querySelector('.key-shaft')!;
+      advance(fixture, KEY_RESET_MS + msUntil('door'));
+      expect(shaft().classList.contains('lit')).toBe(false);
+      advance(fixture, KEY_STAGES[7].ms);
+      expect(caption(fixture)).toBe(KEY_SUMMARY.map((item) => item.lines.join(' ')).join(' '));
+      expect(root(fixture).querySelectorAll('.key-summary.on')).toHaveLength(KEY_SUMMARY.length);
+      expect(shaft().classList.contains('lit')).toBe(false);
+      advance(fixture, KEY_STAGES[8].ms);
+      // The path draws with no caption of its own; the whole sentence reads instead.
+      expect(caption(fixture)).toBe(
+        'Look ahead to the obstacle, put AI to work in your code, explore and engineer ' +
+          'with algorithms and architecture, and find the way through.',
+      );
+      expect(shaft().classList.contains('lit')).toBe(true);
+      expect(root(fixture).querySelector('.key-arrowhead')?.classList.contains('lit')).toBe(true);
+      expect(root(fixture).querySelector('[d="M8 60 V138 H36"]')?.classList.contains('lit')).toBe(
+        true,
+      );
+      advance(fixture, KEY_STAGES[9].ms);
+      expect(state(fixture)).toBe('joined');
+      expect(caption(fixture)).toBe('');
+    },
+  );
+  it("colours the sentence's key words like their symbols", () => {
     stubBrowser(false);
     const fixture = render();
     scrollIntoView(fixture);
@@ -268,37 +315,40 @@ describe('WordmarkKey', () => {
     expect(events).toEqual(['restarted', 'finished', 'restarted', 'finished']);
   });
 
-  it('once settled, loops from the summary: every meaning again, then the path, then the arrow', () => {
-    stubBrowser(false);
-    const fixture = render();
-    const events: string[] = [];
-    fixture.componentInstance.cycle.subscribe((phase) => events.push(phase));
-    fixture.componentInstance.passed.subscribe(() => events.push('passed'));
-    scrollIntoView(fixture);
-    advance(fixture, KEY_RESET_MS + KEY_STORY_MS);
-    fixture.componentRef.setInput('settled', true);
-    fixture.detectChanges();
-    const shaft = () => root(fixture).querySelector('.key-shaft')!.classList.contains('lit');
-    expect(shaft()).toBe(true);
-    advance(fixture, LOOP_REST_MS);
-    // Back to the summary: all symbols still in place, the path lifted, every meaning showing.
-    expect(KEY_STAGES[LOOP_FROM].id).toBe('summary');
-    expect(state(fixture)).toBe('telling');
-    expect(events).toEqual(['apart']);
-    expect(root(fixture).querySelectorAll('.key-symbol.lit')).toHaveLength(7);
-    expect(root(fixture).querySelectorAll('.key-symbol.landing')).toHaveLength(0);
-    expect(shaft()).toBe(false);
-    expect(caption(fixture)).toBe(KEY_SUMMARY.map((item) => item.lines.join(' ')).join(' '));
-    advance(fixture, KEY_STAGES[LOOP_FROM].ms);
-    // The path draws again, but the sentence already stands below the steps.
-    expect(shaft()).toBe(true);
-    expect(caption(fixture)).toBe('');
-    advance(fixture, KEY_STAGES[KEY_DONE - 1].ms);
-    expect(state(fixture)).toBe('joined');
-    expect(events).toEqual(['apart', 'joined', 'passed']);
-    advance(fixture, LOOP_ARROW_MS + LOOP_REST_MS);
-    expect(events).toEqual(['apart', 'joined', 'passed', 'apart']);
-  });
+  it(
+    'once settled, loops from the summary: every meaning again, then the path, then the ' + 'arrow',
+    () => {
+      stubBrowser(false);
+      const fixture = render();
+      const events: string[] = [];
+      fixture.componentInstance.cycle.subscribe((phase) => events.push(phase));
+      fixture.componentInstance.passed.subscribe(() => events.push('passed'));
+      scrollIntoView(fixture);
+      advance(fixture, KEY_RESET_MS + KEY_STORY_MS);
+      fixture.componentRef.setInput('settled', true);
+      fixture.detectChanges();
+      const shaft = () => root(fixture).querySelector('.key-shaft')!.classList.contains('lit');
+      expect(shaft()).toBe(true);
+      advance(fixture, LOOP_REST_MS);
+      // Back to the summary: all symbols still in place, the path lifted, every meaning showing.
+      expect(KEY_STAGES[LOOP_FROM].id).toBe('summary');
+      expect(state(fixture)).toBe('telling');
+      expect(events).toEqual(['apart']);
+      expect(root(fixture).querySelectorAll('.key-symbol.lit')).toHaveLength(7);
+      expect(root(fixture).querySelectorAll('.key-symbol.landing')).toHaveLength(0);
+      expect(shaft()).toBe(false);
+      expect(caption(fixture)).toBe(KEY_SUMMARY.map((item) => item.lines.join(' ')).join(' '));
+      advance(fixture, KEY_STAGES[LOOP_FROM].ms);
+      // The path draws again, but the sentence already stands below the steps.
+      expect(shaft()).toBe(true);
+      expect(caption(fixture)).toBe('');
+      advance(fixture, KEY_STAGES[KEY_DONE - 1].ms);
+      expect(state(fixture)).toBe('joined');
+      expect(events).toEqual(['apart', 'joined', 'passed']);
+      advance(fixture, LOOP_ARROW_MS + LOOP_REST_MS);
+      expect(events).toEqual(['apart', 'joined', 'passed', 'apart']);
+    },
+  );
   it('puts the wordmark back together and stops looping while the card is off screen', () => {
     stubBrowser(false);
     const fixture = render();
@@ -352,7 +402,9 @@ describe('WordmarkKey', () => {
     fixture.componentInstance.stillChange.subscribe((still) => events.push(`still:${still}`));
     fixture.componentInstance.finished.subscribe(() => events.push('finished'));
     const card = document.createElement('section');
-    (card as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [animation('descent')];
+    (card as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [
+      animation('descent'),
+    ];
     fixture.componentRef.setInput('stage', card);
     scrollIntoView(fixture);
     advance(fixture, KEY_RESET_MS + msUntil('wall') + 500);
@@ -398,23 +450,27 @@ describe('WordmarkKey', () => {
     expect(state(fixture)).toBe('telling');
   });
 
-  it('with reduced motion, shows the finished wordmark with its meanings and no controls or loop', () => {
-    stubBrowser(true);
-    const fixture = render();
-    const events: string[] = [];
-    fixture.componentInstance.finished.subscribe(() => events.push('finished'));
-    scrollIntoView(fixture);
-    expect(state(fixture)).toBe('joined');
-    expect(events).toEqual(['finished']);
-    expect(root(fixture).hasAttribute('data-reduced')).toBe(true);
-    expect(pause(fixture)).toBeNull();
-    expect(replay(fixture)).toBeNull();
-    expect(skip(fixture)).toBeNull();
-    fixture.componentRef.setInput('settled', true);
-    fixture.detectChanges();
-    advance(fixture, LOOP_REST_MS + KEY_STORY_MS);
-    expect(state(fixture)).toBe('joined');
-  });
+  it(
+    'with reduced motion, shows the finished wordmark with its meanings and no controls ' +
+      'or loop',
+    () => {
+      stubBrowser(true);
+      const fixture = render();
+      const events: string[] = [];
+      fixture.componentInstance.finished.subscribe(() => events.push('finished'));
+      scrollIntoView(fixture);
+      expect(state(fixture)).toBe('joined');
+      expect(events).toEqual(['finished']);
+      expect(root(fixture).hasAttribute('data-reduced')).toBe(true);
+      expect(pause(fixture)).toBeNull();
+      expect(replay(fixture)).toBeNull();
+      expect(skip(fixture)).toBeNull();
+      fixture.componentRef.setInput('settled', true);
+      fixture.detectChanges();
+      advance(fixture, LOOP_REST_MS + KEY_STORY_MS);
+      expect(state(fixture)).toBe('joined');
+    },
+  );
 
   it('skips to the end: the whole wordmark at once, and the page told to finish everything', () => {
     stubBrowser(false);

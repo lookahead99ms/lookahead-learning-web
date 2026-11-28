@@ -1,14 +1,23 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { ScrollLock } from '../scroll-lock/scroll-lock';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TestSessions, UsableTestAccount, scenarioDetail, scenarioPlan } from './test-sessions';
 import { switcherUpgradeLine, switcherUpgradeOf } from '../../content/upgrade-markers';
 
 /**
- * DLV-969 (owner, 2026-11-04): "Switch to a test account" from the account menu. One dialog: find by name or scenario,
- * and a plan filter. Choosing an account reloads the platform as it. The Domain lists only the accounts this person's
- * role may use. Since 2026-11-06 (owner) every test account is a learner, so there are no Learners / Co-authors /
- * Admins tabs any more.
+ * DLV-969 (owner, 2026-11-04): "Switch to a test account" from the account menu. One dialog: find
+ * by name or scenario, and a plan filter. Choosing an account reloads the platform as it. The
+ * Domain lists only the accounts this person's role may use. Since 2026-11-06 (owner) every test
+ * account is a learner, so there are no Learners / Co-authors / Admins tabs any more.
  */
 @Component({
   selector: 'app-test-account-switcher',
@@ -35,17 +44,25 @@ export class TestAccountSwitcher {
   private readonly found = computed(() => {
     const words = this.query().trim().toLowerCase().split(/\s+/).filter(Boolean);
     return this.all().filter((account) => {
-      const text = [account.displayName, account.username, account.scenario ?? ''].join(' ').toLowerCase();
+      const text = [account.displayName, account.username, account.scenario ?? '']
+        .join(' ')
+        .toLowerCase();
       return words.every((word) => text.includes(word));
     });
   });
   /** The plans the learners in this list start on, in the order plans are sold. */
   protected readonly plans = computed(() => {
     const present = new Set(this.found().map(scenarioPlan).filter(Boolean));
-    return PLAN_ORDER.filter((name) => present.has(name)).concat([...present].filter((name): name is string => !!name && !PLAN_ORDER.includes(name)));
+    return PLAN_ORDER.filter((name) => present.has(name)).concat(
+      [...present].filter((name): name is string => !!name && !PLAN_ORDER.includes(name)),
+    );
   });
-  protected readonly shown = computed(() => this.found().filter((account) => !this.plan() || scenarioPlan(account) === this.plan()));
-  protected readonly currentId = computed(() => (this.sessions.active() ? this.accounts.account()?.accountId ?? null : null));
+  protected readonly shown = computed(() =>
+    this.found().filter((account) => !this.plan() || scenarioPlan(account) === this.plan()),
+  );
+  protected readonly currentId = computed(() =>
+    this.sessions.active() ? (this.accounts.account()?.accountId ?? null) : null,
+  );
   protected readonly holder = computed(() => this.sessions.status()?.holderName ?? null);
 
   constructor() {

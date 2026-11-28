@@ -41,7 +41,10 @@ const CARD_TEXT_FILL = /^var\(\s*--scene-(?:ink|text|muted|accent|link|learn|gro
  * scripts/learning-unit-card-contract.mjs.
  */
 const NODE_MARK = /^[+\-−]?(?:\d{1,2}|\p{L}{1,2}|\p{L}\d|\d\p{L})$|^[^\p{L}\p{N}\s$€£¥%]$/u;
-/** Hard-coded white text sits on a filled shape; it follows --scene-card so it turns dark in dark mode. */
+/**
+ * Hard-coded white text sits on a filled shape; it follows --scene-card so it turns dark in dark
+ * mode.
+ */
 const LITERAL_WHITE = /^(?:#fff|#ffffff|white)$/i;
 
 /** Declarations from the scene's own <style>, keyed by the class a rule's last compound targets. */
@@ -50,7 +53,11 @@ function classDeclarations(root: Element): Map<string, string[]> {
   for (const style of Array.from(root.querySelectorAll('style'))) {
     for (const [, selectors, body] of (style.textContent ?? '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
       for (const selector of selectors.split(',')) {
-        const last = selector.trim().split(/[\s>+~]+/).pop() ?? '';
+        const last =
+          selector
+            .trim()
+            .split(/[\s>+~]+/)
+            .pop() ?? '';
         if (!/^(?:\.[\w-]+)+$/.test(last)) continue;
         for (const name of last.slice(1).split('.')) {
           byClass.set(name, [...(byClass.get(name) ?? []), body]);

@@ -2,8 +2,9 @@ import { Component, input } from '@angular/core';
 import { TheoryTable } from '../../content/content.models';
 
 /**
- * A small lesson table (cells allow inline HTML). The host is the lesson's `div.lesson-table-wrap`, the frame
- * that scrolls a wide table inside itself; where the frame sits is set by the lesson around it.
+ * A small lesson table (cells allow inline HTML). The host is the lesson's `div.lesson-table-wrap`,
+ * the frame that scrolls a wide table inside itself; where the frame sits is set by the lesson
+ * around it.
  */
 @Component({
   selector: 'div[appLessonTable]',
@@ -36,7 +37,8 @@ import { TheoryTable } from '../../content/content.models';
   `,
   styles: [
     `
-      /* System lessons: table headers in a readable demi-bold, little tracking, no heavy capitals. */
+      /* System lessons: table headers in a readable demi-bold, little tracking, no heavy capitals.
+      */
       :host-context(.system) .lesson-table thead th {
         font-size: 0.85rem;
         font-weight: 650;
@@ -76,7 +78,8 @@ import { TheoryTable } from '../../content/content.models';
       .lesson-table tbody tr:nth-child(even) {
         background: color-mix(in srgb, var(--surface-muted) 45%, transparent);
       }
-      /* When to use: a "Use this" / "Look-alike" pill in the first column (authored cell HTML, so ::ng-deep). */
+      /* When to use: a "Use this" / "Look-alike" pill in the first column (authored cell HTML, so
+         ::ng-deep). */
       .lesson-table ::ng-deep .kind {
         display: inline-block;
         padding: 0.1rem 0.55rem;

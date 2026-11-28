@@ -26,8 +26,7 @@
   --p6-grad-bar: linear-gradient(90deg, #0a8f8a, #4f46e5 60%, #f59e0b);
   --p6-paths-block:
     radial-gradient(55% 80% at 0% 0%, #7fd6cf47, transparent 60%),
-    radial-gradient(50% 80% at 100% 100%, #a5b4fc4d, transparent 60%),
-    #f8fafc;
+    radial-gradient(50% 80% at 100% 100%, #a5b4fc4d, transparent 60%), #f8fafc;
   --p6-paths-shadow: 0 18px 40px -28px #1e1b4b80;
   --p6-brand-block: #fbf6ee;
   /* Bento tiles (from preview 3). */
@@ -57,8 +56,7 @@
   --p6-grad-bar: linear-gradient(90deg, #70d6cd, #a5a3ff 60%, #ffba87);
   --p6-paths-block:
     radial-gradient(55% 80% at 0% 0%, #0f766e40, transparent 60%),
-    radial-gradient(50% 80% at 100% 100%, #4338ca4d, transparent 60%),
-    #131f38;
+    radial-gradient(50% 80% at 100% 100%, #4338ca4d, transparent 60%), #131f38;
   --p6-paths-shadow: 0 18px 40px -28px #000000b3;
   --p6-brand-block: #15213a;
   /* Shadows stay dark (the light text token would make them glow). */
@@ -233,7 +231,8 @@ button:disabled {
   margin: 0.32em 0 0.36em;
   text-wrap: balance;
 }
-/* The AI Builds headline is longer than the others; a smaller size keeps it on two or three lines. */
+/* The AI Builds headline is longer than the others; a smaller size keeps it on two or three lines.
+*/
 .hero-slide[data-visual='build'] .slide-title {
   font-size: clamp(34px, 7.2cqi, 84px);
 }

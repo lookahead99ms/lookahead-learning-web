@@ -19,7 +19,8 @@ export class Blaze {
     title: 'Blaze',
     highlight: 'Prepare for the decisions beyond implementation.',
     description:
-      'Frame ambiguous systems, defend trade-offs, lead through evidence, and communicate the judgment expected in senior and staff-level interviews.',
+      'Frame ambiguous systems, defend trade-offs, lead through evidence, and ' +
+      'communicate the judgment expected in senior and staff-level interviews.',
     actionsLabel: 'Blaze starting points',
     primaryAction: {
       label: 'Start the System Design Ladder',

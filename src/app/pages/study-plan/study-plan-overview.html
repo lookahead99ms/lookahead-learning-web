@@ -4,18 +4,14 @@
     <p class="plan-summary">
       {{ plan().config.days }} study days
       @if (shiftedDays()) {
-        · {{ shiftedDays() }} recovery
-        {{ shiftedDays() === 1 ? 'day' : 'days' }} added ·
+        · {{ shiftedDays() }} recovery {{ shiftedDays() === 1 ? 'day' : 'days' }} added ·
         {{ plan().config.days + shiftedDays() }} days including recovery
       }
     </p>
   </div>
   <label class="active-day-selector">
     Study day
-    <select
-      [value]="selectedDay()"
-      (change)="selectDay.emit(+$any($event.target).value)"
-    >
+    <select [value]="selectedDay()" (change)="selectDay.emit(+$any($event.target).value)">
       @for (day of plan().days; track day.day) {
         <option [value]="day.day" [selected]="selectedDay() === day.day">
           Day {{ day.day }}
@@ -35,11 +31,7 @@
     >
       Make Room for Real Life
     </button>
-    <button
-      type="button"
-      [disabled]="editsLocked()"
-      (click)="reviewDay.emit(selectedDay())"
-    >
+    <button type="button" [disabled]="editsLocked()" (click)="reviewDay.emit(selectedDay())">
       Review study day {{ selectedDay() }}
     </button>
   </div>
@@ -77,18 +69,15 @@
       <ul>
         <li><strong>Completion</strong> records your practice, not mastery.</li>
         <li>
-          <strong>{{
-            accountMode() ? 'Saved to your account.' : 'Saved on this browser.'
-          }}</strong>
+          <strong>{{ accountMode() ? 'Saved to your account.' : 'Saved on this browser.' }}</strong>
           Progress belongs to this plan.
         </li>
         <li>
-          <strong>Based on saved progress.</strong> Exploring topics does not move your
-          place.
+          <strong>Based on saved progress.</strong> Exploring topics does not move your place.
         </li>
         <li>
-          <strong>Your plan organizes</strong> learning, practice, and recall around the
-          time you set.
+          <strong>Your plan organizes</strong> learning, practice, and recall around the time you
+          set.
         </li>
       </ul>
     </aside>

@@ -41,7 +41,8 @@ import type { HandsOnDsaIndex } from './hands-on-dsa';
 import { isRecognitionIndex, RecognitionIndex } from '../core/pattern-finder/pattern-finder';
 
 /** The pattern finder's problem cards, published with the Algorithmic Patterns course. */
-export const PATTERN_RECOGNITION_INDEX_HREF = '/content/learn/algorithmic-patterns/pattern-recognition-index.json';
+export const PATTERN_RECOGNITION_INDEX_HREF =
+  '/content/learn/algorithmic-patterns/pattern-recognition-index.json';
 
 export const CONTENT_DETAIL_CACHE_MAX_ENTRIES = 8;
 export const CONTENT_DETAIL_CACHE_MAX_BYTES = 4 * 1024 * 1024;
@@ -241,7 +242,8 @@ export class ContentService {
       this.protectedContent ? this.protectedRequest<unknown>(href) : this.http.get<unknown>(href)
     ).pipe(
       map((index) => {
-        if (!isRecognitionIndex(index)) throw new Error('The pattern finder index version is unavailable.');
+        if (!isRecognitionIndex(index))
+          throw new Error('The pattern finder index version is unavailable.');
         return index;
       }),
       catchError((error) => {
@@ -319,7 +321,8 @@ export class ContentService {
   private readonly glossaries = new Map<string, Observable<GlossaryTerm[]>>();
 
   /** Glossary terms for one catalog path (blaze/glossary.json). A path without a glossary, a failed
-   * request or a malformed file yields no terms rather than an error, so lesson pages never break on it. */
+   * request or a malformed file yields no terms rather than an error, so lesson pages never break
+   * on it. */
   getGlossary(pathId: string): Observable<GlossaryTerm[]> {
     if (!this.validSlug(pathId)) return of([]);
     let request = this.glossaries.get(pathId);
@@ -696,7 +699,8 @@ function isGlossaryTerm(term: GlossaryTerm | null | undefined): term is Glossary
     Array.isArray(term.match) &&
     term.match.every((form) => typeof form === 'string') &&
     (term.skipLessons === undefined ||
-      (Array.isArray(term.skipLessons) && term.skipLessons.every((lesson) => typeof lesson === 'string'))) &&
+      (Array.isArray(term.skipLessons) &&
+        term.skipLessons.every((lesson) => typeof lesson === 'string'))) &&
     Array.isArray(term.lessons) &&
     term.lessons.length > 0 &&
     term.lessons.every(

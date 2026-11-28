@@ -38,7 +38,11 @@
       }
     </div>
     <div class="pane-switch" role="group" aria-label="Show">
-      <button type="button" [attr.aria-pressed]="pane() === 'drawing'" (click)="pane.set('drawing')">
+      <button
+        type="button"
+        [attr.aria-pressed]="pane() === 'drawing'"
+        (click)="pane.set('drawing')"
+      >
         Drawing
       </button>
       <button type="button" [attr.aria-pressed]="pane() === 'code'" (click)="pane.set('code')">
@@ -66,7 +70,8 @@
         <div class="approach-box" role="note" aria-label="Approach and why">
           @for (row of summary.rows; track row.label) {
             <p>
-              <b>{{ row.label }}</b>{{ row.text }}
+              <b>{{ row.label }}</b
+              >{{ row.text }}
             </p>
           }
         </div>
@@ -90,7 +95,9 @@
           [disabled]="index() === 0"
           (click)="move(index() - 1)"
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg>
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M10 3 5 8l5 5" />
+          </svg>
         </button>
         <button
           type="button"
@@ -111,7 +118,9 @@
           [disabled]="index() >= count() - 1"
           (click)="move(index() + 1)"
         >
-          Next<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m6 3 5 5-5 5" /></svg>
+          Next<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="m6 3 5 5-5 5" />
+          </svg>
         </button>
         <label class="scrubber"
           ><span class="sr-only">Step</span
@@ -140,22 +149,35 @@
         </button>
         @if (everyLineAvailable()) {
           <div class="mode-switch" role="group" aria-label="Step size">
-            <button type="button" [attr.aria-pressed]="!everyLine()" (click)="everyLineChange.emit(false)">
+            <button
+              type="button"
+              [attr.aria-pressed]="!everyLine()"
+              (click)="everyLineChange.emit(false)"
+            >
               Steps
             </button>
-            <button type="button" [attr.aria-pressed]="everyLine()" (click)="everyLineChange.emit(true)">
+            <button
+              type="button"
+              [attr.aria-pressed]="everyLine()"
+              (click)="everyLineChange.emit(true)"
+            >
               Every line
             </button>
           </div>
         }
       </div>
-      <!-- The stage never pushes the caption off screen: it scrolls inside, with a cue below it. -->
+      <!-- The stage never pushes the caption off screen: it scrolls inside, with a cue below it.
+      -->
       <div #stage class="wt-stage" [class.has-more]="below()">
         <ng-content select="[walkthroughStage]" />
       </div>
       @if (below(); as more) {
         <button type="button" class="more-below" (click)="revealBelow()">
-          {{ more.views ? '+' + more.views + (more.views === 1 ? ' more view' : ' more views') + ' below' : 'More below' }}
+          {{
+            more.views
+              ? '+' + more.views + (more.views === 1 ? ' more view' : ' more views') + ' below'
+              : 'More below'
+          }}
         </button>
       }
       <div #captionRow class="caption-row">
@@ -226,7 +248,8 @@
                   [attr.aria-current]="$index === idea() ? 'step' : null"
                   (click)="ideaSelect.emit($index)"
                 >
-                  <span class="k" aria-hidden="true">{{ $index + 1 }}</span><span>{{ text }}</span>
+                  <span class="k" aria-hidden="true">{{ $index + 1 }}</span
+                  ><span>{{ text }}</span>
                 </button>
               </li>
             }

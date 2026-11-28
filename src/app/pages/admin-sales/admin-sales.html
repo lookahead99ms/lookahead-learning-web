@@ -2,16 +2,26 @@
 <main id="main-content" class="admin-workspace sales-page">
   <app-author-admin-menu pageId="sales" />
   <div class="workspace-content">
-<aside class="workspace-sidebar">
-    <app-author-workspace-nav [tabbed]="true" pageTitle="Sales and prices" pageId="sales" [outline]="outline">
-      <p description>Manage local sales and prices. Payments are simulated.</p>
-    </app-author-workspace-nav>
-  </aside>
+    <aside class="workspace-sidebar">
+      <app-author-workspace-nav
+        [tabbed]="true"
+        pageTitle="Sales and prices"
+        pageId="sales"
+        [outline]="outline"
+      >
+        <p description>Manage local sales and prices. Payments are simulated.</p>
+      </app-author-workspace-nav>
+    </aside>
 
-    <p class="status-note" role="note">Sales and prices are stored on the local server. Only the owner can change them. Payment simulation charges nothing.</p>
+    <p class="status-note" role="note"
+      >Sales and prices are stored on the local server. Only the owner can change them. Payment
+      simulation charges nothing.</p
+    >
     <p class="notice" role="status" aria-live="polite">{{ notice() }}</p>
 
-    <label>Sale starts <input type="datetime-local" [(ngModel)]="startsAt" /></label><label>Sale ends <input type="datetime-local" [(ngModel)]="endsAt" /></label><section class="doc-section" id="sale" aria-labelledby="sale-heading">
+    <label>Sale starts <input type="datetime-local" [(ngModel)]="startsAt" /></label
+    ><label>Sale ends <input type="datetime-local" [(ngModel)]="endsAt" /></label
+    ><section class="doc-section" id="sale" aria-labelledby="sale-heading">
       <h2 id="sale-heading">Sale</h2>
       @if (activeSale(); as sale) {
         <div class="sale-state running">
@@ -40,7 +50,10 @@
                 (change)="chooseTemplate(template.id)"
               />
               <span aria-hidden="true" class="template-emoji">{{ template.emoji }}</span>
-              <span><strong>{{ template.name }}</strong><span class="hint">{{ template.greeting }}</span></span>
+              <span
+                ><strong>{{ template.name }}</strong
+                ><span class="hint">{{ template.greeting }}</span></span
+              >
             </label>
           }
         </div>
@@ -63,9 +76,7 @@
           </label>
         }
       </fieldset>
-      <button type="button" class="action-button" (click)="startSale()">
-        Start sale
-      </button>
+      <button type="button" class="action-button" (click)="startSale()"> Start sale </button>
     </section>
 
     <section class="doc-section" id="prices" aria-labelledby="prices-heading">
@@ -104,12 +115,14 @@
           </tbody>
         </table>
       </div>
-
     </section>
 
     <section class="doc-section" id="not-built" aria-labelledby="not-built-heading">
       <h2 id="not-built-heading">What is not built</h2>
-      <ul class="gaps"><li>Real payments, refunds and tax handling are not enabled.</li><li>Course Pass duration and notification delivery remain pending.</li>      </ul>
+      <ul class="gaps"
+        ><li>Real payments, refunds and tax handling are not enabled.</li
+        ><li>Course Pass duration and notification delivery remain pending.</li>
+      </ul>
       <p class="section-lede">See also <a routerLink="/admin/plans">Plans and purchases</a>.</p>
     </section>
   </div>

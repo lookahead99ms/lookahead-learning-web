@@ -17,7 +17,8 @@ export async function withRuntimePublicationLock(lockPath, action, { timeoutMs =
       if (Date.now() - startedAt >= timeoutMs) {
         const owner = await readLockOwner(lockPath);
         throw new Error(
-          `Runtime sync is still locked at ${lockPath} (${owner.trim()}). Check that owner before removing a stale lock.`,
+          `Runtime sync is still locked at ${lockPath} (${owner.trim()}). Check that ` +
+            `owner before removing a stale lock.`,
         );
       }
       await delay(100);

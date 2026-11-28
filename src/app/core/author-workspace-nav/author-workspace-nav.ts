@@ -26,7 +26,8 @@ export interface AuthorOutlineItem {
 export type { AuthorWorkspacePageId };
 
 /**
- * Main-area page heading and persistent section navigation. Admin navigation lives in the left rail.
+ * Main-area page heading and persistent section navigation. Admin navigation lives in the left
+ * rail.
  */
 @Component({
   selector: 'app-author-workspace-nav',
@@ -36,13 +37,19 @@ export type { AuthorWorkspacePageId };
   styleUrl: './author-workspace-nav.css',
 })
 export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
-  /** The documentation strip, when this page has one; it says whether it already names the open page. */
+  /**
+   * The documentation strip, when this page has one; it says whether it already names the open
+   * page.
+   */
   protected readonly docTabs = viewChild(AuthorDocumentationTabs);
   private readonly document = inject(DOCUMENT);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   @Input() tabbed = false;
   @Input() pageTitle = '';
-  /** Empty by default (owner, 2026-11-09): the admin pages carry no Admin eyebrow; Support passes Help. */
+  /**
+   * Empty by default (owner, 2026-11-09): the admin pages carry no Admin eyebrow; Support passes
+   * Help.
+   */
   @Input() eyebrow = '';
   @Input() pageId: AuthorWorkspacePageId | null = null;
   protected readonly isDocumentationPage = isAuthorDocumentationPage;
@@ -73,7 +80,8 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
     if (!active || !view) return;
     if (this.tabbed) {
       const row = active.parentElement!;
-      const bounds = row.getBoundingClientRect(), item = active.getBoundingClientRect();
+      const bounds = row.getBoundingClientRect(),
+        item = active.getBoundingClientRect();
       if (item.left < bounds.left) row.scrollLeft += item.left - bounds.left;
       if (item.right > bounds.right) row.scrollLeft += item.right - bounds.right;
       return;
@@ -171,21 +179,45 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
       return;
     const data = event.data;
     if (!data || data.version !== 1) return;
-    if (this.tabbed && data.type === 'lookahead:author-document:introduction' && data.documentId === this.embeddedDocumentId && typeof data.text === 'string' && data.text.length <= 5000) {
+    if (
+      this.tabbed &&
+      data.type === 'lookahead:author-document:introduction' &&
+      data.documentId === this.embeddedDocumentId &&
+      typeof data.text === 'string' &&
+      data.text.length <= 5000
+    ) {
       this.embeddedIntroduction.set(data.text);
-      this.embeddedFrame.contentWindow?.postMessage({type:'lookahead:author-document:introduction-accepted',version:1,documentId:this.embeddedDocumentId}, '*');
+      this.embeddedFrame.contentWindow?.postMessage(
+        {
+          type: 'lookahead:author-document:introduction-accepted',
+          version: 1,
+          documentId: this.embeddedDocumentId,
+        },
+        '*',
+      );
       return;
     }
-    if (this.tabbed && data.type === 'lookahead:author-document:tab-selected' && data.documentId === this.embeddedDocumentId && this.outline.some(item => this.sectionId(item) === data.anchor)) {
+    if (
+      this.tabbed &&
+      data.type === 'lookahead:author-document:tab-selected' &&
+      data.documentId === this.embeddedDocumentId &&
+      this.outline.some((item) => this.sectionId(item) === data.anchor)
+    ) {
       const hash = `#${data.anchor}`;
-      const fragmentMatches = typeof data.fragment === 'string' && /^[a-z0-9-]+$/.test(data.fragment) &&
+      const fragmentMatches =
+        typeof data.fragment === 'string' &&
+        /^[a-z0-9-]+$/.test(data.fragment) &&
         this.document.defaultView?.location.hash === `#${data.fragment}`;
       if (!fragmentMatches) this.document.defaultView?.history.pushState(null, '', hash);
       this.currentSection.set(hash);
       this.applyPanels();
       return;
     }
-    if (this.tabbed && data.type === 'lookahead:author-document:tabs-ready' && data.documentId === this.embeddedDocumentId) {
+    if (
+      this.tabbed &&
+      data.type === 'lookahead:author-document:tabs-ready' &&
+      data.documentId === this.embeddedDocumentId
+    ) {
       this.applyPanels();
       return;
     }
@@ -240,7 +272,8 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
    */
   private async copyForDocument(source: Window, data: { requestId?: unknown; text?: unknown }) {
     const { requestId, text } = data;
-    if (!Number.isSafeInteger(requestId) || typeof text !== 'string' || text.length > 100_000) return;
+    if (!Number.isSafeInteger(requestId) || typeof text !== 'string' || text.length > 100_000)
+      return;
     let copied = false;
     try {
       await this.document.defaultView?.navigator.clipboard.writeText(text);
@@ -299,23 +332,35 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
   private readonly managedPanels = new Set<HTMLElement>();
 
   private selectedItem(): AuthorOutlineItem | undefined {
-    const direct = this.outline.find(item => `#${this.sectionId(item)}` === this.currentSection());
+    const direct = this.outline.find(
+      (item) => `#${this.sectionId(item)}` === this.currentSection(),
+    );
     if (direct) return direct;
     const hash = this.currentSection().slice(1);
-    const target = this.document.getElementById(hash) ?? this.document.getElementById(`ticket-${hash}`);
-    return this.outline.find(item => {
-      const id = this.sectionId(item), section = id ? this.document.getElementById(id) : null;
-      return !!target && !!section?.contains(target);
-    }) ?? this.outline[0];
+    const target =
+      this.document.getElementById(hash) ?? this.document.getElementById(`ticket-${hash}`);
+    return (
+      this.outline.find((item) => {
+        const id = this.sectionId(item),
+          section = id ? this.document.getElementById(id) : null;
+        return !!target && !!section?.contains(target);
+      }) ?? this.outline[0]
+    );
   }
 
-  protected tabId(item: AuthorOutlineItem): string { return `workspace-tab-${this.sectionId(item)}`; }
+  protected tabId(item: AuthorOutlineItem): string {
+    return `workspace-tab-${this.sectionId(item)}`;
+  }
 
   protected panelId(item: AuthorOutlineItem): string | null {
     const id = this.sectionId(item);
     if (!id) return null;
     const target = this.document.getElementById(id);
-    return target ? `workspace-panel-${id}` : (this.embeddedFrame ? 'workspace-embedded-panel' : null);
+    return target
+      ? `workspace-panel-${id}`
+      : this.embeddedFrame
+        ? 'workspace-embedded-panel'
+        : null;
   }
 
   private applyPanels(): void {
@@ -329,7 +374,9 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
       const id = this.sectionId(item);
       const target = id ? this.document.getElementById(id) : null;
       if (!target || !root.contains(target)) continue;
-      let panel = target.matches('section, header, details') ? target : target.closest<HTMLElement>('section');
+      let panel = target.matches('section, header, details')
+        ? target
+        : target.closest<HTMLElement>('section');
       if (!panel || panel.contains(this.element.nativeElement)) continue;
       // Keep the anchor intact for existing links while exposing a distinct tab panel ID.
       if (!panel.parentElement?.matches('[data-workspace-panel]')) {
@@ -347,10 +394,16 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
       const native = activeId ? this.document.getElementById(activeId) : null;
       embeddedPanel.id = 'workspace-embedded-panel';
       this.setPanel(embeddedPanel, !native, this.tabId(selected));
-      if (!native) this.embeddedFrame?.contentWindow?.postMessage({
-        type: 'lookahead:author-document:tab-request', version: 1,
-        documentId: this.embeddedDocumentId, anchor: activeId,
-      }, '*');
+      if (!native)
+        this.embeddedFrame?.contentWindow?.postMessage(
+          {
+            type: 'lookahead:author-document:tab-request',
+            version: 1,
+            documentId: this.embeddedDocumentId,
+            anchor: activeId,
+          },
+          '*',
+        );
     }
   }
 
@@ -369,21 +422,31 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
   @HostListener('window:touchstart')
   @HostListener('window:keydown', ['$event'])
   protected cancelPanelReveal(event?: KeyboardEvent): void {
-    if (event && !event.ctrlKey && !event.metaKey && ['ArrowLeft','ArrowRight','Home','End'].includes(event.key) &&
-        (event.target as Element | null)?.closest?.('[role="tab"]')) return;
+    if (
+      event &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) &&
+      (event.target as Element | null)?.closest?.('[role="tab"]')
+    )
+      return;
     this.pendingPanelReveal = false;
   }
 
   private revealPanelStart(): void {
     const marker = this.element.nativeElement.querySelector('.tab-position');
     const view = this.document.defaultView;
-    const headerBottom = this.document.querySelector('app-platform-header')?.getBoundingClientRect().bottom ?? 0;
+    const headerBottom =
+      this.document.querySelector('app-platform-header')?.getBoundingClientRect().bottom ?? 0;
     if (marker && view && marker.getBoundingClientRect().top < headerBottom)
-      view.scrollTo({top: Math.max(0, marker.getBoundingClientRect().top + view.scrollY - headerBottom), behavior: 'instant'});
+      view.scrollTo({
+        top: Math.max(0, marker.getBoundingClientRect().top + view.scrollY - headerBottom),
+        behavior: 'instant',
+      });
   }
 
   selectSection(id: string): void {
-    if (!this.outline.some(item => this.sectionId(item) === id)) return;
+    if (!this.outline.some((item) => this.sectionId(item) === id)) return;
     this.document.defaultView?.history.pushState(null, '', `#${id}`);
     this.currentSection.set(`#${id}`);
     this.pendingPanelReveal = !!this.embeddedFrame;
@@ -392,13 +455,27 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   protected onTabKey(event: KeyboardEvent, item: AuthorOutlineItem): void {
-    if (event.altKey || event.ctrlKey || event.metaKey || !this.tabbed || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    if (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this.tabbed ||
+      !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+    )
+      return;
     event.preventDefault();
     const index = this.outline.indexOf(item);
-    const rtl = this.document.defaultView?.getComputedStyle(this.element.nativeElement).direction === 'rtl';
+    const rtl =
+      this.document.defaultView?.getComputedStyle(this.element.nativeElement).direction === 'rtl';
     const step = (event.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1);
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? this.outline.length - 1 : (index + step + this.outline.length) % this.outline.length;
-    const link = this.element.nativeElement.querySelectorAll<HTMLAnchorElement>('[role="tab"]')[next];
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? this.outline.length - 1
+          : (index + step + this.outline.length) % this.outline.length;
+    const link =
+      this.element.nativeElement.querySelectorAll<HTMLAnchorElement>('[role="tab"]')[next];
     link?.click();
     link?.focus({ preventScroll: true });
   }
@@ -444,7 +521,11 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
     if (this.tabbed) {
       event.preventDefault();
       if (location.hash !== url.hash)
-        this.document.defaultView?.history.pushState(null, '', url.pathname + url.search + url.hash);
+        this.document.defaultView?.history.pushState(
+          null,
+          '',
+          url.pathname + url.search + url.hash,
+        );
       this.pendingPanelReveal = !!this.embeddedFrame;
       this.applyPanels();
       this.revealPanelStart();

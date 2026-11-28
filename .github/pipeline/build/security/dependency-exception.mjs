@@ -15,13 +15,17 @@ export const dependencyException = Object.freeze({
 export function checkAuditWithException(report, inventory, now = new Date()) {
   // Always validate the complete original report before considering the exception.
   const audit = checkAudit(report, inventory);
-  assert(now instanceof Date && Number.isFinite(now.getTime()), 'Invalid exception evaluation time');
+  assert(
+    now instanceof Date && Number.isFinite(now.getTime()),
+    'Invalid exception evaluation time',
+  );
   const active = now.getTime() < Date.parse(dependencyException.expiresAt);
-  const byPath = new Map(inventory.map(pkg => [pkg.path, pkg]));
+  const byPath = new Map(inventory.map((pkg) => [pkg.path, pkg]));
   const findings = report.vulnerabilities;
-  const reviewedPackages = inventory.filter(pkg => pkg.name === dependencyException.package);
-  const reviewedVersionOnly = reviewedPackages.length > 0 && reviewedPackages.every(pkg =>
-    pkg.development && pkg.version === dependencyException.version);
+  const reviewedPackages = inventory.filter((pkg) => pkg.name === dependencyException.package);
+  const reviewedVersionOnly =
+    reviewedPackages.length > 0 &&
+    reviewedPackages.every((pkg) => pkg.development && pkg.version === dependencyException.version);
 
   function eligible(name) {
     if (!active || !reviewedVersionOnly) return false;
@@ -31,17 +35,23 @@ export function checkAuditWithException(report, inventory, now = new Date()) {
       if (visited.has(current)) return true;
       const finding = findings[current];
       if (!finding || finding.name !== current || finding.severity !== 'high') return false;
-      if (!finding.nodes.every(path => {
-        const pkg = byPath.get(path);
-        return pkg?.name === current && pkg.development;
-      })) return false;
+      if (
+        !finding.nodes.every((path) => {
+          const pkg = byPath.get(path);
+          return pkg?.name === current && pkg.development;
+        })
+      )
+        return false;
       visited.add(current);
       // npm peer dependencies can form cycles. Visit every reachable finding,
       // require a real advisory leaf, and reject any unapproved/missing leaf.
-      return finding.via.every(via => {
+      return finding.via.every((via) => {
         if (typeof via === 'string') return visit(via);
-        const approved = current === dependencyException.package && via?.name === dependencyException.package &&
-          via.dependency === dependencyException.package && via.url === dependencyException.advisory &&
+        const approved =
+          current === dependencyException.package &&
+          via?.name === dependencyException.package &&
+          via.dependency === dependencyException.package &&
+          via.url === dependencyException.advisory &&
           via.severity === 'high';
         if (approved) anchored.add(current);
         return approved;
@@ -54,13 +64,16 @@ export function checkAuditWithException(report, inventory, now = new Date()) {
     do {
       changed = false;
       for (const current of visited) {
-        if (!anchored.has(current) && findings[current].via.some(via => typeof via === 'string' && anchored.has(via))) {
+        if (
+          !anchored.has(current) &&
+          findings[current].via.some((via) => typeof via === 'string' && anchored.has(via))
+        ) {
           anchored.add(current);
           changed = true;
         }
       }
     } while (changed);
-    return [...visited].every(current => anchored.has(current));
+    return [...visited].every((current) => anchored.has(current));
   }
 
   const exceptedFindings = [];

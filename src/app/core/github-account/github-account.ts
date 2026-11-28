@@ -4,26 +4,38 @@ import { TestSessions } from '../test-session/test-sessions';
 import { StudyPlanAccount, type StudyAccount } from '../../pages/study-plan/study-plan-account';
 
 /**
- * DLV-969 (owner, 2026-11-05): staff give the owner their GitHub account so the owner can add them to the private
- * repositories and workflows they work on. Saved with the other profile links (`/account/links`); only the owner sees
- * it in People and access. Learners, the owner and test accounts are never asked.
+ * DLV-969 (owner, 2026-11-05): staff give the owner their GitHub account so the owner can add them
+ * to the private repositories and workflows they work on. Saved with the other profile links
+ * (`/account/links`); only the owner sees it in People and access. Learners, the owner and test
+ * accounts are never asked.
  */
 
-/** GitHub's username rule: 1 to 39 letters, digits or single hyphens, never starting or ending with a hyphen. */
+/**
+ * GitHub's username rule: 1 to 39 letters, digits or single hyphens, never starting or ending with
+ * a hyphen.
+ */
 const GITHUB_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
 
 export type GithubInput = { url: string } | { error: string };
 
 /**
- * Accepts `https://github.com/<login>`, `github.com/<login>`, `@login` or `login` (a trailing slash is fine) and
- * returns `https://github.com/<login>`, or the reason it cannot.
+ * Accepts `https://github.com/<login>`, `github.com/<login>`, `@login` or `login` (a trailing slash
+ * is fine) and returns `https://github.com/<login>`, or the reason it cannot.
  */
 export function normalizeGithub(value: string): GithubInput {
   let text = value.trim();
   if (!text) return { error: 'Enter your GitHub username or the address of your GitHub profile.' };
-  text = text.replace(/^https?:\/\//i, '').replace(/^(www\.)?github\.com\//i, '').replace(/^@/, '').replace(/\/+$/, '');
+  text = text
+    .replace(/^https?:\/\//i, '')
+    .replace(/^(www\.)?github\.com\//i, '')
+    .replace(/^@/, '')
+    .replace(/\/+$/, '');
   if (!GITHUB_LOGIN.test(text)) {
-    return { error: 'That isn’t a GitHub username. Use letters, digits and single hyphens, up to 39 characters, for example octocat.' };
+    return {
+      error:
+        'That isn’t a GitHub username. Use letters, digits and single hyphens, up to 39 ' +
+        'characters, for example octocat.',
+    };
   }
   return { url: 'https://github.com/' + text };
 }
@@ -38,16 +50,18 @@ export function githubDisplay(value: unknown): string | null {
 /** Staff who are asked: they can read the staff documentation, and they are not the owner. */
 export function asksForGithub(account: StudyAccount | null): boolean {
   const permissions = account?.permissions;
-  return !!permissions && permissions.previewDocuments === true && permissions.manageAccess !== true;
+  return (
+    !!permissions && permissions.previewDocuments === true && permissions.manageAccess !== true
+  );
 }
 
 const DISMISSED = 'lookahead.github.notNow.';
 const SHOWN = 'lookahead.github.prompted';
 
 /**
- * Both marks live in session storage and are cleared when the browser sees the person signed out, so every sign-in
- * asks again until a GitHub account is on file (owner, 2026-11-05). Storage can be blocked; then the dialog simply
- * shows again.
+ * Both marks live in session storage and are cleared when the browser sees the person signed out,
+ * so every sign-in asks again until a GitHub account is on file (owner, 2026-11-05). Storage can be
+ * blocked; then the dialog simply shows again.
  */
 export function githubDismissed(accountId: string): boolean {
   try {
@@ -65,16 +79,26 @@ export function dismissGithub(accountId: string): void {
   }
 }
 
-/** Pages the dialog never interrupts: sign-in, the Welcome page and the account pages (the field is there anyway). */
+/**
+ * Pages the dialog never interrupts: sign-in, the Welcome page and the account pages (the field is
+ * there anyway).
+ */
 export function promptSkips(url: string): boolean {
   const path = url.split(/[?#]/, 1)[0];
-  return path === '/welcome' || path === '/sign-in' || path.startsWith('/sign-in/') || path === '/account' || path.startsWith('/account/');
+  return (
+    path === '/welcome' ||
+    path === '/sign-in' ||
+    path.startsWith('/sign-in/') ||
+    path === '/account' ||
+    path.startsWith('/account/')
+  );
 }
 
 /**
- * Opens the GitHub dialog for a staff member without a GitHub account on file, once per sign-in, on whatever page they
- * are on (owner, 2026-11-06: a dialog, not a card on the Welcome page, so it is seen after every sign-in). Started from
- * the app shell; does nothing for anyone else, and nothing after Save or Not now until the next sign-in.
+ * Opens the GitHub dialog for a staff member without a GitHub account on file, once per sign-in, on
+ * whatever page they are on (owner, 2026-11-06: a dialog, not a card on the Welcome page, so it is
+ * seen after every sign-in). Started from the app shell; does nothing for anyone else, and nothing
+ * after Save or Not now until the next sign-in.
  */
 @Injectable({ providedIn: 'root' })
 export class GithubPrompt {
@@ -83,7 +107,10 @@ export class GithubPrompt {
   private readonly router = inject(Router);
   /** The account this app instance already checked, so a check runs at most once per account. */
   private checked: string | null = null;
-  /** An eligible account that was on a page the dialog skips; it opens on the next page that is not skipped. */
+  /**
+   * An eligible account that was on a page the dialog skips; it opens on the next page that is not
+   * skipped.
+   */
   private waiting: string | null = null;
   /** The account the dialog is open for, or null. */
   readonly open = signal<string | null>(null);
@@ -101,13 +128,19 @@ export class GithubPrompt {
       void this.check(account);
     });
     this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd && this.waiting && !promptSkips(event.urlAfterRedirects)) this.show(this.waiting);
+      if (event instanceof NavigationEnd && this.waiting && !promptSkips(event.urlAfterRedirects))
+        this.show(this.waiting);
     });
   }
 
   /** True when the dialog opened (or will open on the next page that allows it). */
   async check(account: StudyAccount): Promise<boolean> {
-    if (!asksForGithub(account) || githubDismissed(account.accountId) || this.alreadyPrompted(account.accountId)) return false;
+    if (
+      !asksForGithub(account) ||
+      githubDismissed(account.accountId) ||
+      this.alreadyPrompted(account.accountId)
+    )
+      return false;
     if (this.tests.status() === null) await this.tests.refresh();
     if (this.tests.active()) return false;
     let github: string | null | undefined;

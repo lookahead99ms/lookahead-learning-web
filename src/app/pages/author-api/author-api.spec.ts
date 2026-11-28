@@ -75,7 +75,7 @@ describe('Author API reference', () => {
     return fixture;
   }
 
-  it('embeds only the fixed private document with scripts-only sandbox and current theme', async () => {
+  it('embeds only the fixed private document, scripts-only sandbox, current theme', async () => {
     const fixture = await loaded();
     const root: HTMLElement = fixture.nativeElement;
     const frame = root.querySelector('iframe')!;
@@ -86,8 +86,14 @@ describe('Author API reference', () => {
     expect(frame.title).toBe('Backend API reference');
     expect(root.querySelector('.workspace-sidebar h1')?.textContent).toBe('API reference');
     expect(root.querySelector('.workspace-sidebar')).not.toBeNull();
-    expect([...root.querySelectorAll('[role="tab"]')].map(tab => tab.getAttribute('href'))).toEqual([
-      '/admin/api#inventory', '/admin/api#schemas', '/admin/api#capabilities', '/admin/api#access-model', '/admin/api#api-downloads',
+    expect(
+      [...root.querySelectorAll('[role="tab"]')].map((tab) => tab.getAttribute('href')),
+    ).toEqual([
+      '/admin/api#inventory',
+      '/admin/api#schemas',
+      '/admin/api#capabilities',
+      '/admin/api#access-model',
+      '/admin/api#api-downloads',
     ]);
     expect(root.querySelector('a[href="/admin/api#inventory"]')).not.toBeNull();
     expect(root.querySelector('a[href="/admin/api#inventory"]')?.getAttribute('target')).toBeNull();
@@ -131,22 +137,41 @@ describe('Author API reference', () => {
     expect(frame.style.height).toBe('37467px');
   });
 
-  it('routes setup links to Local Development and keeps endpoint links in the API reference', async () => {
-    const fixture = await loaded();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
-    const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
-    const send = (anchor: string) => window.dispatchEvent(new MessageEvent('message', {
-      origin: 'null', source: frame.contentWindow,
-      data: { type: 'lookahead:author-document:navigate', version: 1, documentId: 'api-reference', anchor },
-    }));
-    send('start-testing');
-    expect(navigate).toHaveBeenCalledWith('/admin/local-api#start-testing');
-    send('inventory');
-    expect(location.pathname + location.hash).toBe('/admin/api#inventory');
-    expect(postMessage).toHaveBeenCalledWith({type: 'lookahead:author-document:tab-request', version: 1,
-      documentId: 'api-reference', anchor: 'inventory'}, '*');
-  });
+  it(
+    'routes setup links to Local Development and keeps endpoint links in the API ' + 'reference',
+    async () => {
+      const fixture = await loaded();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+      const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
+      const send = (anchor: string) =>
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            origin: 'null',
+            source: frame.contentWindow,
+            data: {
+              type: 'lookahead:author-document:navigate',
+              version: 1,
+              documentId: 'api-reference',
+              anchor,
+            },
+          }),
+        );
+      send('start-testing');
+      expect(navigate).toHaveBeenCalledWith('/admin/local-api#start-testing');
+      send('inventory');
+      expect(location.pathname + location.hash).toBe('/admin/api#inventory');
+      expect(postMessage).toHaveBeenCalledWith(
+        {
+          type: 'lookahead:author-document:tab-request',
+          version: 1,
+          documentId: 'api-reference',
+          anchor: 'inventory',
+        },
+        '*',
+      );
+    },
+  );
 
   it('keeps downloads in the authenticated parent and within the API directory', async () => {
     const entry = reference();
@@ -168,70 +193,81 @@ describe('Author API reference', () => {
     expect(fixture.nativeElement.querySelector('#api-downloads')).not.toBeNull();
   });
 
-  it.each([false, true])('partitions the complete client kit without losing downloads (local guide: %s)', async (localGuide) => {
-    if (localGuide) {
-      history.replaceState(null, '', '/admin/local-api');
-      TestBed.overrideProvider(ActivatedRoute, {useValue: {snapshot: {data: {localApiGuide: true}}}});
-    }
-    const entry = reference();
-    entry.links.push(
-      { label: 'Gateway contract', href: 'api/gateway-bff.openapi.json' },
-      { label: 'Gateway HTTP inventory', href: 'api/http/gateway-bff.http' },
-      { label: 'Domain contract', href: 'api/domain-api.openapi.json' },
-      { label: 'Domain HTTP inventory', href: 'api/http/domain-api.http' },
-      { label: 'README', href: 'api/README.md' },
-      { label: 'Planned staff model', href: 'api/access-model.md' },
-      { label: 'Local testing guide', href: 'api/local-testing.md' },
-      { label: 'JetBrains workflow', href: 'api/http/local-jetbrains.http' },
-      { label: 'VS Code workflow', href: 'api/http/local-vscode.http' },
-      { label: 'Postman environment', href: 'api/postman/local.postman_environment.json' },
-      {
-        label: 'Identity Postman collection',
-        href: 'api/postman/identity.postman_collection.json',
-      },
-      {
-        label: 'Gateway Postman collection',
-        href: 'api/postman/gateway-bff.postman_collection.json',
-      },
-      {
-        label: 'Domain Postman collection',
-        href: 'api/postman/domain-api.postman_collection.json',
-      },
-    );
-    const fixture = await loaded([entry]);
-    const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelectorAll('a[download]')).toHaveLength(localGuide ? 5 : 11);
-    expect(
-      [...root.querySelectorAll('.download-groups section')].map((section) => ({
-        title: section.querySelector('h3')?.textContent?.trim(),
-        count: section.querySelectorAll('a[download]').length,
-      })),
-    ).toEqual(localGuide ? [
-      { title: 'Start testing', count: 4 },
-      { title: 'Reference', count: 1 },
-    ] : [
-      { title: 'Identity', count: 3 },
-      { title: 'Gateway BFF', count: 3 },
-      { title: 'Domain API', count: 3 },
-      { title: 'Reference', count: 2 },
-    ]);
-    const environment = root.querySelector<HTMLAnchorElement>(
-      'a[href$="/postman/local.postman_environment.json"]',
-    )!;
-    if (localGuide) {
-    expect(root.querySelector('iframe')?.title).toBe('Local API client setup');
-    expect(root.querySelector('iframe')?.getAttribute('src')).toContain('layout=shared#start-testing');
-    expect(root.querySelector('a[href="/admin/local-api#credentials"]')).not.toBeNull();
-    expect(root.querySelector('a[href="/admin/local-api#inventory"]')).toBeNull();
-    expect(environment.getAttribute('href')).toBe(
-      `${base}preview-directory/api/postman/local.postman_environment.json`,
-    );
-    expect(environment.hasAttribute('download')).toBe(true);
-    } else expect(environment).toBeNull();
-    account.set({ authorPreview: false });
-    fixture.detectChanges();
-    expect(root.querySelector('.download-groups')).toBeNull();
-  });
+  it.each([false, true])(
+    'partitions the complete client kit without losing downloads (local guide: %s)',
+    async (localGuide) => {
+      if (localGuide) {
+        history.replaceState(null, '', '/admin/local-api');
+        TestBed.overrideProvider(ActivatedRoute, {
+          useValue: { snapshot: { data: { localApiGuide: true } } },
+        });
+      }
+      const entry = reference();
+      entry.links.push(
+        { label: 'Gateway contract', href: 'api/gateway-bff.openapi.json' },
+        { label: 'Gateway HTTP inventory', href: 'api/http/gateway-bff.http' },
+        { label: 'Domain contract', href: 'api/domain-api.openapi.json' },
+        { label: 'Domain HTTP inventory', href: 'api/http/domain-api.http' },
+        { label: 'README', href: 'api/README.md' },
+        { label: 'Planned staff model', href: 'api/access-model.md' },
+        { label: 'Local testing guide', href: 'api/local-testing.md' },
+        { label: 'JetBrains workflow', href: 'api/http/local-jetbrains.http' },
+        { label: 'VS Code workflow', href: 'api/http/local-vscode.http' },
+        { label: 'Postman environment', href: 'api/postman/local.postman_environment.json' },
+        {
+          label: 'Identity Postman collection',
+          href: 'api/postman/identity.postman_collection.json',
+        },
+        {
+          label: 'Gateway Postman collection',
+          href: 'api/postman/gateway-bff.postman_collection.json',
+        },
+        {
+          label: 'Domain Postman collection',
+          href: 'api/postman/domain-api.postman_collection.json',
+        },
+      );
+      const fixture = await loaded([entry]);
+      const root: HTMLElement = fixture.nativeElement;
+      expect(root.querySelectorAll('a[download]')).toHaveLength(localGuide ? 5 : 11);
+      expect(
+        [...root.querySelectorAll('.download-groups section')].map((section) => ({
+          title: section.querySelector('h3')?.textContent?.trim(),
+          count: section.querySelectorAll('a[download]').length,
+        })),
+      ).toEqual(
+        localGuide
+          ? [
+              { title: 'Start testing', count: 4 },
+              { title: 'Reference', count: 1 },
+            ]
+          : [
+              { title: 'Identity', count: 3 },
+              { title: 'Gateway BFF', count: 3 },
+              { title: 'Domain API', count: 3 },
+              { title: 'Reference', count: 2 },
+            ],
+      );
+      const environment = root.querySelector<HTMLAnchorElement>(
+        'a[href$="/postman/local.postman_environment.json"]',
+      )!;
+      if (localGuide) {
+        expect(root.querySelector('iframe')?.title).toBe('Local API client setup');
+        expect(root.querySelector('iframe')?.getAttribute('src')).toContain(
+          'layout=shared#start-testing',
+        );
+        expect(root.querySelector('a[href="/admin/local-api#credentials"]')).not.toBeNull();
+        expect(root.querySelector('a[href="/admin/local-api#inventory"]')).toBeNull();
+        expect(environment.getAttribute('href')).toBe(
+          `${base}preview-directory/api/postman/local.postman_environment.json`,
+        );
+        expect(environment.hasAttribute('download')).toBe(true);
+      } else expect(environment).toBeNull();
+      account.set({ authorPreview: false });
+      fixture.detectChanges();
+      expect(root.querySelector('.download-groups')).toBeNull();
+    },
+  );
 
   it.each(['revoked', 'expired'] as const)(
     'removes the iframe and downloads when access is %s',
@@ -288,7 +324,7 @@ describe('Author API reference', () => {
     },
   );
 
-  it('rejects an external document and supports retry after a failed inventory request', async () => {
+  it('rejects an external document and allows retry after a failed inventory load', async () => {
     const entry = reference();
     entry.links[0].href = 'https://outside.test/index.html';
     const fixture = await loaded([entry]);

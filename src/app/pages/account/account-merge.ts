@@ -4,7 +4,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { gatewayLoginUrl } from './account-navigation';
-import { AccountMergeClient, isMergeToken, MergeCandidate, MergeDetails } from './account-merge-client';
+import {
+  AccountMergeClient,
+  isMergeToken,
+  MergeCandidate,
+  MergeDetails,
+} from './account-merge-client';
 import { AccountSignInMethod, accountSignInMethods } from './account-settings-client';
 import { MergeInboxPanel } from './merge-inbox-panel';
 import { PasswordAccountForm } from './password-account-form';
@@ -23,7 +28,12 @@ export type MergeView =
   | 'unavailable'
   | 'done';
 
-const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
 
 export function mergeDate(value: string | null): string {
   return value ? dateFormat.format(new Date(value)) : '';
@@ -34,20 +44,22 @@ export function methodLabel(method: AccountSignInMethod): string {
 }
 
 /**
- * "Deleted: 2 study plans, progress since 3 Nov 2026" for an account that is not kept, ending ", and its paid
- * membership" when it has one (the merge ends it).
+ * "Deleted: 2 study plans, progress since 3 Nov 2026" for an account that is not kept, ending ",
+ * and its paid membership" when it has one (the merge ends it).
  */
 export function deletedNote(candidate: MergeCandidate): string {
   const count = candidate.studyPlans.length;
   return (
-    `Deleted: ${count} study ${count === 1 ? 'plan' : 'plans'}, progress since ${mergeDate(candidate.createdAt)}` +
+    `Deleted: ${count} study ${count === 1 ? 'plan' : 'plans'}, progress ` +
+    `since ${mergeDate(candidate.createdAt)}` +
     (candidate.paidMembership ? ', and its paid membership' : '')
   );
 }
 
 /**
- * DLV-969 S36.8: /account/merge?token=… from the email. Signed out, it shows the sign-in step first; the token stays in
- * this page (and its address), never in browser storage. Signed in, the person picks the account to keep.
+ * DLV-969 S36.8: /account/merge?token=… from the email. Signed out, it shows the sign-in step
+ * first; the token stays in this page (and its address), never in browser storage. Signed in, the
+ * person picks the account to keep.
  */
 @Component({
   selector: 'app-account-merge',
@@ -64,8 +76,8 @@ export class AccountMergePage {
   private readonly query = inject(ActivatedRoute).snapshot.queryParamMap;
   private readonly token = this.query.get('token') ?? '';
   /**
-   * /account/merge?offer=1: the Gateway sends a Google or managed sign-in here when the Domain reports another account
-   * with the same email. A valid token wins over the offer.
+   * /account/merge?offer=1: the Gateway sends a Google or managed sign-in here when the Domain
+   * reports another account with the same email. A valid token wins over the offer.
    */
   private readonly offer = this.query.get('offer') === '1' && !isMergeToken(this.token);
   protected readonly view = signal<MergeView>('loading');
@@ -76,7 +88,10 @@ export class AccountMergePage {
   protected readonly error = signal('');
   /** The signed-in email for the "Check your inbox" panel; empty when unknown. */
   protected readonly email = signal('');
-  /** True when this page already asked for the email; false lets the panel ask once itself (the offer). */
+  /**
+   * True when this page already asked for the email; false lets the panel ask once itself (the
+   * offer).
+   */
   protected readonly inboxSent = signal(true);
   /** Where "Continue for now" goes in the panel; only the offer has one. */
   protected readonly inboxNext = signal<string | null>(null);
@@ -90,7 +105,8 @@ export class AccountMergePage {
   );
   /** After signing in, come back to this same link. */
   protected readonly returnTo =
-    '/account/merge' + (this.offer ? '?offer=1' : this.token ? '?token=' + encodeURIComponent(this.token) : '');
+    '/account/merge' +
+    (this.offer ? '?offer=1' : this.token ? '?token=' + encodeURIComponent(this.token) : '');
   protected readonly googleUrl = gatewayLoginUrl(this.returnTo, 'google');
   protected readonly loginUrl = gatewayLoginUrl(this.returnTo);
   protected readonly date = mergeDate;
@@ -130,7 +146,9 @@ export class AccountMergePage {
     await this.load();
   }
 
-  /** The offer: the panel asks for the email once when it opens, and "Continue for now" goes home. */
+  /**
+   * The offer: the panel asks for the email once when it opens, and "Continue for now" goes home.
+   */
   private async openOffer(): Promise<void> {
     this.email.set(await this.signedInEmail());
     this.inboxSent.set(false);
@@ -172,7 +190,10 @@ export class AccountMergePage {
     if (this.busy()) return;
     this.busy.set(true);
     this.error.set('');
-    const [result, email] = await Promise.all([this.client.requestMergeEmail(), this.signedInEmail()]);
+    const [result, email] = await Promise.all([
+      this.client.requestMergeEmail(),
+      this.signedInEmail(),
+    ]);
     this.busy.set(false);
     if (result.kind === 'sent') {
       this.email.set(email);
@@ -194,8 +215,9 @@ export class AccountMergePage {
     const result = await this.client.merge(this.token, keep);
     switch (result.kind) {
       case 'merged':
-        // The Domain has ended every sign-in of these accounts. This browser's own sign-out waits for the button:
-        // the Gateway's sign-out leaves through Cognito, and this screen would never be seen.
+        // The Domain has ended every sign-in of these accounts. This browser's own sign-out waits
+        // for the button: the Gateway's sign-out leaves through Cognito, and this screen would
+        // never be seen.
         this.busy.set(false);
         this.view.set('done');
         return;
@@ -216,7 +238,10 @@ export class AccountMergePage {
     }
   }
 
-  /** "Sign in again": the existing sign-out, then the sign-in page unless the sign-out already left for Cognito. */
+  /**
+   * "Sign in again": the existing sign-out, then the sign-in page unless the sign-out already left
+   * for Cognito.
+   */
   protected async signInAgain(): Promise<void> {
     if (this.busy()) return;
     this.busy.set(true);
@@ -225,7 +250,10 @@ export class AccountMergePage {
     if (!this.store.logoutRedirectPending()) await this.router.navigateByUrl('/sign-in');
   }
 
-  /** After the offer's email is accepted, drop offer=1 from the address so a reload or Back does not send again. */
+  /**
+   * After the offer's email is accepted, drop offer=1 from the address so a reload or Back does not
+   * send again.
+   */
   protected offerSent(): void {
     if (this.offer) this.location.replaceState('/account/merge');
   }
@@ -238,7 +266,9 @@ export class AccountMergePage {
   private async signedInEmail(): Promise<string> {
     try {
       const profile = await this.store.loadProfile();
-      return profile.email ?? accountSignInMethods(profile).find((method) => method.email)?.email ?? '';
+      return (
+        profile.email ?? accountSignInMethods(profile).find((method) => method.email)?.email ?? ''
+      );
     } catch {
       return '';
     }

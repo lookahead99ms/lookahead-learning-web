@@ -115,7 +115,8 @@ const inlineTagNames =
   'a|abbr|b|cite|code|del|dfn|em|i|ins|kbd|mark|q|s|samp|small|span|strong|sub|sup|u|var';
 // Elements that break a line or a block; removing one leaves a space between the words.
 const blockTagNames =
-  'blockquote|br|dd|div|dl|dt|figcaption|figure|h[1-6]|hr|li|ol|p|pre|section|table|tbody|td|th|thead|tr|ul|wbr';
+  'blockquote|br|dd|div|dl|dt|figcaption|figure|h[1-6]|hr|li|ol|p|pre|section|table|tbody|' +
+  'td|th|thead|tr|ul|wbr';
 // A real tag: a known element name, then only well-formed attributes with quoted values. So
 // "i<j", "a < b and c > d", "x <= y", "1 << k" and generics such as List<String> or
 // Map<K, V> are statement text and survive; "<b and c>" is not a tag because its attributes
@@ -285,8 +286,7 @@ function documentFor(question, context) {
     practiceFormat,
     answerSlidesRef,
   } = context;
-  const pathLabel =
-    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const pathLabel = path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const title = canonicalProblem?.title ?? question.title;
   const difficulty = canonicalProblem?.difficulty ?? question.difficulty;
   const tags = uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]);
@@ -342,8 +342,7 @@ function documentFor(question, context) {
 }
 
 function courseDocument(path, catalogItem, course) {
-  const pathLabel =
-    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const pathLabel = path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const subjects = uniqueLabels(Array.isArray(course.chips) ? course.chips : []);
   const access = course.access ?? catalogItem.access ?? { tier: 'free' };
   return {
@@ -369,8 +368,7 @@ function courseDocument(path, catalogItem, course) {
 }
 
 function topicDocument(path, course, module) {
-  const pathLabel =
-    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const pathLabel = path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const subjects = uniqueLabels([
     module.title,
     ...(Array.isArray(course.chips) ? course.chips : []),
@@ -399,8 +397,7 @@ function topicDocument(path, course, module) {
 }
 
 function toolDocument(path, catalogItem) {
-  const pathLabel =
-    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const pathLabel = path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const access = catalogItem.access ?? { tier: 'free' };
   return {
     id: `tool:${path}:${catalogItem.id}`,
@@ -554,7 +551,8 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
           : undefined;
       let answerSlidesRef;
       if (discoveryKind === 'practice' && detailRef.kind === 'content-item') {
-        const answerSlidesHref = `/content/answer-slides/${path}/${course.id}/${module.id}/${question.id}.json`;
+        const answerSlidesHref =
+          `/content/answer-slides/${path}/${course.id}/${module.id}/` + `${question.id}.json`;
         const deck = buildAnswerSlideDeck(question, { detailRef, practiceFormat });
         answerSlidesRef = answerSlideDeckReference(deck, answerSlidesHref);
         await writeJson(

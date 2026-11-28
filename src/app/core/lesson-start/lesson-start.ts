@@ -7,10 +7,10 @@ import { zipStore } from '../zip/zip-store';
 const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python', go: 'Go' };
 
 /**
- * Before you start (user review, 2026-10-05): the lessons to know first, as links that show only the title, and a closed
- * "Run it yourself" section with requirements, version notes, the project download and how to open it in
- * IntelliJ IDEA or VS Code. The project arrives as a JSON bundle (the content API has no zip type) and is
- * packed into a .zip in the browser.
+ * Before you start (user review, 2026-10-05): the lessons to know first, as links that show only
+ * the title, and a closed "Run it yourself" section with requirements, version notes, the project
+ * download and how to open it in IntelliJ IDEA or VS Code. The project arrives as a JSON bundle
+ * (the content API has no zip type) and is packed into a .zip in the browser.
  */
 @Component({
   selector: 'app-lesson-start',
@@ -27,17 +27,22 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
       </ul>
     }
     @if (runLocally(); as run) {
-      <!-- Run it yourself (user review, 2026-10-05): what to install, version notes, the project download
-           and how to open it in IntelliJ IDEA or VS Code. Closed by default. -->
+      <!-- Run it yourself (user review, 2026-10-05): what to install, version notes, the project
+           download and how to open it in IntelliJ IDEA or VS Code. Closed by default. -->
       <details class="run-locally">
         <summary>Run it yourself</summary>
         <div class="run-locally-body">
           @if (languageDownloads().length) {
-            <!-- DLV-935: one project per language; the choice is the page-wide reference language. -->
+            <!-- DLV-935: one project per language; the choice is the page-wide reference language.
+            -->
             <div class="project-languages" role="group" aria-label="Project language">
               @for (item of languageDownloads(); track item.language) {
-                <button type="button" [attr.aria-pressed]="item.language === activeDownload()?.language"
-                  (click)="languages.select(item.language)">{{ languageName(item.language) }}</button>
+                <button
+                  type="button"
+                  [attr.aria-pressed]="item.language === activeDownload()?.language"
+                  (click)="languages.select(item.language)"
+                  >{{ languageName(item.language) }}</button
+                >
               }
             </div>
           }
@@ -48,12 +53,21 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
                 <li class="rich" [innerHTML]="item"></li>
               }
             </ul>
-            <button type="button" class="project-download" [disabled]="downloadState() === 'working'" (click)="downloadProject(active.href)">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10" /></svg>
+            <button
+              type="button"
+              class="project-download"
+              [disabled]="downloadState() === 'working'"
+              (click)="downloadProject(active.href)"
+            >
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10" />
+              </svg>
               {{ downloadState() === 'working' ? 'Preparing the zip…' : active.label }}
             </button>
             @if (downloadState() === 'failed') {
-              <p class="project-download-error" role="alert">The download did not start. Check that you are signed in, then try again.</p>
+              <p class="project-download-error" role="alert"
+                >The download did not start. Check that you are signed in, then try again.</p
+              >
             }
             <h4>Open, run and test it</h4>
             <ol>
@@ -62,35 +76,48 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
               }
             </ol>
           } @else {
-          <h4>What you need</h4>
-          <ul>
-            @for (item of run.requirements; track item) {
-              <li class="rich" [innerHTML]="item"></li>
-            }
-          </ul>
-          @if (run.versionNotes?.length) {
-            <h4>On other versions</h4>
+            <h4>What you need</h4>
             <ul>
-              @for (item of run.versionNotes; track item) {
+              @for (item of run.requirements; track item) {
                 <li class="rich" [innerHTML]="item"></li>
               }
             </ul>
-          }
-          @if (run.download; as download) {
-            <button type="button" class="project-download" [disabled]="downloadState() === 'working'" (click)="downloadProject(download.href)">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10" /></svg>
-              {{ downloadState() === 'working' ? 'Preparing the zip…' : (download.label ?? 'Download the project (.zip)') }}
-            </button>
-            @if (downloadState() === 'failed') {
-              <p class="project-download-error" role="alert">The download did not start. Check that you are signed in, then try again.</p>
+            @if (run.versionNotes?.length) {
+              <h4>On other versions</h4>
+              <ul>
+                @for (item of run.versionNotes; track item) {
+                  <li class="rich" [innerHTML]="item"></li>
+                }
+              </ul>
             }
-          }
-          <h4>Open and run it</h4>
-          <ol>
-            @for (item of run.steps; track item) {
-              <li class="rich" [innerHTML]="item"></li>
+            @if (run.download; as download) {
+              <button
+                type="button"
+                class="project-download"
+                [disabled]="downloadState() === 'working'"
+                (click)="downloadProject(download.href)"
+              >
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10" />
+                </svg>
+                {{
+                  downloadState() === 'working'
+                    ? 'Preparing the zip…'
+                    : (download.label ?? 'Download the project (.zip)')
+                }}
+              </button>
+              @if (downloadState() === 'failed') {
+                <p class="project-download-error" role="alert"
+                  >The download did not start. Check that you are signed in, then try again.</p
+                >
+              }
             }
-          </ol>
+            <h4>Open and run it</h4>
+            <ol>
+              @for (item of run.steps; track item) {
+                <li class="rich" [innerHTML]="item"></li>
+              }
+            </ol>
           }
         </div>
       </details>
@@ -208,11 +235,17 @@ export class LessonStart {
 
   protected readonly downloadState = signal<'idle' | 'working' | 'failed'>('idle');
   protected readonly languages = inject(ReferenceLanguageService);
-  protected readonly languageDownloads = computed<readonly LessonLanguageDownload[]>(() => this.runLocally()?.downloads ?? []);
-  /** The download for the page-wide reference language, or the first one when the lesson lacks it. */
+  protected readonly languageDownloads = computed<readonly LessonLanguageDownload[]>(
+    () => this.runLocally()?.downloads ?? [],
+  );
+  /**
+   * The download for the page-wide reference language, or the first one when the lesson lacks it.
+   */
   protected readonly activeDownload = computed(() => {
     const downloads = this.languageDownloads();
-    return downloads.find((item) => item.language === this.languages.selected()) ?? downloads[0] ?? null;
+    return (
+      downloads.find((item) => item.language === this.languages.selected()) ?? downloads[0] ?? null
+    );
   });
 
   protected languageName(language: string): string {
@@ -220,18 +253,25 @@ export class LessonStart {
   }
 
   /**
-   * Downloads the lesson's project: the content API serves it as a JSON bundle of text files (it has no
-   * zip type), and the browser packs it into <lessonId>.zip.
+   * Downloads the lesson's project: the content API serves it as a JSON bundle of text files (it
+   * has no zip type), and the browser packs it into <lessonId>.zip.
    */
   protected async downloadProject(href: string): Promise<void> {
     this.downloadState.set('working');
     try {
       const response = await fetch(href, { credentials: 'same-origin' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const project = (await response.json()) as { zipName: string; root: string; files: { path: string; content: string }[] };
+      const project = (await response.json()) as {
+        zipName: string;
+        root: string;
+        files: { path: string; content: string }[];
+      };
       const bytes = zipStore(project.files, project.root);
       const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/zip' }));
-      const link = Object.assign(document.createElement('a'), { href: url, download: project.zipName });
+      const link = Object.assign(document.createElement('a'), {
+        href: url,
+        download: project.zipName,
+      });
       document.body.append(link);
       link.click();
       link.remove();

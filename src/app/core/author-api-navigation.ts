@@ -3,7 +3,9 @@ import { CanActivateFn, Router } from '@angular/router';
 
 export const localApiSections = ['start-testing', 'credentials', 'flows'] as const;
 export function apiGuidePath(anchor: string): '/admin/api' | '/admin/local-api' {
-  return (localApiSections as readonly string[]).includes(anchor.replace(/^#/, '')) ? '/admin/local-api' : '/admin/api';
+  return (localApiSections as readonly string[]).includes(anchor.replace(/^#/, ''))
+    ? '/admin/local-api'
+    : '/admin/api';
 }
 /** Preserve old API setup bookmarks after moving their navigation home. */
 export const localApiBookmarkRedirect: CanActivateFn = (_route, state) => {

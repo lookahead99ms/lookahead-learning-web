@@ -1,4 +1,14 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 
 export interface LessonTabItem {
   /** Short marker before the label: a variation letter or a mistake number. */
@@ -9,10 +19,11 @@ export interface LessonTabItem {
 }
 
 /**
- * Underlined tabs for small groups inside a lesson (Variations, Common mistakes). The panels stay in the
- * host template: tab i controls `panelIds[i]`, or `${idPrefix}-panel-${i}` when no ids are given. When the row is wider than its column, a
- * double chevron at each edge shows that more tabs are hidden there and scrolls to them (user review,
- * 2026-10-05). Arrow keys, Home and End move between tabs (WAI-ARIA tabs pattern, automatic activation).
+ * Underlined tabs for small groups inside a lesson (Variations, Common mistakes). The panels stay
+ * in the host template: tab i controls `panelIds[i]`, or `${idPrefix}-panel-${i}` when no ids are
+ * given. When the row is wider than its column, a double chevron at each edge shows that more tabs
+ * are hidden there and scrolls to them (user review, 2026-10-05). Arrow keys, Home and End move
+ * between tabs (WAI-ARIA tabs pattern, automatic activation).
  */
 @Component({
   selector: 'app-lesson-tabs',
@@ -25,9 +36,17 @@ export interface LessonTabItem {
         [attr.aria-label]="'Scroll to earlier ' + ariaLabel() + ' tabs'"
         (click)="scrollBy(-1)"
       >
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8.5 4 4.5 8l4 4M12.5 4l-4 4 4 4" /></svg>
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8.5 4 4.5 8l4 4M12.5 4l-4 4 4 4" />
+        </svg>
       </button>
-      <div #list class="tab-list" role="tablist" [attr.aria-label]="ariaLabel()" (scroll)="update()">
+      <div
+        #list
+        class="tab-list"
+        role="tablist"
+        [attr.aria-label]="ariaLabel()"
+        (scroll)="update()"
+      >
         @for (item of items(); track item.key; let index = $index) {
           <button
             type="button"
@@ -41,7 +60,8 @@ export interface LessonTabItem {
             (click)="choose(index)"
             (keydown)="onKey($event, index)"
           >
-            <span class="tab-key">{{ item.key }}</span><span class="tab-label">{{ item.label }}</span>
+            <span class="tab-key">{{ item.key }}</span
+            ><span class="tab-label">{{ item.label }}</span>
           </button>
         }
       </div>
@@ -219,11 +239,15 @@ export class LessonTabs implements AfterViewInit {
   protected onKey(event: KeyboardEvent, index: number): void {
     const count = this.items().length;
     const target =
-      event.key === 'ArrowRight' ? (index + 1) % count
-      : event.key === 'ArrowLeft' ? (index - 1 + count) % count
-      : event.key === 'Home' ? 0
-      : event.key === 'End' ? count - 1
-      : null;
+      event.key === 'ArrowRight'
+        ? (index + 1) % count
+        : event.key === 'ArrowLeft'
+          ? (index - 1 + count) % count
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? count - 1
+              : null;
     if (target === null) return;
     event.preventDefault();
     this.choose(target, true);

@@ -1,4 +1,9 @@
-import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
+import {
+  ContentRecovery,
+  RecoveryKind,
+  RecoveryPreview,
+  recoveryKind,
+} from '../../core/content-recovery/content-recovery';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -47,7 +52,6 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         border-radius: 15px;
       }
       .question-card-link:focus-visible {
-
       }
       .question-card:has(.question-card-link:focus-visible) {
         outline: 3px solid var(--cyan);
@@ -255,11 +259,7 @@ export class Module implements OnInit {
   }
 
   protected pathLabel(): string {
-    return this.pathId() === 'grow'
-      ? 'Grow'
-      : this.pathId() === 'blaze'
-        ? 'Blaze'
-        : 'Learn';
+    return this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'blaze' ? 'Blaze' : 'Learn';
   }
 
   protected questionFilterTags(question: ContentItemSummary): string[] {
@@ -280,8 +280,7 @@ export class Module implements OnInit {
               : question.contentType === 'guide'
                 ? 'Guide'
                 : 'Theory';
-    const path =
-      this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'learn' ? 'Learn' : 'Blaze';
+    const path = this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'learn' ? 'Learn' : 'Blaze';
     const seen = new Set<string>();
     return [path, contentType, question.difficulty, ...question.tags].filter((tag) => {
       const key = tag.toLowerCase();

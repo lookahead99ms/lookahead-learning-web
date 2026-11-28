@@ -8,7 +8,7 @@ import { legacyInterviewSearchRedirect } from './search-route-compatibility';
 class SearchDestination {}
 
 describe('legacy interview discovery route', () => {
-  it('redirects to unified Search without losing query, repeated subjects or fragment', async () => {
+  it('redirects to unified Search keeping the query, repeated subjects and fragment', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([

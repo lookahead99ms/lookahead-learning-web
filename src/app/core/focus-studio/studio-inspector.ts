@@ -201,7 +201,9 @@ import { StudioStateValues } from './studio-state-values';
   ],
 })
 export class StudioInspector {
-  /** 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs. */
+  /**
+   * 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs.
+   */
   readonly scale = input<'studio' | 'player'>('studio');
   readonly problem = input.required<PatternProblemV1>();
   readonly fixture = input.required<DsaProblemFixtureV2>();

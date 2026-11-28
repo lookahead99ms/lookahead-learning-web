@@ -1,4 +1,5 @@
-/* DLV-969 (owner, 2026-11-04): the test-account switcher; a centred dialog on wide screens, full screen on phones. */
+/* DLV-969 (owner, 2026-11-04): the test-account switcher; a centred dialog on wide screens, full
+   screen on phones. */
 .switcher {
   width: min(720px, calc(100vw - 32px));
   height: min(760px, calc(100dvh - 48px));
@@ -212,10 +213,18 @@
   font-size: 0.75rem;
   font-weight: 750;
 }
-.row-plan[data-plan='Learn'] { background: color-mix(in srgb, var(--path-learn) 22%, var(--surface)); }
-.row-plan[data-plan='Grow'] { background: color-mix(in srgb, var(--path-grow) 22%, var(--surface)); }
-.row-plan[data-plan='Advance'] { background: color-mix(in srgb, var(--path-blaze) 22%, var(--surface)); }
-.row-plan[data-plan='Promo'] { background: color-mix(in srgb, var(--warning) 22%, var(--surface)); }
+.row-plan[data-plan='Learn'] {
+  background: color-mix(in srgb, var(--path-learn) 22%, var(--surface));
+}
+.row-plan[data-plan='Grow'] {
+  background: color-mix(in srgb, var(--path-grow) 22%, var(--surface));
+}
+.row-plan[data-plan='Advance'] {
+  background: color-mix(in srgb, var(--path-blaze) 22%, var(--surface));
+}
+.row-plan[data-plan='Promo'] {
+  background: color-mix(in srgb, var(--warning) 22%, var(--surface));
+}
 .row-action {
   padding: 6px 14px;
   border: 1px solid var(--accent-strong);

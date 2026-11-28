@@ -36,8 +36,8 @@ export interface RetiredCourseIds {
   readonly units: Readonly<Record<string, string>>;
 }
 
-// JSON imports infer one union type for all entries, which no longer fits once entries differ in shape
-// (DLV-410 added targetCourseId), so the table is typed explicitly here.
+// JSON imports infer one union type for all entries, which no longer fits once entries differ in
+// shape (DLV-410 added targetCourseId), so the table is typed explicitly here.
 export const RETIRED_COURSE_IDS: readonly RetiredCourseIds[] =
   retiredContent.courses as unknown as readonly RetiredCourseIds[];
 

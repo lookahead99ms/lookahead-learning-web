@@ -156,7 +156,11 @@ import { OptimalApproaches } from '../optimal-approaches/optimal-approaches';
       <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
       <h3>Changed assumptions</h3>
       <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
-      <app-optimal-approaches [family]="problem().approachFamily" variant="block" idPrefix="approach-tab-approaches" />
+      <app-optimal-approaches
+        [family]="problem().approachFamily"
+        variant="block"
+        idPrefix="approach-tab-approaches"
+      />
     </details>
   </article>`,
   styleUrl: './studio-approach.css',

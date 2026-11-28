@@ -100,17 +100,21 @@ describe('Active sign-in inventory', () => {
     host.focus();
     expect(document.activeElement).toBe(host);
   }
-  it('shows the authoritative count, approximate descriptions, current marker and dates without raw IDs', () => {
-    expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
-    expect(fixture.nativeElement.textContent).toContain('This sign-in');
-    expect(fixture.nativeElement.textContent).toContain('descriptions are approximate');
-    expect(fixture.nativeElement.querySelectorAll('time')).toHaveLength(4);
-    expect(fixture.nativeElement.textContent).not.toMatch(
-      /opaque-current|opaque-other|physical device|IP address/,
-    );
-    expect(client.revoke).not.toHaveBeenCalled();
-    expect(client.revokeOthers).not.toHaveBeenCalled();
-  });
+  it(
+    'shows the authoritative count, approximate descriptions, current marker and dates ' +
+      'without raw IDs',
+    () => {
+      expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
+      expect(fixture.nativeElement.textContent).toContain('This sign-in');
+      expect(fixture.nativeElement.textContent).toContain('descriptions are approximate');
+      expect(fixture.nativeElement.querySelectorAll('time')).toHaveLength(4);
+      expect(fixture.nativeElement.textContent).not.toMatch(
+        /opaque-current|opaque-other|physical device|IP address/,
+      );
+      expect(client.revoke).not.toHaveBeenCalled();
+      expect(client.revokeOthers).not.toHaveBeenCalled();
+    },
+  );
   it('labels Local inventory as unlimited without a misleading capacity count', async () => {
     client.load.mockResolvedValue({ ...structuredClone(initial), limit: null });
     button('Refresh list').click();
@@ -198,7 +202,7 @@ describe('Active sign-in inventory', () => {
     expect(fixture.nativeElement.querySelector('.status').textContent).toBe('');
     expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
   });
-  it('does not restore refresh focus or announce a late response after an owner change', async () => {
+  it('does not restore refresh focus or announce a late response after owner change', async () => {
     let resolve!: (value: ActiveSignInInventory) => void;
     client.load.mockReturnValue(new Promise((done) => (resolve = done)));
     const trigger = button('Refresh list');
@@ -264,7 +268,7 @@ describe('Active sign-in inventory', () => {
     expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
     expect(document.activeElement).toBe(button('Sign out Safari on iOS'));
   });
-  it('ends only the selected other sign-in and updates from the acknowledged inventory', async () => {
+  it('ends only the chosen other sign-in and updates from the acknowledged inventory', async () => {
     button('Sign out Safari on iOS').click();
     await settle();
     button('Confirm sign out').click();
@@ -305,52 +309,64 @@ describe('Active sign-in inventory', () => {
     await settle();
     expect(navigate).toHaveBeenCalledExactlyOnceWith(['/sign-in']);
   });
-  it('preserves a pending label through recent-auth confirmation and requires explicit retry', async () => {
-    client.rename.mockRejectedValueOnce(new SignInManagementError('reauthentication-required'));
-    button('Edit label for My browser').click();
-    await settle();
-    fill('Keep this label');
-    button('Save label').click();
-    await settle();
-    const password = fixture.nativeElement.querySelector(
-      'input[name="currentSignInPassword"]',
-    ) as HTMLInputElement;
-    expect(document.activeElement).toBe(password);
-    expect(store.account()?.accountId).toBe('owner');
-    password.value = 'synthetic password';
-    password.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    button('Confirm identity').click();
-    await settle();
-    expect(client.reauthenticate).toHaveBeenCalledExactlyOnceWith('synthetic password');
-    expect(client.rename).toHaveBeenCalledTimes(1);
-    expect(fixture.nativeElement.querySelector('input[name="currentSignInPassword"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('input[name="signInLabel"]').value).toBe(
-      'Keep this label',
-    );
-    expect(fixture.nativeElement.textContent).toContain('Review your change and submit it again');
-    button('Save label').click();
-    await settle();
-    expect(client.rename).toHaveBeenCalledTimes(2);
-  });
+  it(
+    'preserves a pending label through recent-auth confirmation and requires explicit ' + 'retry',
+    async () => {
+      client.rename.mockRejectedValueOnce(new SignInManagementError('reauthentication-required'));
+      button('Edit label for My browser').click();
+      await settle();
+      fill('Keep this label');
+      button('Save label').click();
+      await settle();
+      const password = fixture.nativeElement.querySelector(
+        'input[name="currentSignInPassword"]',
+      ) as HTMLInputElement;
+      expect(document.activeElement).toBe(password);
+      expect(store.account()?.accountId).toBe('owner');
+      password.value = 'synthetic password';
+      password.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      button('Confirm identity').click();
+      await settle();
+      expect(client.reauthenticate).toHaveBeenCalledExactlyOnceWith('synthetic password');
+      expect(client.rename).toHaveBeenCalledTimes(1);
+      expect(fixture.nativeElement.querySelector('input[name="currentSignInPassword"]')).toBeNull();
+      expect(fixture.nativeElement.querySelector('input[name="signInLabel"]').value).toBe(
+        'Keep this label',
+      );
+      expect(fixture.nativeElement.textContent).toContain('Review your change and submit it again');
+      button('Save label').click();
+      await settle();
+      expect(client.rename).toHaveBeenCalledTimes(2);
+    },
+  );
 
-  it('uses fresh managed sign-in for cloud confirmation without collecting a password or retrying the change', async () => {
-    store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
-    client.rename.mockRejectedValueOnce(new SignInManagementError('reauthentication-required'));
-    button('Edit label for My browser').click();
-    await settle();
-    fill('Review after confirmation');
-    button('Save label').click();
-    await settle();
-    const link = fixture.nativeElement.querySelector('a[href^="/bff/login"]');
-    expect(link.textContent).toContain('Confirm identity through secure sign-in');
-    expect(link.getAttribute('href')).toBe('/bff/login?reauthenticate=true&returnTo=%2Faccount');
-    expect(document.activeElement).toBe(link);
-    expect(fixture.nativeElement.querySelector('input[type="password"]')).toBeNull();
-    expect(client.reauthenticate).not.toHaveBeenCalled();
-    expect(client.rename).toHaveBeenCalledTimes(1);
-    expect(store.account()?.accountId).toBe('owner');
-  });
+  it(
+    'uses fresh managed sign-in for cloud confirmation without collecting a password or ' +
+      'retrying the change',
+    async () => {
+      store.authOptions.set({
+        registration: false,
+        google: false,
+        oauth: true,
+        managedLogin: true,
+      });
+      client.rename.mockRejectedValueOnce(new SignInManagementError('reauthentication-required'));
+      button('Edit label for My browser').click();
+      await settle();
+      fill('Review after confirmation');
+      button('Save label').click();
+      await settle();
+      const link = fixture.nativeElement.querySelector('a[href^="/bff/login"]');
+      expect(link.textContent).toContain('Confirm identity through secure sign-in');
+      expect(link.getAttribute('href')).toBe('/bff/login?reauthenticate=true&returnTo=%2Faccount');
+      expect(document.activeElement).toBe(link);
+      expect(fixture.nativeElement.querySelector('input[type="password"]')).toBeNull();
+      expect(client.reauthenticate).not.toHaveBeenCalled();
+      expect(client.rename).toHaveBeenCalledTimes(1);
+      expect(store.account()?.accountId).toBe('owner');
+    },
+  );
 
   it('ignores late responses after ownership changes', async () => {
     let resolve!: (value: ActiveSignInInventory) => void;

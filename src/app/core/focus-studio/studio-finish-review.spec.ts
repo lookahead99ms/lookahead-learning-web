@@ -14,7 +14,11 @@ import { NOTES_SAVE_DELAY_MS, StudioFinishReview } from './studio-finish-review'
 import { RecallCheckStore } from './recall-check';
 import { patternContextToken } from '../../content/pattern-context';
 
-function problem(id: string, studyOrder: number, difficulty: 'Beginner' | 'Intermediate' = 'Beginner') {
+function problem(
+  id: string,
+  studyOrder: number,
+  difficulty: 'Beginner' | 'Intermediate' = 'Beginner',
+) {
   return {
     id,
     title: `Problem ${id}`,
@@ -119,50 +123,61 @@ describe('Finish and review', () => {
     return { fixture, root, button, saved };
   }
 
-  it('names the other optimal approaches in one line each, only when the problem has a family (DLV-965)', () => {
-    const fixture = TestBed.createComponent(StudioFinishReview);
-    fixture.componentRef.setInput('problemId', 'p1');
-    fixture.componentRef.setInput('approachFamily', {
-      approach: 1,
-      bestProblemId: 'p1',
-      siblings: [
-        {
-          problemId: 'p1-approach-2',
-          approach: 2,
-          title: 'Problem p1 (Approach-2)',
-          path: 'learn',
-          courseId: 'algorithmic-patterns',
-          questionId: 'p1-approach-2',
-          pattern: 'Pattern B',
-          complexity: { time: 'O(n)', space: 'O(1)' },
-          whenToPrefer: 'Prefer B when range questions follow.',
-        },
-      ],
-    });
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const block = root.querySelector('.also-optimal')!;
-    expect(block).not.toBeNull();
-    // No spoilers (user, 2026-10-16): before the pattern is revealed or the problem solved, no pattern name.
-    expect(block.textContent?.replace(/\s+/g, ' ').trim()).toBe('Another optimal approach: Problem p1 (Approach-2)');
-    expect(root.textContent).not.toContain('Pattern B');
-    fixture.componentRef.setInput('patternRevealed', true);
-    fixture.detectChanges();
-    expect(block.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'Also solvable optimally with Pattern B: Problem p1 (Approach-2)',
-    );
-    // Solving the problem names it too, even without the reveal.
-    fixture.componentRef.setInput('patternRevealed', false);
-    TestBed.inject(PracticeProgressService).rate('p1', 'Solved on my own');
-    fixture.detectChanges();
-    expect(block.textContent).toContain('Also solvable optimally with Pattern B');
-    expect(block.querySelector('a')?.getAttribute('href')).toBe('/learn/algorithmic-patterns/p1-approach-2');
-    expect(root.querySelector('h4[id$="-approaches"]')?.textContent).toBe('Other optimal approaches');
-    fixture.componentRef.setInput('approachFamily', null);
-    fixture.detectChanges();
-    expect(root.querySelector('.also-optimal')).toBeNull();
-    expect(root.querySelector('h4[id$="-approaches"]')).toBeNull();
-  });
+  it(
+    'names the other optimal approaches in one line each, only when the problem has a ' +
+      'family (DLV-965)',
+    () => {
+      const fixture = TestBed.createComponent(StudioFinishReview);
+      fixture.componentRef.setInput('problemId', 'p1');
+      fixture.componentRef.setInput('approachFamily', {
+        approach: 1,
+        bestProblemId: 'p1',
+        siblings: [
+          {
+            problemId: 'p1-approach-2',
+            approach: 2,
+            title: 'Problem p1 (Approach-2)',
+            path: 'learn',
+            courseId: 'algorithmic-patterns',
+            questionId: 'p1-approach-2',
+            pattern: 'Pattern B',
+            complexity: { time: 'O(n)', space: 'O(1)' },
+            whenToPrefer: 'Prefer B when range questions follow.',
+          },
+        ],
+      });
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const block = root.querySelector('.also-optimal')!;
+      expect(block).not.toBeNull();
+      // No spoilers (user, 2026-10-16): before the pattern is revealed or the problem solved, no
+      // pattern name.
+      expect(block.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Another optimal approach: Problem p1 (Approach-2)',
+      );
+      expect(root.textContent).not.toContain('Pattern B');
+      fixture.componentRef.setInput('patternRevealed', true);
+      fixture.detectChanges();
+      expect(block.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Also solvable optimally with Pattern B: Problem p1 (Approach-2)',
+      );
+      // Solving the problem names it too, even without the reveal.
+      fixture.componentRef.setInput('patternRevealed', false);
+      TestBed.inject(PracticeProgressService).rate('p1', 'Solved on my own');
+      fixture.detectChanges();
+      expect(block.textContent).toContain('Also solvable optimally with Pattern B');
+      expect(block.querySelector('a')?.getAttribute('href')).toBe(
+        '/learn/algorithmic-patterns/p1-approach-2',
+      );
+      expect(root.querySelector('h4[id$="-approaches"]')?.textContent).toBe(
+        'Other optimal approaches',
+      );
+      fixture.componentRef.setInput('approachFamily', null);
+      fixture.detectChanges();
+      expect(root.querySelector('.also-optimal')).toBeNull();
+      expect(root.querySelector('h4[id$="-approaches"]')).toBeNull();
+    },
+  );
 
   it('rates the attempt with pressed buttons and marks the problem solved', () => {
     const { fixture, root, button, saved } = render();
@@ -328,7 +343,12 @@ describe('Finish and review', () => {
     button('Clear progress').click();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(saved()['p2']).toMatchObject({ status: null, rating: null, reviewAt: null, notes: 'Keep this' });
+    expect(saved()['p2']).toMatchObject({
+      status: null,
+      rating: null,
+      reviewAt: null,
+      notes: 'Keep this',
+    });
     expect(notes.value).toBe('Keep this');
     expect(button('Solved with hints').getAttribute('aria-pressed')).toBe('false');
     expect(button('In 3 days').getAttribute('aria-pressed')).toBe('false');
@@ -355,60 +375,69 @@ describe('Finish and review', () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
-  it('lists the next three problems in this pattern by learning order without naming a hidden pattern', async () => {
-    values.set(
-      PRACTICE_PROGRESS_KEY,
-      JSON.stringify({
-        schemaVersion: 'dsa-practice-local/v1',
-        problems: {
-          p4: {
-            status: 'solved',
-            rating: 'Solved on my own',
-            reviewAt: null,
-            notes: '',
-            updatedAt: '2026-10-04T10:00:00.000Z',
+  it(
+    'lists the next three problems in this pattern by learning order without naming a ' +
+      'hidden pattern',
+    async () => {
+      values.set(
+        PRACTICE_PROGRESS_KEY,
+        JSON.stringify({
+          schemaVersion: 'dsa-practice-local/v1',
+          problems: {
+            p4: {
+              status: 'solved',
+              rating: 'Solved on my own',
+              reviewAt: null,
+              notes: '',
+              updatedAt: '2026-10-04T10:00:00.000Z',
+            },
           },
-        },
-      }),
-    );
-    const { fixture, root } = render();
-    await fixture.whenStable();
-    const heading = () => root.querySelector(`#${root.querySelector('ol.next')!.getAttribute('aria-labelledby')}`)!;
-    expect(heading().textContent!.trim()).toBe('Next problems');
-    expect(root.textContent).not.toContain('Array Fundamentals');
-    const items = [...root.querySelectorAll('ol.next li')];
-    expect(items.map((item) => item.querySelector('.next-title')!.textContent)).toEqual([
-      'Problem p3',
-      'Problem p4',
-      'Problem p5',
-    ]);
-    expect(items.map((item) => item.querySelector('.next-meta')!.textContent)).toEqual([
-      'Beginner',
-      'Intermediate',
-      'Intermediate',
-    ]);
-    const link = items[0].querySelector('a')!;
-    expect(link.getAttribute('href')).toBe(`/learn/algorithmic-patterns/p3?pattern=${patternContextToken('arrays')}`);
-    // DLV-962: the link carries an opaque context id, so hovering it never names the pattern.
-    expect(link.getAttribute('href')).not.toContain('arrays');
-    expect(items[1].querySelector('app-practice-status-mark')!.getAttribute('data-status')).toBe('solved');
-    expect(items[0].querySelector('app-practice-status-mark')).toBeNull();
+        }),
+      );
+      const { fixture, root } = render();
+      await fixture.whenStable();
+      const heading = () =>
+        root.querySelector(`#${root.querySelector('ol.next')!.getAttribute('aria-labelledby')}`)!;
+      expect(heading().textContent!.trim()).toBe('Next problems');
+      expect(root.textContent).not.toContain('Array Fundamentals');
+      const items = [...root.querySelectorAll('ol.next li')];
+      expect(items.map((item) => item.querySelector('.next-title')!.textContent)).toEqual([
+        'Problem p3',
+        'Problem p4',
+        'Problem p5',
+      ]);
+      expect(items.map((item) => item.querySelector('.next-meta')!.textContent)).toEqual([
+        'Beginner',
+        'Intermediate',
+        'Intermediate',
+      ]);
+      const link = items[0].querySelector('a')!;
+      expect(link.getAttribute('href')).toBe(
+        `/learn/algorithmic-patterns/p3?pattern=${patternContextToken('arrays')}`,
+      );
+      // DLV-962: the link carries an opaque context id, so hovering it never names the pattern.
+      expect(link.getAttribute('href')).not.toContain('arrays');
+      expect(items[1].querySelector('app-practice-status-mark')!.getAttribute('data-status')).toBe(
+        'solved',
+      );
+      expect(items[0].querySelector('app-practice-status-mark')).toBeNull();
 
-    fixture.componentInstance.revealed.set(true);
-    fixture.detectChanges();
-    expect(heading().textContent!.trim()).toBe('Next in Array Fundamentals');
+      fixture.componentInstance.revealed.set(true);
+      fixture.detectChanges();
+      expect(heading().textContent!.trim()).toBe('Next in Array Fundamentals');
 
-    // The page's pattern context picks the group; the last problems list what is left.
-    fixture.componentInstance.patternId.set('two-pointers');
-    fixture.detectChanges();
-    expect([...root.querySelectorAll('ol.next .next-title')].map((item) => item.textContent)).toEqual([
-      'Problem p9',
-    ]);
-    fixture.componentInstance.problemId.set('p6');
-    fixture.componentInstance.patternId.set('unknown');
-    fixture.detectChanges();
-    expect(root.querySelector('ol.next')).toBeNull();
-  });
+      // The page's pattern context picks the group; the last problems list what is left.
+      fixture.componentInstance.patternId.set('two-pointers');
+      fixture.detectChanges();
+      expect(
+        [...root.querySelectorAll('ol.next .next-title')].map((item) => item.textContent),
+      ).toEqual(['Problem p9']);
+      fixture.componentInstance.problemId.set('p6');
+      fixture.componentInstance.patternId.set('unknown');
+      fixture.detectChanges();
+      expect(root.querySelector('ol.next')).toBeNull();
+    },
+  );
 
   it('says progress stays on this device', () => {
     const { root } = render();
@@ -458,23 +487,23 @@ describe('Finish and review with the Recall card grid', () => {
       );
     const saved = () => JSON.parse(values.get(PRACTICE_PROGRESS_KEY) ?? 'null')?.problems ?? {};
     const store = TestBed.inject(RecallCheckStore);
-    const suggestion = () => root.querySelector('.suggestion')?.textContent?.replace(/\s+/g, ' ').trim();
+    const suggestion = () =>
+      root.querySelector('.suggestion')?.textContent?.replace(/\s+/g, ' ').trim();
     return { fixture, root, button, saved, store, suggestion };
   }
 
-  it('lays out four short columns with the status, clear action and device note under them', async () => {
+  it('lays out four short columns with status, action and device note under them', async () => {
     const { fixture, root } = render();
     await fixture.whenStable();
     const finish = root.querySelector('.finish')!;
     const columns = finish.querySelector(':scope > .columns')!;
-    expect([...columns.children].map((block) => block.querySelector('h4')?.textContent?.trim())).toEqual([
-      'How did it go?',
-      'Review again',
-      'My notes',
-      'Next problems',
-    ]);
+    expect(
+      [...columns.children].map((block) => block.querySelector('h4')?.textContent?.trim()),
+    ).toEqual(['How did it go?', 'Review again', 'My notes', 'Next problems']);
     expect([...columns.children].every((block) => block.classList.contains('block'))).toBe(true);
-    const order = [...finish.children].map((child) => child.tagName.toLowerCase() + '.' + (child.classList[0] ?? ''));
+    const order = [...finish.children].map(
+      (child) => child.tagName.toLowerCase() + '.' + (child.classList[0] ?? ''),
+    );
     expect(order).toEqual(['header.', 'div.columns', 'p.status', 'p.device-note']);
     expect(columns.contains(root.querySelector('.device-note'))).toBe(false);
   });
@@ -499,8 +528,15 @@ describe('Finish and review with the Recall card grid', () => {
     fixture.detectChanges();
     expect(button('Solved on my own')!.getAttribute('aria-pressed')).toBe('true');
     expect(button('No review needed')!.getAttribute('aria-pressed')).toBe('true');
-    expect(saved()['p2']).toMatchObject({ status: 'solved', rating: 'Solved on my own', reviewAt: null, reviewChoice: 'none' });
-    expect(root.querySelector('[role="status"]')!.textContent).toBe('Marked: Solved on my own. No review planned.');
+    expect(saved()['p2']).toMatchObject({
+      status: 'solved',
+      rating: 'Solved on my own',
+      reviewAt: null,
+      reviewChoice: 'none',
+    });
+    expect(root.querySelector('[role="status"]')!.textContent).toBe(
+      'Marked: Solved on my own. No review planned.',
+    );
     // Using it again keeps the rating instead of taking it back.
     button('Use this')!.click();
     fixture.detectChanges();
@@ -528,7 +564,11 @@ describe('Finish and review with the Recall card grid', () => {
     fixture.detectChanges();
     expect(button('Needed the solution')!.getAttribute('aria-pressed')).toBe('true');
     expect(button('In 3 days')!.getAttribute('aria-pressed')).toBe('true');
-    expect(saved()['p2']).toMatchObject({ rating: 'Needed the solution', reviewAt: '2026-10-08', reviewChoice: '3d' });
+    expect(saved()['p2']).toMatchObject({
+      rating: 'Needed the solution',
+      reviewAt: '2026-10-08',
+      reviewChoice: '3d',
+    });
 
     // Grades belong to their problem.
     fixture.componentInstance.problemId.set('p3');

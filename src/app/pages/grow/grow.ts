@@ -19,7 +19,8 @@ export class Grow {
     title: 'Grow',
     highlight: 'Turn knowledge into production judgment.',
     description:
-      'Learn to design, deliver, diagnose, secure, and operate the systems a senior engineer is trusted to own.',
+      'Learn to design, deliver, diagnose, secure, and operate the systems a senior ' +
+      'engineer is trusted to own.',
     actionsLabel: 'Grow starting points',
     primaryAction: { label: 'Start with Spring Boot', routerLink: '/grow/spring-boot' },
     alternativeAction: {

@@ -61,7 +61,9 @@ export class AccountPage {
     initialValue: this.route.snapshot.data,
   });
   protected readonly returnTo = computed(() => safeAccountReturn(this.query().get('returnTo')));
-  protected readonly lessonReturn = computed(() => /^\/(learn|grow|blaze|look-ahead)\/[^/?#]+\/[^?#]+/.test(this.returnTo()));
+  protected readonly lessonReturn = computed(() =>
+    /^\/(learn|grow|blaze|look-ahead)\/[^/?#]+\/[^?#]+/.test(this.returnTo()),
+  );
   protected readonly returnUrl = computed(() => this.router.parseUrl(this.returnTo()));
   protected readonly signup = computed(
     () => this.routeData()['accountMode'] === 'signup' || this.query().get('mode') === 'signup',
@@ -81,17 +83,20 @@ export class AccountPage {
     this.route.snapshot.queryParamMap.get('error') === 'session-expired'
       ? 'Your session expired. Sign in again to continue.'
       : this.route.snapshot.queryParamMap.get('error') === 'oauth'
-      ? 'Sign-in could not be completed. Please try again.'
-      : this.route.snapshot.queryParamMap.get('error') === 'admission'
-        ? 'Your account is not admitted yet. If you have just requested access, the owner has to approve it first.'
-        : '',
+        ? 'Sign-in could not be completed. Please try again.'
+        : this.route.snapshot.queryParamMap.get('error') === 'admission'
+          ? 'Your account is not admitted yet. If you have just requested access, the ' +
+            'owner has to approve it first.'
+          : '',
   );
   protected readonly oauthContinuation = computed(() =>
     this.query().get('oauth') === 'continue' ? 'continue' : null,
   );
   protected readonly countries = registrationCountries;
   protected readonly googleLoginUrl = computed(() => gatewayLoginUrl(this.returnTo(), 'google'));
-  protected readonly passwordLoginUrl = computed(() => gatewayLoginUrl(this.returnTo(), 'password'));
+  protected readonly passwordLoginUrl = computed(() =>
+    gatewayLoginUrl(this.returnTo(), 'password'),
+  );
   protected readonly passwordChanged =
     this.router.currentNavigation()?.extras.state?.['passwordChanged'] === true;
   protected readonly signInCanceled =
@@ -110,9 +115,11 @@ export class AccountPage {
   protected readonly savedPlanCount = computed(() =>
     this.store.planSummariesState() === 'ready' ? this.store.plans().length : null,
   );
-  private readonly membershipApi=inject(MembershipApi);
-  protected readonly membershipName = (account: Parameters<typeof membershipName>[0]) => membershipName(account, this.membershipApi.records());
-  protected readonly membership = (account: Parameters<typeof accountMembership>[0]) => accountMembership(account,this.membershipApi.records());
+  private readonly membershipApi = inject(MembershipApi);
+  protected readonly membershipName = (account: Parameters<typeof membershipName>[0]) =>
+    membershipName(account, this.membershipApi.records());
+  protected readonly membership = (account: Parameters<typeof accountMembership>[0]) =>
+    accountMembership(account, this.membershipApi.records());
   // The account rail takes the left edge, so the page statements and sidebars stay off this page.
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
   private readonly document = inject(DOCUMENT);
@@ -153,11 +160,14 @@ export class AccountPage {
     return this.router.url.split('#')[0] + '#' + id;
   }
   protected goToSection(event: MouseEvent, id: string): void {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
     const target = this.document.getElementById(id);
     if (!target) return;
     event.preventDefault();
-    const reduceMotion = this.document.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = this.document.defaultView?.matchMedia?.(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
     this.activeSection.set(id);
     this.sectionPinned = true;
     target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
@@ -173,11 +183,16 @@ export class AccountPage {
       this.scrollFrame = 0;
       if (this.sectionPinned) return;
       const headerHeight =
-        parseFloat(view.getComputedStyle(this.host.nativeElement).getPropertyValue('--platform-header-height')) || 76;
+        parseFloat(
+          view
+            .getComputedStyle(this.host.nativeElement)
+            .getPropertyValue('--platform-header-height'),
+        ) || 76;
       let current: string = this.sections[0].id;
       for (const section of this.sections) {
         const element = this.document.getElementById(section.id);
-        if (element && element.getBoundingClientRect().top <= headerHeight + 48) current = section.id;
+        if (element && element.getBoundingClientRect().top <= headerHeight + 48)
+          current = section.id;
       }
       const page = this.document.documentElement;
       if (view.innerHeight + view.scrollY >= page.scrollHeight - 2)
@@ -227,9 +242,7 @@ export class AccountPage {
   private async finishSignIn(): Promise<void> {
     if (this.store.authOptions()?.oauth) {
       window.location.assign(
-        this.oauthContinuation()
-          ? '/api/v1/auth/continue'
-          : gatewayLoginUrl(this.returnTo()),
+        this.oauthContinuation() ? '/api/v1/auth/continue' : gatewayLoginUrl(this.returnTo()),
       );
     } else {
       await this.router.navigateByUrl(this.returnTo());

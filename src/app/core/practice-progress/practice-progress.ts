@@ -124,7 +124,11 @@ export function parsePracticeProgress(raw: string | null): Record<string, Practi
   if (!raw) return {};
   try {
     const saved = JSON.parse(raw) as SavedProgress | null;
-    if (saved?.schemaVersion !== SCHEMA_VERSION || !saved.problems || typeof saved.problems !== 'object')
+    if (
+      saved?.schemaVersion !== SCHEMA_VERSION ||
+      !saved.problems ||
+      typeof saved.problems !== 'object'
+    )
       return {};
     return followMergedProblems(
       Object.fromEntries(

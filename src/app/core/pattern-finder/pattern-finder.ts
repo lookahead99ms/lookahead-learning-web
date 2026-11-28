@@ -10,8 +10,10 @@ import { hasWords } from './words';
  * runs this exact code outside Angular.
  */
 
-export type FinderShape = 'string' | 'array' | 'grid' | 'tree' | 'linked-list' | 'graph' | 'intervals' | 'numbers';
-export type FinderWant = 'count' | 'best' | 'yes-no' | 'all' | 'kth' | 'order' | 'structure' | 'changed' | 'value';
+export type FinderShape =
+  'string' | 'array' | 'grid' | 'tree' | 'linked-list' | 'graph' | 'intervals' | 'numbers';
+export type FinderWant =
+  'count' | 'best' | 'yes-no' | 'all' | 'kth' | 'order' | 'structure' | 'changed' | 'value';
 export type FinderSize = 'small' | 'medium' | 'large' | 'unknown';
 export type FinderCheck = 'input' | 'wants' | 'size' | 'words';
 
@@ -25,12 +27,16 @@ export interface RecognitionProblem {
   wants: FinderWant[];
   size: FinderSize;
   phrases: string[];
-  /** v2: true when a reviewer set the card from the statement (DLV-964); auto-generated cards are false. */
+  /**
+   * v2: true when a reviewer set the card from the statement (DLV-964); auto-generated cards are
+   * false.
+   */
   reviewed?: boolean;
   /**
    * v2, derived and read-only: this unit first, then the units of the problem's Approach-N siblings
-   * (DLV-965: an equally optimal approach is its own problem under its own unit). Used by the coverage
-   * report and the learner-answer gate, not by the scorer: each sibling card votes for its own unit.
+   * (DLV-965: an equally optimal approach is its own problem under its own unit). Used by the
+   * coverage report and the learner-answer gate, not by the scorer: each sibling card votes for its
+   * own unit.
    */
   optimalUnits?: number[];
   /** v2: how to tell this problem's unit from a genuine look-alike unit, in the learner's words. */
@@ -42,7 +48,8 @@ export interface RecognitionPhrase {
   forms: string[];
 }
 
-export type RecognitionIndexVersion = 'pattern-recognition-index/v1' | 'pattern-recognition-index/v2';
+export type RecognitionIndexVersion =
+  'pattern-recognition-index/v1' | 'pattern-recognition-index/v2';
 
 export interface RecognitionIndex {
   schemaVersion: RecognitionIndexVersion;
@@ -80,7 +87,10 @@ export interface UnitMatch {
   /** Every answer, checked against the unit's best-matching problem. */
   reasons: FinderReason[];
   examples: FinderExample[];
-  /** The best-matching problem's note on telling this unit from its look-alike, when its card has one (v2). */
+  /**
+   * The best-matching problem's note on telling this unit from its look-alike, when its card has
+   * one (v2).
+   */
   tellApart?: string;
 }
 
@@ -106,11 +116,11 @@ export const FINDER_SHAPES: readonly { value: FinderShape; label: string }[] = [
 
 /**
  * One answer per row (user, 2026-10-16). The hints settle the look-alikes the blind pilot exposed
- * (DLV-964 review rules): a superlative is "the best" even when it counts ("minimum number of"); one
- * count per element is still "a count"; the input given back with elements removed, added or
- * overwritten is "the input changed"; a sum, an index or the one element that fits is "one value"; "the
- * k-th" is a rank by size or order (k-th largest, top k, median), while the symbol at position k of a row
- * is one value.
+ * (DLV-964 review rules): a superlative is "the best" even when it counts ("minimum number of");
+ * one count per element is still "a count"; the input given back with elements removed, added or
+ * overwritten is "the input changed"; a sum, an index or the one element that fits is "one value";
+ * "the k-th" is a rank by size or order (k-th largest, top k, median), while the symbol at position
+ * k of a row is one value.
  */
 export const FINDER_WANTS: readonly { value: FinderWant; label: string; hint: string }[] = [
   { value: 'count', label: 'a count', hint: 'how many, also one count per element' },
@@ -119,7 +129,11 @@ export const FINDER_WANTS: readonly { value: FinderWant; label: string; hint: st
   { value: 'all', label: 'all of them', hint: 'every combination or arrangement' },
   { value: 'kth', label: 'the k-th / top k', hint: 'k-th largest or smallest, top k, median' },
   { value: 'order', label: 'an order', hint: 'a sorted, merged, visiting or rearranged sequence' },
-  { value: 'structure', label: 'a built structure', hint: 'design or implement, a run of operations' },
+  {
+    value: 'structure',
+    label: 'a built structure',
+    hint: 'design or implement, a run of operations',
+  },
   { value: 'changed', label: 'the input changed', hint: 'elements removed, added or overwritten' },
   { value: 'value', label: 'one value', hint: 'a sum, an index, the element that fits' },
 ];
@@ -153,14 +167,23 @@ export const FINDER_WEIGHTS = {
 export const EMPTY_ANSWERS: FinderAnswers = { input: [], wants: [], size: null, words: '' };
 
 export function hasAnswers(answers: FinderAnswers): boolean {
-  return answers.input.length > 0 || answers.wants.length > 0 || answers.size !== null || answers.words.trim().length > 0;
+  return (
+    answers.input.length > 0 ||
+    answers.wants.length > 0 ||
+    answers.size !== null ||
+    answers.words.trim().length > 0
+  );
 }
 
-/** Key phrases the typed words contain: a phrase counts when its key or any of its forms appears. */
+/**
+ * Key phrases the typed words contain: a phrase counts when its key or any of its forms appears.
+ */
 export function phrasesIn(words: string, vocabulary: readonly RecognitionPhrase[]): string[] {
   const text = words.trim();
   if (!text) return [];
-  return vocabulary.filter((entry) => [entry.key, ...entry.forms].some((form) => hasWords(text, form))).map((entry) => entry.key);
+  return vocabulary
+    .filter((entry) => [entry.key, ...entry.forms].some((form) => hasWords(text, form)))
+    .map((entry) => entry.key);
 }
 
 /** Feature weights: a feature found in few units says more than one found in most of them. */
@@ -186,7 +209,9 @@ export function featureWeights(index: RecognitionIndex): FinderWeights {
       }
     }
     const weights = new Map<string, number>();
-    seen.forEach((set, value) => weights.set(value, Math.max(0.25, Math.log((units + 1) / (set.size + 0.5)))));
+    seen.forEach((set, value) =>
+      weights.set(value, Math.max(0.25, Math.log((units + 1) / (set.size + 0.5)))),
+    );
     return weights;
   };
   const weights = {
@@ -236,7 +261,14 @@ export function scoreProblem(
   const w = FINDER_WEIGHTS;
   const input = setScore(answers.input, problem.input, weights.input, 'input', w.miss, w.extra);
   const wants = setScore(answers.wants, problem.wants, weights.wants, 'wants', w.miss, w.extra);
-  const words = setScore(phrases, problem.phrases, weights.phrases, 'words', w.phraseMiss, phrases.length ? w.phraseExtra : 0);
+  const words = setScore(
+    phrases,
+    problem.phrases,
+    weights.phrases,
+    'words',
+    w.phraseMiss,
+    phrases.length ? w.phraseExtra : 0,
+  );
   let size = 0;
   const reasons = [...input.reasons, ...wants.reasons];
   if (answers.size) {
@@ -249,7 +281,10 @@ export function scoreProblem(
   const consistent =
     answers.input.every((shape) => problem.input.includes(shape)) &&
     (!answers.wants.length || answers.wants.some((want) => problem.wants.includes(want))) &&
-    (!answers.size || answers.size === 'unknown' || problem.size === answers.size || problem.size === 'unknown');
+    (!answers.size ||
+      answers.size === 'unknown' ||
+      problem.size === answers.size ||
+      problem.size === 'unknown');
   return { problem, score: input.score + wants.score + size + words.score, consistent, reasons };
 }
 
@@ -262,9 +297,17 @@ const round = (value: number) => Math.round(value * 1000) / 1000;
  * answered every unit scores 0, nothing is filtered and the order is the study order. Weights were
  * tuned on the coverage report (tools/utilities/pattern_finder_coverage.mjs in the content repo).
  */
-export function score(index: RecognitionIndex, answers: FinderAnswers, exampleCount = 3): FinderResult {
+export function score(
+  index: RecognitionIndex,
+  answers: FinderAnswers,
+  exampleCount = 3,
+): FinderResult {
   const phrases = phrasesIn(answers.words, index.vocabulary);
-  const active = answers.input.length > 0 || answers.wants.length > 0 || answers.size !== null || phrases.length > 0;
+  const active =
+    answers.input.length > 0 ||
+    answers.wants.length > 0 ||
+    answers.size !== null ||
+    phrases.length > 0;
   const weights = featureWeights(index);
   const byUnit = new Map<number, ProblemScore[]>();
   for (const problem of index.problems) {
@@ -275,12 +318,20 @@ export function score(index: RecognitionIndex, answers: FinderAnswers, exampleCo
   }
   const ranked = index.units.map((unit) => {
     const list = (byUnit.get(unit.n) ?? []).sort(
-      (a, b) => b.score - a.score || Number(b.consistent) - Number(a.consistent) || a.problem.title.localeCompare(b.problem.title),
+      (a, b) =>
+        b.score - a.score ||
+        Number(b.consistent) - Number(a.consistent) ||
+        a.problem.title.localeCompare(b.problem.title),
     );
     const best = list[0];
-    const agreeing = list.filter((entry) => entry.reasons.length > 0 && entry.reasons.every((reason) => reason.matched)).length;
+    const agreeing = list.filter(
+      (entry) => entry.reasons.length > 0 && entry.reasons.every((reason) => reason.matched),
+    ).length;
     const total = list.length
-      ? FINDER_WEIGHTS.support.reduce((sum, share, i) => sum + share * Math.max(0, list[i + 1]?.score ?? 0), best.score) +
+      ? FINDER_WEIGHTS.support.reduce(
+          (sum, share, i) => sum + share * Math.max(0, list[i + 1]?.score ?? 0),
+          best.score,
+        ) +
         FINDER_WEIGHTS.agree * Math.log2(1 + agreeing)
       : Number.NEGATIVE_INFINITY;
     return {
@@ -289,11 +340,16 @@ export function score(index: RecognitionIndex, answers: FinderAnswers, exampleCo
       score: active ? round(total) : 0,
       consistent: list.some((entry) => entry.consistent),
       reasons: active && best ? best.reasons : [],
-      examples: list.slice(0, exampleCount).map(({ problem }) => ({ id: problem.id, title: problem.title, href: problem.href })),
+      examples: list
+        .slice(0, exampleCount)
+        .map(({ problem }) => ({ id: problem.id, title: problem.title, href: problem.href })),
       ...(active && best?.problem.tellApart ? { tellApart: best.problem.tellApart } : {}),
     } satisfies UnitMatch;
   });
-  if (active) ranked.sort((a, b) => b.score - a.score || Number(b.consistent) - Number(a.consistent) || a.unit - b.unit);
+  if (active)
+    ranked.sort(
+      (a, b) => b.score - a.score || Number(b.consistent) - Number(a.consistent) || a.unit - b.unit,
+    );
   return { active, phrases, ranked };
 }
 
@@ -315,7 +371,9 @@ export function leaders(result: FinderResult, share = 0.8): UnitMatch[] {
   if (!result.active || !result.ranked.length) return [];
   const [first, second] = result.ranked;
   if (first.score <= 0) return [];
-  return second && second.score > 0 && second.score >= first.score * share ? [first, second] : [first];
+  return second && second.score > 0 && second.score >= first.score * share
+    ? [first, second]
+    : [first];
 }
 
 /** The units that count as right for a problem: its own, then its Approach-N siblings' (v2). */
@@ -326,14 +384,15 @@ export function optimalUnitsOf(problem: RecognitionProblem): number[] {
 
 /**
  * A valid index, so a malformed or older publication hides the finder instead of breaking the map.
- * v1 cards (auto-generated) and v2 cards (reviewed flag, derived optimal units, tell-apart note) both
- * load; the v2 fields are optional so a v1 publication keeps working.
+ * v1 cards (auto-generated) and v2 cards (reviewed flag, derived optimal units, tell-apart note)
+ * both load; the v2 fields are optional so a v1 publication keeps working.
  */
 export function isRecognitionIndex(value: unknown): value is RecognitionIndex {
   const index = value as RecognitionIndex;
   return (
     !!index &&
-    (index.schemaVersion === 'pattern-recognition-index/v1' || index.schemaVersion === 'pattern-recognition-index/v2') &&
+    (index.schemaVersion === 'pattern-recognition-index/v1' ||
+      index.schemaVersion === 'pattern-recognition-index/v2') &&
     Array.isArray(index.units) &&
     Array.isArray(index.vocabulary) &&
     Array.isArray(index.problems) &&
@@ -345,7 +404,8 @@ export function isRecognitionIndex(value: unknown): value is RecognitionIndex {
         Array.isArray(problem.input) &&
         Array.isArray(problem.wants) &&
         Array.isArray(problem.phrases) &&
-        (problem.optimalUnits === undefined || (Array.isArray(problem.optimalUnits) && problem.optimalUnits.every(Number.isInteger))) &&
+        (problem.optimalUnits === undefined ||
+          (Array.isArray(problem.optimalUnits) && problem.optimalUnits.every(Number.isInteger))) &&
         (problem.reviewed === undefined || typeof problem.reviewed === 'boolean') &&
         (problem.tellApart === undefined || typeof problem.tellApart === 'string'),
     )

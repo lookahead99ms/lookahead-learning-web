@@ -196,39 +196,42 @@ describe('bounded prerequisite and retrieval scheduling', () => {
     const plan = buildStudyPlan([lesson, nextLesson, practice], config);
     expect(plan.days[0].assignments.map((item) => item.id)).toEqual(['lesson-a', 'practice-a']);
   });
-  it('schedules Hands-on DSA problems when related lessons are outside the selected offering', () => {
-    const tool = {
-      ...document('tool:learn:hands-on-dsa', 'learn', 'hands-on-dsa', 'guide'),
-      discoveryKind: 'tool' as const,
-      courseTitle: 'Hands-on DSA Practice',
-    };
-    const problem = {
-      ...document('placement', 'learn', 'algorithmic-patterns', 'dsa-problem'),
-      canonicalContentId: 'canonical-problem',
-      discoveryKind: 'practice' as const,
-      studyRelatedLessonIds: ['pattern-foundation'],
-    };
-    const topics = studyPlanOfferings([tool, problem]);
-    const handsOn = topics.find((topic) => topic.id === 'learn:hands-on-dsa')!;
-    const plan = buildStudyPlan(
-      [tool, problem],
-      {
-        days: 30,
-        dailyHours: 1,
-        topicIds: [handsOn.id],
-        accessTopicIds: [handsOn.id],
-      },
-      topics,
-      new Map([['canonical-problem', 1]]),
-    );
+  it(
+    'schedules Hands-on DSA problems when related lessons are outside the selected ' + 'offering',
+    () => {
+      const tool = {
+        ...document('tool:learn:hands-on-dsa', 'learn', 'hands-on-dsa', 'guide'),
+        discoveryKind: 'tool' as const,
+        courseTitle: 'Hands-on DSA Practice',
+      };
+      const problem = {
+        ...document('placement', 'learn', 'algorithmic-patterns', 'dsa-problem'),
+        canonicalContentId: 'canonical-problem',
+        discoveryKind: 'practice' as const,
+        studyRelatedLessonIds: ['pattern-foundation'],
+      };
+      const topics = studyPlanOfferings([tool, problem]);
+      const handsOn = topics.find((topic) => topic.id === 'learn:hands-on-dsa')!;
+      const plan = buildStudyPlan(
+        [tool, problem],
+        {
+          days: 30,
+          dailyHours: 1,
+          topicIds: [handsOn.id],
+          accessTopicIds: [handsOn.id],
+        },
+        topics,
+        new Map([['canonical-problem', 1]]),
+      );
 
-    const scheduled = plan.days.flatMap((day) => day.assignments);
-    expect(scheduled.some((item) => item.id === 'canonical-problem')).toBe(true);
-    expect(scheduled.find((item) => item.id === 'canonical-problem')?.relatedLessonIds).toEqual([
-      'pattern-foundation',
-    ]);
-    expect(plan.blockedItems).toEqual([]);
-  });
+      const scheduled = plan.days.flatMap((day) => day.assignments);
+      expect(scheduled.some((item) => item.id === 'canonical-problem')).toBe(true);
+      expect(scheduled.find((item) => item.id === 'canonical-problem')?.relatedLessonIds).toEqual([
+        'pattern-foundation',
+      ]);
+      expect(plan.blockedItems).toEqual([]);
+    },
+  );
   it('does not offer the new Blaze design ladder or AI Collaborators as plan topics yet', () => {
     expect([...STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS]).toEqual([
       'design-fundamentals',
@@ -263,24 +266,27 @@ describe('bounded prerequisite and retrieval scheduling', () => {
     expect(plan.blockedItems?.map((item) => item.id)).toEqual(['a', 'b', 'missing']);
     expect(plan.remainingNewItems).toBe(0);
   });
-  it('retains every projected review through a short time window, with no daily review storms', () => {
-    const docs = Array.from({ length: 30 }, (_, i) =>
-      document(`lesson-${i}`, 'learn', 'core-java'),
-    );
-    const plan = buildStudyPlan(docs, { ...config, days: 7, dailyHours: 1 });
-    const reviews = plan.days.flatMap((day) =>
-      day.assignments.filter((item) => item.kind === 'review'),
-    );
-    expect(reviews.length + plan.futureReviews!.length).toBe(plan.uniqueNewItems * 5);
-    expect(plan.uniqueNewItems).toBeGreaterThan(2);
-    expect(plan.remainingNewItems).toBe(30 - plan.uniqueNewItems);
-    for (const day of plan.days) {
-      expect(day.focusedMinutes).toBeLessThanOrEqual(60);
-      const sources = day.assignments
-        .filter((item) => item.kind === 'review')
-        .map((item) => item.sourceContentId);
-      expect(new Set(sources).size).toBe(sources.length);
-    }
-    expect(buildStudyPlan(docs, { ...config, days: 7, dailyHours: 1 })).toEqual(plan);
-  });
+  it(
+    'retains every projected review through a short time window, with no daily review ' + 'storms',
+    () => {
+      const docs = Array.from({ length: 30 }, (_, i) =>
+        document(`lesson-${i}`, 'learn', 'core-java'),
+      );
+      const plan = buildStudyPlan(docs, { ...config, days: 7, dailyHours: 1 });
+      const reviews = plan.days.flatMap((day) =>
+        day.assignments.filter((item) => item.kind === 'review'),
+      );
+      expect(reviews.length + plan.futureReviews!.length).toBe(plan.uniqueNewItems * 5);
+      expect(plan.uniqueNewItems).toBeGreaterThan(2);
+      expect(plan.remainingNewItems).toBe(30 - plan.uniqueNewItems);
+      for (const day of plan.days) {
+        expect(day.focusedMinutes).toBeLessThanOrEqual(60);
+        const sources = day.assignments
+          .filter((item) => item.kind === 'review')
+          .map((item) => item.sourceContentId);
+        expect(new Set(sources).size).toBe(sources.length);
+      }
+      expect(buildStudyPlan(docs, { ...config, days: 7, dailyHours: 1 })).toEqual(plan);
+    },
+  );
 });

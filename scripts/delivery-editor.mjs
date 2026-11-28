@@ -206,8 +206,15 @@ export async function startDeliveryEditor({ file, origins, authorize }) {
           : access.deliveryReview && existing.statusId !== 'done' && next === 'review';
       if (!allowed) fail(403, 'Your role cannot make this workflow change.');
       // Review sign-off is a status transition, never permission to rewrite the story.
-      if (existing && next === 'done' && editableFields.some(field => field !== 'statusId'
-          && !isDeepStrictEqual(payload.item[field] ?? [], existing[field] ?? [])))
+      if (
+        existing &&
+        next === 'done' &&
+        editableFields.some(
+          (field) =>
+            field !== 'statusId' &&
+            !isDeepStrictEqual(payload.item[field] ?? [], existing[field] ?? []),
+        )
+      )
         fail(403, 'Reviewers can mark reviewed stories Done without changing their content.');
     }
     const updatedAt = new Date().toISOString();

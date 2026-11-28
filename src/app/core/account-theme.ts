@@ -23,7 +23,10 @@ export class AccountThemePreference {
     });
   }
 
-  /** Applies the theme now and, when signed in, saves it to the account. Resolves false if that save failed. */
+  /**
+   * Applies the theme now and, when signed in, saves it to the account. Resolves false if that save
+   * failed.
+   */
   async choose(preference: ThemePreference): Promise<boolean> {
     this.theme.setTheme(preference);
     if (!this.signedIn()) return true;

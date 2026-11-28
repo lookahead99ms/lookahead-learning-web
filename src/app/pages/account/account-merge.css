@@ -1,4 +1,5 @@
-/* DLV-969 S36.8: the account-merge screens. Scoped to these components; nothing here reaches other pages. */
+/* DLV-969 S36.8: the account-merge screens. Scoped to these components; nothing here reaches other
+   pages. */
 .account-page.merge-page {
   max-width: 640px;
 }

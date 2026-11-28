@@ -1,15 +1,16 @@
 /**
  * Storyboard animations for lessons (algo-pattern-v1 and the DSA concept courses).
  *
- * A storyboard is an SVG drawn in its last frame plus a list of frames. The lesson page inlines a sanitized copy
- * (allowlisted SVG elements and attributes only) and this player moves it frame by frame. Elements opt in with
- * data attributes:
- *   data-sb-show="2" | "2-5" | "2-" | "0,4-6"  visible only on those frames ("2-" = from frame 2 to the end);
- *   data-sb-text="start|step 1|…"               one text per frame;
- *   data-sb-at="n10 n20 …"                      a mover: the id of the element it stands on in each frame;
- *   data-sb-route="#pathId"                     optional: the mover travels along that path between frames
- *                                               (otherwise in a straight line);
- *   data-sb-stops="0 0.1 …"                     instead of data-sb-at: a fraction of the route's length per frame.
+ * A storyboard is an SVG drawn in its last frame plus a list of frames. The lesson page inlines a
+ * sanitized copy (allowlisted SVG elements and attributes only) and this player moves it frame by
+ * frame. Elements opt in with data attributes:
+ *   data-sb-show="2" | "2-5" | "2-" | "0,4-6": visible only on those frames ("2-" = from frame 2
+ *     to the end);
+ *   data-sb-text="start|step 1|…": one text per frame;
+ *   data-sb-at="n10 n20 …": a mover: the id of the element it stands on in each frame;
+ *   data-sb-route="#pathId": optional: the mover travels along that path between frames
+ *     (otherwise in a straight line);
+ *   data-sb-stops="0 0.1 …": instead of data-sb-at: a fraction of the route's length per frame.
  * The content repository checks the same rules (apply_system_lessons.py, check_storyboard).
  */
 
@@ -33,7 +34,10 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const FADE_MS = 300;
 const DEFAULT_WAIT = 300;
 
-/** Browser clock: an animation frame, with a timer fallback when frames are not produced (hidden tab, headless capture). */
+/**
+ * Browser clock: an animation frame, with a timer fallback when frames are not produced (hidden
+ * tab, headless capture).
+ */
 export const browserClock: StoryboardClock = {
   now: () => performance.now(),
   frame(callback) {
@@ -67,28 +71,89 @@ export function parseFrameSet(value: string, count: number): Set<number> {
 }
 
 const ELEMENTS = new Set([
-  'svg', 'g', 'defs', 'marker', 'path', 'line', 'polyline', 'polygon', 'circle', 'ellipse', 'rect', 'text', 'tspan',
+  'svg',
+  'g',
+  'defs',
+  'marker',
+  'path',
+  'line',
+  'polyline',
+  'polygon',
+  'circle',
+  'ellipse',
+  'rect',
+  'text',
+  'tspan',
 ]);
 const ATTRIBUTES = new Set([
-  'id', 'class', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'dx', 'dy', 'width', 'height',
-  'points', 'viewBox', 'transform', 'marker-start', 'marker-mid', 'marker-end', 'markerWidth', 'markerHeight',
-  'markerUnits', 'refX', 'refY', 'orient', 'text-anchor', 'dominant-baseline', 'font-size', 'font-weight',
-  'stroke-dasharray', 'stroke-width', 'opacity', 'fill', 'stroke', 'preserveAspectRatio', 'pathLength',
-  'data-sb-show', 'data-sb-text', 'data-sb-at', 'data-sb-route', 'data-sb-stops',
+  'id',
+  'class',
+  'd',
+  'x',
+  'y',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'dx',
+  'dy',
+  'width',
+  'height',
+  'points',
+  'viewBox',
+  'transform',
+  'marker-start',
+  'marker-mid',
+  'marker-end',
+  'markerWidth',
+  'markerHeight',
+  'markerUnits',
+  'refX',
+  'refY',
+  'orient',
+  'text-anchor',
+  'dominant-baseline',
+  'font-size',
+  'font-weight',
+  'stroke-dasharray',
+  'stroke-width',
+  'opacity',
+  'fill',
+  'stroke',
+  'preserveAspectRatio',
+  'pathLength',
+  'data-sb-show',
+  'data-sb-text',
+  'data-sb-at',
+  'data-sb-route',
+  'data-sb-stops',
 ]);
-/** fill and stroke may only switch painting off or follow the text color; real colors come from the theme. */
+/**
+ * fill and stroke may only switch painting off or follow the text color; real colors come from the
+ * theme.
+ */
 const PAINT = /^(none|currentColor)$/i;
 const MARKER_REF = /^url\(#([\w-]+)\)$/;
 
 /**
- * A safe, theme-colored copy of a storyboard SVG: allowlisted elements and attributes only (no script, style,
- * event handler, link, image or foreign content), ids prefixed so several drawings can share a page.
- * Returns null when the text is not an SVG document.
+ * A safe, theme-colored copy of a storyboard SVG: allowlisted elements and attributes only (no
+ * script, style, event handler, link, image or foreign content), ids prefixed so several drawings
+ * can share a page. Returns null when the text is not an SVG document.
  */
-export function sanitizeStoryboardSvg(source: string, doc: Document, prefix: string): SVGSVGElement | null {
+export function sanitizeStoryboardSvg(
+  source: string,
+  doc: Document,
+  prefix: string,
+): SVGSVGElement | null {
   const parsed = new DOMParser().parseFromString(source, 'image/svg+xml');
   const root = parsed.documentElement;
-  if (!root || root.localName !== 'svg' || parsed.getElementsByTagName('parsererror').length) return null;
+  if (!root || root.localName !== 'svg' || parsed.getElementsByTagName('parsererror').length)
+    return null;
   const rename = (id: string) => `${prefix}-${id}`;
   const copy = (node: Element): Element | null => {
     if (node.namespaceURI !== SVG_NS || !ELEMENTS.has(node.localName)) return null;
@@ -146,11 +211,15 @@ function numberAttribute(element: Element, name: string): number {
   return Number(element.getAttribute(name) ?? 0) || 0;
 }
 
-/** Where a mover stands on an element: a circle or ellipse's center, a rect's middle, else its box's middle. */
+/**
+ * Where a mover stands on an element: a circle or ellipse's center, a rect's middle, else its box's
+ * middle.
+ */
 function centerOf(element: Element | null): Point | null {
   if (!element) return null;
   const name = element.localName;
-  if (name === 'circle' || name === 'ellipse') return { x: numberAttribute(element, 'cx'), y: numberAttribute(element, 'cy') };
+  if (name === 'circle' || name === 'ellipse')
+    return { x: numberAttribute(element, 'cx'), y: numberAttribute(element, 'cy') };
   if (name === 'rect') {
     return {
       x: numberAttribute(element, 'x') + numberAttribute(element, 'width') / 2,
@@ -166,11 +235,23 @@ function centerOf(element: Element | null): Point | null {
 }
 
 function measurable(route: SVGGeometryElement | null): route is SVGGeometryElement {
-  return !!route && typeof route.getTotalLength === 'function' && typeof route.getPointAtLength === 'function';
+  return (
+    !!route &&
+    typeof route.getTotalLength === 'function' &&
+    typeof route.getPointAtLength === 'function'
+  );
 }
 
-/** The first point along the route, from start onward, that comes closest to target (within a node's width). */
-function lengthNear(route: SVGGeometryElement, target: Point, start: number, total: number): number {
+/**
+ * The first point along the route, from start onward, that comes closest to target (within a node's
+ * width).
+ */
+function lengthNear(
+  route: SVGGeometryElement,
+  target: Point,
+  start: number,
+  total: number,
+): number {
   const distance = (length: number) => {
     const point = route.getPointAtLength(length);
     return Math.hypot(point.x - target.x, point.y - target.y);
@@ -197,8 +278,9 @@ function ease(t: number): number {
 class Cancelled extends Error {}
 
 /**
- * Plays one inlined storyboard: frame 0 to the last, holds the last frame, loops. Paused while any reason holds
- * (the reader pressed Pause, the drawing is off screen, the tab is hidden); the clock stops while paused.
+ * Plays one inlined storyboard: frame 0 to the last, holds the last frame, loops. Paused while any
+ * reason holds (the reader pressed Pause, the drawing is off screen, the tab is hidden); the clock
+ * stops while paused.
  */
 export class StoryboardPlayer {
   private readonly shows: { element: SVGElement; frames: Set<number> }[] = [];
@@ -213,25 +295,42 @@ export class StoryboardPlayer {
   constructor(
     private readonly svg: SVGSVGElement,
     private readonly frames: readonly StoryboardFrame[],
-    private readonly options: { holdMs?: number; clock?: StoryboardClock; onState?: (state: StoryboardState) => void } = {},
+    private readonly options: {
+      holdMs?: number;
+      clock?: StoryboardClock;
+      onState?: (state: StoryboardState) => void;
+    } = {},
   ) {
     const count = frames.length;
     for (const element of Array.from(svg.querySelectorAll<SVGElement>('[data-sb-show]'))) {
-      this.shows.push({ element, frames: parseFrameSet(element.getAttribute('data-sb-show') ?? '', count) });
+      this.shows.push({
+        element,
+        frames: parseFrameSet(element.getAttribute('data-sb-show') ?? '', count),
+      });
     }
     for (const element of Array.from(svg.querySelectorAll<SVGElement>('[data-sb-text]'))) {
       const texts = (element.getAttribute('data-sb-text') ?? '').split('|');
-      this.texts.push({ element, texts: Array.from({ length: count }, (_, index) => texts[index] ?? texts.at(-1) ?? '') });
+      this.texts.push({
+        element,
+        texts: Array.from({ length: count }, (_, index) => texts[index] ?? texts.at(-1) ?? ''),
+      });
     }
-    for (const element of Array.from(svg.querySelectorAll<SVGGraphicsElement>('[data-sb-at], [data-sb-stops]'))) {
+    for (const element of Array.from(
+      svg.querySelectorAll<SVGGraphicsElement>('[data-sb-at], [data-sb-stops]'),
+    )) {
       const routeId = element.getAttribute('data-sb-route');
-      const route = routeId ? svg.querySelector<SVGGeometryElement>(`[id="${routeId.slice(1)}"]`) : null;
+      const route = routeId
+        ? svg.querySelector<SVGGeometryElement>(`[id="${routeId.slice(1)}"]`)
+        : null;
       const total = measurable(route) ? route.getTotalLength() : 0;
       let points: Point[] = [];
       let lengths: number[] | null = null;
       const stops = element.getAttribute('data-sb-stops');
       if (stops && measurable(route) && total > 0) {
-        lengths = stops.trim().split(/\s+/).map((stop) => Math.min(Math.max(Number(stop) || 0, 0), 1) * total);
+        lengths = stops
+          .trim()
+          .split(/\s+/)
+          .map((stop) => Math.min(Math.max(Number(stop) || 0, 0), 1) * total);
         points = lengths.map((length) => {
           const point = route.getPointAtLength(length);
           return { x: point.x, y: point.y };
@@ -261,7 +360,8 @@ export class StoryboardPlayer {
   /** Show one frame at once (reduced motion shows the last one). */
   show(frame: number): void {
     this.current = frame;
-    for (const { element, frames } of this.shows) element.style.opacity = frames.has(frame) ? '1' : '0';
+    for (const { element, frames } of this.shows)
+      element.style.opacity = frames.has(frame) ? '1' : '0';
     for (const { element, texts } of this.texts) element.textContent = texts[frame];
     for (const mover of this.movers) this.place(mover, mover.points[frame]);
   }
@@ -344,12 +444,16 @@ export class StoryboardPlayer {
     const changing = this.shows.filter(({ frames }) => frames.has(frame) !== frames.has(frame - 1));
     if (!changing.length) return;
     await this.tween(generation, FADE_MS, (t) => {
-      for (const { element, frames } of changing) element.style.opacity = String(frames.has(frame) ? t : 1 - t);
+      for (const { element, frames } of changing)
+        element.style.opacity = String(frames.has(frame) ? t : 1 - t);
     });
   }
 
   private place(mover: Mover, point: Point): void {
-    mover.element.setAttribute('transform', `translate(${point.x.toFixed(1)} ${point.y.toFixed(1)})`);
+    mover.element.setAttribute(
+      'transform',
+      `translate(${point.x.toFixed(1)} ${point.y.toFixed(1)})`,
+    );
   }
 
   private sleep(generation: number, ms: number): Promise<void> {

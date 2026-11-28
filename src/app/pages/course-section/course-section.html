@@ -42,7 +42,11 @@
       </article>
     }
   } @else if (error()) {
-    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
+    <app-content-recovery
+      [kind]="recovery()"
+      [preview]="recoveryPreview()"
+      (retry)="retryLoad.next()"
+    />
   } @else {
     <section class="page-message"><p>Loading content…</p></section>
   }

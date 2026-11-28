@@ -360,7 +360,8 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
       {{
         linked()
           ? 'The diagram and reference share one language, example and instruction.'
-          : 'Condensed state changes from the published trace. These visual steps are not a separate source-instruction sequence.'
+          : 'Condensed state changes from the published trace. These visual steps are not a ' +
+            'separate source-instruction sequence.'
       }}
     </p>
   </section>`,
@@ -863,7 +864,11 @@ export class StudioDiagram {
   readonly linked = input(false);
   /** Drawn inside the walkthrough player, which already shows the title, step and example. */
   readonly compact = input(false);
-  protected readonly title = computed(() => this.problem().id === 'algorithmic-meeting-rooms' ? 'Meeting interval comparison' : diagramLabels[this.pattern()]);
+  protected readonly title = computed(() =>
+    this.problem().id === 'algorithmic-meeting-rooms'
+      ? 'Meeting interval comparison'
+      : diagramLabels[this.pattern()],
+  );
   protected readonly inputs = computed(() =>
     Object.entries(this.fixture().arguments ?? {}).map(([label, value]) => ({
       label,
@@ -916,7 +921,10 @@ export class StudioDiagram {
   );
   protected exampleLabel(example: DsaProblemFixtureV2): string {
     if (this.pattern() === 'heaps' && Array.isArray(example.arguments['nums']))
-      return `k = ${example.arguments['k']} / ${JSON.stringify(example.arguments['nums']).replaceAll(',', ', ')}`;
+      return (
+        `k = ${example.arguments['k']} ` +
+        `/ ${JSON.stringify(example.arguments['nums']).replaceAll(',', ', ')}`
+      );
     return example.input.length > 84 ? example.input.slice(0, 81) + '…' : example.input;
   }
   protected readonly previousHeap = computed(() =>

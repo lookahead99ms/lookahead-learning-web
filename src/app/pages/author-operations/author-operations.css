@@ -368,7 +368,8 @@ a.setup-download small {
   }
 }
 
-/* Long references are split into a section of sub-pages; the header lists them and this row moves between them. */
+/* Long references are split into a section of sub-pages; the header lists them and this row moves
+   between them. */
 .section-steps a:focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 2px;

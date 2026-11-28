@@ -34,7 +34,8 @@ p {
   margin: auto;
   padding: 24px 32px 28px;
 }
-/* Two panels while the notice shows (owner, 2026-11-06): notice 30%, Essence 70%, the footer under both. */
+/* Two panels while the notice shows (owner, 2026-11-06): notice 30%, Essence 70%, the footer under
+   both. */
 @media (min-width: 1100px) {
   .welcome-page.two-panels {
     grid-template-columns: minmax(300px, 3fr) 7fr;
@@ -69,7 +70,8 @@ p {
     font-size: 14px;
   }
 }
-/* The waiting notice: two rows of three (owner, 2026-11-06), the width of the Essence card below it. */
+/* The waiting notice: two rows of three (owner, 2026-11-06), the width of the Essence card below
+   it. */
 .access-pending {
   display: grid;
   gap: 16px;
@@ -77,7 +79,8 @@ p {
   border: 1px solid var(--platform-edge, var(--line));
   border-inline-start: 4px solid var(--accent-strong);
   border-radius: 14px;
-  /* The colours of the approved sketch (owner, 2026-11-06): a shade between the page and the card, no warm tint. */
+  /* The colours of the approved sketch (owner, 2026-11-06): a shade between the page and the card,
+     no warm tint. */
   background: color-mix(in srgb, var(--surface-page) 35%, var(--surface));
   color: var(--text-strong);
 }

@@ -11,11 +11,11 @@ const requestTypes = [
 ] as const;
 
 /**
- * The support ticket form: sends one ticket by email and keeps it intact until confirmed. DLV-971 (owner,
- * 2026-11-06): on Support the kind cards live in the page, so the form takes its kind from there (`kind`, no picker
- * of its own, `compact`) and carries the same fields as feedback: Page beside the optional Page address, Title,
- * details, the reply email prefilled from the account, screenshots. The page and address travel inside the message
- * (the ticket API is unchanged).
+ * The support ticket form: sends one ticket by email and keeps it intact until confirmed. DLV-971
+ * (owner, 2026-11-06): on Support the kind cards live in the page, so the form takes its kind from
+ * there (`kind`, no picker of its own, `compact`) and carries the same fields as feedback: Page
+ * beside the optional Page address, Title, details, the reply email prefilled from the account,
+ * screenshots. The page and address travel inside the message (the ticket API is unchanged).
  */
 @Component({
   selector: 'app-support-request-form',
@@ -26,19 +26,19 @@ const requestTypes = [
         <fieldset class="request-fields" [disabled]="busy() || requestPending() || !!receipt()">
           <legend class="visually-hidden">Your ticket</legend>
           @if (!kind()) {
-          <fieldset class="type-picker">
-            <legend>What do you need?</legend>
-            <div class="type-options">
-              @for (option of requestTypes; track option.id) {
-                <label class="type-option" [class.selected]="type === option.id">
-                  <input type="radio" name="type" [value]="option.id" [(ngModel)]="type" />
-                  <span class="type-icon" aria-hidden="true">{{ option.icon }}</span>
-                  <strong>{{ option.label }}</strong>
-                  <small>{{ option.hint }}</small>
-                </label>
-              }
-            </div>
-          </fieldset>
+            <fieldset class="type-picker">
+              <legend>What do you need?</legend>
+              <div class="type-options">
+                @for (option of requestTypes; track option.id) {
+                  <label class="type-option" [class.selected]="type === option.id">
+                    <input type="radio" name="type" [value]="option.id" [(ngModel)]="type" />
+                    <span class="type-icon" aria-hidden="true">{{ option.icon }}</span>
+                    <strong>{{ option.label }}</strong>
+                    <small>{{ option.hint }}</small>
+                  </label>
+                }
+              </div>
+            </fieldset>
           }
           @if (compact()) {
             <div class="field-row">
@@ -52,10 +52,16 @@ const requestTypes = [
               </label>
               <label
                 >Page address <span class="optional">(optional)</span
-                ><input name="pageUrl" [(ngModel)]="pageUrl" placeholder="/learn/core-java" autocomplete="off"
+                ><input
+                  name="pageUrl"
+                  [(ngModel)]="pageUrl"
+                  placeholder="/learn/core-java"
+                  autocomplete="off"
               /></label>
             </div>
-            <label>Title<input name="subject" required maxlength="160" [(ngModel)]="subject" /></label>
+            <label
+              >Title<input name="subject" required maxlength="160" [(ngModel)]="subject"
+            /></label>
             <label
               >What you saw and what should change<textarea
                 name="message"
@@ -75,34 +81,36 @@ const requestTypes = [
                 autocomplete="email"
                 [(ngModel)]="replyTo"
               />
-              <span class="hint">Prefilled from your account; shown for problems, questions and ideas.</span>
+              <span class="hint"
+                >Prefilled from your account; shown for problems, questions and ideas.</span
+              >
             </label>
           } @else {
-          <div class="field-row">
+            <div class="field-row">
+              <label
+                >Reply email<input
+                  name="email"
+                  type="email"
+                  required
+                  maxlength="254"
+                  autocomplete="email"
+                  [(ngModel)]="replyTo"
+              /></label>
+              <label
+                >Subject<input name="subject" required maxlength="160" [(ngModel)]="subject"
+              /></label>
+            </div>
             <label
-              >Reply email<input
-                name="email"
-                type="email"
+              >Message<textarea
+                name="message"
                 required
-                maxlength="254"
-                autocomplete="email"
-                [(ngModel)]="replyTo"
-            /></label>
-            <label
-              >Subject<input name="subject" required maxlength="160" [(ngModel)]="subject"
-            /></label>
-          </div>
-          <label
-            >Message<textarea
-              name="message"
-              required
-              maxlength="5000"
-              rows="8"
-              placeholder="What did you do, what did you expect, and what happened instead?"
-              [(ngModel)]="message"
-            ></textarea>
-            <span class="hint">{{ message.length }} of 5000 characters</span>
-          </label>
+                maxlength="5000"
+                rows="8"
+                placeholder="What did you do, what did you expect, and what happened instead?"
+                [(ngModel)]="message"
+              ></textarea>
+              <span class="hint">{{ message.length }} of 5000 characters</span>
+            </label>
           }
           <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits stay as they were. -->
           <div class="attach">
@@ -151,7 +159,9 @@ const requestTypes = [
             }}
           </button>
           @if (compact() && !requestPending() && !receipt()) {
-            <button type="button" class="secondary" [disabled]="busy()" (click)="clear()">Clear</button>
+            <button type="button" class="secondary" [disabled]="busy()" (click)="clear()"
+              >Clear</button
+            >
           }
           @if (requestPending() && !receipt()) {
             <p class="hint">
@@ -189,7 +199,10 @@ export class SupportRequestForm implements OnDestroy {
   private readonly transport = inject(ACCOUNT_FETCH);
   protected readonly requestTypes = requestTypes;
   protected readonly pages = reviewedPages;
-  /** DLV-971: the kind chosen on the Support page (problem, question, feedback); null shows the form's own picker. */
+  /**
+   * DLV-971: the kind chosen on the Support page (problem, question, feedback); null shows the
+   * form's own picker.
+   */
   readonly kind = input<'problem' | 'question' | 'feedback' | null>(null);
   readonly compact = input(false);
   private readonly followKind = effect(() => {
@@ -200,9 +213,9 @@ export class SupportRequestForm implements OnDestroy {
   protected page = 'Whole platform';
   protected pageUrl = '';
   /**
-   * Prefilled from the account: the sign-in name when it is an email address (Cognito and Google accounts), or
-   * `<name>@lookahead.dev` for a learner test account (learner01 to learner27; owner, 2026-11-06: their mail is
-   * mocked, never sent). Anyone else types one.
+   * Prefilled from the account: the sign-in name when it is an email address (Cognito and Google
+   * accounts), or `<name>@lookahead.dev` for a learner test account (learner01 to learner27; owner,
+   * 2026-11-06: their mail is mocked, never sent). Anyone else types one.
    */
   protected replyTo = SupportRequestForm.replyEmailFor(this.accounts.account()?.username ?? '');
   static replyEmailFor(name: string): string {
@@ -270,7 +283,8 @@ export class SupportRequestForm implements OnDestroy {
       (this.request && this.request.owner !== owner)
     ) {
       this.error.set(
-        'Sign in with the account that started this message before retrying. Your form is still here.',
+        'Sign in with the account that started this message before retrying. Your form ' +
+          'is still here.',
       );
       return;
     }
@@ -329,15 +343,21 @@ export class SupportRequestForm implements OnDestroy {
       });
       const body = await result.json();
       if (body.data?.reference) {
-        // DLV-971 (owner, 2026-11-06): every ticket is also an item under Support tickets and feedback, whatever the mail status.
-        // "recorded" (Domain, 202): kept for Support tickets and feedback while support mail is not switched on, so no email was sent.
+        // DLV-971 (owner, 2026-11-06): every ticket is also an item under Support tickets and
+        // feedback, whatever the mail status. "recorded" (Domain, 202): kept for Support tickets
+        // and feedback while support mail is not switched on, so no email was sent.
         const status = body.data.status;
         this.receipt.set(
           (status === 'accepted'
-            ? 'The mail server accepted your message. Ticket recorded. The owner and admins see it under Support tickets and feedback; we also reply by email. '
+            ? 'The mail server accepted your message. Ticket recorded. The owner and ' +
+              'admins see it under Support tickets and feedback; we also reply by email. '
             : status === 'recorded'
-              ? 'Ticket recorded. The owner and admins see it under Support tickets and feedback. Email replies are not switched on yet, so there is no email for this one. '
-              : 'Delivery could not be confirmed. This ticket will not be sent again automatically. Ticket recorded. The owner and admins see it under Support tickets and feedback; we also reply by email. ') +
+              ? 'Ticket recorded. The owner and admins see it under Support tickets and ' +
+                'feedback. Email replies are not switched on yet, so there is no email for ' +
+                'this one. '
+              : 'Delivery could not be confirmed. This ticket will not be sent again ' +
+                'automatically. Ticket recorded. The owner and admins see it under Support ' +
+                'tickets and feedback; we also reply by email. ') +
             'Reference: ' +
             body.data.reference,
         );
@@ -349,11 +369,13 @@ export class SupportRequestForm implements OnDestroy {
         this.error.set('Your session expired. Sign in again; your form is still here.');
       else
         this.error.set(
-          'Support could not confirm this ticket. Your form is preserved. Retry sends the same ticket.',
+          'Support could not confirm this ticket. Your form is preserved. Retry sends ' +
+            'the same ticket.',
         );
     } catch {
       this.error.set(
-        'Support could not confirm this ticket. Your form is preserved. Retry sends the same ticket.',
+        'Support could not confirm this ticket. Your form is preserved. Retry sends the ' +
+          'same ticket.',
       );
     } finally {
       this.busy.set(false);

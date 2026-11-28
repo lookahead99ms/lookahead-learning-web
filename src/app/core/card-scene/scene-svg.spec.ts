@@ -1,14 +1,17 @@
 import { sanitizeSceneSvg } from './scene-svg';
 
 const svg = (body: string, attributes = '') =>
-  `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 320 180" ${attributes}>${body}</svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ` +
+  `viewBox="0 0 320 180" ${attributes}>${body}</svg>`;
 
 describe('sanitizeSceneSvg', () => {
   it('keeps scene styles, shapes and local references', () => {
     const result = sanitizeSceneSvg(
       svg(
-        '<style>.res-a{fill:var(--scene-accent);animation:res-k 6s infinite -3s}@keyframes res-k{to{opacity:0}}</style>' +
-          '<defs><linearGradient id="g"/></defs><rect class="res-a" fill="url(#g)"/><use href="#g"/>',
+        '<style>.res-a{fill:var(--scene-accent);animation:res-k 6s infinite ' +
+          '-3s}@keyframes res-k{to{opacity:0}}</style>' +
+          '<defs><linearGradient id="g"/></defs><rect class="res-a" ' +
+          'fill="url(#g)"/><use href="#g"/>',
       ),
     )!;
 
@@ -37,7 +40,9 @@ describe('sanitizeSceneSvg', () => {
   it('removes non-local links and external url() values', () => {
     const result = sanitizeSceneSvg(
       svg(
-        '<style>@import url(https://evil.example/a.css);.a{background:url(https://evil.example/x.png)}</style>' +
+        '<style>@import ' +
+          'url(https://evil.example/a.css);.a{background:url(https://evil.example/x.png)}</' +
+          'style>' +
           '<a href="https://evil.example"><text>t</text></a>' +
           '<image xlink:href="https://evil.example/x.png"/>' +
           '<use href="javascript:alert(1)"/>' +
@@ -54,12 +59,14 @@ describe('sanitizeSceneSvg', () => {
   });
 
   it('allows only complete local fragments and rejects escaped CSS tokens', () => {
-    const result = sanitizeSceneSvg(svg(
-      '<rect id="bad" fill="url( javaSCRIPT:alert )"/>' +
-      '<rect id="fragment" fill="url(#gradient)"/>' +
-      '<use href="#gradient extra"/>' +
-      '<style>.a{fill:u\\72l(https://evil.example/p)}</style>',
-    ))!;
+    const result = sanitizeSceneSvg(
+      svg(
+        '<rect id="bad" fill="url( javaSCRIPT:alert )"/>' +
+          '<rect id="fragment" fill="url(#gradient)"/>' +
+          '<use href="#gradient extra"/>' +
+          '<style>.a{fill:u\\72l(https://evil.example/p)}</style>',
+      ),
+    )!;
     expect(result.querySelector('#bad')?.getAttribute('fill')).toBe('none');
     expect(result.querySelector('#fragment')?.getAttribute('fill')).toBe('url(#gradient)');
     expect(result.querySelector('use')?.hasAttribute('href')).toBe(false);
@@ -85,7 +92,8 @@ describe('sanitizeSceneSvg', () => {
           '<text id="word" class="cs-t">window slides along</text>' +
           '<text id="code" class="cs-m">ByteBuffer</text>' +
           '<text id="attr" font-family="Menlo, monospace">GET</text>' +
-          '<g style="fill:var(--scene-muted,#536970)" font-family="ui-monospace"><text id="kid">Madrid</text></g>' +
+          '<g style="fill:var(--scene-muted,#536970)" font-family="ui-monospace"><text ' +
+          'id="kid">Madrid</text></g>' +
           '<g fill="var(--scene-good,#1f7a4d)"><text id="good">Saved</text></g>' +
           '<text id="white" fill="#fff">7</text>',
       ),

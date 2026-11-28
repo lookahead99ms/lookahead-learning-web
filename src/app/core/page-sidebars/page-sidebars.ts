@@ -32,11 +32,15 @@ export interface PageSectionLink {
   group?: string;
 }
 
-/** Only rendered page content can become navigation. Hidden dialogs and cards are not an outline. */
+/**
+ * Only rendered page content can become navigation. Hidden dialogs and cards are not an outline.
+ */
 export function visibleSidebarTarget(element: HTMLElement): boolean {
   if (
     element.closest(
-      '[hidden], [aria-hidden="true"], dialog:not([open]), [role="dialog"], app-author-workspace-nav, app-author-admin-menu, app-page-sidebars, .hero-slide, a, button',
+      '[hidden], [aria-hidden="true"], dialog:not([open]), [role="dialog"], ' +
+        'app-author-workspace-nav, app-author-admin-menu, app-page-sidebars, .hero-slide, ' +
+        'a, button',
     )
   )
     return false;
@@ -230,8 +234,9 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   );
   protected readonly lessonNav = computed(() => this.context.value()?.lessonNav ?? null);
   /**
-   * Practice & review rows (user review, 2026-10-05): the page's practice links with an icon each, and
-   * Quick recall (a dialog, no section) right after Quick revision, or first when there is no revision.
+   * Practice & review rows (user review, 2026-10-05): the page's practice links with an icon each,
+   * and Quick recall (a dialog, no section) right after Quick revision, or first when there is no
+   * revision.
    */
   protected readonly practiceRows = computed(() => {
     const rows: { key: string; label: string; icon: string; section: PageSectionLink | null }[] =
@@ -294,8 +299,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   private leftChosen = false;
   private rightChosen = false;
   /**
-   * The page asked for a collapsed left navigation at this width (context collapseLeftBelow), and the
-   * panel would dock if it got its column back.
+   * The page asked for a collapsed left navigation at this width (context collapseLeftBelow), and
+   * the panel would dock if it got its column back.
    */
   private leftReclaimable = false;
   /** On such a page, the learner's last open/close choice; kept across query-only navigation. */
@@ -461,11 +466,13 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       return;
     }
     this.homepage.set(main.classList.contains('landing-page'));
-    this.learningPage.set(/^\/(learn|grow|blaze|look-ahead)(\/|$)/.test(this.document.location.pathname));
+    this.learningPage.set(
+      /^\/(learn|grow|blaze|look-ahead)(\/|$)/.test(this.document.location.pathname),
+    );
     if (this.needsInventory) {
       this.needsInventory = false;
-      // Admin pages bring their own navigation: the side bars inside main, or the Admin
-      // sub-header strip before it (DLV-971). Either way the outline rail and the taglines stay off.
+      // Admin pages bring their own navigation: the side bars inside main, or the Admin sub-header
+      // strip before it (DLV-971). Either way the outline rail and the taglines stay off.
       this.authorNavigation.set(
         !!main.querySelector('app-author-workspace-nav, app-author-admin-menu') ||
           !!this.document.querySelector('app-admin-subheader'),
@@ -599,7 +606,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     // A section already occupying that area must not leave the previous item selected.
     const stickyBottom = Array.from(
       main.querySelectorAll<HTMLElement>(
-        '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+        '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, ' +
+          '.module-sticky-utility',
       ),
     ).reduce((bottom, element) => {
       const rect = element.getBoundingClientRect();
@@ -723,7 +731,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       0,
       ...Array.from(
         this.main?.querySelectorAll<HTMLElement>(
-          '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+          '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, ' +
+            '.module-sticky-utility',
         ) ?? [],
       ).map((element) => element.getBoundingClientRect().height),
     );
@@ -747,8 +756,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Opens Quick recall at the question the learner left it on. An overlay sidebar closes first so a panel
-   * and a dialog never stack. Nothing here records progress.
+   * Opens Quick recall at the question the learner left it on. An overlay sidebar closes first so a
+   * panel and a dialog never stack. Nothing here records progress.
    */
   protected openRecall(): void {
     const dialog = this.recallDialog()?.nativeElement;

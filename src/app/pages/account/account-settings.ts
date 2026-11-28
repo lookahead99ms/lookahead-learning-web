@@ -22,7 +22,12 @@ import {
   ProfileLinks,
 } from './account-settings-client';
 import { AccountThemePreference } from '../../core/account-theme';
-import { accountMembership, accountRoleLabel, membershipName, joinPaths } from './account-membership';
+import {
+  accountMembership,
+  accountRoleLabel,
+  membershipName,
+  joinPaths,
+} from './account-membership';
 import { MembershipApi } from '../../content/membership-api';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { TestSessions } from '../../core/test-session/test-sessions';
@@ -56,7 +61,10 @@ export class AccountSettings implements OnDestroy {
   private destroyed = false;
 
   protected readonly profile = signal<ManagedAccountProfile | null>(null);
-  /** DLV-969: every way into this account; linking happens at sign-in, so there is nothing to add here. */
+  /**
+   * DLV-969: every way into this account; linking happens at sign-in, so there is nothing to add
+   * here.
+   */
   protected readonly signInMethods = computed(() => {
     const profile = this.profile();
     if (!profile) return [];
@@ -126,7 +134,10 @@ export class AccountSettings implements OnDestroy {
   protected readonly themeStatus = signal('');
 
   protected readonly membershipApi = inject(MembershipApi);
-  protected readonly membershipName = computed(() => { const account = this.store.account(); return account ? membershipName(account, this.membershipApi.records()) : ''; });
+  protected readonly membershipName = computed(() => {
+    const account = this.store.account();
+    return account ? membershipName(account, this.membershipApi.records()) : '';
+  });
   protected readonly membership = computed(() => {
     const account = this.store.account();
     return account ? accountMembership(account, this.membershipApi.records()) : null;
@@ -134,11 +145,13 @@ export class AccountSettings implements OnDestroy {
   private readonly devSession = inject(DevSession);
   private readonly testSessions = inject(TestSessions);
   /**
-   * DLV-969 (owner, 2026-11-04): a DEV test account in use. Its purchases are requests the owner or an admin approves,
-   * so Manage account offers plans even though DEV signs in through managed login.
+   * DLV-969 (owner, 2026-11-04): a DEV test account in use. Its purchases are requests the owner or
+   * an admin approves, so Manage account offers plans even though DEV signs in through managed
+   * login.
    */
   protected readonly devTestAccount = computed(
-    () => (this.devSession.status() !== null || this.devSession.gated()) && this.testSessions.active(),
+    () =>
+      (this.devSession.status() !== null || this.devSession.gated()) && this.testSessions.active(),
   );
   protected readonly requestWaitingMessage = REQUEST_WAITING_MESSAGE;
   protected readonly joinPaths = joinPaths;
@@ -174,7 +187,12 @@ export class AccountSettings implements OnDestroy {
   };
   protected readonly displayUrl = displayProfileLink;
   /** Shown as empty rows until Identity reports saved links. */
-  protected readonly noLinks: ProfileLinks = { github: null, linkedin: null, x: null, website: null };
+  protected readonly noLinks: ProfileLinks = {
+    github: null,
+    linkedin: null,
+    x: null,
+    website: null,
+  };
   private lastLinkButton: ProfileLinkKey = 'github';
   private readonly linksErrorElement = viewChild<ElementRef<HTMLElement>>('linksErrorElement');
 
@@ -317,7 +335,9 @@ export class AccountSettings implements OnDestroy {
     try {
       const profile = await this.client.updateProfileLinks(links);
       if (!this.currentOwner()) return;
-      this.profile.update((current) => (current ? { ...current, links: profile.links ?? links } : current));
+      this.profile.update((current) =>
+        current ? { ...current, links: profile.links ?? links } : current,
+      );
       this.editingLinks.set(false);
       this.linksStatus.set('Your links have been saved.');
       this.focusAfterRender(() => this.linkButton());
@@ -452,21 +472,31 @@ export class AccountSettings implements OnDestroy {
       case 'password-mismatch':
         return 'The new passwords do not match. Re-enter all three fields.';
       case 'password-unchanged':
-        return 'We could not use that new password. Choose a different password and re-enter all three fields.';
+        return (
+          'We could not use that new password. Choose a different password and re-enter ' +
+          'all three fields.'
+        );
       case 'change-rejected':
-        return 'We could not confirm this change. Re-enter your current password and new password, then try again.';
+        return (
+          'We could not confirm this change. Re-enter your current password and new ' +
+          'password, then try again.'
+        );
       case 'session-expired':
         return 'Your session expired. Sign in again to manage your account.';
       case 'rate-limited':
         return 'Too many attempts. Wait 15 minutes before trying again.';
       case 'storage-unavailable':
         return action === 'profile'
-          ? 'Account storage is temporarily unavailable. Your name draft is still here; try saving again shortly.'
-          : 'Account storage is temporarily unavailable. Wait a moment, then re-enter all three fields and try again.';
+          ? 'Account storage is temporarily unavailable. Your name draft is still here; ' +
+              'try saving again shortly.'
+          : 'Account storage is temporarily unavailable. Wait a moment, then re-enter all ' +
+              'three fields and try again.';
       default:
         return action === 'profile'
-          ? 'We could not confirm the update. Your name draft is still here; try again when your connection is available.'
-          : 'We could not confirm the password change. Try signing in with your new password before making another change.';
+          ? 'We could not confirm the update. Your name draft is still here; try again ' +
+              'when your connection is available.'
+          : 'We could not confirm the password change. Try signing in with your new ' +
+              'password before making another change.';
     }
   }
 

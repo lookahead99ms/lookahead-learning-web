@@ -10,19 +10,15 @@ const forbiddenPaths = [
   'docs/platform-completion-plan.private.md',
 ];
 
-const trackedFiles = execFileSync(
-  'git',
-  ['ls-files', '--', ...forbiddenPaths],
-  { encoding: 'utf8' },
-)
+const trackedFiles = execFileSync('git', ['ls-files', '--', ...forbiddenPaths], {
+  encoding: 'utf8',
+})
   .trim()
   .split('\n')
   .filter(Boolean);
 
 if (trackedFiles.length > 0) {
-  throw new Error(
-    `Private or generated content is tracked by Git:\n${trackedFiles.join('\n')}`,
-  );
+  throw new Error(`Private or generated content is tracked by Git:\n${trackedFiles.join('\n')}`);
 }
 
 console.log('Verified that private curriculum and generated runtime content are not tracked.');

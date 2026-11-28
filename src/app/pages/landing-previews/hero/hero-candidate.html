@@ -1,21 +1,21 @@
 @if (preview()) {
-<nav class="preview-bar" aria-label="Hero candidate navigation">
-  <a routerLink="/preview/hero" class="bar-link">← All five</a>
-  <p class="bar-title">
-    <span class="bar-number">0{{ variant() }}</span> {{ info().name }}
-    <span class="bar-palette">{{ info().palette }}</span>
-  </p>
-  <div class="bar-steps">
-    <a routerLink="/" class="bar-link">Home as served</a>
-    <a routerLink="/preview/hero/0" class="bar-link">Previous hero</a>
-    @if (variant() > 1) {
-      <a [routerLink]="'/preview/hero/' + (variant() - 1)" class="bar-link">Previous</a>
-    }
-    @if (variant() < 5) {
-      <a [routerLink]="'/preview/hero/' + (variant() + 1)" class="bar-link">Next</a>
-    }
-  </div>
-</nav>
+  <nav class="preview-bar" aria-label="Hero candidate navigation">
+    <a routerLink="/preview/hero" class="bar-link">← All five</a>
+    <p class="bar-title">
+      <span class="bar-number">0{{ variant() }}</span> {{ info().name }}
+      <span class="bar-palette">{{ info().palette }}</span>
+    </p>
+    <div class="bar-steps">
+      <a routerLink="/" class="bar-link">Home as served</a>
+      <a routerLink="/preview/hero/0" class="bar-link">Previous hero</a>
+      @if (variant() > 1) {
+        <a [routerLink]="'/preview/hero/' + (variant() - 1)" class="bar-link">Previous</a>
+      }
+      @if (variant() < 5) {
+        <a [routerLink]="'/preview/hero/' + (variant() + 1)" class="bar-link">Next</a>
+      }
+    </div>
+  </nav>
 }
 @switch (variant()) {
   @case (1) {
@@ -44,11 +44,13 @@
         @for (slide of slides; track slide.tab) {
           @if (slide.paths) {
             <a href="/#paths" (click)="openPaths($event)">
-              <strong>{{ slide.tab }}</strong><span>{{ slide.short }}</span>
+              <strong>{{ slide.tab }}</strong
+              ><span>{{ slide.short }}</span>
             </a>
           } @else {
             <a [routerLink]="slide.route" [queryParams]="slide.query ?? {}">
-              <strong>{{ slide.tab }}</strong><span>{{ slide.short }}</span>
+              <strong>{{ slide.tab }}</strong
+              ><span>{{ slide.short }}</span>
             </a>
           }
         }
@@ -76,7 +78,11 @@
               {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
             </a>
           } @else {
-            <a class="btn primary" [routerLink]="current().route" [queryParams]="current().query ?? {}">
+            <a
+              class="btn primary"
+              [routerLink]="current().route"
+              [queryParams]="current().query ?? {}"
+            >
               {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
             </a>
           }
@@ -113,13 +119,23 @@
       <nav class="direction-grid" aria-label="Six ways to grow">
         @for (slide of slides; track slide.tab) {
           @if (slide.paths) {
-            <a class="direction-card" [attr.data-visual]="slide.visual" href="/#paths" (click)="openPaths($event)">
+            <a
+              class="direction-card"
+              [attr.data-visual]="slide.visual"
+              href="/#paths"
+              (click)="openPaths($event)"
+            >
               <span class="dot" aria-hidden="true"></span>
               <strong>{{ slide.tab }}</strong>
               <span>{{ slide.short }}</span>
             </a>
           } @else {
-            <a class="direction-card" [attr.data-visual]="slide.visual" [routerLink]="slide.route" [queryParams]="slide.query ?? {}">
+            <a
+              class="direction-card"
+              [attr.data-visual]="slide.visual"
+              [routerLink]="slide.route"
+              [queryParams]="slide.query ?? {}"
+            >
               <span class="dot" aria-hidden="true"></span>
               <strong>{{ slide.tab }}</strong>
               <span>{{ slide.short }}</span>
@@ -152,7 +168,11 @@
               {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
             </a>
           } @else {
-            <a class="btn primary" [routerLink]="current().route" [queryParams]="current().query ?? {}">
+            <a
+              class="btn primary"
+              [routerLink]="current().route"
+              [queryParams]="current().query ?? {}"
+            >
               {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
             </a>
           }
@@ -237,7 +257,11 @@
                 {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
               </a>
             } @else {
-              <a class="btn primary" [routerLink]="current().route" [queryParams]="current().query ?? {}">
+              <a
+                class="btn primary"
+                [routerLink]="current().route"
+                [queryParams]="current().query ?? {}"
+              >
                 {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
               </a>
             }

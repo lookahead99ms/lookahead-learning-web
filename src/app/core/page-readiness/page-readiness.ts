@@ -1,15 +1,22 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
-import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from '@angular/router';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router,
+} from '@angular/router';
 import { finalize } from 'rxjs';
 
 /**
- * DLV-969 S37 (owner, 2026-11-03): "load it all at once". A page is shown only when everything it asked for has
- * arrived: on the first load and on every navigation to another page, the content stays hidden until the requests
- * started for it (account checks, catalogs, lessons, prices) have finished and the network has been quiet for a
- * moment. A quiet veil with the logo appears if that takes longer than a blink, and after a ceiling the page is shown
- * anyway so nothing can hang. Requests made later (saving, searching) never hide the page again, and moving between
- * tabs or sections of the same page (only the query or #part changes) is not a page load.
+ * DLV-969 S37 (owner, 2026-11-03): "load it all at once". A page is shown only when everything it
+ * asked for has arrived: on the first load and on every navigation to another page, the content
+ * stays hidden until the requests started for it (account checks, catalogs, lessons, prices) have
+ * finished and the network has been quiet for a moment. A quiet veil with the logo appears if that
+ * takes longer than a blink, and after a ceiling the page is shown anyway so nothing can hang.
+ * Requests made later (saving, searching) never hide the page again, and moving between tabs or
+ * sections of the same page (only the query or #part changes) is not a page load.
  */
 @Injectable({ providedIn: 'root' })
 export class PageReadiness {
@@ -22,7 +29,10 @@ export class PageReadiness {
 
   /** True while the page's content is hidden because it is still loading. */
   readonly loading = signal(true);
-  /** True while the loading veil (logo) is shown: from the start on the first load, after a blink on navigations. */
+  /**
+   * True while the loading veil (logo) is shown: from the start on the first load, after a blink on
+   * navigations.
+   */
   readonly veil = signal(true);
 
   private open = true;
@@ -37,7 +47,11 @@ export class PageReadiness {
     this.ceiling = setTimeout(() => this.reveal(), PageReadiness.CEILING_MS);
     const events = this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) this.start(event.url);
-      else if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
+      else if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
         this.navigated = true;
         this.settle();
       }
@@ -49,8 +63,9 @@ export class PageReadiness {
   }
 
   /**
-   * Counts work started while a page is loading; work started after the page is shown is passed through untouched.
-   * Returns a function to call when the work has ended (safe to call more than once).
+   * Counts work started while a page is loading; work started after the page is shown is passed
+   * through untouched. Returns a function to call when the work has ended (safe to call more than
+   * once).
    */
   begin(): () => void {
     if (!this.open) return () => undefined;
@@ -115,7 +130,9 @@ export function samePage(current: string, next: string): boolean {
   return path(current) === path(next);
 }
 
-/** Every HttpClient request made while a page loads counts towards it (catalogs, lessons, indexes). */
+/**
+ * Every HttpClient request made while a page loads counts towards it (catalogs, lessons, indexes).
+ */
 export const pageReadinessInterceptor: HttpInterceptorFn = (request, next) => {
   const end = inject(PageReadiness).begin();
   return next(request).pipe(finalize(end));

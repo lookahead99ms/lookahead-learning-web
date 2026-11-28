@@ -1,5 +1,18 @@
 import { htmlText } from '../html-text';
-import { AfterViewInit, Component, DestroyRef, ElementRef, InjectionToken, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  InjectionToken,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -27,20 +40,25 @@ import { closestSpelling, hasWords } from '../pattern-finder/words';
  * Where the map gets the pattern finder's problem cards. The default reads the published index
  * through ContentService; when it fails, the map hides the finder rows and works as before.
  */
-export const PATTERN_RECOGNITION_INDEX = new InjectionToken<() => Observable<RecognitionIndex>>('PATTERN_RECOGNITION_INDEX', {
-  providedIn: 'root',
-  factory: () => {
-    const content = inject(ContentService);
-    return () => content.getPatternRecognitionIndex();
+export const PATTERN_RECOGNITION_INDEX = new InjectionToken<() => Observable<RecognitionIndex>>(
+  'PATTERN_RECOGNITION_INDEX',
+  {
+    providedIn: 'root',
+    factory: () => {
+      const content = inject(ContentService);
+      return () => content.getPatternRecognitionIndex();
+    },
   },
-});
-
+);
 
 /** Labels for the reasons under a result, matching the chips the learner tapped. */
 function reasonLabel(reason: FinderReason): string {
-  if (reason.check === 'input') return FINDER_SHAPES.find((item) => item.value === reason.value)?.label ?? reason.value;
-  if (reason.check === 'wants') return FINDER_WANTS.find((item) => item.value === reason.value)?.label ?? reason.value;
-  if (reason.check === 'size') return FINDER_SIZES.find((item) => item.value === reason.value)?.label ?? reason.value;
+  if (reason.check === 'input')
+    return FINDER_SHAPES.find((item) => item.value === reason.value)?.label ?? reason.value;
+  if (reason.check === 'wants')
+    return FINDER_WANTS.find((item) => item.value === reason.value)?.label ?? reason.value;
+  if (reason.check === 'size')
+    return FINDER_SIZES.find((item) => item.value === reason.value)?.label ?? reason.value;
   return `‘${reason.value}’`;
 }
 
@@ -84,8 +102,24 @@ export function routeColumns(width: number): number {
  * explains that and asks what the problem wants instead of listing several units.
  */
 export const DATA_TYPE_WORDS = [
-  'string', 'strings', 'array', 'arrays', 'list', 'lists', 'integer', 'integers', 'int', 'ints',
-  'number', 'numbers', 'char', 'chars', 'character', 'characters', 'matrix', 'input',
+  'string',
+  'strings',
+  'array',
+  'arrays',
+  'list',
+  'lists',
+  'integer',
+  'integers',
+  'int',
+  'ints',
+  'number',
+  'numbers',
+  'char',
+  'chars',
+  'character',
+  'characters',
+  'matrix',
+  'input',
 ];
 
 /**
@@ -95,7 +129,10 @@ export const DATA_TYPE_WORDS = [
 export const ASK_HINTS: { key: string; phrase: string }[] = [
   { key: 'how many ways', phrase: 'Count how many ways' },
   { key: 'in a row', phrase: 'The longest or shortest run in a row' },
-  { key: 'min or max', phrase: 'The smallest or largest value, such as the best day to buy and sell' },
+  {
+    key: 'min or max',
+    phrase: 'The smallest or largest value, such as the best day to buy and sell',
+  },
   { key: 'seen before', phrase: 'Whether a value was seen before' },
   { key: 'top k', phrase: 'The k largest, smallest or most frequent' },
   { key: 'all combinations', phrase: 'Every combination or arrangement' },
@@ -108,10 +145,11 @@ export const ASK_HINTS: { key: string; phrase: string }[] = [
 export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words';
 
 /**
- * Recognize the Pattern: the 20 units as a route in suggested study order, with a signal finder (user review,
- * 2026-10-05). A signal lists the units that fit, when each fits and what to check; nothing is chosen for the
- * learner. Matching units get a ring, the opened unit a fill; the rest dim but stay readable. On narrow
- * screens the route becomes a numbered list. Rows come from the section table, so the table stays the source.
+ * Recognize the Pattern: the 20 units as a route in suggested study order, with a signal finder
+ * (user review, 2026-10-05). A signal lists the units that fit, when each fits and what to check;
+ * nothing is chosen for the learner. Matching units get a ring, the opened unit a fill; the rest
+ * dim but stay readable. On narrow screens the route becomes a numbered list. Rows come from the
+ * section table, so the table stays the source.
  */
 @Component({
   selector: 'app-pattern-map',
@@ -129,11 +167,23 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
             [value]="query()"
             (input)="setQuery($any($event.target).value)"
           />
-          <button type="button" class="clear" [disabled]="!query() && selected() === null && !finderActive()" (click)="clear()">Clear filter</button>
+          <button
+            type="button"
+            class="clear"
+            [disabled]="!query() && selected() === null && !finderActive()"
+            (click)="clear()"
+            >Clear filter</button
+          >
         </div>
         <div class="chips" role="group" aria-label="Common signals">
           @for (item of map().signals; track item.key) {
-            <button type="button" class="chip" [attr.aria-pressed]="activeSignal()?.key === item.key" (click)="toggleSignal(item)">{{ item.key }}</button>
+            <button
+              type="button"
+              class="chip"
+              [attr.aria-pressed]="activeSignal()?.key === item.key"
+              (click)="toggleSignal(item)"
+              >{{ item.key }}</button
+            >
           }
         </div>
         @if (index()) {
@@ -142,7 +192,13 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
               <span class="check-label" [id]="inputId + '-shape'">Input</span>
               <div class="chips">
                 @for (item of shapes; track item.value) {
-                  <button type="button" class="chip" [attr.aria-pressed]="answers().input.includes(item.value)" (click)="toggleShape(item.value)">{{ item.label }}</button>
+                  <button
+                    type="button"
+                    class="chip"
+                    [attr.aria-pressed]="answers().input.includes(item.value)"
+                    (click)="toggleShape(item.value)"
+                    >{{ item.label }}</button
+                  >
                 }
               </div>
             </div>
@@ -150,7 +206,13 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
               <span class="check-label" [id]="inputId + '-wants'">Wants back</span>
               <div class="chips">
                 @for (item of wants; track item.value) {
-                  <button type="button" class="chip" [attr.aria-pressed]="answers().wants.includes(item.value)" (click)="toggleWant(item.value)">{{ item.label }}</button>
+                  <button
+                    type="button"
+                    class="chip"
+                    [attr.aria-pressed]="answers().wants.includes(item.value)"
+                    (click)="toggleWant(item.value)"
+                    >{{ item.label }}</button
+                  >
                 }
               </div>
             </div>
@@ -158,7 +220,13 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
               <span class="check-label" [id]="inputId + '-size'">Size</span>
               <div class="chips">
                 @for (item of sizes; track item.value) {
-                  <button type="button" class="chip" [attr.aria-pressed]="answers().size === item.value" (click)="toggleSize(item.value)">{{ item.label }}</button>
+                  <button
+                    type="button"
+                    class="chip"
+                    [attr.aria-pressed]="answers().size === item.value"
+                    (click)="toggleSize(item.value)"
+                    >{{ item.label }}</button
+                  >
                 }
               </div>
             </div>
@@ -167,38 +235,48 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
       </div>
       <div class="map-body">
         <div class="route-column">
-          <p class="order-label">{{ map().orderLabel }}@if (map().orderNote) {<small> · {{ map().orderNote }}</small>}</p>
+          <!-- prettier-ignore -->
+          <p class="order-label">{{ map().orderLabel }}@if (map().orderNote) {<small> · {{
+            map().orderNote }}</small>}</p>
           <div class="route-wrap">
-          <svg class="track" aria-hidden="true"><path [attr.d]="hits()?.length ? '' : trackPath()" /></svg>
-          <ol #route class="route" [class.list]="columns() === 1" [style.--cols]="columns()">
-            @for (unit of routeUnits(); track unit.n; let index = $index) {
-              <li [style.grid-row]="cell(index).row" [style.grid-column]="cell(index).column">
-                <button
-                  type="button"
-                  class="station"
-                  [class.hit]="hits()?.includes(unit.n)"
-                  [attr.aria-current]="selected() === unit.n ? 'true' : null"
-                  [attr.aria-label]="unit.n + '. ' + unit.name + ': ' + unit.signal"
-                  (click)="open(unit.n)"
-                >
-                  <span class="dot">{{ unit.n }}</span>
-                  <span class="name">{{ unit.name }}</span>
-                  <span class="sig">{{ unit.signal }}</span>
-                </button>
-              </li>
-            }
-          </ol>
+            <svg class="track" aria-hidden="true">
+              <path [attr.d]="hits()?.length ? '' : trackPath()" />
+            </svg>
+            <ol #route class="route" [class.list]="columns() === 1" [style.--cols]="columns()">
+              @for (unit of routeUnits(); track unit.n; let index = $index) {
+                <li [style.grid-row]="cell(index).row" [style.grid-column]="cell(index).column">
+                  <button
+                    type="button"
+                    class="station"
+                    [class.hit]="hits()?.includes(unit.n)"
+                    [attr.aria-current]="selected() === unit.n ? 'true' : null"
+                    [attr.aria-label]="unit.n + '. ' + unit.name + ': ' + unit.signal"
+                    (click)="open(unit.n)"
+                  >
+                    <span class="dot">{{ unit.n }}</span>
+                    <span class="name">{{ unit.name }}</span>
+                    <span class="sig">{{ unit.signal }}</span>
+                  </button>
+                </li>
+              }
+            </ol>
           </div>
         </div>
         <aside class="detail" aria-live="polite">
           @if (corrected(); as fix) {
-            <p class="corrected">Showing matches for “{{ fix }}”, the closest to “{{ query() }}”.</p>
+            <p class="corrected"
+              >Showing matches for “{{ fix }}”, the closest to “{{ query() }}”.</p
+            >
           }
           @if (selectedUnit(); as unit) {
             @if (finderActive()) {
-              <button type="button" class="back" (click)="selected.set(null)"><span aria-hidden="true">‹ </span>Back to your matches</button>
+              <button type="button" class="back" (click)="selected.set(null)"
+                ><span aria-hidden="true">‹ </span>Back to your matches</button
+              >
             } @else if (query()) {
-              <button type="button" class="back" (click)="selected.set(null)"><span aria-hidden="true">‹ </span>Back to matches for “{{ query() }}”</button>
+              <button type="button" class="back" (click)="selected.set(null)"
+                ><span aria-hidden="true">‹ </span>Back to matches for “{{ query() }}”</button
+              >
             }
             <p class="eyebrow">Unit {{ unit.n }} of {{ units().length }}</p>
             <h3>{{ unit.name }}</h3>
@@ -211,7 +289,9 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
             <a class="open" [routerLink]="unit.href">{{ unit.name }} lesson</a>
           } @else if (finderView(); as view) {
             @if (view.leaders.length) {
-              <p class="eyebrow">{{ view.leaders.length === 1 ? 'Fits your answers' : 'Two close fits' }}</p>
+              <p class="eyebrow">{{
+                view.leaders.length === 1 ? 'Fits your answers' : 'Two close fits'
+              }}</p>
               <ul class="results">
                 @for (leader of view.leaders; track leader.unit) {
                   <li class="result">
@@ -224,10 +304,19 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
                     @if (leader.when) {
                       <p class="result-when">{{ leader.when }}</p>
                     }
-                    <ul class="reasons" aria-label="Your answers against this unit's closest problem">
+                    <ul
+                      class="reasons"
+                      aria-label="Your answers against this unit's closest problem"
+                    >
                       @for (reason of leader.reasons; track $index) {
                         <li [class.miss]="!reason.matched">
-                          {{ reason.label }}<span class="mark" aria-hidden="true">{{ reason.matched ? '✓' : '✗' }}</span><span class="sr-only">{{ reason.matched ? 'matches' : 'does not match' }}</span>
+                          {{ reason.label
+                          }}<span class="mark" aria-hidden="true">{{
+                            reason.matched ? '✓' : '✗'
+                          }}</span
+                          ><span class="sr-only">{{
+                            reason.matched ? 'matches' : 'does not match'
+                          }}</span>
                         </li>
                       }
                     </ul>
@@ -235,7 +324,10 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
                       <p class="like">
                         <span class="like-label">Like</span>
                         @for (example of leader.examples; track example.id; let last = $last) {
-                          <a [routerLink]="example.href">{{ example.title }}</a>@if (!last) {<span class="sep" aria-hidden="true"> · </span>}
+                          <a [routerLink]="example.href">{{ example.title }}</a>
+                          @if (!last) {
+                            <span class="sep" aria-hidden="true"> · </span>
+                          }
                         }
                       </p>
                     }
@@ -243,13 +335,20 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
                 }
               </ul>
               @if (view.more) {
-                <p class="more">{{ view.more === 1 ? 'One more unit also fits; it comes next on the map.' : view.more + ' more units also fit; they come next on the map.' }}</p>
+                <p class="more">{{
+                  view.more === 1
+                    ? 'One more unit also fits; it comes next on the map.'
+                    : view.more + ' more units also fit; they come next on the map.'
+                }}</p>
               }
               <p class="check"><strong>Check first.</strong> {{ view.check }}</p>
             } @else {
               <p class="eyebrow">Your answers</p>
               <h3>No problem in our catalogue fits all of these</h3>
-              <p>Clear one of the checks to widen the search, or open the closest units on the map.</p>
+              <p
+                >Clear one of the checks to widen the search, or open the closest units on the
+                map.</p
+              >
             }
           } @else if (activeSignal(); as item) {
             <p class="eyebrow">Signal: {{ item.key }}</p>
@@ -258,7 +357,9 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
               @for (candidate of item.candidates; track candidate.unit) {
                 <li>
                   <button type="button" class="cand" (click)="open(candidate.unit)">
-                    <span class="cand-unit">{{ candidate.unit }}. {{ units()[candidate.unit - 1]?.name }}</span>
+                    <span class="cand-unit"
+                      >{{ candidate.unit }}. {{ units()[candidate.unit - 1]?.name }}</span
+                    >
                     <span class="cand-when">{{ candidate.when }}</span>
                   </button>
                 </li>
@@ -268,12 +369,19 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
           } @else if (dataType(); as type) {
             <p class="eyebrow">Words: {{ query() }}</p>
             <h3>“{{ query() }}” is the input type, not the pattern</h3>
-            <p>Many patterns read {{ type.endsWith('s') ? type : 'a ' + type }}, so it cannot point to one. What decides is what the problem asks for. Look for one of these:</p>
+            <p
+              >Many patterns read {{ type.endsWith('s') ? type : 'a ' + type }}, so it cannot point
+              to one. What decides is what the problem asks for. Look for one of these:</p
+            >
             <ng-container *ngTemplateOutlet="askList" />
           } @else if (query()) {
             <p class="eyebrow">Words: {{ query() }}</p>
             @if (wordHits().length) {
-              <h3>{{ wordHits().length === 1 ? 'One unit mentions this' : wordHits().length + ' units mention this' }}</h3>
+              <h3>{{
+                wordHits().length === 1
+                  ? 'One unit mentions this'
+                  : wordHits().length + ' units mention this'
+              }}</h3>
               <ul class="cands">
                 @for (unit of wordHits(); track unit.n) {
                   <li>
@@ -284,7 +392,10 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
                   </li>
                 }
               </ul>
-              <p class="check">A shared word is a hint, not a rule. Check each unit's conditions against your input.</p>
+              <p class="check"
+                >A shared word is a hint, not a rule. Check each unit's conditions against your
+                input.</p
+              >
             } @else {
               <h3>No unit mentions “{{ query() }}”</h3>
               <p>Search for what the problem asks for instead. Look for one of these:</p>
@@ -293,11 +404,19 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
           } @else {
             <p class="eyebrow">How to use the map</p>
             <h3>Start from the words in the problem</h3>
-            <p>Pick a signal or type a word. You get every unit that fits, when each one fits, and what to check before you choose.</p>
+            <p
+              >Pick a signal or type a word. You get every unit that fits, when each one fits, and
+              what to check before you choose.</p
+            >
             @if (index()) {
-              <p>Then tap what the input is, what it wants back and how big it can be. The units that fit come first, with problems like yours.</p>
+              <p
+                >Then tap what the input is, what it wants back and how big it can be. The units
+                that fit come first, with problems like yours.</p
+              >
             }
-            <p class="check">Or open any unit to see its signal and what you remember while you scan.</p>
+            <p class="check"
+              >Or open any unit to see its signal and what you remember while you scan.</p
+            >
           }
         </aside>
       </div>
@@ -330,8 +449,16 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
         padding: 22px 22px 20px;
         border-radius: 16px;
         background:
-          radial-gradient(1100px 380px at 8% -12%, color-mix(in srgb, var(--map-match) 16%, transparent), transparent 60%),
-          radial-gradient(900px 360px at 110% 112%, color-mix(in srgb, var(--map-select) 14%, transparent), transparent 60%),
+          radial-gradient(
+            1100px 380px at 8% -12%,
+            color-mix(in srgb, var(--map-match) 16%, transparent),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 360px at 110% 112%,
+            color-mix(in srgb, var(--map-select) 14%, transparent),
+            transparent 60%
+          ),
           var(--panel-background);
         color: var(--panel-ink);
       }
@@ -474,7 +601,11 @@ export { closestSpelling, editDistance, hasWords } from '../pattern-finder/words
         background: var(--panel-background);
         font-weight: 800;
         font-variant-numeric: tabular-nums;
-        transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+        transition:
+          transform 0.2s,
+          background 0.2s,
+          border-color 0.2s,
+          box-shadow 0.2s;
       }
       .name {
         max-width: 14ch;
@@ -834,13 +965,19 @@ export class PatternMap implements AfterViewInit {
   /** Every word the map knows: signal names and aliases, unit names and signal lines. */
   private readonly vocabulary = computed(() => {
     const words = new Set<string>();
-    const add = (text: string) => text.toLowerCase().split(/[^a-z]+/).forEach((word) => word.length >= 3 && words.add(word));
+    const add = (text: string) =>
+      text
+        .toLowerCase()
+        .split(/[^a-z]+/)
+        .forEach((word) => word.length >= 3 && words.add(word));
     this.map().signals.forEach((item) => [item.key, ...item.aliases].forEach(add));
     this.units().forEach((unit) => [unit.name, unit.signal].forEach(add));
     return words;
   });
 
-  /** What the map searches for: the typed words, or their closest spelling when they find nothing. */
+  /**
+   * What the map searches for: the typed words, or their closest spelling when they find nothing.
+   */
   protected readonly searchTerm = computed(() => {
     const query = this.query().trim();
     if (!query || this.finds(query) || DATA_TYPE_WORDS.includes(query.toLowerCase())) return query;
@@ -854,7 +991,9 @@ export class PatternMap implements AfterViewInit {
     return term && term.toLowerCase() !== this.query().trim().toLowerCase() ? term : null;
   });
 
-  protected readonly activeSignal = computed<TheoryPatternSignal | null>(() => this.signalFor(this.searchTerm()));
+  protected readonly activeSignal = computed<TheoryPatternSignal | null>(() =>
+    this.signalFor(this.searchTerm()),
+  );
 
   /** The typed word when it is only an input type (string, array…), else null. */
   protected readonly dataType = computed(() => {
@@ -863,12 +1002,20 @@ export class PatternMap implements AfterViewInit {
   });
 
   protected readonly askHints = computed(() =>
-    ASK_HINTS.map((hint) => ({ ...hint, signal: this.map().signals.find((item) => item.key === hint.key) }))
-      .filter((hint): hint is { key: string; phrase: string; signal: TheoryPatternSignal } => !!hint.signal)
+    ASK_HINTS.map((hint) => ({
+      ...hint,
+      signal: this.map().signals.find((item) => item.key === hint.key),
+    }))
+      .filter(
+        (hint): hint is { key: string; phrase: string; signal: TheoryPatternSignal } =>
+          !!hint.signal,
+      )
       .slice(0, 6),
   );
 
-  protected readonly wordHits = computed(() => (this.activeSignal() ? [] : this.unitsFor(this.searchTerm())));
+  protected readonly wordHits = computed(() =>
+    this.activeSignal() ? [] : this.unitsFor(this.searchTerm()),
+  );
 
   /**
    * The route in display order: while a signal or words filter it, the matching units come first
@@ -886,13 +1033,19 @@ export class PatternMap implements AfterViewInit {
   private signalFor(term: string): TheoryPatternSignal | null {
     const query = term.trim().toLowerCase();
     if (!query) return null;
-    return this.map().signals.find((item) => item.aliases.some((alias) => hasWords(query, alias) || hasWords(alias, query))) ?? null;
+    return (
+      this.map().signals.find((item) =>
+        item.aliases.some((alias) => hasWords(query, alias) || hasWords(alias, query)),
+      ) ?? null
+    );
   }
 
   private unitsFor(term: string): MapUnit[] {
     const query = term.trim();
     if (!query) return [];
-    return this.units().filter((unit) => hasWords(unit.signal, query) || hasWords(unit.name, query));
+    return this.units().filter(
+      (unit) => hasWords(unit.signal, query) || hasWords(unit.name, query),
+    );
   }
 
   private finds(term: string): boolean {
@@ -904,7 +1057,9 @@ export class PatternMap implements AfterViewInit {
     if (this.finderActive()) return this.finderHits();
     if (!this.query().trim() || this.dataType()) return null;
     const item = this.activeSignal();
-    return item ? item.candidates.map((candidate) => candidate.unit) : this.wordHits().map((unit) => unit.n);
+    return item
+      ? item.candidates.map((candidate) => candidate.unit)
+      : this.wordHits().map((unit) => unit.n);
   });
 
   protected readonly selectedUnit = computed(() => {
@@ -919,15 +1074,26 @@ export class PatternMap implements AfterViewInit {
   protected readonly wants = FINDER_WANTS;
   protected readonly sizes = FINDER_SIZES;
   protected readonly index = signal<RecognitionIndex | null>(null);
-  private readonly picks = signal<Omit<FinderAnswers, 'words'>>({ input: [], wants: [], size: null });
+  private readonly picks = signal<Omit<FinderAnswers, 'words'>>({
+    input: [],
+    wants: [],
+    size: null,
+  });
 
   /** The tapped checks plus the typed words (after the same spelling fix the map uses). */
-  protected readonly answers = computed<FinderAnswers>(() => ({ ...this.picks(), words: this.searchTerm() }));
+  protected readonly answers = computed<FinderAnswers>(() => ({
+    ...this.picks(),
+    words: this.searchTerm(),
+  }));
 
-  /** The finder leads once a check is tapped; until then the typing box and chips work as before. */
+  /**
+   * The finder leads once a check is tapped; until then the typing box and chips work as before.
+   */
   protected readonly finderActive = computed(() => {
     const picks = this.picks();
-    return !!this.index() && (picks.input.length > 0 || picks.wants.length > 0 || picks.size !== null);
+    return (
+      !!this.index() && (picks.input.length > 0 || picks.wants.length > 0 || picks.size !== null)
+    );
   });
 
   private readonly finderResult = computed(() => {
@@ -940,27 +1106,44 @@ export class PatternMap implements AfterViewInit {
     if (!result) return null;
     const top = leaders(result);
     const units = this.units();
-    const name = (n: number) => units[n - 1]?.name ?? result.ranked.find((match) => match.unit === n)?.name ?? String(n);
-    const signals = [this.activeSignal(), ...this.map().signals].filter((item): item is TheoryPatternSignal => !!item);
-    const lists = (item: TheoryPatternSignal, n: number) => item.candidates.some((candidate) => candidate.unit === n);
-    const shared = top.length === 2 ? signals.find((item) => top.every((match) => lists(item, match.unit))) : undefined;
+    const name = (n: number) =>
+      units[n - 1]?.name ?? result.ranked.find((match) => match.unit === n)?.name ?? String(n);
+    const signals = [this.activeSignal(), ...this.map().signals].filter(
+      (item): item is TheoryPatternSignal => !!item,
+    );
+    const lists = (item: TheoryPatternSignal, n: number) =>
+      item.candidates.some((candidate) => candidate.unit === n);
+    const shared =
+      top.length === 2
+        ? signals.find((item) => top.every((match) => lists(item, match.unit)))
+        : undefined;
     const toLeader = (match: UnitMatch): FinderLeader => ({
       unit: match.unit,
       name: name(match.unit),
       when:
         top.length === 2
-          ? (shared?.candidates.find((candidate) => candidate.unit === match.unit)?.when ?? units[match.unit - 1]?.signal ?? '')
+          ? (shared?.candidates.find((candidate) => candidate.unit === match.unit)?.when ??
+            units[match.unit - 1]?.signal ??
+            '')
           : '',
-      reasons: match.reasons.map((reason) => ({ label: reasonLabel(reason), matched: reason.matched })),
+      reasons: match.reasons.map((reason) => ({
+        label: reasonLabel(reason),
+        matched: reason.matched,
+      })),
       examples: match.examples.slice(0, top.length === 1 ? 3 : 2),
     });
     const check = top.length
       ? (shared?.check ??
         signals.find((item) => lists(item, top[0].unit))?.check ??
-        `Open two of the examples and compare them with your problem before you choose ${name(top[0].unit)}.`)
+        `Open two of the examples and compare them with your problem before you ` +
+          `choose ${name(top[0].unit)}.`)
       : '';
     const shown = new Set(top.map((match) => match.unit));
-    return { leaders: top.map(toLeader), check, more: (this.finderHits() ?? []).filter((n) => !shown.has(n)).length };
+    return {
+      leaders: top.map(toLeader),
+      check,
+      more: (this.finderHits() ?? []).filter((n) => !shown.has(n)).length,
+    };
   });
 
   private readonly finderHits = computed(() => {

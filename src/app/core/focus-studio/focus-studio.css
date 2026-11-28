@@ -1102,9 +1102,9 @@ button[aria-label^='Restart'] {
   }
 }
 
-/* Option B (user review 2026-10-05): numbered segmented tabs in the heading row, a guide line with the
-   selected tab's one action under it. The second grid row is flexible so a tall problem panel adds its
-   extra height below the workspace, never above the tabs. */
+/* Option B (user review 2026-10-05): numbered segmented tabs in the heading row, a guide line with
+   the selected tab's one action under it. The second grid row is flexible so a tall problem panel
+   adds its extra height below the workspace, never above the tabs. */
 .studio {
   grid-template-rows: auto 1fr;
 }
@@ -1153,7 +1153,12 @@ button[aria-label^='Restart'] {
 }
 .mode-step {
   color: var(--muted);
-  font: 700 11px/1 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font:
+    700 11px/1 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
 }
 .mode-step.mode-step-done {
   color: var(--success);
@@ -1202,8 +1207,8 @@ button[aria-label^='Restart'] {
   font-size: 13px;
 }
 
-/* Recall card grid (user-approved preview, option B, 2026-10-06): the cards, the connected ideas and
-   Finish and review each take the full workspace width. The grid has its own styles. */
+/* Recall card grid (user-approved preview, option B, 2026-10-06): the cards, the connected ideas
+   and Finish and review each take the full workspace width. The grid has its own styles. */
 .recall-panel {
   display: grid;
   gap: 16px;
@@ -1215,8 +1220,8 @@ button[aria-label^='Restart'] {
   background: var(--surface);
 }
 
-/* Narrow desktop widths (user review 2026-10-06): the heading row, the guide line and the working grid
-   wrap or shrink inside the workspace instead of running past its right edge. */
+/* Narrow desktop widths (user review 2026-10-06): the heading row, the guide line and the working
+   grid wrap or shrink inside the workspace instead of running past its right edge. */
 .studio-heading {
   container-type: inline-size;
   min-width: 0;
@@ -1258,12 +1263,25 @@ button[aria-label^='Restart'] {
 }
 
 /* DLV-408: one controls row, followed by a separate guidance line. */
-.studio-heading { gap: 12px; }
-.studio-heading > .workspace-actions { flex: 0 1 auto; padding: 0; align-items: center; }
-.studio-heading > app-studio-timer { margin-inline-start: auto; }
-.workspace-toolbar { min-height: 36px; padding-block: 4px; }
+.studio-heading {
+  gap: 12px;
+}
+.studio-heading > .workspace-actions {
+  flex: 0 1 auto;
+  padding: 0;
+  align-items: center;
+}
+.studio-heading > app-studio-timer {
+  margin-inline-start: auto;
+}
+.workspace-toolbar {
+  min-height: 36px;
+  padding-block: 4px;
+}
 @media (max-width: 700px) {
-  .studio-heading > app-studio-timer { margin-inline-start: 0; }
+  .studio-heading > app-studio-timer {
+    margin-inline-start: 0;
+  }
 }
 
 /* DLV-965 (user, 2026-10-16): the approach switch sits beside "Show solution" at its own (header

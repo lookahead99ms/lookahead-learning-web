@@ -1,11 +1,15 @@
-/** Names are independent of goals and schedule snapshots. Dates use UTC, as account creation does. */
+/**
+ * Names are independent of goals and schedule snapshots. Dates use UTC, as account creation does.
+ */
 export function defaultPlanName(
   number: number,
   createdAt: Date,
   hours: number,
   days: number,
 ): string {
-  const date = `${String(createdAt.getUTCDate()).padStart(2, '0')}${String(createdAt.getUTCMonth() + 1).padStart(2, '0')}${createdAt.getUTCFullYear()}`;
+  const date =
+    `${String(createdAt.getUTCDate()).padStart(2, '0')}` +
+    `${String(createdAt.getUTCMonth() + 1).padStart(2, '0')}${createdAt.getUTCFullYear()}`;
   return `Study plan #${number}_${date}_${hours}X${days}`;
 }
 export function planNameError(name: string): string {

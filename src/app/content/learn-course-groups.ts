@@ -7,7 +7,8 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     id: 'language-foundations',
     title: 'Programming Language Foundations',
     description:
-      'Start with the language you need, then compare Java, Python, and Go without treating one language as a prerequisite for another.',
+      'Start with the language you need, then compare Java, Python, and Go without ' +
+      'treating one language as a prerequisite for another.',
     courseIds: [
       'core-java',
       'python-fundamentals',
@@ -19,7 +20,8 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     id: 'java-platform',
     title: 'Java Platform and Runtime',
     description:
-      'Build on Java foundations with collections, modern language features, concurrency, JVM memory, garbage collection, and performance.',
+      'Build on Java foundations with collections, modern language features, ' +
+      'concurrency, JVM memory, garbage collection, and performance.',
     courseIds: [
       'java-data-structures',
       'modern-java',
@@ -51,7 +53,8 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     id: 'object-design-lld',
     title: 'Object Design & Low-Level Design',
     description:
-      'Model valid state, apply SOLID and design patterns, and practice frequently asked LLD interviews.',
+      'Model valid state, apply SOLID and design patterns, and practice frequently ' +
+      'asked LLD interviews.',
     courseIds: ['oop', 'solid-design-patterns'],
   },
   {
@@ -64,7 +67,8 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     id: 'engineering-tools',
     title: 'Engineering Tools',
     description:
-      'Build a reliable workflow for debugging, source control, operating systems, data, containers, and continuous feedback.',
+      'Build a reliable workflow for debugging, source control, operating systems, ' +
+      'data, containers, and continuous feedback.',
     courseIds: ['linux', 'git', 'developer-workflow', 'sql', 'docker'],
   },
 ];

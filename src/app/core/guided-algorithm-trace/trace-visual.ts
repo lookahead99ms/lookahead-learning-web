@@ -227,7 +227,8 @@ function indexedBy(source: string, array: string, name: string): boolean {
   const a = escapeRegExp(array);
   const n = escapeRegExp(name);
   return new RegExp(
-    `\\b${a}\\s*\\[\\s*(?:\\+\\+|--)?${n}(?:\\+\\+|--)?\\s*\\]|\\b${a}\\.(?:charAt|get)\\(\\s*${n}\\s*\\)`,
+    `\\b${a}\\s*\\[\\s*(?:\\+\\+|--)?${n}(?:\\+\\+|--)?\\s*\\]|\\b` +
+      `${a}\\.(?:charAt|get)\\(\\s*${n}\\s*\\)`,
   ).test(source);
 }
 
@@ -502,7 +503,8 @@ function readIndexes(
 ): number[] {
   const a = escapeRegExp(array);
   const pattern = new RegExp(
-    `\\b${a}\\s*\\[\\s*([A-Za-z_]\\w*|\\d+)\\s*(?:([+-])\\s*(\\d+))?\\s*\\]|\\b${a}\\.(?:charAt|get)\\(\\s*([A-Za-z_]\\w*|\\d+)\\s*(?:([+-])\\s*(\\d+))?\\s*\\)`,
+    `\\b${a}\\s*\\[\\s*([A-Za-z_]\\w*|\\d+)\\s*(?:([+-])\\s*(\\d+))?\\s*\\]|\\b` +
+      `${a}\\.(?:charAt|get)\\(\\s*([A-Za-z_]\\w*|\\d+)\\s*(?:([+-])\\s*(\\d+))?\\s*\\)`,
     'g',
   );
   const found: number[] = [];
@@ -705,8 +707,12 @@ export function parseConditionHeader(
   return rest ? { keyword: match[1].replace(/\s+/g, ' '), condition: rest } : null;
 }
 
-const SAFE_CALLS =
-  /\b(len|abs|min|max|size|length|isEmpty|charAt|get|containsKey|contains|equals|peek|isDigit|isLetter|isLetterOrDigit|isalnum|isdigit|isalpha|lower|upper|toLowerCase|toUpperCase|Math\.abs|Math\.min|Math\.max)\s*\(/g;
+const SAFE_CALLS = new RegExp(
+  '\\b(len|abs|min|max|size|length|isEmpty|charAt|get|containsKey|contains|equals|peek|' +
+    'isDigit|isLetter|isLetterOrDigit|isalnum|isdigit|isalpha|lower|upper|toLowerCase|' +
+    'toUpperCase|Math\\.abs|Math\\.min|Math\\.max)\\s*\\(',
+  'g',
+);
 
 function indentOf(text: string): number {
   return text.length - text.trimStart().length;
@@ -852,7 +858,9 @@ function changeNarration(
             ? `${name} points at node ${label}.`
             : hops === null
               ? `${name} moves to node ${label}.`
-              : `${name} moves ${countWord(hops)} ${hops === 1 ? 'node' : 'nodes'}, onto ${label}${crossesCycle(plan, was, hops) ? ', following the cycle link back' : ''}.`,
+              : `${name} moves ${countWord(hops)} ${hops === 1 ? 'node' : 'nodes'}, ` +
+                `onto ${label}` +
+                `${crossesCycle(plan, was, hops) ? ', following the cycle link back' : ''}.`,
         );
       } else sentences.push(`${name} changes.`);
       continue;
@@ -915,7 +923,8 @@ function changeNarration(
   // A single local leaving scope is noise; several at once is a call or return.
   if (outOfScope.length > 1) {
     sentences.push(
-      `${nameList(outOfScope.slice(0, 4))}${outOfScope.length > 4 ? ' and others' : ''} are out of scope here.`,
+      `${nameList(outOfScope.slice(0, 4))}${outOfScope.length > 4 ? ' and others' : ''} ` +
+        `are out of scope here.`,
     );
   }
   if (backInScope.length) {
@@ -924,7 +933,9 @@ function changeNarration(
       return shortValue(value) && value.length <= 12 ? `${name} = ${value}` : name;
     });
     sentences.push(
-      `${nameList(shown)}${backInScope.length > 4 ? ' and others' : ''} ${backInScope.length === 1 ? 'is' : 'are'} back in scope.`,
+      `${nameList(shown)}${backInScope.length > 4 ? ' and others' : ''} ` +
+        `${backInScope.length === 1 ? 'is' : 'are'} ` +
+        `back in scope.`,
     );
   }
   return sentences;
@@ -979,7 +990,8 @@ export function stepNarration(
       parts.push(
         plan.cycleTo === null
           ? `The list is ${chain}.`
-          : `The list is ${chain}, and ${plan.values.at(-1)} links back to ${plan.values[plan.cycleTo]}.`,
+          : `The list is ${chain}, and ${plan.values.at(-1)} links back ` +
+              `to ${plan.values[plan.cycleTo]}.`,
       );
     }
     parts.push(

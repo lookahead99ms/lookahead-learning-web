@@ -30,7 +30,14 @@ export type PlanApproachFamilies = ReadonlyMap<string, PlanApproachMember[]>;
 
 interface FamilySource {
   approach: number;
-  siblings: { problemId: string; approach: number; title: string; path: string; courseId: string; questionId: string }[];
+  siblings: {
+    problemId: string;
+    approach: number;
+    title: string;
+    path: string;
+    courseId: string;
+    questionId: string;
+  }[];
 }
 
 /** The plan's own problem plus its siblings; empty unless there are at least two approaches. */
@@ -40,7 +47,15 @@ export function planApproachMembers(
 ): PlanApproachMember[] {
   if (!family || !Number.isInteger(family.approach) || !family.siblings?.length) return [];
   const members = new Map<string, PlanApproachMember>([
-    [self.problemId, { problemId: self.problemId, approach: family.approach, title: self.title, route: self.route }],
+    [
+      self.problemId,
+      {
+        problemId: self.problemId,
+        approach: family.approach,
+        title: self.title,
+        route: self.route,
+      },
+    ],
   ]);
   for (const sibling of family.siblings) {
     if (
@@ -59,7 +74,9 @@ export function planApproachMembers(
       route: ['/', sibling.path, sibling.courseId, sibling.questionId],
     });
   }
-  return members.size > 1 ? [...members.values()].sort((left, right) => left.approach - right.approach) : [];
+  return members.size > 1
+    ? [...members.values()].sort((left, right) => left.approach - right.approach)
+    : [];
 }
 
 /**
@@ -110,7 +127,9 @@ export function rememberApproachChoice(
   if (current[key] === problemId) return current;
   delete current[key];
   const next = Object.fromEntries(
-    [...Object.entries(current), [key, problemId] as [string, string]].slice(-MAX_REMEMBERED_CHOICES),
+    [...Object.entries(current), [key, problemId] as [string, string]].slice(
+      -MAX_REMEMBERED_CHOICES,
+    ),
   );
   try {
     localStorage.setItem(APPROACH_CHOICE_KEY, JSON.stringify(next));
@@ -143,12 +162,16 @@ export class StudyPlanApproaches {
    */
   async resolve(all: PlanProblemItem[], visible: PlanProblemItem[] = all): Promise<void> {
     const families = await this.indexFamilies();
-    const pending = (families ? all : visible).filter(({ problemId }) => !this.requested.has(problemId));
+    const pending = (families ? all : visible).filter(
+      ({ problemId }) => !this.requested.has(problemId),
+    );
     if (!pending.length) return;
     for (const { problemId } of pending) this.requested.add(problemId);
     const found = await Promise.all(
       pending.map(async (item) => {
-        const family = families ? families[item.problemId] : await this.detailFamily(item.problemId);
+        const family = families
+          ? families[item.problemId]
+          : await this.detailFamily(item.problemId);
         return [item.problemId, planApproachMembers(item, family)] as const;
       }),
     );
@@ -181,7 +204,9 @@ export class StudyPlanApproaches {
 
   private async detailFamily(problemId: string): Promise<FamilySource | null> {
     try {
-      const problem = await firstValueFrom(this.injector.get(ContentService).getDsaProblem(problemId));
+      const problem = await firstValueFrom(
+        this.injector.get(ContentService).getDsaProblem(problemId),
+      );
       return problem?.approachFamily ?? null;
     } catch {
       return null;

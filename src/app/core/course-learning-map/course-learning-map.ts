@@ -34,13 +34,17 @@ import { evenGridColumnVars, evenGridColumns } from '../even-grid';
 
 const LADDER_INTROS: Record<string, string> = {
   'design-fundamentals':
-    'Each lesson explains one building block or one technology: what it is, how it works, where it breaks, and what to say about it in an interview.',
+    'Each lesson explains one building block or one technology: what it is, how it ' +
+    'works, where it breaks, and what to say about it in an interview.',
   'design-patterns':
-    'Each lesson starts from a problem that shows up in many systems, then walks through the ways to solve it and when to pick each one.',
+    'Each lesson starts from a problem that shows up in many systems, then walks ' +
+    'through the ways to solve it and when to pick each one.',
   'design-systems':
-    'Each lesson designs one system end to end. When you finish one, practice it as a timed interview in Design Rounds.',
+    'Each lesson designs one system end to end. When you finish one, practice it as a ' +
+    'timed interview in Design Rounds.',
   'design-rounds':
-    'Each round is a 45-minute interview question. Try it on your own first, then open the reference answer and follow the links down to the lessons behind each step.',
+    'Each round is a 45-minute interview question. Try it on your own first, then open ' +
+    'the reference answer and follow the links down to the lessons behind each step.',
 };
 
 /**
@@ -90,7 +94,8 @@ interface UnitCardEntry {
           [nouns]="cardNouns()"
         />
       }
-      <!-- data-signature-column: the platform statements after the page line up with this column. -->
+      <!-- data-signature-column: the platform statements after the page line up with this column.
+      -->
       <section
         class="learning-map learning-map-cards"
         [attr.data-path]="pathId()"
@@ -136,7 +141,8 @@ interface UnitCardEntry {
                     [fallback]="entry.initials"
                   />
                   <div class="unit-card-body">
-                    <!-- The level is plain text on the title row, not a pill; it wraps under a long title. -->
+                    <!-- The level is plain text on the title row, not a pill; it wraps under a long
+                         title. -->
                     <div class="unit-card-title-row">
                       <h2 class="unit-card-title" [id]="'unit-card-title-' + entry.key">
                         {{ entry.unit.title }}
@@ -157,7 +163,8 @@ interface UnitCardEntry {
                     >
                       {{ entry.card?.summary ?? entry.unit.description }}
                     </p>
-                    <!-- Drawing, title and description lead; the unit facts follow as plain meta. -->
+                    <!-- Drawing, title and description lead; the unit facts follow as plain meta.
+                    -->
                     @if (entry.hasMeta) {
                       <span class="unit-card-meta" [id]="'unit-card-meta-' + entry.key">
                         @for (item of entry.meta; track $index) {
@@ -165,9 +172,10 @@ interface UnitCardEntry {
                         }
                       </span>
                     }
-                    <!-- DLV-942: who can open the unit. Passive metadata, so plain text, never a pill;
-                         it is part of the card link's accessible name. DLV-209: the text depends on
-                         who is looking, and it sits over the card's top-right corner so nothing moves. -->
+                    <!-- DLV-942: who can open the unit. Passive metadata, so plain text, never a
+                         pill; it is part of the card link's accessible name. DLV-209: the text
+                         depends on who is looking, and it sits over the card's top-right corner so
+                         nothing moves. -->
                     @if (entry.accessText; as accessText) {
                       <span
                         class="unit-card-access"
@@ -197,8 +205,9 @@ interface UnitCardEntry {
                   </div>
                 </ng-template>
                 <ng-template #cardFamilies>
-                  <!-- Each family pill filters the map to the lessons that share it. The group label
-                       (Patterns, Fundamentals, Systems) is the group's accessible name, not visible text. -->
+                  <!-- Each family pill filters the map to the lessons that share it. The group
+                       label (Patterns, Fundamentals, Systems) is the group's accessible name, not
+                       visible text. -->
                   @if (entry.card?.pillGroups?.length) {
                     <div class="unit-card-pills">
                       @for (
@@ -961,7 +970,6 @@ export class CourseLearningMap {
     });
   }
 
-
   private cardEntry(
     unit: CourseLearningUnit,
     key: string,
@@ -976,7 +984,8 @@ export class CourseLearningMap {
     // Cards carry no counts or minutes (user review, 2026-10-03): only a sub-unit label.
     const meta = label ? [label] : [];
     const levels = this.accessLevels();
-    const access = levels && !planned ? levels.levelFor(this.pathId(), this.courseId(), unit.id) : null;
+    const access =
+      levels && !planned ? levels.levelFor(this.pathId(), this.courseId(), unit.id) : null;
     const accessText = access ? accessLabelFor(access, this.accessViewer()) : null;
     const hasMeta = meta.length > 0 || planned;
     const describedBy = [
@@ -998,9 +1007,10 @@ export class CourseLearningMap {
       access,
       accessText,
       hasMeta,
-      labelledBy: [`unit-card-title-${key}`, ...(accessText ? [`unit-card-access-${key}`] : [])].join(
-        ' ',
-      ),
+      labelledBy: [
+        `unit-card-title-${key}`,
+        ...(accessText ? [`unit-card-access-${key}`] : []),
+      ].join(' '),
       describedBy,
       ...target,
     };

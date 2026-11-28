@@ -73,7 +73,8 @@ button:disabled {
 
 /* ---------- The stage ---------- */
 .stage {
-  /* Children (signature, prompt, slide panels) read these shared tokens, so they turn light here. */
+  /* Children (signature, prompt, slide panels) read these shared tokens, so they turn light here.
+  */
   --text-strong: var(--stage-text);
   --text-body: var(--stage-muted);
   --text-subtle: var(--stage-muted);
@@ -95,8 +96,16 @@ button:disabled {
   border-radius: 28px;
   color: var(--stage-text);
   background:
-    radial-gradient(ellipse 55% 75% at 76% 42%, color-mix(in srgb, var(--stage-glow) 42%, transparent), transparent 70%),
-    radial-gradient(ellipse 45% 60% at 4% 104%, color-mix(in srgb, var(--stage-glow-2) 30%, transparent), transparent 72%),
+    radial-gradient(
+      ellipse 55% 75% at 76% 42%,
+      color-mix(in srgb, var(--stage-glow) 42%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 45% 60% at 4% 104%,
+      color-mix(in srgb, var(--stage-glow-2) 30%, transparent),
+      transparent 72%
+    ),
     linear-gradient(155deg, var(--stage-ink-2), var(--stage-ink) 62%);
   box-shadow:
     0 30px 60px -30px #031114a8,
@@ -125,9 +134,16 @@ button:disabled {
   position: absolute;
   inset: -20% auto -20% 0;
   width: 38%;
-  background: linear-gradient(100deg, transparent, #9ff5e81a 45%, #ffffff14 50%, #9ff5e81a 55%, transparent);
+  background: linear-gradient(
+    100deg,
+    transparent,
+    #9ff5e81a 45%,
+    #ffffff14 50%,
+    #9ff5e81a 55%,
+    transparent
+  );
   transform: translateX(-120%) skewX(-12deg);
-  animation: stage-sweep 14s cubic-bezier(.45, 0, .25, 1) infinite;
+  animation: stage-sweep 14s cubic-bezier(0.45, 0, 0.25, 1) infinite;
 }
 @keyframes stage-sweep {
   0%,
@@ -481,9 +497,14 @@ button:disabled {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path tiles). */
+  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path
+     tiles). */
   background:
-    radial-gradient(circle at 85% 100%, color-mix(in srgb, var(--path-color) 22%, transparent), transparent 55%),
+    radial-gradient(
+      circle at 85% 100%,
+      color-mix(in srgb, var(--path-color) 22%, transparent),
+      transparent 55%
+    ),
     linear-gradient(
       160deg,
       color-mix(in srgb, var(--path-color) 12%, var(--surface)),

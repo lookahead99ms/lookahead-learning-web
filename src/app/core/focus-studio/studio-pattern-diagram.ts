@@ -215,7 +215,8 @@ import { WalkthroughFrame } from './studio-walkthrough';
         padding: 0;
         background: transparent;
       }
-      /* Inside the walkthrough player: 14 px labels, so a narrow stage still shows 12 px or more. */
+      /* Inside the walkthrough player: 14 px labels, so a narrow stage still shows 12 px or more.
+      */
       .pattern-stage.compact text:not(.cell-value) {
         font-size: 14px;
       }
@@ -334,7 +335,8 @@ export class StudioPatternDiagram {
   );
   protected readonly bracket = computed(
     () =>
-      `M${this.cellX(this.frame().left)} 174v24H${this.cellX(this.frame().right) + this.cellSize() - 6}v-24`,
+      `M${this.cellX(this.frame().left)} ` +
+      `174v24H${this.cellX(this.frame().right) + this.cellSize() - 6}v-24`,
   );
   protected barX(index: number): number {
     return 30 + (index * 340) / Math.max(1, this.frame().values.length - 1);
@@ -349,7 +351,24 @@ export class StudioPatternDiagram {
     const f = this.frame();
     if (!f.valid) return f.why;
     if (f.kind === 'container')
-      return `${f.done ? 'Last evaluated pair' : 'Pair'} [${f.left}, ${f.right}]: width ${f.right - f.left}, limiting height ${this.waterHeight()}, area ${f.total}. Best ${f.best ?? 'Not yet'}. ${this.linked() ? 'Geometry derived from recorded pointers.' : f.done ? 'Pointers have met.' : f.evaluated ? 'Evaluated.' : 'Not yet evaluated.'}`;
-    return `Range [${f.left}, ${f.right}], ${this.size()} of ${f.k} values. Sum ${f.total}; best valid sum ${f.best ?? 'Not yet'}. Entering ${f.entering ?? 'none'}; leaving ${f.leaving ?? 'none'}. ${this.size() === f.k ? 'Exact-k candidate.' : 'Not an exact-k candidate.'}`;
+      return (
+        `${f.done ? 'Last evaluated pair' : 'Pair'} [${f.left}, ${f.right}]: ` +
+        `width ${f.right - f.left}, limiting height ${this.waterHeight()}, ` +
+        `area ${f.total}. ` +
+        `Best ${f.best ?? 'Not yet'}. ` +
+        (this.linked()
+          ? 'Geometry derived from recorded pointers.'
+          : f.done
+            ? 'Pointers have met.'
+            : f.evaluated
+              ? 'Evaluated.'
+              : 'Not yet evaluated.')
+      );
+    return (
+      `Range [${f.left}, ${f.right}], ${this.size()} of ${f.k} values. Sum ${f.total}; ` +
+      `best valid sum ${f.best ?? 'Not yet'}. Entering ${f.entering ?? 'none'}; ` +
+      `leaving ${f.leaving ?? 'none'}. ` +
+      `${this.size() === f.k ? 'Exact-k candidate.' : 'Not an exact-k candidate.'}`
+    );
   });
 }

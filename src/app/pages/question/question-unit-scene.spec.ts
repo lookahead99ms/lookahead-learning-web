@@ -14,7 +14,8 @@ import { ContentService } from '../../content/content.service';
 import { SceneAssets } from '../../core/card-scene/scene-assets';
 import { Question } from './question';
 
-const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect class="unit-art"/></svg>';
+const svg =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect class="unit-art"/></svg>';
 
 function item(overrides: Partial<InterviewQuestion>): InterviewQuestion {
   return {
@@ -46,12 +47,14 @@ function course(
     description: 'Course.',
     version: '1',
     ...(learningUnits ? { layout: 'learning-map' as const, learningUnits } : {}),
-    modules: [...new Set(questions.map((question) => question.moduleId))].map((moduleId, index) => ({
-      id: moduleId,
-      order: index + 1,
-      title: moduleId,
-      description: '',
-    })),
+    modules: [...new Set(questions.map((question) => question.moduleId))].map(
+      (moduleId, index) => ({
+        id: moduleId,
+        order: index + 1,
+        title: moduleId,
+        description: '',
+      }),
+    ),
     questions,
   };
 }
@@ -70,7 +73,9 @@ function outlineFor(content: CourseContent): CourseOutline {
       isTheoryArticle: question.contentType === 'theory',
       detailRef: {
         kind: 'content-item',
-        href: `/content/details/${content.path}/${content.id}/${question.moduleId}/${question.id}.json`,
+        href:
+          `/content/details/${content.path}/${content.id}/${question.moduleId}/` +
+          `${question.id}.json`,
         version: 'fixture',
       },
     })),
@@ -84,39 +89,63 @@ const round = item({
   title: 'Design a reservation system: 60,000 seats',
   practiceFormat: 'design',
 } as Partial<InterviewQuestion>);
-const roundsCourse = course('design-rounds', 'blaze', [round], [
-  {
-    id: 'reservation-round',
-    title: 'Reservation System',
-    description: 'A round.',
-    theoryModuleId: 'reservation-round',
-    practiceModuleId: 'reservation-round',
-    card: {
-      summary: 'A 45-minute round.',
-      scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
-      sceneAlt: 'Two fans tap the same seat.',
+const roundsCourse = course(
+  'design-rounds',
+  'blaze',
+  [round],
+  [
+    {
+      id: 'reservation-round',
+      title: 'Reservation System',
+      description: 'A round.',
+      theoryModuleId: 'reservation-round',
+      practiceModuleId: 'reservation-round',
+      card: {
+        summary: 'A 45-minute round.',
+        scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
+        sceneAlt: 'Two fans tap the same seat.',
+      },
     },
-  },
-]);
+  ],
+);
 
-const lesson = item({ id: 'spring-boot-config-guide', moduleId: 'configuration', title: 'Configuration', contentType: 'theory' });
-const practice = item({ id: 'spring-boot-config-1', moduleId: 'configuration-practice', order: 2, title: 'Why profiles?' });
-const growCourse = course('spring-boot', 'grow', [lesson, practice], [
-  {
-    id: 'configuration',
-    title: 'Configuration',
-    description: 'Config.',
-    theoryModuleId: 'configuration',
-    practiceModuleId: 'configuration-practice',
-  },
+const lesson = item({
+  id: 'spring-boot-config-guide',
+  moduleId: 'configuration',
+  title: 'Configuration',
+  contentType: 'theory',
+});
+const practice = item({
+  id: 'spring-boot-config-1',
+  moduleId: 'configuration-practice',
+  order: 2,
+  title: 'Why profiles?',
+});
+const growCourse = course(
+  'spring-boot',
+  'grow',
+  [lesson, practice],
+  [
+    {
+      id: 'configuration',
+      title: 'Configuration',
+      description: 'Config.',
+      theoryModuleId: 'configuration',
+      practiceModuleId: 'configuration-practice',
+    },
+  ],
+);
+const tileCourse = course('legacy-tiles', 'grow', [
+  item({ id: 'legacy-question', moduleId: 'basics' }),
 ]);
-const tileCourse = course('legacy-tiles', 'grow', [item({ id: 'legacy-question', moduleId: 'basics' })]);
 
 describe('Question unit scene header', () => {
   const courses = new Map([roundsCourse, growCourse, tileCourse].map((entry) => [entry.id, entry]));
   const content = {
     getCatalog: vi.fn(() => of([...courses.values()].map(({ id, title }) => ({ id, title })))),
-    getCourseOutline: vi.fn((_: string, courseId: string) => of(outlineFor(courses.get(courseId)!))),
+    getCourseOutline: vi.fn((_: string, courseId: string) =>
+      of(outlineFor(courses.get(courseId)!)),
+    ),
     getContentItem: vi.fn((summary: { id: string }) => {
       for (const entry of courses.values()) {
         const found = entry.questions.find(({ id }) => id === summary.id);
@@ -149,38 +178,43 @@ describe('Question unit scene header', () => {
     return harness.routeNativeElement!;
   }
 
-  it('shows the Design Round unit card scene with its authored description beside the title', async () => {
-    const root = await open('/blaze/design-rounds/design-rounds-reservation-design');
+  it(
+    'shows the Design Round unit card scene with its authored description beside the ' + 'title',
+    async () => {
+      const root = await open('/blaze/design-rounds/design-rounds-reservation-design');
 
-    const block = root.querySelector('.reader-title-block') as HTMLElement;
-    expect(block.classList).toContain('has-unit-scene');
-    const scene = block.querySelector('app-card-scene.reader-unit-scene') as HTMLElement;
-    expect(content.getCardScene).toHaveBeenCalledWith(
-      '/content/blaze/design-systems/visuals/cards/reservation.svg',
-    );
-    expect(scene.getAttribute('aria-hidden')).toBeNull();
-    expect(scene.querySelector('.la-card-scene')?.getAttribute('aria-label')).toBe(
-      'Two fans tap the same seat.',
-    );
-    expect(scene.querySelector('svg rect.unit-art')).not.toBeNull();
-    // The scene comes before the title in the DOM so phones stack it above the heading.
-    const title = block.querySelector('h1') as HTMLElement;
-    expect(scene.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
+      const block = root.querySelector('.reader-title-block') as HTMLElement;
+      expect(block.classList).toContain('has-unit-scene');
+      const scene = block.querySelector('app-card-scene.reader-unit-scene') as HTMLElement;
+      expect(content.getCardScene).toHaveBeenCalledWith(
+        '/content/blaze/design-systems/visuals/cards/reservation.svg',
+      );
+      expect(scene.getAttribute('aria-hidden')).toBeNull();
+      expect(scene.querySelector('.la-card-scene')?.getAttribute('aria-label')).toBe(
+        'Two fans tap the same seat.',
+      );
+      expect(scene.querySelector('svg rect.unit-art')).not.toBeNull();
+      // The scene comes before the title in the DOM so phones stack it above the heading.
+      const title = block.querySelector('h1') as HTMLElement;
+      expect(scene.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    },
+  );
 
   it.each(['/grow/spring-boot/spring-boot-config-guide', '/grow/spring-boot/spring-boot-config-1'])(
     'uses the conventional unit scene, decorative, for lessons and practice of the same unit (%s)',
     async (url) => {
       const root = await open(url);
       const scene = root.querySelector('app-card-scene.reader-unit-scene') as HTMLElement;
-      expect(sceneAssets.get).toHaveBeenCalledWith('/assets/scenes/units/grow/spring-boot/configuration.svg');
+      expect(sceneAssets.get).toHaveBeenCalledWith(
+        '/assets/scenes/units/grow/spring-boot/configuration.svg',
+      );
       expect(scene.getAttribute('aria-hidden')).toBe('true');
       expect(scene.classList).not.toContain('la-card-scene-missing');
       expect(scene.querySelector('svg rect.unit-art')).not.toBeNull();
     },
   );
 
-  it('renders nothing, not an empty box or initials, when the unit scene file is missing', async () => {
+  it('renders nothing, no empty box or initials, when the unit scene file is missing', async () => {
     sceneAssets.get.mockReturnValue(throwError(() => new Error('404')));
     const root = await open('/grow/spring-boot/spring-boot-config-guide');
 

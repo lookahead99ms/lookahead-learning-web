@@ -10,8 +10,9 @@ export interface DeliveryPlanWrite {
 }
 
 /**
- * DLV-971 inbox sync: what the Domain did with an uploaded or already-stored inbox file. `synced` false leaves the plan
- * as it was and `reason` says why (for example "no inbox file"); `counts` is filled when a merge ran.
+ * DLV-971 inbox sync: what the Domain did with an uploaded or already-stored inbox file. `synced`
+ * false leaves the plan as it was and `reason` says why (for example "no inbox file"); `counts` is
+ * filled when a merge ran.
  */
 export interface DeliveryInboxSync {
   synced: boolean;
@@ -41,7 +42,10 @@ export interface DeliveryInboxDetails {
   deletedOnDev: string[];
 }
 
-/** A failed call; `code` is the Domain's error code when the body carried one (DELIVERY_PLAN_MISSING, VERSION_CONFLICT). */
+/**
+ * A failed call; `code` is the Domain's error code when the body carried one
+ * (DELIVERY_PLAN_MISSING, VERSION_CONFLICT).
+ */
 export class DeliveryPlanApiError extends Error {
   constructor(
     readonly status: number,
@@ -59,10 +63,11 @@ export class DeliveryPlanApiError extends Error {
 }
 
 /**
- * DLV-971 runtime stores (owner, 2026-11-06): on DEV the Domain serves and edits the delivery plan from the assets
- * bucket (`delivery/plan.json`). Same session and CSRF handling as the platform reviews: the Gateway session cookie, the
- * `/auth/csrf` token on writes and an Idempotency-Key per write. Every write carries the plan version the page last saw;
- * a 409 VERSION_CONFLICT means the plan changed since, so the page reloads and the user applies the change again.
+ * DLV-971 runtime stores (owner, 2026-11-06): on DEV the Domain serves and edits the delivery plan
+ * from the assets bucket (`delivery/plan.json`). Same session and CSRF handling as the platform
+ * reviews: the Gateway session cookie, the `/auth/csrf` token on writes and an Idempotency-Key per
+ * write. Every write carries the plan version the page last saw; a 409 VERSION_CONFLICT means the
+ * plan changed since, so the page reloads and the user applies the change again.
  */
 @Injectable({ providedIn: 'root' })
 export class DeliveryDevPlanService {
@@ -101,15 +106,19 @@ export class DeliveryDevPlanService {
   }
 
   /**
-   * Sends the local delivery-plan.json as written (`PUT /delivery/plan/inbox`); the Domain stores it as the inbox and
-   * merges it at once. 422 DELIVERY_INBOX_INVALID (not a plan), 422 DELIVERY_INBOX_BASE_UNKNOWN (its base version is
-   * neither the DEV plan nor an archived one), 413 DELIVERY_PLAN_TOO_LARGE.
+   * Sends the local delivery-plan.json as written (`PUT /delivery/plan/inbox`); the Domain stores
+   * it as the inbox and merges it at once. 422 DELIVERY_INBOX_INVALID (not a plan), 422
+   * DELIVERY_INBOX_BASE_UNKNOWN (its base version is neither the DEV plan nor an archived one), 413
+   * DELIVERY_PLAN_TOO_LARGE.
    */
   uploadInbox(fileText: string): Promise<DeliveryInboxSync> {
     return this.send('/delivery/plan/inbox', 'PUT', fileText);
   }
 
-  /** Merges an inbox file already placed in `delivery/inbox/` on DEV (`synced: false, reason: "no inbox file"` when none). */
+  /**
+   * Merges an inbox file already placed in `delivery/inbox/` on DEV (`synced: false, reason: "no
+   * inbox file"` when none).
+   */
   syncInbox(): Promise<DeliveryInboxSync> {
     return this.send('/delivery/plan/inbox/sync', 'POST');
   }
@@ -118,7 +127,10 @@ export class DeliveryDevPlanService {
     return this.send(path, method, JSON.stringify(body));
   }
 
-  /** Every write: the CSRF token and an Idempotency-Key; the body, when there is one, goes as JSON text verbatim. */
+  /**
+   * Every write: the CSRF token and an Idempotency-Key; the body, when there is one, goes as JSON
+   * text verbatim.
+   */
   private async send<T>(path: string, method: 'POST' | 'PUT', body?: string): Promise<T> {
     return this.json(path, {
       method,

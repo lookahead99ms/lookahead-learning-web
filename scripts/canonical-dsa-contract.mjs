@@ -115,22 +115,34 @@ export function approachFamilyErrors(problem, problems) {
   const family = problem.approachFamily;
   const match = approachId.exec(problem.id);
   if (!family) {
-    if (match && problems.has(match[1])) errors.push('an Approach-N problem must carry approachFamily');
+    if (match && problems.has(match[1]))
+      errors.push('an Approach-N problem must carry approachFamily');
     return errors;
   }
-  if (!Number.isInteger(family.approach) || family.approach < 1 || !Array.isArray(family.siblings) || !family.siblings.length) {
+  if (
+    !Number.isInteger(family.approach) ||
+    family.approach < 1 ||
+    !Array.isArray(family.siblings) ||
+    !family.siblings.length
+  ) {
     return ['approachFamily needs an approach number and at least one sibling'];
   }
   const best = problems.get(family.bestProblemId);
   if (!best) return [`approachFamily names an unknown best problem ${family.bestProblemId}`];
-  if (best.approachFamily?.approach !== 1) errors.push(`best problem ${family.bestProblemId} must be approach 1`);
-  if (family.approach === 1 && problem.id !== family.bestProblemId) errors.push('approach 1 must be the best problem');
-  if (family.approach >= 2 && problem.id !== `${family.bestProblemId}-approach-${family.approach}`) {
+  if (best.approachFamily?.approach !== 1)
+    errors.push(`best problem ${family.bestProblemId} must be approach 1`);
+  if (family.approach === 1 && problem.id !== family.bestProblemId)
+    errors.push('approach 1 must be the best problem');
+  if (
+    family.approach >= 2 &&
+    problem.id !== `${family.bestProblemId}-approach-${family.approach}`
+  ) {
     errors.push(`id must be ${family.bestProblemId}-approach-${family.approach}`);
   }
   // User decision (2026-10-16): the original carries its number too, "<Title> (Approach-1)".
   const base = String(best.title ?? '').replace(/ \(Approach-\d+\)$/, '');
-  if (best.title !== `${base} (Approach-1)`) errors.push(`best problem ${family.bestProblemId} must be titled "${base} (Approach-1)"`);
+  if (best.title !== `${base} (Approach-1)`)
+    errors.push(`best problem ${family.bestProblemId} must be titled "${base} (Approach-1)"`);
   if (family.approach >= 2 && problem.title !== `${base} (Approach-${family.approach})`) {
     errors.push(`title must be "${base} (Approach-${family.approach})"`);
   }
@@ -144,24 +156,42 @@ export function approachFamilyErrors(problem, problems) {
     members.set(sibling.problemId, sibling.approach);
     const placement = primaryPracticePlacement(target);
     if (sibling.title !== target.title) errors.push(`sibling ${sibling.problemId} title is stale`);
-    if (!placement || sibling.path !== placement.path || sibling.courseId !== placement.courseId || sibling.questionId !== placement.questionId) {
+    if (
+      !placement ||
+      sibling.path !== placement.path ||
+      sibling.courseId !== placement.courseId ||
+      sibling.questionId !== placement.questionId
+    ) {
       errors.push(`sibling ${sibling.problemId} route is not its practice placement`);
     }
-    if (target.approachFamily?.approach !== sibling.approach) errors.push(`sibling ${sibling.problemId} approach number is stale`);
-    if (target.approachFamily?.bestProblemId !== family.bestProblemId) errors.push(`sibling ${sibling.problemId} belongs to another family`);
-    if (!sibling.pattern?.trim() || !sibling.whenToPrefer?.trim()) errors.push(`sibling ${sibling.problemId} needs pattern and whenToPrefer`);
-    if (sibling.complexity?.time !== target.complexity?.time || sibling.complexity?.space !== target.complexity?.space) {
+    if (target.approachFamily?.approach !== sibling.approach)
+      errors.push(`sibling ${sibling.problemId} approach number is stale`);
+    if (target.approachFamily?.bestProblemId !== family.bestProblemId)
+      errors.push(`sibling ${sibling.problemId} belongs to another family`);
+    if (!sibling.pattern?.trim() || !sibling.whenToPrefer?.trim())
+      errors.push(`sibling ${sibling.problemId} needs pattern and whenToPrefer`);
+    if (
+      sibling.complexity?.time !== target.complexity?.time ||
+      sibling.complexity?.space !== target.complexity?.space
+    ) {
       errors.push(`sibling ${sibling.problemId} complexity copy is stale`);
     }
-    const theirs = new Set([sibling.problemId, ...(target.approachFamily?.siblings ?? []).map((item) => item.problemId)]);
-    if (theirs.size !== family.siblings.length + 1 || ![problem.id, ...family.siblings.map((item) => item.problemId)].every((id) => theirs.has(id))) {
+    const theirs = new Set([
+      sibling.problemId,
+      ...(target.approachFamily?.siblings ?? []).map((item) => item.problemId),
+    ]);
+    if (
+      theirs.size !== family.siblings.length + 1 ||
+      ![problem.id, ...family.siblings.map((item) => item.problemId)].every((id) => theirs.has(id))
+    ) {
       errors.push(`sibling ${sibling.problemId} lists a different member set`);
     }
   }
   const numbers = [...members.values()].sort((left, right) => left - right);
-  if (numbers.some((number, index) => number !== index + 1)) errors.push(`approach numbers ${numbers.join(', ')} must run 1..${numbers.length}`);
-  // The bound a text states: the first O(...) term after the last "=", with ×, · and a lone x as "*"
-  // ("O(26n) = O(n)" and "O(n)" are one bound; "O(R × C)" and "O(R x C)" too).
+  if (numbers.some((number, index) => number !== index + 1))
+    errors.push(`approach numbers ${numbers.join(', ')} must run 1..${numbers.length}`);
+  // The bound a text states: the first O(...) term after the last "=", with ×, · and a lone x as
+  // "*" ("O(26n) = O(n)" and "O(n)" are one bound; "O(R × C)" and "O(R x C)" too).
   const bound = (value) => {
     const text = String(value ?? '')
       .replace(/(?<=[\w)])\s*[×·]\s*(?=[\w(])/g, '*')
@@ -171,8 +201,11 @@ export function approachFamilyErrors(problem, problems) {
     const tail = text.slice(text.lastIndexOf('=') + 1);
     return /o\((?:[^()]|\([^()]*\))*\)/.exec(tail)?.[0] ?? tail;
   };
-  if (bound(problem.complexity?.time) !== bound(best.complexity?.time) || bound(problem.complexity?.space) !== bound(best.complexity?.space)) {
-    errors.push('only approaches with the best approach\'s time and space may join a family');
+  if (
+    bound(problem.complexity?.time) !== bound(best.complexity?.time) ||
+    bound(problem.complexity?.space) !== bound(best.complexity?.space)
+  ) {
+    errors.push("only approaches with the best approach's time and space may join a family");
   }
   return errors;
 }

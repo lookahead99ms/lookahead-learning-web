@@ -12,16 +12,23 @@ export interface UsableTestAccount {
   accountId: string;
   username: string;
   displayName: string;
-  /** Always empty since 2026-11-06 (owner): test accounts are learners only; kept because the Domain still sends it. */
+  /**
+   * Always empty since 2026-11-06 (owner): test accounts are learners only; kept because the Domain
+   * still sends it.
+   */
   roles: string[];
   scenario: string | null;
-  /** DLV-969 (owner, 2026-11-04): who upgraded this account through an approved request; null or absent when nobody did. */
+  /**
+   * DLV-969 (owner, 2026-11-04): who upgraded this account through an approved request; null or
+   * absent when nobody did.
+   */
   upgradedBy?: SwitcherUpgrade | null;
 }
 
 /**
- * GET /auth/test-session: is this a test session, and can it go back to its staff sign-in. `holderName` is the staff name
- * this tab remembered when it switched (only ever your own name, in your own browser).
+ * GET /auth/test-session: is this a test session, and can it go back to its staff sign-in.
+ * `holderName` is the staff name this tab remembered when it switched (only ever your own name, in
+ * your own browser).
  */
 export interface TestSessionStatus {
   active: boolean;
@@ -32,9 +39,10 @@ export interface TestSessionStatus {
 const HOLDER_KEY = 'lookahead.testSession.holder';
 
 /**
- * DLV-969 (owner, 2026-11-04): staff switch to a DEV test account from the account menu and come back without signing
- * out. The Gateway keeps the staff sign-in aside while the test account is in use; the Domain decides, on every call,
- * which test accounts the person who opened DEV may use, so this only shows what it is told.
+ * DLV-969 (owner, 2026-11-04): staff switch to a DEV test account from the account menu and come
+ * back without signing out. The Gateway keeps the staff sign-in aside while the test account is in
+ * use; the Domain decides, on every call, which test accounts the person who opened DEV may use, so
+ * this only shows what it is told.
  */
 @Injectable({ providedIn: 'root' })
 export class TestSessions {
@@ -54,7 +62,11 @@ export class TestSessions {
       const answer = await this.api.request<Partial<TestSessionStatus>>('/auth/test-session');
       const active = answer?.active === true;
       if (!active) this.remember(null);
-      this.status.set({ active, canReturn: active && answer?.canReturn === true, holderName: active ? this.remembered() : null });
+      this.status.set({
+        active,
+        canReturn: active && answer?.canReturn === true,
+        holderName: active ? this.remembered() : null,
+      });
       if (this.active() && this.accounts() === null) await this.load();
     } catch {
       this.status.set(null);
@@ -81,25 +93,31 @@ export class TestSessions {
     }
   }
 
-  /** The test account in use, as the list describes it (scenario and role); null outside a test session. */
+  /**
+   * The test account in use, as the list describes it (scenario and role); null outside a test
+   * session.
+   */
   current(accountId: string | null | undefined): UsableTestAccount | null {
     if (!this.active() || !accountId) return null;
     return this.accounts()?.find((account) => account.accountId === accountId) ?? null;
   }
 
   /**
-   * Opens the platform as this test account. `next` (DLV-969, owner 2026-11-04), when it is a same-site path, is where
-   * to land instead of the Gateway's answer: Switch to Learner06 after a review goes back to the page the purchase
-   * started from.
+   * Opens the platform as this test account. `next` (DLV-969, owner 2026-11-04), when it is a
+   * same-site path, is where to land instead of the Gateway's answer: Switch to Learner06 after a
+   * review goes back to the page the purchase started from.
    */
   async use(account: UsableTestAccount, next?: string | null): Promise<void> {
     if (this.starting() || this.returning()) return;
     this.starting.set(account.accountId);
     this.error.set('');
-    // Switching from your own account: remember your name for "you are …" while the test account is in use.
+    // Switching from your own account: remember your name for "you are …" while the test account is
+    // in use.
     if (!this.active()) this.remember(this.signedIn.account()?.displayName ?? null);
     try {
-      const started = await this.api.request<{ next?: string }>('/auth/test-session', { accountId: account.accountId });
+      const started = await this.api.request<{ next?: string }>('/auth/test-session', {
+        accountId: account.accountId,
+      });
       this.go(sameSitePath(next) ?? started?.next);
     } catch (failure) {
       this.error.set(message(failure, 'The test account could not be opened. Try again.'));
@@ -108,8 +126,9 @@ export class TestSessions {
   }
 
   /**
-   * Back to the staff sign-in this test session started from; the Gateway sends the sign-in page if it expired. `next`,
-   * when it is a same-site path, overrides the Gateway's answer (Go to People and access on the DEV checkout screen lands there).
+   * Back to the staff sign-in this test session started from; the Gateway sends the sign-in page if
+   * it expired. `next`, when it is a same-site path, overrides the Gateway's answer (Go to People
+   * and access on the DEV checkout screen lands there).
    */
   async back(next?: string | null): Promise<void> {
     if (this.returning() || this.starting()) return;
@@ -149,12 +168,14 @@ export class TestSessions {
   }
 }
 
-
 function message(failure: unknown, fallback: string): string {
   return failure instanceof Error && failure.message ? failure.message : fallback;
 }
 
-/** The plan word a learner scenario starts with ("Learn · active · …" → "Learn"); null for a created account. */
+/**
+ * The plan word a learner scenario starts with ("Learn · active · …" → "Learn"); null for a created
+ * account.
+ */
 export function scenarioPlan(account: UsableTestAccount): string | null {
   if (!account.scenario) return null;
   const first = account.scenario.split(' · ')[0]?.trim();

@@ -10,9 +10,14 @@ export interface PathTagline {
 /** The plain word shown after the drawn sparkles icon (no pill, no star glyph). */
 export const AI_LABEL = 'AI';
 
-/** Sparkles icon path for a viewBox of "-1 -1 26 26": one large four-point sparkle, two small ones. */
+/**
+ * Sparkles icon path for a viewBox of "-1 -1 26 26": one large four-point sparkle, two small ones.
+ */
 export const AI_SPARKLES_PATH =
-  'M10.08 3.84 Q11.69 12.31 20.16 13.92 Q11.69 15.53 10.08 24 Q8.47 15.53 0 13.92 Q8.47 12.31 10.08 3.84Z M20.64 -0.24 Q21.29 3.19 24.72 3.84 Q21.29 4.49 20.64 7.92 Q19.99 4.49 16.56 3.84 Q19.99 3.19 20.64 -0.24Z M21.6 18 Q22.02 20.22 24.24 20.64 Q22.02 21.06 21.6 23.28 Q21.18 21.06 18.96 20.64 Q21.18 20.22 21.6 18Z';
+  'M10.08 3.84 Q11.69 12.31 20.16 13.92 Q11.69 15.53 10.08 24 Q8.47 15.53 0 13.92 Q8.47 ' +
+  '12.31 10.08 3.84Z M20.64 -0.24 Q21.29 3.19 24.72 3.84 Q21.29 4.49 20.64 7.92 Q19.99 ' +
+  '4.49 16.56 3.84 Q19.99 3.19 20.64 -0.24Z M21.6 18 Q22.02 20.22 24.24 20.64 Q22.02 ' +
+  '21.06 21.6 23.28 Q21.18 21.06 18.96 20.64 Q21.18 20.22 21.6 18Z';
 
 export const PATH_TAGLINES = {
   learn: { headline: 'Learn to solve it on your own.', ai: 'hints,', you: 'you think.' },
@@ -21,7 +26,7 @@ export const PATH_TAGLINES = {
     ai: 'writes with you,',
     you: 'you run it.',
   },
-  'blaze': {
+  blaze: {
     headline: 'Blaze ahead to design what the team delivers.',
     ai: 'joins the system,',
     you: 'you choose how.',

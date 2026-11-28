@@ -37,8 +37,14 @@ describe('retired content routes', () => {
 
   it('keeps query parameters, repeated values and the fragment', () => {
     expect(
-      target('/learn/algorithmic-patterns/algorithmic-monotonic-queue?mode=surprise&tag=a&tag=b#walkthrough'),
-    ).toBe('/learn/algorithmic-patterns/algorithmic-monotonic-stack?mode=surprise&tag=a&tag=b#walkthrough');
+      target(
+        '/learn/algorithmic-patterns/algorithmic-monotonic-queue?mode=surprise&tag=a' +
+          '&tag=b#walkthrough',
+      ),
+    ).toBe(
+      '/learn/algorithmic-patterns/algorithmic-monotonic-stack?mode=surprise&tag=a' +
+        '&tag=b#walkthrough',
+    );
   });
 
   it.each([
@@ -64,7 +70,10 @@ describe('retired content routes', () => {
     const dynamicProgramming = patternContextToken('algorithmic-patterns:dynamic-programming');
     const linkedLists = patternContextToken('algorithmic-patterns:linked-lists');
     expect(
-      target('/learn/hands-on-dsa?pattern=algorithmic-patterns:two-dimensional-dp&difficulty=Advanced&page=2'),
+      target(
+        '/learn/hands-on-dsa?pattern=algorithmic-patterns:two-dimensional-dp' +
+          '&difficulty=Advanced&page=2',
+      ),
     ).toBe(`/learn/hands-on-dsa?pattern=${dynamicProgramming}&difficulty=Advanced&page=2`);
     expect(
       target('/learn/algorithmic-patterns/some-problem?pattern=algorithmic-patterns:list-reversal'),
@@ -89,9 +98,9 @@ describe('retired content routes', () => {
     const current = patternContextToken('demo-course:current-unit');
 
     it('rewrites an old readable id to the opaque id and keeps every other parameter', () => {
-      expect(at('/learn/demo-course/demo-problem?pattern=demo-course:current-unit&mode=surprise')).toBe(
-        `/learn/demo-course/demo-problem?pattern=${current}&mode=surprise`,
-      );
+      expect(
+        at('/learn/demo-course/demo-problem?pattern=demo-course:current-unit&mode=surprise'),
+      ).toBe(`/learn/demo-course/demo-problem?pattern=${current}&mode=surprise`);
       expect(at('/learn/hands-on-dsa?view=groups&pattern=demo-course:current-unit')).toBe(
         `/learn/hands-on-dsa?view=groups&pattern=${current}`,
       );
@@ -116,9 +125,10 @@ describe('retired content routes', () => {
 
     it('rewrites the pattern inside returnTo, so the problem URL never names it', () => {
       const result = at(
-        `/learn/demo-course/demo-problem?pattern=demo-course:current-unit&returnTo=${encodeURIComponent(
-          '/learn/hands-on-dsa?view=groups&pattern=demo-course:current-unit&q=sum',
-        )}`,
+        `/learn/demo-course/demo-problem?pattern=demo-course:current-unit&` +
+          `returnTo=${encodeURIComponent(
+            '/learn/hands-on-dsa?view=groups&pattern=demo-course:current-unit&q=sum',
+          )}`,
       )!;
       expect(result).not.toContain('current-unit');
       const tree = serializer.parse(result);
@@ -129,39 +139,57 @@ describe('retired content routes', () => {
 
     it('keeps a returnTo without a pattern, or one that is not an app path, as it is', () => {
       expect(
-        at(`/learn/demo-course/demo-problem?returnTo=${encodeURIComponent('/learn/hands-on-dsa?q=sum')}`),
+        at(
+          `/learn/demo-course/demo-problem?returnTo=` +
+            `${encodeURIComponent('/learn/hands-on-dsa?q=sum')}`,
+        ),
       ).toBeNull();
       expect(
-        at(`/learn/demo-course/demo-problem?returnTo=${encodeURIComponent('https://example.test/?pattern=x:y')}`),
+        at(
+          `/learn/demo-course/demo-problem?returnTo=` +
+            `${encodeURIComponent('https://example.test/?pattern=x:y')}`,
+        ),
       ).toBeNull();
     });
 
-    it('normalises an old link in the router, records only the opaque URL and keeps it on Back/Forward', async () => {
-      TestBed.configureTestingModule({
-        providers: [
-          provideRouter([
-            { path: 'learn/:courseId/:questionId', canActivate: [retiredContentRedirect], component: Page },
-          ]),
-          provideLocationMocks(),
-        ],
-      });
-      const harness = await RouterTestingHarness.create();
-      const router = TestBed.inject(Router);
-      router.setUpLocationChangeListener();
-      const location = TestBed.inject(Location) as SpyLocation;
-      const token = patternContextToken('demo-course:current-unit');
+    it(
+      'normalises an old link in the router, records only the opaque URL and keeps it on ' +
+        'Back/Forward',
+      async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            provideRouter([
+              {
+                path: 'learn/:courseId/:questionId',
+                canActivate: [retiredContentRedirect],
+                component: Page,
+              },
+            ]),
+            provideLocationMocks(),
+          ],
+        });
+        const harness = await RouterTestingHarness.create();
+        const router = TestBed.inject(Router);
+        router.setUpLocationChangeListener();
+        const location = TestBed.inject(Location) as SpyLocation;
+        const token = patternContextToken('demo-course:current-unit');
 
-      await harness.navigateByUrl('/learn/demo-course/first?pattern=demo-course:current-unit');
-      expect(router.url).toBe(`/learn/demo-course/first?pattern=${token}`);
-      await harness.navigateByUrl(`/learn/demo-course/second?pattern=${token}`);
-      expect(location.urlChanges.join(' ')).not.toContain('current-unit');
+        await harness.navigateByUrl('/learn/demo-course/first?pattern=demo-course:current-unit');
+        expect(router.url).toBe(`/learn/demo-course/first?pattern=${token}`);
+        await harness.navigateByUrl(`/learn/demo-course/second?pattern=${token}`);
+        expect(location.urlChanges.join(' ')).not.toContain('current-unit');
 
-      location.back();
-      await vi.waitFor(() => expect(router.url).toBe(`/learn/demo-course/first?pattern=${token}`));
-      location.forward();
-      await vi.waitFor(() => expect(router.url).toBe(`/learn/demo-course/second?pattern=${token}`));
-      expect(location.path()).toBe(`/learn/demo-course/second?pattern=${token}`);
-    });
+        location.back();
+        await vi.waitFor(() =>
+          expect(router.url).toBe(`/learn/demo-course/first?pattern=${token}`),
+        );
+        location.forward();
+        await vi.waitFor(() =>
+          expect(router.url).toBe(`/learn/demo-course/second?pattern=${token}`),
+        );
+        expect(location.path()).toBe(`/learn/demo-course/second?pattern=${token}`);
+      },
+    );
 
     it('rewrites every value of a repeated pattern parameter', () => {
       const tree = serializer.parse(
@@ -176,8 +204,14 @@ describe('retired content routes', () => {
 
   it('moves retired Search course filters', () => {
     expect(
-      target('/search?kind=practice&path=learn&course=algorithmic-patterns&module=practice-divide-and-conquer&unit=divide-conquer'),
-    ).toBe('/search?kind=practice&path=learn&course=algorithmic-patterns&module=practice-recursion-recurrence&unit=recursion');
+      target(
+        '/search?kind=practice&path=learn&course=algorithmic-patterns' +
+          '&module=practice-divide-and-conquer&unit=divide-conquer',
+      ),
+    ).toBe(
+      '/search?kind=practice&path=learn&course=algorithmic-patterns' +
+        '&module=practice-recursion-recurrence&unit=recursion',
+    );
     expect(target('/search?course=another-course&module=practice-divide-and-conquer')).toBeNull();
   });
 
@@ -267,7 +301,10 @@ describe('retired content routes', () => {
     const oop = RETIRED_COURSE_IDS.filter(
       (entry) => entry.path === 'learn' && entry.courseId === 'oop',
     );
-    expect(oop.map((entry) => entry.targetCourseId)).toEqual(['core-java', 'solid-design-patterns']);
+    expect(oop.map((entry) => entry.targetCourseId)).toEqual([
+      'core-java',
+      'solid-design-patterns',
+    ]);
     const ids = oop.flatMap((entry) => Object.keys(entry.lessons));
     expect(ids).toEqual(['java-pass-by-value', 'singleton-pattern']);
     expect(new Set(ids).size).toBe(ids.length);
@@ -343,7 +380,9 @@ describe('retired content routes', () => {
     expect(target('/grow/aws-cloud/aws-network-01?from=search#answer')).toBe(
       '/grow/aws-cloud/aws-cloud-networking-guide?from=search#answer',
     );
-    expect(target('/grow/aws-cloud/aws-compute-07')).toBe('/grow/aws-cloud/aws-cloud-compute-guide');
+    expect(target('/grow/aws-cloud/aws-compute-07')).toBe(
+      '/grow/aws-cloud/aws-cloud-compute-guide',
+    );
     expect(target('/grow/aws-cloud/aws-security-16')).toBe(
       '/grow/aws-cloud/aws-cloud-iam-security-guide',
     );
@@ -373,7 +412,11 @@ describe('retired content routes', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'grow/:courseId/:questionId', canActivate: [retiredContentRedirect], component: Page },
+          {
+            path: 'grow/:courseId/:questionId',
+            canActivate: [retiredContentRedirect],
+            component: Page,
+          },
         ]),
       ],
     });
@@ -407,7 +450,11 @@ describe('retired content routes', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'learn/:courseId/:questionId', canActivate: [retiredContentRedirect], component: Page },
+          {
+            path: 'learn/:courseId/:questionId',
+            canActivate: [retiredContentRedirect],
+            component: Page,
+          },
           {
             path: 'learn/:courseId',
             canActivate: [retiredContentRedirect],
@@ -420,7 +467,9 @@ describe('retired content routes', () => {
     const harness = await RouterTestingHarness.create();
     const router = TestBed.inject(Router);
 
-    await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-difference-arrays?from=plan#check');
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-difference-arrays?from=plan#check',
+    );
     expect(router.url).toBe('/learn/algorithmic-patterns/algorithmic-prefix-state?from=plan#check');
 
     await harness.navigateByUrl('/learn/algorithmic-patterns');

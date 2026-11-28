@@ -2,21 +2,26 @@ import { Component, input } from '@angular/core';
 import { FoundationLessonV1, LearningScenario } from '../../content/content.models';
 
 /**
- * The Scenario card that opens a system lesson: the lesson in one line, why the subject and why it matters,
- * the learning scenario and what this lesson does in it, then the outcomes (user review, 2026-10-05: stacked,
- * one below the other). The host is the lesson's `section.lesson-section.scenario-card`.
+ * The Scenario card that opens a system lesson: the lesson in one line, why the subject and why it
+ * matters, the learning scenario and what this lesson does in it, then the outcomes (user review,
+ * 2026-10-05: stacked, one below the other). The host is the lesson's
+ * `section.lesson-section.scenario-card`.
  */
 @Component({
   selector: 'section[appLessonScenarioCard]',
   template: `
-    <p class="section-label stage-label"><span>{{ stageLabel() }}</span>Scenario</p>
+    <p class="section-label stage-label"
+      ><span>{{ stageLabel() }}</span
+      >Scenario</p
+    >
     <div class="lesson-one-line">
       <span class="one-line-label">In one line</span>
       <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
     </div>
     @if (lesson().learningScenario; as scenario) {
-      <!-- Order (user review, 2026-10-05): why the subject and why it matters, then the scenario and what
-           this lesson does in it (problems and their fixes), then the outcomes. Stacked, one below the other. -->
+      <!-- Order (user review, 2026-10-05): why the subject and why it matters, then the scenario
+           and what this lesson does in it (problems and their fixes), then the outcomes. Stacked,
+           one below the other. -->
       @if (scenario.subject && scenario.whySubject) {
         <div class="scenario-block">
           <h3>Why {{ scenario.subject }}?</h3>
@@ -55,14 +60,17 @@ import { FoundationLessonV1, LearningScenario } from '../../content/content.mode
         }
       </ul>
       @if (lesson().learningFlow; as flow) {
-        <p><strong>Why it matters:</strong>{{ ' ' }}<span class="rich" [innerHTML]="flow.whyItMatters"></span></p>
+        <p
+          ><strong>Why it matters:</strong>{{ ' '
+          }}<span class="rich" [innerHTML]="flow.whyItMatters"></span
+        ></p>
       }
     }
   `,
   styles: [
     `
-      /* The lesson card parts this card shares with the others (stage label, headings, text, lists),
-         as the lesson shell sets them. */
+      /* The lesson card parts this card shares with the others (stage label, headings, text,
+         lists), as the lesson shell sets them. */
       .section-label {
         display: inline-flex;
         align-items: center;
@@ -201,10 +209,15 @@ export class LessonScenarioCard {
   readonly stageLabel = input.required<string>();
 
   protected brandList(brands: string[]): string {
-    return brands.length < 2 ? brands.join('') : `${brands.slice(0, -1).join(', ')} or ${brands.at(-1)}`;
+    return brands.length < 2
+      ? brands.join('')
+      : `${brands.slice(0, -1).join(', ')} or ${brands.at(-1)}`;
   }
 
-  /** "This lesson: auto-configuration in a currency conversion service", or the older "Why this scenario?". */
+  /**
+   * "This lesson: auto-configuration in a currency conversion service", or the older "Why this
+   * scenario?".
+   */
   protected scenarioHeading(scenario: LearningScenario): string {
     if (!scenario.focus) return 'Why this scenario?';
     const system = scenario.system.replace(/^(A|An|The) /, (word) => word.toLowerCase());

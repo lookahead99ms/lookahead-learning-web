@@ -19,7 +19,8 @@ export class Learn {
     title: 'Learn',
     highlight: 'Build durable engineering foundations.',
     description:
-      'Master languages, data structures, algorithms, object design, and engineering tools before production and architecture decisions demand them.',
+      'Master languages, data structures, algorithms, object design, and engineering ' +
+      'tools before production and architecture decisions demand them.',
     actionsLabel: 'Learn starting points',
     primaryAction: {
       label: 'Choose a starting foundation',

@@ -39,7 +39,17 @@ describe('Option B story model', () => {
     expect(formatValue(null, 'go')).toBe('nil');
     expect(formatValue(true, 'python')).toBe('True');
     expect(formatValue(true, 'go')).toBe('true');
-    expect(formatValue({ $map: [[2, 0], [7, 1]] }, 'java')).toBe('{2: 0, 7: 1}');
+    expect(
+      formatValue(
+        {
+          $map: [
+            [2, 0],
+            [7, 1],
+          ],
+        },
+        'java',
+      ),
+    ).toBe('{2: 0, 7: 1}');
     expect(formatValue({ $set: [] }, 'java')).toBe('empty set');
     expect(formatValue({ $tuple: [1, 'a'] }, 'python')).toBe('(1, "a")');
     expect(formatValue({ $num: 'inf' }, 'python')).toBe('∞');
@@ -53,7 +63,14 @@ describe('Option B story model', () => {
     expect(formatValue({ $ref: 't1' }, 'python', others)).toBe('TreeNode(9)');
     expect(formatValue({ $ref: 'e1' }, 'go', others)).toBe('Entry(1)');
     expect(formatValue(undefined, 'java')).toBe('—');
-    expect(formatValue(Array.from({ length: 200 }, (_, i) => i), 'java', {}, 20)).toHaveLength(20);
+    expect(
+      formatValue(
+        Array.from({ length: 200 }, (_, i) => i),
+        'java',
+        {},
+        20,
+      ),
+    ).toHaveLength(20);
   });
 
   it('resolves mark selectors with the checker grammar', () => {
@@ -112,9 +129,18 @@ describe('Option B story model', () => {
     const story = twoSumStory();
     const first = variableRows(story, 0, 'python');
     expect(first.map((row) => row.name)).toEqual([
-      'values', 'target', 'seen', 'index', 'value', 'need', 'result',
+      'values',
+      'target',
+      'seen',
+      'index',
+      'value',
+      'need',
+      'result',
     ]);
-    expect(first.find((row) => row.name === 'index')).toMatchObject({ value: 'not set yet', unset: true });
+    expect(first.find((row) => row.name === 'index')).toMatchObject({
+      value: 'not set yet',
+      unset: true,
+    });
     expect(first.find((row) => row.name === 'result')?.value).toBe('not returned yet');
     const third = variableRows(story, 3, 'python');
     expect(third.filter((row) => row.changed).map((row) => row.name)).toEqual(['seen']);
@@ -136,7 +162,14 @@ describe('Option B story model', () => {
   it('maps each step to the lines that ran in every language', () => {
     const story = twoSumStory();
     const problem = twoSumProblem();
-    expect(stepRanges(story)).toEqual([[0, 0], [1, 3], [4, 4], [5, 5], [6, 9], [10, 10]]);
+    expect(stepRanges(story)).toEqual([
+      [0, 0],
+      [1, 3],
+      [4, 4],
+      [5, 5],
+      [6, 9],
+      [10, 10],
+    ]);
     expect(languageLines(problem, story, 'python')[1]).toEqual({
       current: 'py-5',
       ran: ['py-3', 'py-4', 'py-5'],
@@ -197,22 +230,27 @@ describe('Option B node and frame views', () => {
     steps: [firstStep, listStep],
   } as DsaStoryV1;
 
-  it('frames a node drawing so wide labels are never cut, and never shrinks text below 12 px', () => {
-    const model = linkedListModel(listStory.views[0], listStory, 0, 'java');
-    const plain = diagramFrame(model);
-    expect(plain.viewBox.split(' ').map(Number).slice(0, 2)).toEqual([0, -34]);
-    // A long pointer name over the first node widens the box to the left.
-    const named = diagramFrame({
-      ...model,
-      nodes: model.nodes.map((node, index) => (index ? node : { ...node, pointers: ['greater_dummy'] })),
-    });
-    const [left, , width] = named.viewBox.split(' ').map(Number);
-    expect(left).toBeLessThan(0);
-    expect(left).toBeLessThanOrEqual(40 - ('greater_dummy'.length * 14 * 0.62) / 2);
-    expect(width).toBeGreaterThan(plain.width);
-    // 14 px labels at no less than 12/14 scale.
-    expect(named.min).toBe(Math.ceil((named.width * 12) / 14));
-  });
+  it(
+    'frames a node drawing so wide labels are never cut, and never shrinks text below 12 ' + 'px',
+    () => {
+      const model = linkedListModel(listStory.views[0], listStory, 0, 'java');
+      const plain = diagramFrame(model);
+      expect(plain.viewBox.split(' ').map(Number).slice(0, 2)).toEqual([0, -34]);
+      // A long pointer name over the first node widens the box to the left.
+      const named = diagramFrame({
+        ...model,
+        nodes: model.nodes.map((node, index) =>
+          index ? node : { ...node, pointers: ['greater_dummy'] },
+        ),
+      });
+      const [left, , width] = named.viewBox.split(' ').map(Number);
+      expect(left).toBeLessThan(0);
+      expect(left).toBeLessThanOrEqual(40 - ('greater_dummy'.length * 14 * 0.62) / 2);
+      expect(width).toBeGreaterThan(plain.width);
+      // 14 px labels at no less than 12/14 scale.
+      expect(named.min).toBe(Math.ceil((named.width * 12) / 14));
+    },
+  );
 
   it('keeps list nodes in place and follows the real next fields', () => {
     const start = linkedListModel(listStory.views[0], listStory, 0, 'java');
@@ -228,7 +266,12 @@ describe('Option B node and frame views', () => {
   it('draws a reversed link as a straight left arrow and names list pointers per language', () => {
     const flipped: StoryStep = {
       ...listStep,
-      state: { head: { $ref: 'n1' }, previous: { $ref: 'n2' }, current: { $ref: 'n3' }, nxt: { $ref: 'n3' } },
+      state: {
+        head: { $ref: 'n1' },
+        previous: { $ref: 'n2' },
+        current: { $ref: 'n3' },
+        nxt: { $ref: 'n3' },
+      },
       heap: {
         n1: { $type: 'ListNode', val: 1, next: null },
         n2: { $type: 'ListNode', val: 2, next: { $ref: 'n1' } },
@@ -248,8 +291,16 @@ describe('Option B node and frame views', () => {
     expect(java.nodes[2].pointers).toEqual(['next']);
     expect(linkedListModel(story.views[0], story, 1, 'python').nodes[2].pointers).toEqual(['nxt']);
     // Two nodes that point at each other keep a curve, so the arrows never overlap.
-    const loop = { ...flipped, heap: { ...flipped.heap, n1: { $type: 'ListNode', val: 1, next: { $ref: 'n2' } } } };
-    const cycle = linkedListModel(story.views[0], { ...story, steps: [firstStep, loop] }, 1, 'java');
+    const loop = {
+      ...flipped,
+      heap: { ...flipped.heap, n1: { $type: 'ListNode', val: 1, next: { $ref: 'n2' } } },
+    };
+    const cycle = linkedListModel(
+      story.views[0],
+      { ...story, steps: [firstStep, loop] },
+      1,
+      'java',
+    );
     expect(cycle.edges.find((edge) => edge.from === 'n2')?.path).toMatch(/^M124 92C/);
   });
 
@@ -268,7 +319,13 @@ describe('Option B node and frame views', () => {
       },
       marks: { tree: { active: ['@root'] } },
     };
-    const view = { id: 'tree', kind: 'tree' as const, title: 'tree', var: 'root', pointers: [{ var: 'root' }] };
+    const view = {
+      id: 'tree',
+      kind: 'tree' as const,
+      title: 'tree',
+      var: 'root',
+      pointers: [{ var: 'root' }],
+    };
     const model = treeModel(view, step, 'java');
     expect(model.nodes.map((node) => node.text)).toEqual(['9', '3', '20']);
     expect(model.nodes[0]).toMatchObject({ tones: ['active'], pointers: ['root'] });
@@ -287,8 +344,17 @@ describe('Option B node and frame views', () => {
       say: '',
       idea: 0,
       state: {
-        graph: { $map: [[0, [1, 2]], [1, [0]], [2, [0]]] },
-        grid: [[1, 0], [0, 1]],
+        graph: {
+          $map: [
+            [0, [1, 2]],
+            [1, [0]],
+            [2, [0]],
+          ],
+        },
+        grid: [
+          [1, 0],
+          [0, 1],
+        ],
         r: 1,
         c: 0,
       },
@@ -298,7 +364,11 @@ describe('Option B node and frame views', () => {
     expect(graph.nodes.map((node) => node.text)).toEqual(['0', '1', '2']);
     expect(graph.edges).toHaveLength(2);
     expect(graph.nodes[0].tones).toEqual(['done']);
-    const grid = gridModel({ id: 'm', kind: 'grid', title: 'm', var: 'grid', cursor: ['r', 'c'] }, step, 'java');
+    const grid = gridModel(
+      { id: 'm', kind: 'grid', title: 'm', var: 'grid', cursor: ['r', 'c'] },
+      step,
+      'java',
+    );
     expect(grid.cursor).toEqual([1, 0]);
     expect(grid.rows[1][0].tones).toEqual(['active']);
   });
@@ -338,6 +408,8 @@ describe('Option B node and frame views', () => {
     expect(byText.get('1,2')!.x).toBeGreaterThan(byText.get('1,1')!.x);
     expect(byText.get('1,1')!.y).toBeGreaterThan(byText.get('0,1')!.y);
     expect(byText.get('1,1')!.x).toBe(byText.get('0,1')!.x);
-    expect(viewSummary(view, { ...twoSumStory(), views: [view], steps: [step] }, 0, 'java')).toContain('4 nodes');
+    expect(
+      viewSummary(view, { ...twoSumStory(), views: [view], steps: [step] }, 0, 'java'),
+    ).toContain('4 nodes');
   });
 });

@@ -19,8 +19,8 @@ describe('NotFoundPage', () => {
     );
     expect(TestBed.inject(Router).url).toBe('/definitely-not-a-learning-route');
     expect(
-      [...root.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Page recovery"] a')].map((link) =>
-        link.getAttribute('href'),
+      [...root.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Page recovery"] a')].map(
+        (link) => link.getAttribute('href'),
       ),
     ).toEqual(['/', '/search', '/learn']);
   });

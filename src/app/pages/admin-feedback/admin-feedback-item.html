@@ -5,7 +5,11 @@
     <nav class="crumbs" aria-label="Breadcrumb">
       <a routerLink="/admin/feedback">Support tickets and feedback</a> › <span>{{ itemId() }}</span>
     </nav>
-    <section class="panel item-panel" id="feedback-item" [attr.aria-label]="kind() + ' ' + itemId()">
+    <section
+      class="panel item-panel"
+      id="feedback-item"
+      [attr.aria-label]="kind() + ' ' + itemId()"
+    >
       <div class="item-bar">
         <span class="kind-badge" [class.ticket]="kind() === 'Ticket'">{{ kind() }}</span>
         <span class="item-key">{{ itemId() }}</span>

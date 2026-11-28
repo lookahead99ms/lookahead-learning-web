@@ -56,7 +56,12 @@ export const NOTES_SAVE_DELAY_MS = 600;
         @if (suggestion(); as suggested) {
           <p class="suggestion">
             {{ suggested.text }}
-            <button type="button" class="use-suggestion" title="Apply the suggested rating and review plan for this attempt" (click)="useSuggestion(suggested)">
+            <button
+              type="button"
+              class="use-suggestion"
+              title="Apply the suggested rating and review plan for this attempt"
+              (click)="useSuggestion(suggested)"
+            >
               Use this
             </button>
           </p>
@@ -87,7 +92,11 @@ export const NOTES_SAVE_DELAY_MS = 600;
               <button
                 type="button"
                 [attr.aria-pressed]="reviewChoice() === option.id"
-                [attr.title]="option.id === 'none' ? 'Clear the planned review date' : 'Plan another review: ' + option.label"
+                [attr.title]="
+                  option.id === 'none'
+                    ? 'Clear the planned review date'
+                    : 'Plan another review: ' + option.label
+                "
                 (click)="scheduleReview(option.id)"
               >
                 {{ option.label }}
@@ -107,7 +116,10 @@ export const NOTES_SAVE_DELAY_MS = 600;
             [id]="ids().notes"
             rows="4"
             [attr.aria-describedby]="ids().notesHelp"
-            placeholder="What tripped you up? For example: my loop stopped one short of the last element."
+            [attr.placeholder]="
+              'What tripped you up? For example: my loop stopped one short of the last ' +
+              'element.'
+            "
             [value]="notes()"
             (input)="editNotes($any($event.target).value)"
           ></textarea>
@@ -117,13 +129,19 @@ export const NOTES_SAVE_DELAY_MS = 600;
         @if (approachFamily()?.siblings?.length) {
           <div class="block">
             <h4 [id]="ids().approaches">Other optimal approaches</h4>
-            <app-optimal-approaches [family]="approachFamily()" variant="finish" [named]="approachesNamed()" />
+            <app-optimal-approaches
+              [family]="approachFamily()"
+              variant="finish"
+              [named]="approachesNamed()"
+            />
           </div>
         }
         @if (next().length) {
           <div class="block">
             <h4 [id]="ids().next">
-              {{ patternRevealed() && patternTitle() ? 'Next in ' + patternTitle() : 'Next problems' }}
+              {{
+                patternRevealed() && patternTitle() ? 'Next in ' + patternTitle() : 'Next problems'
+              }}
             </h4>
             <ol class="next" [attr.aria-labelledby]="ids().next">
               @for (problem of next(); track problem.id) {
@@ -146,7 +164,12 @@ export const NOTES_SAVE_DELAY_MS = 600;
 
       @if (hasProgress()) {
         @if (!confirmingClear()) {
-          <button type="button" class="quiet clear-trigger" title="Choose whether to clear this problem’s saved progress on this device" (click)="openClear()">
+          <button
+            type="button"
+            class="quiet clear-trigger"
+            title="Choose whether to clear this problem’s saved progress on this device"
+            (click)="openClear()"
+          >
             Clear progress for this problem
           </button>
         } @else {
@@ -166,10 +189,21 @@ export const NOTES_SAVE_DELAY_MS = 600;
               And my notes
             </label>
             <div class="options">
-              <button type="button" class="confirm-clear" title="Clear this problem’s rating, review date and status, plus notes if selected" (click)="confirmClear()">
+              <button
+                type="button"
+                class="confirm-clear"
+                title="Clear this problem’s rating, review date and status, plus notes if selected"
+                (click)="confirmClear()"
+              >
                 Clear progress
               </button>
-              <button type="button" class="cancel-clear" title="Keep your saved progress and close this confirmation" (click)="cancelClear()">Cancel</button>
+              <button
+                type="button"
+                class="cancel-clear"
+                title="Keep your saved progress and close this confirmation"
+                (click)="cancelClear()"
+                >Cancel</button
+              >
             </div>
           </div>
         }
@@ -179,8 +213,8 @@ export const NOTES_SAVE_DELAY_MS = 600;
         @if (progress.persisted()) {
           Saved on this device. Progress does not sync to other devices yet.
         } @else {
-          This browser is not saving progress, so it lasts until you leave the page.
-          Progress does not sync to other devices yet.
+          This browser is not saving progress, so it lasts until you leave the page. Progress does
+          not sync to other devices yet.
         }
       </p>
     </section>
@@ -471,9 +505,18 @@ export class StudioFinishReview {
     return !!record && (!!record.status || !!record.rating || !!record.reviewAt);
   });
   /** Two-step clear inside the page: the trigger opens a confirm group with "And my notes". */
-  protected readonly confirmingClear = linkedSignal({ source: () => this.problemId(), computation: () => false });
-  protected readonly clearNotes = linkedSignal({ source: () => this.problemId(), computation: () => false });
-  /** A rating and review date suggested from this session's Recall grades; only "Use this" applies it. */
+  protected readonly confirmingClear = linkedSignal({
+    source: () => this.problemId(),
+    computation: () => false,
+  });
+  protected readonly clearNotes = linkedSignal({
+    source: () => this.problemId(),
+    computation: () => false,
+  });
+  /**
+   * A rating and review date suggested from this session's Recall grades; only "Use this" applies
+   * it.
+   */
   protected readonly suggestion = computed(() =>
     recallSuggestion(this.recallChecks.check(this.problemId())),
   );
@@ -561,7 +604,9 @@ export class StudioFinishReview {
     this.announcement.set(`Marked: ${rating}.`);
   }
 
-  /** Sets the suggested rating and review choice; a rating already chosen is kept, not taken back. */
+  /**
+   * Sets the suggested rating and review choice; a rating already chosen is kept, not taken back.
+   */
   protected useSuggestion(suggested: RecallSuggestion): void {
     const id = this.problemId();
     if (this.record()?.rating !== suggested.rating) this.progress.rate(id, suggested.rating);
@@ -569,7 +614,9 @@ export class StudioFinishReview {
     const date = this.record()?.reviewAt;
     this.announcement.set(
       `Marked: ${suggested.rating}. ` +
-        (suggested.review === 'none' || !date ? 'No review planned.' : `Review on ${reviewDateLabel(date)}.`),
+        (suggested.review === 'none' || !date
+          ? 'No review planned.'
+          : `Review on ${reviewDateLabel(date)}.`),
     );
   }
 
@@ -602,10 +649,9 @@ export class StudioFinishReview {
   }
 
   private focusLater(selector: string): void {
-    afterNextRender(
-      () => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(),
-      { injector: this.injector },
-    );
+    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(), {
+      injector: this.injector,
+    });
   }
 
   protected scheduleReview(choice: ReviewChoice): void {

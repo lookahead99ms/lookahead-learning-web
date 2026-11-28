@@ -21,11 +21,11 @@ export const FOCUS_STUDIO_PILOT = {
 } as const;
 
 export type FocusStudioPattern =
-  | (typeof FOCUS_STUDIO_PILOT)[keyof typeof FOCUS_STUDIO_PILOT]
-  | 'generic';
+  (typeof FOCUS_STUDIO_PILOT)[keyof typeof FOCUS_STUDIO_PILOT] | 'generic';
 
-// Whole words only: a bare substring put "Selected-entries" (en-trie-s) in trees, "Cheapest" in heaps
-// and "Lexicographic" in graphs. Plurals and the sub- prefix (subtree, subarray) are listed explicitly.
+// Whole words only: a bare substring put "Selected-entries" (en-trie-s) in trees, "Cheapest" in
+// heaps and "Lexicographic" in graphs. Plurals and the sub- prefix (subtree, subarray) are listed
+// explicitly.
 const metadataFamilies: ReadonlyArray<[FocusStudioPattern, RegExp]> = [
   ['lru', /\blru\b|\bleast recently used\b/i],
   ['sliding-window', /\bsliding windows?\b|\bwindows?\b/i],

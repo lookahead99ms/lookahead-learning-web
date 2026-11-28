@@ -70,9 +70,12 @@ export class InteractiveTheoryVisual {
     // Course JSON is authored content, but the renderer still accepts only
     // local, static HTML assets rather than arbitrary remote embeds.
     if (
-      !/^\/content\/.+\.html(?:\?v=[a-z0-9-]+|\?mode=[a-z0-9-]+|\?track=[a-z0-9-]+|\?lang=(?:java|python|go)&input=(?:default|zero|negative)&problem=[a-z0-9-]+&source=[a-z0-9%+/_=-]+)?(?:#[a-z0-9-]+)?$/i.test(
-        path,
-      )
+      !new RegExp(
+        '^\\/content\\/.+\\.html(?:\\?v=[a-z0-9-]+|\\?mode=[a-z0-9-]+|\\?track=[a-z0-9-]+|' +
+          '\\?lang=(?:java|python|go)&input=(?:default|zero|negative)' +
+          '&problem=[a-z0-9-]+&source=[a-z0-9%+/_=-]+)?(?:#[a-z0-9-]+)?$',
+        'i',
+      ).test(path)
     )
       return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(path);

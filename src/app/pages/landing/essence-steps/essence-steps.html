@@ -7,7 +7,8 @@
         [style.--phrase]="index"
       >
         <span
-          ><strong>{{ line.verb }}</strong>{{ line.middle
+          ><strong>{{ line.verb }}</strong
+          >{{ line.middle
           }}<strong [style.color]="line.outcomeColour">{{ line.outcome }}</strong></span
         >
       </li>
@@ -16,7 +17,11 @@
   <div class="essence-stairs-frame" [class.has-line]="lines().length">
     <ol class="essence-stairs">
       @for (step of steps; track step.word; let index = $index) {
-        <li [style.--step-colour]="step.colour" [style.--step]="index" [style.--pulse-at]="pulseAt(index)">
+        <li
+          [style.--step-colour]="step.colour"
+          [style.--step]="index"
+          [style.--pulse-at]="pulseAt(index)"
+        >
           <p class="essence-step-label" [class.is-final]="index === steps.length - 1">
             @for (part of step.label; track $index) {
               @if (part.gradient) {
@@ -26,8 +31,8 @@
               } @else {
                 {{ part.text }}
               }
-            }
-          </p>{{ ' ' }}
+            }</p
+          >{{ ' ' }}
           <span class="essence-dot" aria-hidden="true">
             @for (round of [loop()]; track round) {
               @if (round) {
@@ -35,20 +40,35 @@
               }
             }
           </span>
-          <span class="essence-verb">{{ step.verb }}</span>{{ ' ' }}
+          <span class="essence-verb">{{ step.verb }}</span
+          >{{ ' ' }}
           <span class="essence-word">{{ step.word }}</span>
         </li>
       }
     </ol>
     @if (lines().length) {
-      <svg class="essence-line" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <svg
+        class="essence-line"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
         @for (line of lines(); track $index) {
-          <path pathLength="1" [attr.d]="line.d" [attr.stroke]="line.colour" stroke-width="3" [style.--step]="$index" />
+          <path
+            pathLength="1"
+            [attr.d]="line.d"
+            [attr.stroke]="line.colour"
+            stroke-width="3"
+            [style.--step]="$index"
+          />
         }
       </svg>
     }
     @if (traveller(); as route) {
-      <!-- The arrow rides the tip of the line, stopping at each step; each loop round climbs again. -->
+      <!-- The arrow rides the tip of the line, stopping at each step; each loop round climbs again.
+      -->
       @for (round of [loop()]; track round) {
         <span
           class="essence-traveller"
@@ -56,10 +76,19 @@
           [style]="travellerStyle(route)"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            focusable="false"
+          >
             <path d="M5 1 L14 10 L5 19" />
           </svg>
         </span>
       }
     }
   </div>
+</div>

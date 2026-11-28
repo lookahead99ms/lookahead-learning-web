@@ -95,7 +95,9 @@ describe('Unified Search topic workbench', () => {
 
   it('shows a focused module review and preserves its course return anchor', async () => {
     const harness = await RouterTestingHarness.create();
-    const url = `/search?kind=practice&path=${document.path}&course=${document.courseId}&module=${document.moduleId}&unit=original-unit`;
+    const url =
+      `/search?kind=practice&path=${document.path}&course=${document.courseId}` +
+      `&module=${document.moduleId}&unit=original-unit`;
     await harness.navigateByUrl(url, Search);
     harness.detectChanges();
     const page = harness.routeNativeElement!;
@@ -104,7 +106,9 @@ describe('Unified Search topic workbench', () => {
     expect(page.querySelector('.mode-filter-row')).toBeNull();
     expect(page.querySelector('.results-toolbar')).toBeNull();
     const links = page.querySelectorAll('.review-navigation a');
-    expect(links[0].getAttribute('href')).toBe(`/${document.path}/${document.courseId}#unit-original-unit`);
+    expect(links[0].getAttribute('href')).toBe(
+      `/${document.path}/${document.courseId}#unit-original-unit`,
+    );
     expect(links[1].getAttribute('href')).toBe('/search');
     const component = harness.routeDebugElement!.componentInstance as Search;
     expect((component as any).questionQueryParams(document).returnTo).toBe(url);
@@ -117,18 +121,26 @@ describe('Unified Search topic workbench', () => {
 
   it('keeps canonical Blaze review URLs scoped with their course return link', async () => {
     const blazeDocument: SearchDocument = {
-      ...document, path: 'blaze', courseId: 'resilience-production',
-      courseTitle: 'Resilience in Production', moduleId: 'queues-backpressure',
+      ...document,
+      path: 'blaze',
+      courseId: 'resilience-production',
+      courseTitle: 'Resilience in Production',
+      moduleId: 'queues-backpressure',
       moduleTitle: 'Queues, Backpressure, and Fairness',
     };
     content.getSearchIndex.mockReturnValue(of([blazeDocument]));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/search?kind=practice&path=blaze&course=resilience-production&module=queues-backpressure&unit=queues-backpressure', Search);
+    await harness.navigateByUrl(
+      '/search?kind=practice&path=blaze&course=resilience-production' +
+        '&module=queues-backpressure&unit=queues-backpressure',
+      Search,
+    );
     harness.detectChanges();
     expect(content.getSearchIndex).toHaveBeenCalledWith('blaze');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Review questions');
-    expect(harness.routeNativeElement?.querySelector('.review-back')?.getAttribute('href'))
-      .toBe('/blaze/resilience-production#unit-queues-backpressure');
+    expect(harness.routeNativeElement?.querySelector('.review-back')?.getAttribute('href')).toBe(
+      '/blaze/resilience-production#unit-queues-backpressure',
+    );
     expect(harness.routeNativeElement?.querySelector('form[role="search"]')).toBeNull();
   });
 
@@ -242,95 +254,112 @@ describe('Unified Search topic workbench', () => {
     const kinds = [...harness.routeNativeElement!.querySelectorAll('.result-kind')].map((element) =>
       element.textContent?.trim(),
     );
-    expect(kinds).toEqual(expect.arrayContaining(['Lesson', 'Interview question', 'Coding practice', 'Design practice']));
+    expect(kinds).toEqual(
+      expect.arrayContaining([
+        'Lesson',
+        'Interview question',
+        'Coding practice',
+        'Design practice',
+      ]),
+    );
     expect(kinds).not.toContain('Solve practice');
   });
 
-  it('opens the preview from the title or card whitespace while metadata stays a separate action', async () => {
-    content.getSearchIndex.mockReturnValueOnce(
-      of([
-        document,
-        {
-          ...document,
-          id: 'another-result',
-          contentId: 'another-result',
-          title: 'Another question',
-        },
-      ]),
-    );
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/search', Search);
-    harness.detectChanges();
+  it(
+    'opens the preview from the title or card whitespace while metadata stays a separate ' +
+      'action',
+    async () => {
+      content.getSearchIndex.mockReturnValueOnce(
+        of([
+          document,
+          {
+            ...document,
+            id: 'another-result',
+            contentId: 'another-result',
+            title: 'Another question',
+          },
+        ]),
+      );
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/search', Search);
+      harness.detectChanges();
 
-    const cards = harness.routeNativeElement!.querySelectorAll<HTMLElement>('.result-card');
-    const otherCard = [...cards].find((card) => card.textContent?.includes('Another question'))!;
-    const firstCard = [...cards].find((card) => card.textContent?.includes(question.title))!;
-    const secondAction = otherCard.querySelector<HTMLButtonElement>('.summary-toggle')!;
-    expect(secondAction.tagName).toBe('BUTTON');
-    expect(secondAction.querySelector('a')).toBeNull();
-    expect(otherCard.querySelector('.result-title a')).toBeNull();
-    expect(otherCard.querySelectorAll('.result-context a').length).toBeGreaterThanOrEqual(3);
-    expect(harness.routeNativeElement?.textContent).not.toContain('Selected result');
+      const cards = harness.routeNativeElement!.querySelectorAll<HTMLElement>('.result-card');
+      const otherCard = [...cards].find((card) => card.textContent?.includes('Another question'))!;
+      const firstCard = [...cards].find((card) => card.textContent?.includes(question.title))!;
+      const secondAction = otherCard.querySelector<HTMLButtonElement>('.summary-toggle')!;
+      expect(secondAction.tagName).toBe('BUTTON');
+      expect(secondAction.querySelector('a')).toBeNull();
+      expect(otherCard.querySelector('.result-title a')).toBeNull();
+      expect(otherCard.querySelectorAll('.result-context a').length).toBeGreaterThanOrEqual(3);
+      expect(harness.routeNativeElement?.textContent).not.toContain('Selected result');
 
-    secondAction.querySelector<HTMLElement>('.result-title-text')!.click();
-    harness.detectChanges();
-    expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toContain(
-      'Another question',
-    );
+      secondAction.querySelector<HTMLElement>('.result-title-text')!.click();
+      harness.detectChanges();
+      expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toContain(
+        'Another question',
+      );
 
-    firstCard.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
-    harness.detectChanges();
-    expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toContain(
-      question.title,
-    );
-    expect(otherCard.querySelector('.result-context a')?.closest('button')).toBeNull();
-  });
+      firstCard.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
+      harness.detectChanges();
+      expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toContain(
+        question.title,
+      );
+      expect(otherCard.querySelector('.result-context a')?.closest('button')).toBeNull();
+    },
+  );
 
-  it('shows DSA problem statements on result cards without mistaking numeric titles for rank labels', async () => {
-    const matrixPrompt =
-      'Given a binary matrix, find the nearest zero for each cell. Do not mutate the input.';
-    const patternPrompt =
-      'Given an integer array, find a subsequence whose values follow the pattern.';
-    content.getSearchIndex.mockReturnValueOnce(
-      of([
-        {
-          ...document,
-          id: 'dsa-matrix',
-          contentId: 'dsa-matrix',
-          title: '01 Matrix',
-          preview: matrixPrompt,
-          contentType: 'dsa-problem',
-          practiceFormat: 'solve',
-          subjects: ['Graphs', 'Breadth-first search', 'Matrix'],
-          tags: ['Graphs', 'Breadth-first search', 'Matrix'],
-        },
-        {
-          ...document,
-          id: 'dsa-pattern',
-          contentId: 'dsa-pattern',
-          title: '132 Pattern',
-          preview: patternPrompt,
-          contentType: 'dsa-problem',
-          practiceFormat: 'solve',
-        },
-      ]),
-    );
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/search', Search);
-    harness.detectChanges();
-    openFirstResult(harness);
+  it(
+    'shows DSA problem statements on result cards without mistaking numeric titles for ' +
+      'rank labels',
+    async () => {
+      const matrixPrompt =
+        'Given a binary matrix, find the nearest zero for each cell. Do not mutate the input.';
+      const patternPrompt =
+        'Given an integer array, find a subsequence whose values follow the pattern.';
+      content.getSearchIndex.mockReturnValueOnce(
+        of([
+          {
+            ...document,
+            id: 'dsa-matrix',
+            contentId: 'dsa-matrix',
+            title: '01 Matrix',
+            preview: matrixPrompt,
+            contentType: 'dsa-problem',
+            practiceFormat: 'solve',
+            subjects: ['Graphs', 'Breadth-first search', 'Matrix'],
+            tags: ['Graphs', 'Breadth-first search', 'Matrix'],
+          },
+          {
+            ...document,
+            id: 'dsa-pattern',
+            contentId: 'dsa-pattern',
+            title: '132 Pattern',
+            preview: patternPrompt,
+            contentType: 'dsa-problem',
+            practiceFormat: 'solve',
+          },
+        ]),
+      );
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/search', Search);
+      harness.detectChanges();
+      openFirstResult(harness);
 
-    const cards = [...harness.routeNativeElement!.querySelectorAll<HTMLElement>('.result-card')];
-    expect(cards).toHaveLength(2);
-    expect(
-      cards.map((card) => card.querySelector('.result-title-text')?.textContent?.trim()),
-    ).toEqual([matrixPrompt, patternPrompt]);
-    expect(cards[0].textContent).not.toContain('01 Matrix');
-    expect(cards[1].textContent).not.toContain('132 Pattern');
-    expect(cards[0].querySelectorAll('.result-context a').length).toBeGreaterThanOrEqual(3);
-    expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toBe(matrixPrompt);
-    expect(harness.routeNativeElement?.querySelector('.preview-dialog')).toBeNull();
-  });
+      const cards = [...harness.routeNativeElement!.querySelectorAll<HTMLElement>('.result-card')];
+      expect(cards).toHaveLength(2);
+      expect(
+        cards.map((card) => card.querySelector('.result-title-text')?.textContent?.trim()),
+      ).toEqual([matrixPrompt, patternPrompt]);
+      expect(cards[0].textContent).not.toContain('01 Matrix');
+      expect(cards[1].textContent).not.toContain('132 Pattern');
+      expect(cards[0].querySelectorAll('.result-context a').length).toBeGreaterThanOrEqual(3);
+      expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toBe(
+        matrixPrompt,
+      );
+      expect(harness.routeNativeElement?.querySelector('.preview-dialog')).toBeNull();
+    },
+  );
 
   it('renders reviewed inline answer formatting without copying full-answer fields', async () => {
     content.getInterviewQuestion.mockReturnValueOnce(
@@ -364,7 +393,11 @@ describe('Unified Search topic workbench', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(harness.routeNativeElement!.querySelector('.summary-pane')).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.pinned-selection .summary-toggle')?.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      harness
+        .routeNativeElement!.querySelector('.pinned-selection .summary-toggle')
+        ?.getAttribute('aria-expanded'),
+    ).toBe('true');
 
     const input = harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!;
     input.value = 'no matching record';
@@ -400,26 +433,32 @@ describe('Unified Search topic workbench', () => {
     harness.detectChanges();
 
     expect(harness.routeNativeElement!.querySelector('.summary-pane')).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelectorAll('.pinned-selection .result-card')).toHaveLength(1);
+    expect(
+      harness.routeNativeElement!.querySelectorAll('.pinned-selection .result-card'),
+    ).toHaveLength(1);
     expect(harness.routeNativeElement!.querySelectorAll('.result-card')).toHaveLength(41);
   });
 
   it('pins the selected item without changing relevance order or result count', async () => {
-    content.getSearchIndex.mockReturnValueOnce(of(
-      ['A', 'B', 'C', 'D', 'E'].map((letter) => ({
-        ...document,
-        id: letter,
-        title: letter,
-        contentType: 'theory' as const,
-        discoveryKind: 'lesson' as const,
-        preview: `${letter} preview`,
-      })),
-    ));
+    content.getSearchIndex.mockReturnValueOnce(
+      of(
+        ['A', 'B', 'C', 'D', 'E'].map((letter) => ({
+          ...document,
+          id: letter,
+          title: letter,
+          contentType: 'theory' as const,
+          discoveryKind: 'lesson' as const,
+          preview: `${letter} preview`,
+        })),
+      ),
+    );
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
-    const ids = (selector: string) => [...harness.routeNativeElement!.querySelectorAll<HTMLElement>(selector)]
-      .map((item) => item.dataset['resultId']);
+    const ids = (selector: string) =>
+      [...harness.routeNativeElement!.querySelectorAll<HTMLElement>(selector)].map(
+        (item) => item.dataset['resultId'],
+      );
     expect(ids('.result-group .summary-toggle')).toEqual(['A', 'B', 'C', 'D', 'E']);
     expect(harness.routeNativeElement!.querySelector('.summary-pane')).toBeNull();
 
@@ -441,10 +480,26 @@ describe('Unified Search topic workbench', () => {
   });
 
   it('omits a row description when it only repeats the displayed title', async () => {
-    content.getSearchIndex.mockReturnValueOnce(of([
-      { ...document, id: 'same', title: 'Trace an invariant', preview: 'Trace an invariant', contentType: 'theory', discoveryKind: 'lesson' },
-      { ...document, id: 'different', title: 'Review an invariant', preview: 'Try a concrete input.', contentType: 'theory', discoveryKind: 'lesson' },
-    ]));
+    content.getSearchIndex.mockReturnValueOnce(
+      of([
+        {
+          ...document,
+          id: 'same',
+          title: 'Trace an invariant',
+          preview: 'Trace an invariant',
+          contentType: 'theory',
+          discoveryKind: 'lesson',
+        },
+        {
+          ...document,
+          id: 'different',
+          title: 'Review an invariant',
+          preview: 'Try a concrete input.',
+          contentType: 'theory',
+          discoveryKind: 'lesson',
+        },
+      ]),
+    );
     TestBed.inject(StudyPlanAccount).account.set({ accountId: 'reader' } as never);
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search', Search);
@@ -452,26 +507,48 @@ describe('Unified Search topic workbench', () => {
     const same = harness.routeNativeElement!.querySelector('[data-result-id="same"]')!;
     const different = harness.routeNativeElement!.querySelector('[data-result-id="different"]')!;
     expect(same.querySelector('.result-row-summary')).toBeNull();
-    expect(different.querySelector('.result-row-summary')?.textContent).toBe('Try a concrete input.');
+    expect(different.querySelector('.result-row-summary')?.textContent).toBe(
+      'Try a concrete input.',
+    );
   });
 
   describe('signed-out text gate (one preview per tab, 2026-11-02)', () => {
-    const lesson = (id: string, title: string, preview: string, extra: Partial<SearchDocument> = {}): SearchDocument => ({
-      ...document, id, contentId: id, title, preview, contentType: 'theory', discoveryKind: 'lesson',
-      practiceFormat: undefined, searchableText: title.toLowerCase(), ...extra,
+    const lesson = (
+      id: string,
+      title: string,
+      preview: string,
+      extra: Partial<SearchDocument> = {},
+    ): SearchDocument => ({
+      ...document,
+      id,
+      contentId: id,
+      title,
+      preview,
+      contentType: 'theory',
+      discoveryKind: 'lesson',
+      practiceFormat: undefined,
+      searchableText: title.toLowerCase(),
+      ...extra,
     });
     const index = [
       lesson('alpha', 'Alpha lesson', 'Alpha teaser.'),
       lesson('beta', 'Beta lesson', 'Beta teaser.'),
       lesson('gamma', 'Gamma design exercise', 'Gamma statement.', {
-        contentType: 'system-design', discoveryKind: 'practice', practiceFormat: 'design', access: { tier: 'premium' },
+        contentType: 'system-design',
+        discoveryKind: 'practice',
+        practiceFormat: 'design',
+        access: { tier: 'premium' },
       }),
     ];
     const rowSummary = (harness: RouterTestingHarness, id: string) =>
-      harness.routeNativeElement!.querySelector(`[data-result-id="${id}"] .result-row-summary`)?.textContent ?? null;
+      harness.routeNativeElement!.querySelector(`[data-result-id="${id}"] .result-row-summary`)
+        ?.textContent ?? null;
     const context = (harness: RouterTestingHarness, id: string) =>
-      harness.routeNativeElement!.querySelector(`[data-result-id="${id}"]`)!.closest('.result-card')!
-        .querySelector('.result-context')!.textContent!.replace(/\s+/g, ' ');
+      harness
+        .routeNativeElement!.querySelector(`[data-result-id="${id}"]`)!
+        .closest('.result-card')!
+        .querySelector('.result-context')!
+        .textContent!.replace(/\s+/g, ' ');
     const render = async (): Promise<RouterTestingHarness> => {
       content.getSearchIndex.mockReturnValue(of(index));
       const harness = await RouterTestingHarness.create();
@@ -487,16 +564,25 @@ describe('Unified Search topic workbench', () => {
       expect(rowSummary(harness, 'gamma')).toBeNull();
       expect(context(harness, 'alpha')).not.toContain('Sign in to read');
       expect(context(harness, 'beta')).toContain('Sign in to read');
-      expect(harness.routeNativeElement!.querySelector('[data-result-id="beta"]')!.closest('.result-card')!
-        .querySelector('.result-context .access-label')?.textContent).toBe('Sign in to read');
+      expect(
+        harness
+          .routeNativeElement!.querySelector('[data-result-id="beta"]')!
+          .closest('.result-card')!
+          .querySelector('.result-context .access-label')?.textContent,
+      ).toBe('Sign in to read');
       expect(context(harness, 'gamma')).toContain('Premium');
       expect(context(harness, 'gamma')).not.toContain('Sign in to read');
     });
 
     it('moves the one visible text to the first result of the selected activity tab', async () => {
       const harness = await render();
-      [...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.activity-filters button')]
-        .find((button) => button.textContent?.trim() === 'Practice')!.click();
+      [
+        ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+          '.activity-filters button',
+        ),
+      ]
+        .find((button) => button.textContent?.trim() === 'Practice')!
+        .click();
       await harness.fixture.whenStable();
       harness.detectChanges();
       expect(harness.routeNativeElement!.querySelectorAll('.result-card')).toHaveLength(1);
@@ -509,7 +595,9 @@ describe('Unified Search topic workbench', () => {
     });
 
     it('always shows the text of a public item', async () => {
-      index[1] = lesson('beta', 'Beta lesson', 'Beta teaser.', { access: { tier: 'free', public: true } });
+      index[1] = lesson('beta', 'Beta lesson', 'Beta teaser.', {
+        access: { tier: 'free', public: true },
+      });
       try {
         const harness = await render();
         expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
@@ -521,46 +609,64 @@ describe('Unified Search topic workbench', () => {
       }
     });
 
-    it('keeps every row summary for a signed-in visitor and hides them again when the session expires', async () => {
-      const accounts = TestBed.inject(StudyPlanAccount);
-      accounts.account.set({ accountId: 'reader' } as never);
-      const harness = await render();
-      expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
-      expect(rowSummary(harness, 'beta')).toBe('Beta teaser.');
-      expect(rowSummary(harness, 'gamma')).toBe('Gamma statement.');
-      expect(harness.routeNativeElement!.querySelector('.access-label')).toBeNull();
-      accounts.sessionExpired.set(true);
-      harness.detectChanges();
-      expect(rowSummary(harness, 'beta')).toBeNull();
-      expect(context(harness, 'beta')).toContain('Sign in to read');
-    });
+    it(
+      'keeps every row summary for a signed-in visitor and hides them again when the ' +
+        'session expires',
+      async () => {
+        const accounts = TestBed.inject(StudyPlanAccount);
+        accounts.account.set({ accountId: 'reader' } as never);
+        const harness = await render();
+        expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
+        expect(rowSummary(harness, 'beta')).toBe('Beta teaser.');
+        expect(rowSummary(harness, 'gamma')).toBe('Gamma statement.');
+        expect(harness.routeNativeElement!.querySelector('.access-label')).toBeNull();
+        accounts.sessionExpired.set(true);
+        harness.detectChanges();
+        expect(rowSummary(harness, 'beta')).toBeNull();
+        expect(context(harness, 'beta')).toContain('Sign in to read');
+      },
+    );
 
     it('explains the gate in the preview pane of a hidden item', async () => {
       vi.stubGlobal('matchMedia', () => ({ matches: true }));
       const harness = await render();
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="beta"]')!.click();
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="beta"]')!
+        .click();
       harness.detectChanges();
-      expect(harness.routeNativeElement!.querySelector('.inline-preview .summary-copy')?.textContent?.trim()).toBe(
-        'Sign in to read this item. Signed-out visitors see one preview per tab.',
-      );
+      expect(
+        harness
+          .routeNativeElement!.querySelector('.inline-preview .summary-copy')
+          ?.textContent?.trim(),
+      ).toBe('Sign in to read this item. Signed-out visitors see one preview per tab.');
       harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-close')!.click();
       harness.detectChanges();
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="alpha"]')!.click();
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="alpha"]')!
+        .click();
       harness.detectChanges();
-      expect(harness.routeNativeElement!.querySelector('.inline-preview .summary-copy')?.textContent?.trim()).toBe(
-        'Alpha teaser.',
-      );
+      expect(
+        harness
+          .routeNativeElement!.querySelector('.inline-preview .summary-copy')
+          ?.textContent?.trim(),
+      ).toBe('Alpha teaser.');
     });
 
-    it('keeps the text on the first result in order when another row is pinned on desktop', async () => {
+    it('keeps the text on the first result in order when another row is pinned', async () => {
       const harness = await render();
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="beta"]')!.click();
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="beta"]')!
+        .click();
       harness.detectChanges();
       // Clicking a row never reveals it: the signed-out visitor still reads one item per tab.
-      expect(harness.routeNativeElement!.querySelector('.summary-pane .summary-copy')?.textContent?.trim()).toBe(
-        'Sign in to read this item. Signed-out visitors see one preview per tab.',
-      );
-      expect(harness.routeNativeElement!.querySelector('.pinned-selection .result-row-summary')).toBeNull();
+      expect(
+        harness
+          .routeNativeElement!.querySelector('.summary-pane .summary-copy')
+          ?.textContent?.trim(),
+      ).toBe('Sign in to read this item. Signed-out visitors see one preview per tab.');
+      expect(
+        harness.routeNativeElement!.querySelector('.pinned-selection .result-row-summary'),
+      ).toBeNull();
       expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
     });
   });
@@ -585,9 +691,11 @@ describe('Unified Search topic workbench', () => {
     expect(harness.routeNativeElement!.querySelectorAll('.inline-preview')).toHaveLength(1);
     await harness.fixture.whenStable();
     harness.detectChanges();
-    expect(harness.routeNativeElement!.querySelector('.inline-preview .summary-copy')?.textContent?.trim()).toBe(
-      question.interviewAnswer,
-    );
+    expect(
+      harness
+        .routeNativeElement!.querySelector('.inline-preview .summary-copy')
+        ?.textContent?.trim(),
+    ).toBe(question.interviewAnswer);
     expect(harness.routeNativeElement!.querySelector('.preview-dialog')).toBeNull();
 
     harness
@@ -604,8 +712,12 @@ describe('Unified Search topic workbench', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/search?previewItem=${encodeURIComponent(document.id)}`, Search);
     harness.detectChanges();
-    expect(harness.routeNativeElement?.querySelector('.summary-pane .preview-title')?.textContent).toContain(question.title);
-    expect(harness.routeNativeElement?.querySelector('.summary-toggle')?.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      harness.routeNativeElement?.querySelector('.summary-pane .preview-title')?.textContent,
+    ).toContain(question.title);
+    expect(
+      harness.routeNativeElement?.querySelector('.summary-toggle')?.getAttribute('aria-expanded'),
+    ).toBe('true');
 
     await harness.navigateByUrl('/search?previewItem=missing-result', Search);
     await harness.fixture.whenStable();
@@ -618,14 +730,17 @@ describe('Unified Search topic workbench', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
-    const details = harness.routeNativeElement!.querySelector<HTMLDetailsElement>('.filter-details')!;
+    const details =
+      harness.routeNativeElement!.querySelector<HTMLDetailsElement>('.filter-details')!;
     const summary = details.querySelector<HTMLElement>('summary')!;
     summary.click();
     expect(details.open).toBe(true);
 
     details.querySelector('select')!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
     expect(details.open).toBe(true);
-    harness.routeNativeElement!.querySelector('.result-card')!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    harness
+      .routeNativeElement!.querySelector('.result-card')!
+      .dispatchEvent(new Event('pointerdown', { bubbles: true }));
     expect(details.open).toBe(false);
 
     summary.click();
@@ -905,7 +1020,7 @@ describe('Unified Search topic workbench', () => {
     expect(harness.routeNativeElement?.querySelector('.show-more-results')).toBeNull();
   });
 
-  it('lays results out for browser zoom while keeping every result and the exact total', async () => {
+  it('lays results out for browser zoom, keeping every result and the exact total', async () => {
     // DLV-803: browser zoom changes the CSS viewport, so the page uses the shared browse width,
     // results fill as many readable columns as fit, and headings keep a rem base.
     const documents = Array.from({ length: 45 }, (_, index) => ({
@@ -930,15 +1045,26 @@ describe('Unified Search topic workbench', () => {
       .join('\n')
       .replace(/\s+/g, ' ');
     expect(css).toMatch(
-      /\.search-shell\[[^\]]+\] \{[^}]*width: min\(var\(--page-max-browse\), 100% - 2 \* var\(--page-gutter\)\);/,
+      new RegExp(
+        '\\.search-shell\\[[^\\]]+\\] \\{[^}]*width: min\\(var\\(--page-max-browse\\), 100% ' +
+          '- 2 \\* var\\(--page-gutter\\)\\);',
+      ),
     );
     expect(css).not.toMatch(/\.search-shell\[[^\]]+\] \{[^}]*92vw/);
     expect(css).toMatch(
-      /\.result-group\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 44rem\), 1fr\)\);/,
+      new RegExp(
+        '\\.result-group\\[[^\\]]+\\] \\{[^}]*grid-template-columns: repeat\\(auto-fill, ' +
+          'minmax\\(min\\(100%, 44rem\\), 1fr\\)\\);',
+      ),
     );
-    expect(css).toMatch(/\.result-group\[[^\]]+\] > \.group-title\[[^\]]+\] \{ grid-column: 1 \/ -1; \}/);
     expect(css).toMatch(
-      /\.search-toolbar\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 16rem\), 1fr\)\);/,
+      /\.result-group\[[^\]]+\] > \.group-title\[[^\]]+\] \{ grid-column: 1 \/ -1; \}/,
+    );
+    expect(css).toMatch(
+      new RegExp(
+        '\\.search-toolbar\\[[^\\]]+\\] \\{[^}]*grid-template-columns: repeat\\(auto-fill, ' +
+          'minmax\\(min\\(100%, 16rem\\), 1fr\\)\\);',
+      ),
     );
     expect(css).toMatch(/\.summary-copy\[[^\]]+\] \{[^}]*max-width: var\(--reading-measure\);/);
     const fluidType = [...css.matchAll(/font-size: clamp\(([^;]+)\);/g)].map((match) => match[1]);
@@ -1053,7 +1179,7 @@ describe('Unified Search topic workbench', () => {
     });
   });
 
-  it('restores course and module selectors when URL options arrive after the index request', async () => {
+  it('restores course and module selectors when URL options arrive after the index', async () => {
     const index = new Subject<SearchDocument[]>();
     content.getSearchIndex.mockReturnValueOnce(index);
     const harness = await RouterTestingHarness.create();
@@ -1087,7 +1213,7 @@ describe('Unified Search topic workbench', () => {
     expect(tag.classList.contains('active')).toBe(false);
   });
 
-  it('keeps an unsupported legacy subject visible instead of silently showing all results', async () => {
+  it('keeps an unsupported legacy subject visible instead of showing all results', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search?tags=URL%20Shortener', Search);
     await harness.fixture.whenStable();
@@ -1108,48 +1234,51 @@ describe('Unified Search topic workbench', () => {
     expect(TestBed.inject(Router).url).toBe('/search?tags=URL%20Shortener');
   });
 
-  it('finds a canonical problem through a secondary course placement without duplicating it', async () => {
-    const canonical: SearchDocument = {
-      ...document,
-      id: 'dsa:shared-problem',
-      canonicalContentId: 'shared-problem',
-      contentType: 'dsa-problem',
-      practiceFormat: 'solve',
-      practicePlacements: [
-        {
-          path: 'learn',
-          courseId: document.courseId,
-          courseTitle: document.courseTitle,
-          moduleId: document.moduleId,
-          moduleTitle: document.moduleTitle,
-          contentId: document.contentId,
-          route: document.route,
-        },
-        {
-          path: 'learn',
-          courseId: 'python-fundamentals',
-          courseTitle: 'Python Foundations',
-          moduleId: 'python-dsa-mechanics',
-          moduleTitle: 'Python for Coding Interviews',
-          contentId: 'python-shared-problem',
-          route: ['/', 'learn', 'python-fundamentals', 'python-shared-problem'],
-        },
-      ],
-    };
-    content.getSearchIndex.mockReturnValue(of([canonical]));
-    const harness = await RouterTestingHarness.create();
-    const returnUrl =
-      '/search?path=learn&course=python-fundamentals&module=python-dsa-mechanics&format=solve';
-    await harness.navigateByUrl(returnUrl, Search);
-    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
-    openFirstResult(harness);
-    const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.detail-link')!;
-    const url = new URL(link.href);
-    expect(url.pathname).toBe('/learn/python-fundamentals/python-shared-problem');
-    expect(url.searchParams.get('returnTo')).toContain(returnUrl);
-    await harness.navigateByUrl('/search', Search);
-    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
-  });
+  it(
+    'finds a canonical problem through a secondary course placement without duplicating ' + 'it',
+    async () => {
+      const canonical: SearchDocument = {
+        ...document,
+        id: 'dsa:shared-problem',
+        canonicalContentId: 'shared-problem',
+        contentType: 'dsa-problem',
+        practiceFormat: 'solve',
+        practicePlacements: [
+          {
+            path: 'learn',
+            courseId: document.courseId,
+            courseTitle: document.courseTitle,
+            moduleId: document.moduleId,
+            moduleTitle: document.moduleTitle,
+            contentId: document.contentId,
+            route: document.route,
+          },
+          {
+            path: 'learn',
+            courseId: 'python-fundamentals',
+            courseTitle: 'Python Foundations',
+            moduleId: 'python-dsa-mechanics',
+            moduleTitle: 'Python for Coding Interviews',
+            contentId: 'python-shared-problem',
+            route: ['/', 'learn', 'python-fundamentals', 'python-shared-problem'],
+          },
+        ],
+      };
+      content.getSearchIndex.mockReturnValue(of([canonical]));
+      const harness = await RouterTestingHarness.create();
+      const returnUrl =
+        '/search?path=learn&course=python-fundamentals&module=python-dsa-mechanics&format=solve';
+      await harness.navigateByUrl(returnUrl, Search);
+      expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+      openFirstResult(harness);
+      const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.detail-link')!;
+      const url = new URL(link.href);
+      expect(url.pathname).toBe('/learn/python-fundamentals/python-shared-problem');
+      expect(url.searchParams.get('returnTo')).toContain(returnUrl);
+      await harness.navigateByUrl('/search', Search);
+      expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    },
+  );
 
   it('clears inherited scope when a new text search starts', async () => {
     const growDocument: SearchDocument = {
@@ -1189,7 +1318,9 @@ describe('Unified Search topic workbench', () => {
     );
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/search?path=grow&course=spring-framework&module=spring-core&difficulty=Intermediate&language=java&type=q-and-a&format=explain&tags=Spring&sort=title&group=course',
+      '/search?path=grow&course=spring-framework&module=spring-core' +
+        '&difficulty=Intermediate&language=java&type=q-and-a&format=explain&tags=Spring' +
+        '&sort=title&group=course',
       Search,
     );
     const subjectInput =
@@ -1357,7 +1488,7 @@ describe('Unified Search topic workbench', () => {
     expect(primaryUrl.searchParams.get('returnTo')).toContain('/search?path=learn');
   });
 
-  it('restores the shareable language-neutral filter while hiding an empty Languages row', async () => {
+  it('restores the shareable language-neutral filter, hiding an empty Languages row', async () => {
     content.getSearchIndex.mockReturnValueOnce(of([{ ...document, languages: [] }]));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search?language=unspecified', Search);
@@ -1450,17 +1581,20 @@ describe('Unified Search topic workbench', () => {
     expect(content.getInterviewQuestion).not.toHaveBeenCalled();
   });
 
-  it('keeps absent difficulty non-interactive because Search has no unknown-difficulty filter', async () => {
-    content.getSearchIndex.mockReturnValueOnce(of([{ ...document, difficulty: undefined }]));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/search', Search);
-    harness.detectChanges();
-    openFirstResult(harness);
+  it(
+    'keeps absent difficulty non-interactive because Search has no unknown-difficulty ' + 'filter',
+    async () => {
+      content.getSearchIndex.mockReturnValueOnce(of([{ ...document, difficulty: undefined }]));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/search', Search);
+      harness.detectChanges();
+      openFirstResult(harness);
 
-    const pane = harness.routeNativeElement!.querySelector('.summary-pane')!;
-    expect(pane.querySelector('a[data-metadata="difficulty"]')).toBeNull();
-    expect(pane.querySelector('.summary-metadata')?.textContent).toContain('Not specified');
-  });
+      const pane = harness.routeNativeElement!.querySelector('.summary-pane')!;
+      expect(pane.querySelector('a[data-metadata="difficulty"]')).toBeNull();
+      expect(pane.querySelector('.summary-metadata')?.textContent).toContain('Not specified');
+    },
+  );
 
   describe('matching, ranking and empty states (DLV-962 search audit)', () => {
     function item(id: string, title: string, extra: Partial<SearchDocument> = {}): SearchDocument {
@@ -1485,13 +1619,16 @@ describe('Unified Search topic workbench', () => {
     }
 
     function titles(harness: RouterTestingHarness): string[] {
-      return [...harness.routeNativeElement!.querySelectorAll('.result-title-text')].map(
-        (title) => title.textContent!.trim(),
+      return [...harness.routeNativeElement!.querySelectorAll('.result-title-text')].map((title) =>
+        title.textContent!.trim(),
       );
     }
 
     function summary(harness: RouterTestingHarness): string {
-      return harness.routeNativeElement!.querySelector('.result-summary')!.textContent!.replace(/\s+/g, ' ').trim();
+      return harness
+        .routeNativeElement!.querySelector('.result-summary')!
+        .textContent!.replace(/\s+/g, ' ')
+        .trim();
     }
 
     const index = [
@@ -1517,24 +1654,39 @@ describe('Unified Search topic workbench', () => {
       const harness = await searchFor(`/search?q=${encodeURIComponent(query)}`);
       expect(titles(harness)).toEqual(expected);
       expect(summary(harness)).toBe(
-        `Showing ${expected.length} of ${expected.length} matching result${expected.length === 1 ? '' : 's'}`,
+        `Showing ${expected.length} of ${expected.length} matching ` +
+          `result${expected.length === 1 ? '' : 's'}`,
       );
       expect(harness.routeNativeElement!.querySelector('.search-correction')).toBeNull();
     });
 
-    it('ranks an exact title first, then title matches, then items that only carry the subject', async () => {
-      content.getSearchIndex.mockReturnValue(
-        of([
-          item('bridges', 'Bridges in a network', { subjects: ['Graphs'], searchableText: 'bridges in a network graphs' }),
-          item('cycles', 'Directed graph cycles'),
-          item('graphs', 'Graphs', { discoveryKind: 'course', contentType: 'guide', practiceFormat: undefined }),
-        ]),
-      );
-      const harness = await searchFor('/search?q=graphs');
-      expect(titles(harness)).toEqual(['Graphs', 'Directed graph cycles', 'Bridges in a network']);
-    });
+    it(
+      'ranks an exact title first, then title matches, then items that only carry the ' + 'subject',
+      async () => {
+        content.getSearchIndex.mockReturnValue(
+          of([
+            item('bridges', 'Bridges in a network', {
+              subjects: ['Graphs'],
+              searchableText: 'bridges in a network graphs',
+            }),
+            item('cycles', 'Directed graph cycles'),
+            item('graphs', 'Graphs', {
+              discoveryKind: 'course',
+              contentType: 'guide',
+              practiceFormat: undefined,
+            }),
+          ]),
+        );
+        const harness = await searchFor('/search?q=graphs');
+        expect(titles(harness)).toEqual([
+          'Graphs',
+          'Directed graph cycles',
+          'Bridges in a network',
+        ]);
+      },
+    );
 
-    it('names a spelling fix beside an exact count and keeps the typed words in the URL', async () => {
+    it('names a spelling fix beside an exact count, keeping typed words in the URL', async () => {
       content.getSearchIndex.mockReturnValue(
         of([item('streams', 'Java streams'), item('lists', 'Python lists')]),
       );
@@ -1550,21 +1702,32 @@ describe('Unified Search topic workbench', () => {
     it('keeps the visitor’s casing in the box while matching ignores case', async () => {
       content.getSearchIndex.mockReturnValue(of([item('streams', 'Java streams')]));
       const harness = await searchFor('/search?q=%20Java%20');
-      expect(harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!.value).toBe('Java');
+      expect(
+        harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!.value,
+      ).toBe('Java');
       expect(titles(harness)).toEqual(['Java streams']);
     });
 
     it('keeps comparison signs in a DSA statement on the card and in the preview', async () => {
-      const statement = 'Count index pairs i<j such that values[i] > values[j], as in List&lt;T&gt;.';
+      const statement =
+        'Count index pairs i<j such that values[i] > values[j], as in List&lt;T&gt;.';
       content.getSearchIndex.mockReturnValue(
-        of([item('inversions', 'Count Inversions', { contentType: 'dsa-problem', practiceFormat: 'solve', preview: statement })]),
+        of([
+          item('inversions', 'Count Inversions', {
+            contentType: 'dsa-problem',
+            practiceFormat: 'solve',
+            preview: statement,
+          }),
+        ]),
       );
       const harness = await searchFor('/search');
       const shown = 'Count index pairs i<j such that values[i] > values[j], as in List<T>.';
       expect(titles(harness)).toEqual([shown]);
       expect(harness.routeNativeElement!.querySelector('.result-row-summary')).toBeNull();
       openFirstResult(harness);
-      expect(harness.routeNativeElement!.querySelector('.summary-pane h2')?.textContent).toBe(shown);
+      expect(harness.routeNativeElement!.querySelector('.summary-pane h2')?.textContent).toBe(
+        shown,
+      );
     });
 
     it('offers Search all content when filters hide every match, keeping the query', async () => {
@@ -1572,7 +1735,10 @@ describe('Unified Search topic workbench', () => {
       const empty = harness.routeNativeElement!.querySelector('.empty-state')!;
       expect(empty.textContent).toContain('No results for “counter” with the current filters.');
       const actions = [...empty.querySelectorAll<HTMLButtonElement>('.empty-actions button')];
-      expect(actions.map((button) => button.textContent!.trim())).toEqual(['Search all content', 'Clear search']);
+      expect(actions.map((button) => button.textContent!.trim())).toEqual([
+        'Search all content',
+        'Clear search',
+      ]);
       actions[0].click();
       await harness.fixture.whenStable();
       harness.detectChanges();
@@ -1583,30 +1749,38 @@ describe('Unified Search topic workbench', () => {
     it('drops a path scope and reloads the full index from Search all content', async () => {
       const harness = await searchFor('/search?q=counter&path=grow');
       expect(content.getSearchIndex).toHaveBeenLastCalledWith('grow');
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('.empty-actions .primary')!.click();
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>('.empty-actions .primary')!
+        .click();
       await harness.fixture.whenStable();
       harness.detectChanges();
       expect(content.getSearchIndex).toHaveBeenLastCalledWith(undefined);
       expect(TestBed.inject(Router).url).toBe('/search?q=counter');
     });
 
-    it('offers Clear search for an unmatched query and Clear filters for a filter-only dead end', async () => {
-      const harness = await searchFor('/search?q=zzqqxx');
-      const empty = harness.routeNativeElement!.querySelector('.empty-state')!;
-      expect(empty.textContent).toContain('No results for “zzqqxx”. Check the spelling');
-      const clear = empty.querySelector<HTMLButtonElement>('.empty-actions button')!;
-      expect(clear.textContent!.trim()).toBe('Clear search');
-      clear.click();
-      await harness.fixture.whenStable();
-      harness.detectChanges();
-      expect(TestBed.inject(Router).url).toBe('/search');
-      expect(titles(harness)).toEqual([document.title]);
+    it(
+      'offers Clear search for an unmatched query and Clear filters for a filter-only ' +
+        'dead end',
+      async () => {
+        const harness = await searchFor('/search?q=zzqqxx');
+        const empty = harness.routeNativeElement!.querySelector('.empty-state')!;
+        expect(empty.textContent).toContain('No results for “zzqqxx”. Check the spelling');
+        const clear = empty.querySelector<HTMLButtonElement>('.empty-actions button')!;
+        expect(clear.textContent!.trim()).toBe('Clear search');
+        clear.click();
+        await harness.fixture.whenStable();
+        harness.detectChanges();
+        expect(TestBed.inject(Router).url).toBe('/search');
+        expect(titles(harness)).toEqual([document.title]);
 
-      await harness.navigateByUrl('/search?difficulty=Advanced', Search);
-      harness.detectChanges();
-      const filtersOnly = harness.routeNativeElement!.querySelector('.empty-state')!;
-      expect(filtersOnly.textContent).toContain('No results match those filters.');
-      expect(filtersOnly.querySelector('.empty-actions button')?.textContent?.trim()).toBe('Clear filters');
-    });
+        await harness.navigateByUrl('/search?difficulty=Advanced', Search);
+        harness.detectChanges();
+        const filtersOnly = harness.routeNativeElement!.querySelector('.empty-state')!;
+        expect(filtersOnly.textContent).toContain('No results match those filters.');
+        expect(filtersOnly.querySelector('.empty-actions button')?.textContent?.trim()).toBe(
+          'Clear filters',
+        );
+      },
+    );
   });
 });

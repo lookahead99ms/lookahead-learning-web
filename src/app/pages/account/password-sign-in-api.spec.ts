@@ -18,7 +18,8 @@ function api(respond: (url: string, init: RequestInit) => Response | Promise<Res
   const calls: { url: string; init: RequestInit }[] = [];
   const transport = vi.fn(async (url: string, init: RequestInit = {}) => {
     calls.push({ url, init });
-    if (url === '/bff/api/v1/auth/csrf') return json(200, { data: { token: 'csrf-1', headerName: 'X-CSRF-TOKEN' } });
+    if (url === '/bff/api/v1/auth/csrf')
+      return json(200, { data: { token: 'csrf-1', headerName: 'X-CSRF-TOKEN' } });
     return respond(url, init);
   });
   TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: transport }] });
@@ -26,46 +27,95 @@ function api(respond: (url: string, init: RequestInit) => Response | Promise<Res
 }
 
 describe('PasswordSignInApi', () => {
-  it('posts each step to its Gateway route with the session CSRF token and keeps the email in memory', async () => {
-    const { client, calls } = api(() => json(200, { data: { step: 'SIGNED_IN', next: '/learn' } }));
-    expect(await client.signIn(' priya@example.com ', 'Secret-Passw0rd!', '/learn')).toEqual({ kind: 'signed-in', next: '/learn' });
-    const post = calls[1];
-    expect(post.url).toBe('/bff/api/v1/auth/password/sign-in');
-    expect(post.init.method).toBe('POST');
-    expect((post.init.headers as Record<string, string>)['X-CSRF-TOKEN']).toBe('csrf-1');
-    expect(JSON.parse(post.init.body as string)).toEqual({ email: 'priya@example.com', password: 'Secret-Passw0rd!', returnTo: '/learn' });
-    expect(client.email()).toBe('priya@example.com');
+  it(
+    'posts each step to its Gateway route with the session CSRF token and keeps the email ' +
+      'in memory',
+    async () => {
+      const { client, calls } = api(() =>
+        json(200, { data: { step: 'SIGNED_IN', next: '/learn' } }),
+      );
+      expect(await client.signIn(' priya@example.com ', 'Secret-Passw0rd!', '/learn')).toEqual({
+        kind: 'signed-in',
+        next: '/learn',
+      });
+      const post = calls[1];
+      expect(post.url).toBe('/bff/api/v1/auth/password/sign-in');
+      expect(post.init.method).toBe('POST');
+      expect((post.init.headers as Record<string, string>)['X-CSRF-TOKEN']).toBe('csrf-1');
+      expect(JSON.parse(post.init.body as string)).toEqual({
+        email: 'priya@example.com',
+        password: 'Secret-Passw0rd!',
+        returnTo: '/learn',
+      });
+      expect(client.email()).toBe('priya@example.com');
 
-    await client.confirm(' 123456 ', '/');
-    await client.resend();
-    await client.reset('654321', 'New-Passw0rd!xyz', '/');
-    await client.respond({ newPassword: 'New-Passw0rd!xyz' });
-    await client.forgot('arjun@example.com');
-    await client.signUp({ firstName: 'Arjun', lastName: 'Rao', email: 'arjun@example.com ', password: 'x', returnTo: '/' });
-    expect(calls.filter((c) => c.url !== '/bff/api/v1/auth/csrf').map((c) => c.url.replace('/bff/api/v1/auth/password', ''))).toEqual([
-      '/sign-in', '/sign-up/confirm', '/sign-up/resend', '/password/reset', '/challenge', '/password/forgot', '/sign-up',
-    ]);
-    expect(JSON.parse(calls[3].init.body as string)).toEqual({ email: 'priya@example.com', code: '123456', returnTo: '/' });
-    expect(client.email()).toBe('arjun@example.com');
-  });
+      await client.confirm(' 123456 ', '/');
+      await client.resend();
+      await client.reset('654321', 'New-Passw0rd!xyz', '/');
+      await client.respond({ newPassword: 'New-Passw0rd!xyz' });
+      await client.forgot('arjun@example.com');
+      await client.signUp({
+        firstName: 'Arjun',
+        lastName: 'Rao',
+        email: 'arjun@example.com ',
+        password: 'x',
+        returnTo: '/',
+      });
+      expect(
+        calls
+          .filter((c) => c.url !== '/bff/api/v1/auth/csrf')
+          .map((c) => c.url.replace('/bff/api/v1/auth/password', '')),
+      ).toEqual([
+        '/sign-in',
+        '/sign-up/confirm',
+        '/sign-up/resend',
+        '/password/reset',
+        '/challenge',
+        '/password/forgot',
+        '/sign-up',
+      ]);
+      expect(JSON.parse(calls[3].init.body as string)).toEqual({
+        email: 'priya@example.com',
+        code: '123456',
+        returnTo: '/',
+      });
+      expect(client.email()).toBe('arjun@example.com');
+    },
+  );
 
   it('maps every Gateway step', async () => {
     const steps = [
       [{ step: 'NEW_PASSWORD' }, { kind: 'new-password' }],
       [{ step: 'APP_CODE' }, { kind: 'code', method: 'app' }],
       [{ step: 'EMAIL_CODE' }, { kind: 'code', method: 'email' }],
-      [{ step: 'CODE_SENT', destination: 'p***@e***' }, { kind: 'code-sent', destination: 'p***@e***' }],
+      [
+        { step: 'CODE_SENT', destination: 'p***@e***' },
+        { kind: 'code-sent', destination: 'p***@e***' },
+      ],
       [{ step: 'CODE_SENT' }, { kind: 'code-sent', destination: '' }],
       [{ step: 'SIGN_IN' }, { kind: 'sign-in' }],
-      [{ step: 'SIGNED_IN', next: 'https://elsewhere.example' }, { kind: 'signed-in', next: '/' }],
+      [
+        { step: 'SIGNED_IN', next: 'https://elsewhere.example' },
+        { kind: 'signed-in', next: '/' },
+      ],
       // DLV-969 S36.8: only a literal true offers the merge; anything else changes nothing.
-      [{ step: 'SIGNED_IN', next: '/learn', mergeAvailable: true }, { kind: 'signed-in', next: '/learn', mergeAvailable: true }],
-      [{ step: 'SIGNED_IN', next: '/learn', mergeAvailable: 'true' }, { kind: 'signed-in', next: '/learn' }],
-      [{ step: 'SIGNED_IN', next: '/learn', mergeAvailable: false }, { kind: 'signed-in', next: '/learn' }],
+      [
+        { step: 'SIGNED_IN', next: '/learn', mergeAvailable: true },
+        { kind: 'signed-in', next: '/learn', mergeAvailable: true },
+      ],
+      [
+        { step: 'SIGNED_IN', next: '/learn', mergeAvailable: 'true' },
+        { kind: 'signed-in', next: '/learn' },
+      ],
+      [
+        { step: 'SIGNED_IN', next: '/learn', mergeAvailable: false },
+        { kind: 'signed-in', next: '/learn' },
+      ],
     ] as const;
     let index = 0;
     const { client } = api(() => json(200, { data: steps[index][0] }));
-    for (; index < steps.length; index++) expect(await client.signIn('a@b.c', 'p', '/')).toEqual(steps[index][1]);
+    for (; index < steps.length; index++)
+      expect(await client.signIn('a@b.c', 'p', '/')).toEqual(steps[index][1]);
   });
 
   it('turns Gateway codes and failures into plain problems', async () => {
@@ -98,12 +148,24 @@ describe('PasswordSignInApi', () => {
 
   it('fails closed when the CSRF token cannot be read', async () => {
     const transport = vi.fn(async () => json(500, {}));
-    TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: transport }] });
-    const failure = await TestBed.inject(PasswordSignInApi).forgot('a@b.c').catch((error) => error);
+    TestBed.configureTestingModule({
+      providers: [{ provide: ACCOUNT_FETCH, useValue: transport }],
+    });
+    const failure = await TestBed.inject(PasswordSignInApi)
+      .forgot('a@b.c')
+      .catch((error) => error);
     expect(failure.problem).toBe('unavailable');
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: vi.fn(async () => json(200, { data: {} })) }] });
-    expect((await TestBed.inject(PasswordSignInApi).forgot('a@b.c').catch((error) => error)).problem).toBe('unavailable');
+    TestBed.configureTestingModule({
+      providers: [{ provide: ACCOUNT_FETCH, useValue: vi.fn(async () => json(200, { data: {} })) }],
+    });
+    expect(
+      (
+        await TestBed.inject(PasswordSignInApi)
+          .forgot('a@b.c')
+          .catch((error) => error)
+      ).problem,
+    ).toBe('unavailable');
   });
 
   it('checks the pool password rules, masks addresses and keeps next paths on this site', () => {
@@ -118,7 +180,16 @@ describe('PasswordSignInApi', () => {
     expect(safeNext('/\\evil')).toBe('/');
     expect(safeNext(42)).toBe('/');
     expect(problemMessage('credentials')).toBe("That email and password don't match.");
-    for (const problem of ['not-confirmed', 'code', 'code-expired', 'password-rules', 'exists', 'too-many', 'expired', 'unavailable'] as const)
+    for (const problem of [
+      'not-confirmed',
+      'code',
+      'code-expired',
+      'password-rules',
+      'exists',
+      'too-many',
+      'expired',
+      'unavailable',
+    ] as const)
       expect(problemMessage(problem).length).toBeGreaterThan(10);
   });
 });

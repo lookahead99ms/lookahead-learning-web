@@ -13,8 +13,8 @@ if (!testGlobal[testBedSetup]) {
   });
 }
 
-// DLV-969 S37: the header hint lives in browser storage (where the test environment has one, as in CI); each test
-// starts and ends without one, whatever ran before it.
+// DLV-969 S37: the header hint lives in browser storage (where the test environment has one, as in
+// CI); each test starts and ends without one, whatever ran before it.
 function clearHeaderHint(): void {
   try {
     globalThis.localStorage?.removeItem('lookahead.header-hint');

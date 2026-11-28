@@ -14,7 +14,12 @@ describe('AccountThemePreference', () => {
   afterEach(() => document.documentElement.removeAttribute('data-theme'));
 
   function signIn(accountId = 'synthetic-account'): void {
-    accounts.account.set({ accountId, username: 'sample@example.test', displayName: 'Sample', topicGrants: [] });
+    accounts.account.set({
+      accountId,
+      username: 'sample@example.test',
+      displayName: 'Sample',
+      topicGrants: [],
+    });
   }
 
   it('applies the account theme once after sign-in', async () => {

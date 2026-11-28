@@ -34,23 +34,31 @@ function render(runLocally: LessonRunLocally) {
 }
 
 const text = (root: HTMLElement, selector: string) =>
-  [...root.querySelectorAll(selector)].map((element) => element.textContent?.replace(/\s+/g, ' ').trim());
+  [...root.querySelectorAll(selector)].map((element) =>
+    element.textContent?.replace(/\s+/g, ' ').trim(),
+  );
 
 describe('LessonStart', () => {
   it('shows the project for the page-wide reference language and switches with it', () => {
     const fixture = render(twoLanguages);
     const root = fixture.nativeElement as HTMLElement;
     expect(text(root, '.project-languages button')).toEqual(['Java', 'Python']);
-    expect(root.querySelector('.project-languages [aria-pressed="true"]')?.textContent?.trim()).toBe('Java');
+    expect(
+      root.querySelector('.project-languages [aria-pressed="true"]')?.textContent?.trim(),
+    ).toBe('Java');
     expect(text(root, '.run-locally-body ul li')).toEqual(['JDK 21 or newer']);
-    expect(root.querySelector('.project-download')?.textContent).toContain('Download the Java project (.zip)');
+    expect(root.querySelector('.project-download')?.textContent).toContain(
+      'Download the Java project (.zip)',
+    );
 
-    (root.querySelectorAll<HTMLButtonElement>('.project-languages button')[1]).click();
+    root.querySelectorAll<HTMLButtonElement>('.project-languages button')[1].click();
     fixture.detectChanges();
     expect(TestBed.inject(ReferenceLanguageService).selected()).toBe('python');
     expect(text(root, '.run-locally-body ul li')).toEqual(['Python 3.12 or newer']);
     expect(text(root, '.run-locally-body ol li')).toEqual(['Run python -m pytest.']);
-    expect(root.querySelector('.project-download')?.textContent).toContain('Download the Python project (.zip)');
+    expect(root.querySelector('.project-download')?.textContent).toContain(
+      'Download the Python project (.zip)',
+    );
   });
 
   it('falls back to the first project when the reference language has none', () => {
@@ -58,7 +66,9 @@ describe('LessonStart', () => {
     TestBed.inject(ReferenceLanguageService).select('go');
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('.project-languages [aria-pressed="true"]')?.textContent?.trim()).toBe('Java');
+    expect(
+      root.querySelector('.project-languages [aria-pressed="true"]')?.textContent?.trim(),
+    ).toBe('Java');
     expect(root.querySelector('.project-download')?.textContent).toContain('Java');
   });
 
@@ -70,7 +80,9 @@ describe('LessonStart', () => {
     });
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('.project-languages')).toBeNull();
-    expect(root.querySelector('.project-download')?.textContent).toContain('Download the project (.zip)');
+    expect(root.querySelector('.project-download')?.textContent).toContain(
+      'Download the project (.zip)',
+    );
     expect(text(root, '.run-locally-body ol li')).toEqual(['Open the folder.']);
   });
 });

@@ -1256,7 +1256,10 @@ select {
 .pinned-selection {
   position: sticky;
   z-index: 4;
-  top: calc(var(--platform-header-height, 76px) + var(--search-heading-stack, 0px) + var(--search-filter-height, 0px) + 16px);
+  top: calc(
+    var(--platform-header-height, 76px) + var(--search-heading-stack, 0px) +
+      var(--search-filter-height, 0px) + 16px
+  );
   margin-bottom: 16px;
   padding: 10px;
   border: 1px solid var(--search-primary);
@@ -1323,7 +1326,10 @@ select {
 
   .summary-pane:not(:has(.preview-details[open])) {
     position: sticky;
-    top: calc(var(--platform-header-height, 76px) + var(--search-heading-stack, 0px) + var(--search-filter-height, 0px) + 16px);
+    top: calc(
+      var(--platform-header-height, 76px) + var(--search-heading-stack, 0px) +
+        var(--search-filter-height, 0px) + 16px
+    );
   }
 }
 
@@ -1363,9 +1369,13 @@ select {
   line-height: 1.3;
   text-decoration: none;
   overflow-wrap: anywhere;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
-.review-navigation .review-back { text-align: start; }
+.review-navigation .review-back {
+  text-align: start;
+}
 .review-navigation .review-search {
   flex-shrink: 0;
   margin-inline-start: auto;
@@ -1380,7 +1390,13 @@ select {
   outline-offset: 3px;
 }
 @media (max-width: 540px) {
-  .review-navigation { gap: 12px; }
-  .review-navigation .review-search { max-width: 38%; }
+  .review-navigation {
+    gap: 12px;
+  }
+  .review-navigation .review-search {
+    max-width: 38%;
+  }
 }
-.search-heading.review-heading { grid-template-columns: minmax(0, 1fr); }
+.search-heading.review-heading {
+  grid-template-columns: minmax(0, 1fr);
+}

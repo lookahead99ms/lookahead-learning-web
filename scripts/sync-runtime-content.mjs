@@ -59,8 +59,9 @@ if (!(await hasContentSource(sourceRoot))) {
   );
 }
 
-// On macOS (APFS) `cp -c` clones files copy-on-write: the 250 MB stage costs metadata only instead of a full
-// rewrite on every watcher-triggered sync. Elsewhere, or if cloning fails, fall back to a normal copy.
+// On macOS (APFS) `cp -c` clones files copy-on-write: the 250 MB stage costs metadata only instead
+// of a full rewrite on every watcher-triggered sync. Elsewhere, or if cloning fails, fall back to a
+// normal copy.
 async function copyTree(source, destination) {
   if (process.platform === 'darwin') {
     try {
@@ -104,7 +105,11 @@ await withRuntimePublicationLock(resolve(scratchRoot, 'publication.lock'), async
     const fileCount = await countFiles(stageRoot);
     await publishRuntimeDirectory(stageRoot, destinationRoot, backupRoot);
     console.log(
-      `Prepared ${fileCount} runtime asset(s), ${searchDocumentCount} search document(s), ${interviewQuestionCount} interview question(s), ${answerSlideDeckCount} answer slide deck(s), and ${handsOnDsa.distinctProblems} canonical Hands-On DSA problem(s) from ${sourceRoot}.`,
+      `Prepared ${fileCount} runtime asset(s), ${searchDocumentCount} search ` +
+        `document(s), ${interviewQuestionCount} interview ` +
+        `question(s), ${answerSlideDeckCount} answer slide deck(s), ` +
+        `and ${handsOnDsa.distinctProblems} canonical Hands-On DSA problem(s) ` +
+        `from ${sourceRoot}.`,
     );
   } finally {
     const hasRecoveryBackup = await access(backupRoot).then(

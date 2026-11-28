@@ -14,7 +14,8 @@ export interface StudioModeState {
   /**
    * The line-by-line trace is open: the Visual walkthrough's "Every line" switch ("Code beside",
    * 2026-10-06). Only the visual mode sets it; the field keeps its name so earlier states still
-   * load, and `migrateStudioState` moves an older guided debugger in another tab to the walkthrough.
+   * load, and `migrateStudioState` moves an older guided debugger in another tab to the
+   * walkthrough.
    */
   debugger: boolean;
   support: boolean;
@@ -61,10 +62,14 @@ export function studioPosition(state: StudioState): StudioPosition {
  */
 export function updateStudioMode(state: StudioState, patch: Partial<StudioModeState>): StudioState {
   const mode = state.modes[state.mode];
-  const picked = patch.fixtureId !== undefined && patch.fixtureId !== mode.fixtureId && !('chosen' in patch);
+  const picked =
+    patch.fixtureId !== undefined && patch.fixtureId !== mode.fixtureId && !('chosen' in patch);
   return {
     ...state,
-    modes: { ...state.modes, [state.mode]: { ...mode, ...patch, ...(picked ? { chosen: true } : {}) } },
+    modes: {
+      ...state.modes,
+      [state.mode]: { ...mode, ...patch, ...(picked ? { chosen: true } : {}) },
+    },
   };
 }
 /**
@@ -91,7 +96,10 @@ export function stepStudio(state: StudioState, step: number): StudioState {
  * example (the story's animated one) for a tab whose example the learner never picked; a picked
  * (`chosen`) example always wins, even when the story does not animate it.
  */
-export function visualizeStudio(state: StudioState, options: { fixtureId?: string } = {}): StudioState {
+export function visualizeStudio(
+  state: StudioState,
+  options: { fixtureId?: string } = {},
+): StudioState {
   const position = studioPosition(state);
   const lines = state.modes[state.mode]?.debugger === true;
   const chosen = state.modes[state.mode]?.chosen === true;
@@ -145,7 +153,10 @@ export function migrateStudioState(state: StudioState): StudioState {
 /** A timed attempt locks the solution: every mode closes its reference and debugger. */
 export function lockStudio(state: StudioState): StudioState {
   const modes = Object.fromEntries(
-    Object.entries(state.modes).map(([mode, value]) => [mode, { ...value, revealed: false, debugger: false }]),
+    Object.entries(state.modes).map(([mode, value]) => [
+      mode,
+      { ...value, revealed: false, debugger: false },
+    ]),
   ) as StudioState['modes'];
   return { ...state, modes, visualizationOrigin: null };
 }

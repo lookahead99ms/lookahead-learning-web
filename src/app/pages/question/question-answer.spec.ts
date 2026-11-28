@@ -99,8 +99,13 @@ describe('Non-DSA Answer + Example', () => {
       const reviewRow = root.querySelector('.question-review-navigation')!;
       expect(reviewRow).not.toBeNull();
       expect(root.querySelectorAll('.related-theory-link')).toHaveLength(1);
-      expect(root.querySelector('.reader-question-panel')!.compareDocumentPosition(reviewRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      expect(reviewRow.compareDocumentPosition(layout) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(
+        root.querySelector('.reader-question-panel')!.compareDocumentPosition(reviewRow) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(
+        reviewRow.compareDocumentPosition(layout) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
       expect(reviewRow.querySelector('.related-theory-link')?.getAttribute('href')).toBe(
         `/${path}/sample/theory`,
       );
@@ -130,7 +135,7 @@ describe('Non-DSA Answer + Example', () => {
     expect(followUp.querySelector('strong')?.textContent).toBe('contract');
   });
 
-  it('presents each follow-up as a numbered interviewer card with a closed strong answer', async () => {
+  it('presents each follow-up as a numbered interviewer card, strong answer closed', async () => {
     const root = await render('blaze', {
       ...example,
       followUps: [
@@ -142,18 +147,25 @@ describe('Non-DSA Answer + Example', () => {
     const heading = section.querySelector('h2')!;
     expect(heading.textContent).toBe('Likely follow-ups');
     expect(section.getAttribute('aria-labelledby')).toBe(heading.id);
-    const cards = Array.from(section.querySelectorAll<HTMLElement>('ol.followup-list > li.followup-card'));
+    const cards = Array.from(
+      section.querySelectorAll<HTMLElement>('ol.followup-list > li.followup-card'),
+    );
     expect(cards).toHaveLength(2);
-    expect(cards.map((card) => card.querySelector('.followup-number')?.textContent?.trim())).toEqual(['Follow-up 1', 'Follow-up 2']);
+    expect(
+      cards.map((card) => card.querySelector('.followup-number')?.textContent?.trim()),
+    ).toEqual(['Follow-up 1', 'Follow-up 2']);
     expect(cards[0].querySelector('.followup-role')?.textContent?.trim()).toBe('Interviewer');
     const question = cards[1].querySelector('h3.followup-question')!;
-    // A follow-up question is rich text, like the lesson page shows it: inline code renders as code, never as visible tags.
+    // A follow-up question is rich text, like the lesson page shows it: inline code renders as
+    // code, never as visible tags.
     expect(question.textContent?.trim()).toBe('What breaks first when ttl < 1?');
     expect(question.querySelector('code')?.textContent).toBe('ttl < 1');
     const details = cards[0].querySelector<HTMLDetailsElement>('details.followup-answer')!;
     const summary = details.querySelector('summary')!;
     expect(details.open).toBe(false);
-    expect(summary.querySelector('.followup-toggle-show')?.textContent).toBe('Show a strong answer');
+    expect(summary.querySelector('.followup-toggle-show')?.textContent).toBe(
+      'Show a strong answer',
+    );
     expect(summary.getAttribute('aria-describedby')).toBe(cards[0].querySelector('h3')!.id);
     summary.click();
     expect(details.open).toBe(true);

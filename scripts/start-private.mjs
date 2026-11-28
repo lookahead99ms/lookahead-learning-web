@@ -6,7 +6,11 @@ import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startDeliveryEditor } from './delivery-editor.mjs';
-import { assertWorkingGatewayProxy, loadLocalBaseProxy, withLocalStaffDocuments } from './local-base-proxy.mjs';
+import {
+  assertWorkingGatewayProxy,
+  loadLocalBaseProxy,
+  withLocalStaffDocuments,
+} from './local-base-proxy.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const contentRoot = resolve(
@@ -94,35 +98,51 @@ const protectedWorking =
 const baseProxyConfig = process.env.LOOKAHEAD_BASE_PROXY_CONFIG;
 if (protectedWorking && !baseProxyConfig) {
   throw new Error(
-    'Protected working frontend on 4301 requires LOOKAHEAD_BASE_PROXY_CONFIG for local Gateway 4350.',
+    'Protected working frontend on 4301 requires LOOKAHEAD_BASE_PROXY_CONFIG for local ' +
+      'Gateway 4350.',
   );
 }
 const baseProxy = await loadLocalBaseProxy(repositoryRoot, baseProxyConfig);
-const proxy = protectedWorking ? withLocalStaffDocuments(assertWorkingGatewayProxy(baseProxy)) : baseProxy;
+const proxy = protectedWorking
+  ? withLocalStaffDocuments(assertWorkingGatewayProxy(baseProxy))
+  : baseProxy;
 await syncPrivateContent();
 
 function authorizeWorkingAuthor(request) {
   return new Promise((resolveStatus) => {
-    const check = httpRequest({
-      hostname: '127.0.0.1',
-      port: 4350,
-      method: 'GET',
-      path: '/bff/api/v1/account/permissions',
-      headers: { host: '127.0.0.1:4301', cookie: request.headers.cookie ?? '' },
-    }, (response) => {
-      if (response.statusCode !== 200) { response.resume(); resolveStatus(response.statusCode); return; }
-      let body = '';
-      response.setEncoding('utf8');
-      response.on('data', chunk => {
-        body += chunk;
-        if (body.length > 8192) { response.destroy(); resolveStatus(503); }
-      });
-      response.on('end', () => {
-        try { resolveStatus(JSON.parse(body).data ?? 503); }
-        catch { resolveStatus(503); }
-      });
-      response.on('error', () => resolveStatus(503));
-    });
+    const check = httpRequest(
+      {
+        hostname: '127.0.0.1',
+        port: 4350,
+        method: 'GET',
+        path: '/bff/api/v1/account/permissions',
+        headers: { host: '127.0.0.1:4301', cookie: request.headers.cookie ?? '' },
+      },
+      (response) => {
+        if (response.statusCode !== 200) {
+          response.resume();
+          resolveStatus(response.statusCode);
+          return;
+        }
+        let body = '';
+        response.setEncoding('utf8');
+        response.on('data', (chunk) => {
+          body += chunk;
+          if (body.length > 8192) {
+            response.destroy();
+            resolveStatus(503);
+          }
+        });
+        response.on('end', () => {
+          try {
+            resolveStatus(JSON.parse(body).data ?? 503);
+          } catch {
+            resolveStatus(503);
+          }
+        });
+        response.on('error', () => resolveStatus(503));
+      },
+    );
     check.setTimeout(10000, () => check.destroy());
     check.on('error', () => resolveStatus(503));
     check.end();

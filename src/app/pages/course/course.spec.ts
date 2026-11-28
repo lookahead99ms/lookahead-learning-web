@@ -145,21 +145,31 @@ describe('Course learning path', () => {
     );
   });
 
-  it('takes the shared fixed browsing column so the card grid reflows only with zoom (DLV-803)', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/core-java', Course);
-    expect(harness.routeNativeElement!.querySelector('main')?.classList).toContain('course-page');
-    const css = [...document.querySelectorAll('style')]
-      .map((style) => style.textContent ?? '')
-      .join('\n')
-      .replace(/\s+/g, ' ');
-    expect(css).toMatch(
-      /\.course-page\[[^\]]+\] > \.course-reader\[[^\]]+\]:not\(\.course-reader-with-nav\) \{ width: min\(var\(--page-max-browse, 1180px\), 100% - 2 \* var\(--page-gutter, 6vw\)\); \}/,
-    );
-    expect(css).toMatch(
-      /\.course-page\[[^\]]+\] > \.course-reader\[[^\]]+\] > \.module-question-list\[[^\]]+\] \{ width: 100%; \}/,
-    );
-  });
+  it(
+    'takes the shared fixed browsing column so the card grid reflows only with zoom ' + '(DLV-803)',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/learn/core-java', Course);
+      expect(harness.routeNativeElement!.querySelector('main')?.classList).toContain('course-page');
+      const css = [...document.querySelectorAll('style')]
+        .map((style) => style.textContent ?? '')
+        .join('\n')
+        .replace(/\s+/g, ' ');
+      expect(css).toMatch(
+        new RegExp(
+          '\\.course-page\\[[^\\]]+\\] > \\.course-reader\\[[^\\]]+\\]:not\\(\\.course-reader' +
+            '-with-nav\\) \\{ width: min\\(var\\(--page-max-browse, 1180px\\), 100% - 2 \\* ' +
+            'var\\(--page-gutter, 6vw\\)\\); \\}',
+        ),
+      );
+      expect(css).toMatch(
+        new RegExp(
+          '\\.course-page\\[[^\\]]+\\] > \\.course-reader\\[[^\\]]+\\] > ' +
+            '\\.module-question-list\\[[^\\]]+\\] \\{ width: 100%; \\}',
+        ),
+      );
+    },
+  );
 
   it('renders a next-only map without an empty background column', async () => {
     const harness = await RouterTestingHarness.create();
@@ -367,7 +377,7 @@ describe('Course learning path', () => {
     expect(harness.routeNativeElement!.textContent).not.toContain('Recommended next');
   });
 
-  it('clears the local map when navigating to a course without learning-path metadata', async () => {
+  it('clears the local map on navigating to a course without learning-path metadata', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/grow/spring-framework', Course);
     vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(

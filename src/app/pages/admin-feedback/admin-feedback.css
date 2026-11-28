@@ -4,7 +4,8 @@
   background: var(--surface-page);
   color: var(--text-body);
 }
-/* One content column under the Admin sub-header, no side bars: the backlog table gets the whole width (owner, 2026-11-06). */
+/* One content column under the Admin sub-header, no side bars: the backlog table gets the whole
+   width (owner, 2026-11-06). */
 .feedback-page {
   display: block;
   min-height: calc(100dvh - var(--platform-header-height, 76px));
@@ -66,7 +67,8 @@ h1 {
   gap: 14px;
   margin: 0 0 20px;
 }
-/* The title with, for the owner, the Jobs strip at its right (DLV-971); the result line sits under the title. */
+/* The title with, for the owner, the Jobs strip at its right (DLV-971); the result line sits under
+   the title. */
 .title-row {
   display: flex;
   flex-wrap: wrap;
@@ -174,8 +176,9 @@ h1 {
 .empty {
   margin-top: 16px;
 }
-/* The table: fixed, aligned columns; a sticky header; uniform rows; faint zebra; hover highlight. The region scrolls
-   sideways when it is narrower than the columns; the ID column sticks on the left, Ticket / Updated / ↗ on the right. */
+/* The table: fixed, aligned columns; a sticky header; uniform rows; faint zebra; hover highlight.
+   The region scrolls sideways when it is narrower than the columns; the ID column sticks on the
+   left, Ticket / Updated / ↗ on the right. */
 .table-scroll {
   overflow: auto;
   max-height: 70vh;
@@ -193,23 +196,44 @@ h1 {
   --w-updated: 96px;
   --w-act: 44px;
   width: 100%;
-  /* The sum of the column widths: narrower than this the region scrolls, wider only Summary grows. */
-  min-width: calc(var(--w-key) + var(--w-sum) + var(--w-from) + var(--w-type) + var(--w-status) + var(--w-ticket) + var(--w-updated) + var(--w-act));
+  /* The sum of the column widths: narrower than this the region scrolls, wider only Summary grows.
+  */
+  min-width: calc(
+    var(--w-key) + var(--w-sum) + var(--w-from) + var(--w-type) + var(--w-status) +
+      var(--w-ticket) + var(--w-updated) + var(--w-act)
+  );
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
   font-size: 14px;
 }
-/* Fixed layout: every column but Summary has a set width, so Summary is exactly 420px at the table's minimum width and
-   takes any extra room; the sticky right offsets below are the fixed widths and stay exact. */
-.c-key { width: var(--w-key); }
-.c-sum { width: auto; }
-.c-from { width: var(--w-from); }
-.c-type { width: var(--w-type); }
-.c-status { width: var(--w-status); }
-.c-ticket { width: var(--w-ticket); }
-.c-updated { width: var(--w-updated); }
-.c-act { width: var(--w-act); }
+/* Fixed layout: every column but Summary has a set width, so Summary is exactly 420px at the
+   table's minimum width and takes any extra room; the sticky right offsets below are the fixed
+   widths and stay exact. */
+.c-key {
+  width: var(--w-key);
+}
+.c-sum {
+  width: auto;
+}
+.c-from {
+  width: var(--w-from);
+}
+.c-type {
+  width: var(--w-type);
+}
+.c-status {
+  width: var(--w-status);
+}
+.c-ticket {
+  width: var(--w-ticket);
+}
+.c-updated {
+  width: var(--w-updated);
+}
+.c-act {
+  width: var(--w-act);
+}
 /* Sticky edges: opaque so the scrolling cells pass behind them, a hairline on the inner edge. */
 .backlog .sticky-left,
 .backlog .sticky-right {
@@ -386,7 +410,9 @@ h1 {
   outline: none;
 }
 .item-row:focus-visible td.key {
-  box-shadow: inset 3px 0 0 var(--accent-strong), 1px 0 0 var(--line);
+  box-shadow:
+    inset 3px 0 0 var(--accent-strong),
+    1px 0 0 var(--line);
 }
 .backlog td.act {
   padding-right: 10px;
@@ -432,7 +458,8 @@ h1 {
   font-size: 13px;
   line-height: 34px;
 }
-/* The dialog on top of the list: a title bar, then the item's two columns, each scrolling on its own. */
+/* The dialog on top of the list: a title bar, then the item's two columns, each scrolling on its
+   own. */
 .item-dialog {
   width: min(1120px, calc(100vw - 32px));
   max-width: none;

@@ -91,7 +91,8 @@
         {{
           state() === 'unpublished'
             ? 'The review packet is not published yet.'
-            : 'The protected review packet is unavailable. Sign-in and admin access must be confirmed.'
+            : 'The protected review packet is unavailable. Sign-in and admin access must be ' +
+              'confirmed.'
         }}
       </p>
       <button type="button" (click)="load()">Reload review</button>

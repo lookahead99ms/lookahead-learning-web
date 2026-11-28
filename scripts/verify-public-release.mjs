@@ -186,5 +186,6 @@ if (violations.length > 0) {
 }
 
 console.log(
-  `Verified ${candidates.length} candidate path(s) and scanned ${inspectedFiles} text file(s) for public release.`,
+  `Verified ${candidates.length} candidate path(s) and scanned ${inspectedFiles} text ` +
+    `file(s) for public release.`,
 );

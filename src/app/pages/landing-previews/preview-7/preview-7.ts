@@ -57,11 +57,24 @@ const AI_HEADLINES: Record<AiVariant, string[]> = {
 
 @Component({
   selector: 'app-landing-preview-7',
-  imports: [LandingHeroVisual, LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene],
+  imports: [
+    LandingHeroVisual,
+    LearningPrompt,
+    PlatformSignature,
+    PlatformHeader,
+    RouterLink,
+    EngineeringChallenge,
+    PlatformBrandIllustration,
+    PlatformBrand,
+    CardScene,
+  ],
   templateUrl: './preview-7.html',
   styleUrl: './preview-7.css',
 })
-/** DLV-937 landing preview 6 (combined: hero from 4, paths and essence from 5, lower sections from 3): a redesign candidate on /preview/landing/6; the live home page is unchanged. */
+/**
+ * DLV-937 landing preview 6 (combined: hero from 4, paths and essence from 5, lower sections from
+ * 3): a redesign candidate on /preview/landing/6; the live home page is unchanged.
+ */
 export class LandingPreview7 {
   protected readonly tagline = (id: PathTaglineId): string => pathTaglineText(id);
   private readonly document = inject(DOCUMENT);
@@ -75,7 +88,10 @@ export class LandingPreview7 {
   protected readonly reducedMotion = signal(false);
   /** The visitor stopped the slideshow with the pause button. */
   protected readonly paused = signal(false);
-  /** Keyboard focus is inside the hero (APG carousel: rotation stops while a keyboard user is in it). */
+  /**
+   * Keyboard focus is inside the hero (APG carousel: rotation stops while a keyboard user is in
+   * it).
+   */
   protected readonly focusHold = signal(false);
   protected readonly pageHidden = signal(false);
   private readonly ready = signal(false);
@@ -100,7 +116,10 @@ export class LandingPreview7 {
     const value = Number(this.queryParams().get('ai'));
     return value === 2 || value === 3 || value === 4 ? value : 1;
   });
-  /** Light-theme hero: white sheet and sand panel (?light=0 shows the earlier light hero to compare). */
+  /**
+   * Light-theme hero: white sheet and sand panel (?light=0 shows the earlier light hero to
+   * compare).
+   */
   protected readonly lightVariant = computed(() =>
     this.queryParams().get('light') === '0' ? 'plain' : 'paper',
   );
@@ -128,7 +147,8 @@ export class LandingPreview7 {
       eyebrow: 'For the engineer deciding where to begin',
       lines: ['Become the engineer', 'you can explain.'],
       description:
-        'Move from understanding a concept to applying it, defending a decision, and knowing what to practice next.',
+        'Move from understanding a concept to applying it, defending a decision, and ' +
+        'knowing what to practice next.',
       action: 'Choose a learning path',
       route: '/',
       fragment: 'paths',
@@ -141,7 +161,8 @@ export class LandingPreview7 {
       eyebrow: 'Ambition, with room for real life',
       lines: ['A clear route through', 'everything you want', 'to become.'],
       description:
-        'Turn broad ambition into a workable week. Bring foundations, production practice, design, and leadership into one learning plan.',
+        'Turn broad ambition into a workable week. Bring foundations, production ' +
+        'practice, design, and leadership into one learning plan.',
       action: 'Shape my study plan',
       route: '/study-plan',
       fragment: undefined,
@@ -154,7 +175,8 @@ export class LandingPreview7 {
       eyebrow: 'For engineers who learn by doing',
       lines: ['Read the idea.', 'Run the system.', 'Own the decision.'],
       description:
-        'Practice in code, inspect execution, and build complete AI applications. Then connect the implementation to the judgment behind it.',
+        'Practice in code, inspect execution, and build complete AI applications. Then ' +
+        'connect the implementation to the judgment behind it.',
       action: 'Explore hands-on practice',
       route: '/learn/hands-on-dsa',
       fragment: undefined,
@@ -167,7 +189,8 @@ export class LandingPreview7 {
       eyebrow: 'Follow a better question',
       lines: ['Good answers', 'begin with', 'better thinking.'],
       description:
-        'A field guide to the models, failures, and trade-offs behind confident engineering. Read deeply. Try the idea. Explain what changed.',
+        'A field guide to the models, failures, and trade-offs behind confident ' +
+        'engineering. Read deeply. Try the idea. Explain what changed.',
       action: 'Find a question worth exploring',
       route: '/search',
       fragment: undefined,
@@ -180,7 +203,9 @@ export class LandingPreview7 {
       eyebrow: 'AI Builds',
       lines: AI_HEADLINES[1],
       description:
-        'Let AI automate the routine work and find patterns in your data, like flagging possible fraud, while you design the system and decide what ships. Guided projects in Java and Python.',
+        'Let AI automate the routine work and find patterns in your data, like flagging ' +
+        'possible fraud, while you design the system and decide what ships. Guided ' +
+        'projects in Java and Python.',
       action: 'Explore AI Builds',
       route: '/blaze/ai-systems-architecture',
       fragment: undefined,
@@ -194,7 +219,8 @@ export class LandingPreview7 {
       eyebrow: 'For the conversations that raise the bar',
       lines: ['Practice the decisions', 'behind the title.'],
       description:
-        'Go beyond recalling answers. Rehearse production judgment, explain system-design trade-offs, and connect technical choices to leadership.',
+        'Go beyond recalling answers. Rehearse production judgment, explain ' +
+        'system-design trade-offs, and connect technical choices to leadership.',
       action: 'Find a scenario to practice',
       route: '/search',
       fragment: undefined,
@@ -208,11 +234,14 @@ export class LandingPreview7 {
     );
   });
   protected readonly windowExample =
-    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    while window_is_invalid():\n        left += 1';
+    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    ' +
+    'while window_is_invalid():\n        left += 1';
   /** The window example, one line per row; the invariant line is highlighted in the hero card. */
   protected readonly windowLines = this.windowExample.split('\n');
   protected readonly invariantLine = 2;
-  /** Slide 4's sketch: a sliding window over example values, between the left and right pointers. */
+  /**
+   * Slide 4's sketch: a sliding window over example values, between the left and right pointers.
+   */
   protected readonly windowCells = [3, 1, 4, 1, 5, 9, 2, 6];
   protected readonly windowLeft = 2;
   protected readonly windowRight = 5;
@@ -348,7 +377,9 @@ export class LandingPreview7 {
       .catch(() => {});
   }
 
-  /** The pause button: an explicit stop, or an explicit start that also lifts a keyboard-focus hold. */
+  /**
+   * The pause button: an explicit stop, or an explicit start that also lifts a keyboard-focus hold.
+   */
   protected toggleRotation(): void {
     if (this.reducedMotion()) return;
     if (this.rotationHeld()) {

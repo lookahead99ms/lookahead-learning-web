@@ -30,7 +30,13 @@ import { editorPalettes, highlightStudioSource } from './code-presentation';
         #sourcePanel
         tabindex="0"
         aria-label="Reference solution, read-only"
-      ><code>@for (line of source().lines; track line.id; let index = $index) {<span class="source-line" [class.current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()]" [class.executed]="debugger() && executed().has(line.id) && line.id !== snapshot()?.event?.sourceAnchor?.[language()]" [attr.aria-current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()] ? 'step' : null"><span class="line-number" aria-hidden="true">{{ index + 1 }}</span><span class="line-text" [innerHTML]="highlighted()[index]"></span></span>}</code></pre>
+      ><code>@for (line of source().lines; track line.id; let index = $index) {<span
+        class="source-line" [class.current]="debugger() && line.id ===
+        snapshot()?.event?.sourceAnchor?.[language()]" [class.executed]="debugger() &&
+        executed().has(line.id) && line.id !== snapshot()?.event?.sourceAnchor?.[language()]"
+        [attr.aria-current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()]
+        ? 'step' : null"><span class="line-number" aria-hidden="true">{{ index + 1 }}</span><span
+        class="line-text" [innerHTML]="highlighted()[index]"></span></span>}</code></pre>
       @if (debugger()) {
         <p class="code-key" aria-hidden="true">
           <span><i class="key-current"></i>Running now</span>

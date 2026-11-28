@@ -9,7 +9,11 @@ describe('Recall card checks', () => {
   });
 
   it('suggests from the grades: any Missed, then any Partly, then every card Got it', () => {
-    const check = (grades: Record<string, 'got' | 'partly' | 'missed'>, total = 3) => ({ open: [], grades, total });
+    const check = (grades: Record<string, 'got' | 'partly' | 'missed'>, total = 3) => ({
+      open: [],
+      grades,
+      total,
+    });
     expect(recallSuggestion(undefined)).toBeNull();
     expect(recallSuggestion(check({}))).toBeNull();
     expect(recallSuggestion(check({ a: 'got', b: 'got' }))).toBeNull();
@@ -23,7 +27,9 @@ describe('Recall card checks', () => {
       review: '1w',
       text: 'From your answers: solved with hints, review in 1 week.',
     });
-    expect(recallSuggestion(check({ a: 'partly', b: 'missed', c: 'got' }))?.rating).toBe('Needed the solution');
+    expect(recallSuggestion(check({ a: 'partly', b: 'missed', c: 'got' }))?.rating).toBe(
+      'Needed the solution',
+    );
     expect(recallSuggestion(check({ a: 'missed' }))?.review).toBe('3d');
   });
 
@@ -43,7 +49,13 @@ describe('Recall card checks', () => {
   });
 
   it('ignores a malformed saved value and works in memory when storage throws', () => {
-    sessionStorage.setItem(RECALL_CHECK_KEY, JSON.stringify({ p1: { open: 'a', grades: {}, total: 1 }, p2: { open: [], grades: { a: 'maybe' }, total: 1 } }));
+    sessionStorage.setItem(
+      RECALL_CHECK_KEY,
+      JSON.stringify({
+        p1: { open: 'a', grades: {}, total: 1 },
+        p2: { open: [], grades: { a: 'maybe' }, total: 1 },
+      }),
+    );
     expect(TestBed.inject(RecallCheckStore).check('p1').open).toEqual([]);
     TestBed.resetTestingModule();
     sessionStorage.setItem(RECALL_CHECK_KEY, '{not json');

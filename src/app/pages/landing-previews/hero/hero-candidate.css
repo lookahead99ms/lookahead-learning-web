@@ -15,7 +15,9 @@
   --home-hero-radius: 22px;
   --home-panel-top: color-mix(in srgb, var(--panel-background) 82%, #000);
   --home-glow-strength: 34%;
-  --home-hero-shadow: 0 30px 60px -28px color-mix(in srgb, var(--panel-background) 70%, transparent);
+  /* prettier-ignore */
+  --home-hero-shadow: 0 30px 60px -28px
+    color-mix(in srgb, var(--panel-background) 70%, transparent);
   --home-panel-learn: #83d8b9;
   --home-panel-grow: #f4ad92;
   --home-panel-blaze: #a9cdf5;
@@ -374,8 +376,16 @@ button:disabled {
   border: 1px solid color-mix(in srgb, var(--hp-indigo) 18%, var(--platform-edge));
   border-radius: 28px;
   background:
-    radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, var(--hp-indigo) 14%, transparent), transparent 62%),
-    radial-gradient(50% 80% at 100% 100%, color-mix(in srgb, var(--accent-strong) 16%, transparent), transparent 60%),
+    radial-gradient(
+      60% 90% at 0% 0%,
+      color-mix(in srgb, var(--hp-indigo) 14%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      50% 80% at 100% 100%,
+      color-mix(in srgb, var(--accent-strong) 16%, transparent),
+      transparent 60%
+    ),
     var(--surface);
   box-shadow: 0 24px 50px -36px color-mix(in srgb, var(--hp-indigo) 60%, transparent);
 }
@@ -529,9 +539,14 @@ button:disabled {
   --panel-line: #2d4669;
   padding: clamp(28px, 4vw, 52px);
   border-radius: 28px;
-  /* One quiet mint glow behind the card; no second wash (user, 2026-10-30: fades read as ink spill). */
+  /* One quiet mint glow behind the card; no second wash (user, 2026-10-30: fades read as ink
+     spill). */
   background:
-    radial-gradient(45% 60% at 88% 0%, color-mix(in srgb, var(--hp-mint) 16%, transparent), transparent 62%),
+    radial-gradient(
+      45% 60% at 88% 0%,
+      color-mix(in srgb, var(--hp-mint) 16%, transparent),
+      transparent 62%
+    ),
     linear-gradient(160deg, var(--hp-navy), var(--hp-navy-deep));
   color: #f1f5f9;
   box-shadow: 0 30px 70px -40px #000c;
@@ -698,7 +713,8 @@ button:disabled {
    a navy primary button and the dark card as the one deep element; the dark theme keeps navy. */
 :host-context(:root:not([data-theme='dark'])) .v5.daylight {
   border: 1px solid var(--platform-edge);
-  /* Plain paper: no colour washes in the corners (user, 2026-10-30: light mode should feel pleasant). */
+  /* Plain paper: no colour washes in the corners (user, 2026-10-30: light mode should feel
+     pleasant). */
   background: var(--surface);
   color: var(--text-strong);
   box-shadow: 0 24px 48px -40px color-mix(in srgb, var(--hp-navy) 40%, transparent);
@@ -776,7 +792,10 @@ button:disabled {
 :host-context(:root:not([data-theme='dark'])) .v5.daylight .chip-row.dark .chip.done {
   border-color: color-mix(in srgb, var(--accent-strong) 45%, var(--platform-edge));
 }
-:host-context(:root:not([data-theme='dark'])) .v5.daylight .chip-row.dark .chip[aria-pressed='true'] {
+:host-context(:root:not([data-theme='dark']))
+  .v5.daylight
+  .chip-row.dark
+  .chip[aria-pressed='true'] {
   border-color: var(--hp-navy);
   background: var(--hp-navy);
   color: #fff;
@@ -787,7 +806,11 @@ button:disabled {
 :host-context(:root:not([data-theme='dark'])) .v5.daylight .chip-row.dark .fill {
   background: var(--accent-strong);
 }
-:host-context(:root:not([data-theme='dark'])) .v5.daylight .chip-row.dark .chip[aria-pressed='true'] .fill {
+:host-context(:root:not([data-theme='dark']))
+  .v5.daylight
+  .chip-row.dark
+  .chip[aria-pressed='true']
+  .fill {
   background: var(--hp-mint);
   opacity: 0.85;
 }

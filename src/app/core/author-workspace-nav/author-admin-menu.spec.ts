@@ -4,7 +4,13 @@ import { AuthorAdminMenu } from './author-admin-menu';
 import { AuthorWorkspacePageId, visibleDocumentationGroups } from './author-workspace-links';
 
 function render(pageId: AuthorWorkspacePageId | null, documentationOnly = false) {
-  TestBed.inject(StudyPlanAccount).account.set({accountId: 'owner', username: 'owner', displayName: 'Owner', topicGrants: [], authorPreview: true});
+  TestBed.inject(StudyPlanAccount).account.set({
+    accountId: 'owner',
+    username: 'owner',
+    displayName: 'Owner',
+    topicGrants: [],
+    authorPreview: true,
+  });
   const fixture = TestBed.createComponent(AuthorAdminMenu);
   fixture.componentRef.setInput('pageId', pageId);
   fixture.componentRef.setInput('documentationOnly', documentationOnly);
@@ -46,7 +52,6 @@ describe('AuthorAdminMenu', () => {
       '/admin/access-checks',
       '/admin/plans',
       '/admin/review-guide',
-
     ]);
     expect(
       [...root.querySelectorAll('.documentation-group-label')].map((label) =>
@@ -68,38 +73,45 @@ describe('AuthorAdminMenu', () => {
   ] as const)('limits the %s right rail to its group', (pageId, labels) => {
     const root = render(pageId, true).nativeElement as HTMLElement;
     const links = [...root.querySelectorAll<HTMLAnchorElement>('.documentation-links a')];
-    for (const label of labels) expect(links.some(link => link.textContent?.includes(label))).toBe(true);
-    expect(links.some(link => link.href.endsWith('/admin/review-guide'))).toBe(false);
+    for (const label of labels)
+      expect(links.some((link) => link.textContent?.includes(label))).toBe(true);
+    expect(links.some((link) => link.href.endsWith('/admin/review-guide'))).toBe(false);
   });
 
-  it("nests the open section's sub-pages under their parent and marks the parent as the section", () => {
-    const root = render('aws-dev-budget', true).nativeElement as HTMLElement;
-    const parent = root.querySelector<HTMLAnchorElement>('.documentation-links a[href="/admin/aws-deployment"]')!;
-    expect(parent.getAttribute('aria-current')).toBe('true');
-    const nested = parent.closest('li')!.querySelector('.subpages')!;
-    expect(nested.getAttribute('aria-label')).toBe('AWS deployment pages');
-    expect(hrefs(nested as HTMLElement, 'a')).toEqual([
-      '/admin/aws-environment-journey',
-      '/admin/aws-dev-plan',
-      '/admin/aws-dev-decisions',
-      '/admin/aws-dev-operations',
-      '/admin/aws-dev-certificates',
-      '/admin/aws-dev-permissions',
-      '/admin/aws-dev-budget',
-      '/admin/aws-dev-status',
-      '/admin/aws-dev-setup',
-      '/admin/aws-dev-workflow',
-      '/admin/aws-dev-procedures',
-      '/admin/aws-dev-records',
-      '/admin/initial-design',
-      '/admin/initial-design-files',
-      '/admin/initial-design-commands',
-      '/admin/initial-design-updates',
-    ]);
-    expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/aws-dev-budget']);
-    // Other sections stay collapsed to their parent link.
-    expect(root.querySelectorAll('.subpages')).toHaveLength(1);
-  });
+  it(
+    "nests the open section's sub-pages under their parent and marks the parent as the " +
+      'section',
+    () => {
+      const root = render('aws-dev-budget', true).nativeElement as HTMLElement;
+      const parent = root.querySelector<HTMLAnchorElement>(
+        '.documentation-links a[href="/admin/aws-deployment"]',
+      )!;
+      expect(parent.getAttribute('aria-current')).toBe('true');
+      const nested = parent.closest('li')!.querySelector('.subpages')!;
+      expect(nested.getAttribute('aria-label')).toBe('AWS deployment pages');
+      expect(hrefs(nested as HTMLElement, 'a')).toEqual([
+        '/admin/aws-environment-journey',
+        '/admin/aws-dev-plan',
+        '/admin/aws-dev-decisions',
+        '/admin/aws-dev-operations',
+        '/admin/aws-dev-certificates',
+        '/admin/aws-dev-permissions',
+        '/admin/aws-dev-budget',
+        '/admin/aws-dev-status',
+        '/admin/aws-dev-setup',
+        '/admin/aws-dev-workflow',
+        '/admin/aws-dev-procedures',
+        '/admin/aws-dev-records',
+        '/admin/initial-design',
+        '/admin/initial-design-files',
+        '/admin/initial-design-commands',
+        '/admin/initial-design-updates',
+      ]);
+      expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/aws-dev-budget']);
+      // Other sections stay collapsed to their parent link.
+      expect(root.querySelectorAll('.subpages')).toHaveLength(1);
+    },
+  );
 
   it("shows a section's sub-pages on its parent page too", () => {
     const root = render('production-support', true).nativeElement as HTMLElement;
@@ -107,21 +119,27 @@ describe('AuthorAdminMenu', () => {
     expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/production-support']);
   });
 
-  it('keeps icons decorative and never collapses: an Admin heading, no toggle, on the left rail (owner, 2026-11-09)', () => {
-    const fixture = render('operations');
-    const root = fixture.nativeElement as HTMLElement;
-    for (const icon of root.querySelectorAll('.item-icon'))
-      expect(icon.getAttribute('aria-hidden')).toBe('true');
-    expect(root.querySelector('app-sidebar-toggle')).toBeNull();
-    expect(root.querySelector('.rail-heading')?.textContent).toBe('Admin');
-    expect(root.querySelector('nav.admin-links')?.getAttribute('aria-label')).toBe('Admin navigation');
-    const content = root.querySelector('.admin-menu-content') as HTMLElement;
-    expect(content.hidden).toBe(false);
-    expect(content.hasAttribute('inert')).toBe(false);
-    expect(render('operations').nativeElement.querySelector('.admin-menu-content').id).not.toBe(
-      content.id,
-    );
-  });
+  it(
+    'keeps icons decorative and never collapses: an Admin heading, no toggle, on the left ' +
+      'rail (owner, 2026-11-09)',
+    () => {
+      const fixture = render('operations');
+      const root = fixture.nativeElement as HTMLElement;
+      for (const icon of root.querySelectorAll('.item-icon'))
+        expect(icon.getAttribute('aria-hidden')).toBe('true');
+      expect(root.querySelector('app-sidebar-toggle')).toBeNull();
+      expect(root.querySelector('.rail-heading')?.textContent).toBe('Admin');
+      expect(root.querySelector('nav.admin-links')?.getAttribute('aria-label')).toBe(
+        'Admin navigation',
+      );
+      const content = root.querySelector('.admin-menu-content') as HTMLElement;
+      expect(content.hidden).toBe(false);
+      expect(content.hasAttribute('inert')).toBe(false);
+      expect(render('operations').nativeElement.querySelector('.admin-menu-content').id).not.toBe(
+        content.id,
+      );
+    },
+  );
 });
 
 describe('AuthorAdminMenu on a narrow screen', () => {
@@ -145,16 +163,43 @@ describe('AuthorAdminMenu on a narrow screen', () => {
 
 describe('visibleDocumentationGroups (owner, 2026-11-09)', () => {
   const ids = (permissions: Record<string, unknown>) =>
-    visibleDocumentationGroups({ accountId: 'x', username: 'x', displayName: 'x', topicGrants: [], permissions } as never).map((group) => group.id);
+    visibleDocumentationGroups({
+      accountId: 'x',
+      username: 'x',
+      displayName: 'x',
+      topicGrants: [],
+      permissions,
+    } as never).map((group) => group.id);
   it('gives each role only the groups written for it', () => {
-    expect(ids({ manageAccess: true, previewDocuments: true, feedbackRole: 'owner' })).toEqual(['overview', 'architecture', 'api', 'local', 'release', 'operations']);
-    expect(ids({ previewDocuments: true, feedbackRole: 'co-author' })).toEqual(['overview', 'architecture', 'api', 'local']);
-    expect(ids({ previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' })).toEqual(['overview', 'local']);
+    expect(ids({ manageAccess: true, previewDocuments: true, feedbackRole: 'owner' })).toEqual([
+      'overview',
+      'architecture',
+      'api',
+      'local',
+      'release',
+      'operations',
+    ]);
+    expect(ids({ previewDocuments: true, feedbackRole: 'co-author' })).toEqual([
+      'overview',
+      'architecture',
+      'api',
+      'local',
+    ]);
+    expect(ids({ previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' })).toEqual([
+      'overview',
+      'local',
+    ]);
     expect(ids({ previewDocuments: true, feedbackRole: 'reviewer' })).toEqual(['overview']);
     expect(ids({ previewDocuments: true, feedbackRole: 'tester' })).toEqual(['overview']);
   });
   it('shows an admin the Documentation menu without owner-only groups', () => {
-    TestBed.inject(StudyPlanAccount).account.set({ accountId: 'a', username: 'a', displayName: 'A', topicGrants: [], permissions: { previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' } } as never);
+    TestBed.inject(StudyPlanAccount).account.set({
+      accountId: 'a',
+      username: 'a',
+      displayName: 'A',
+      topicGrants: [],
+      permissions: { previewDocuments: true, triageFeedback: true, feedbackRole: 'admin' },
+    } as never);
     const fixture = TestBed.createComponent(AuthorAdminMenu);
     fixture.componentRef.setInput('pageId', 'screen-names');
     fixture.componentRef.setInput('documentationOnly', true);

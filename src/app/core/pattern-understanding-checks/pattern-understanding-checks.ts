@@ -156,7 +156,7 @@ import { ResolvedPatternCheck } from '../../content/content.models';
         cursor: pointer;
         font-weight: 800;
       }
-footer > button:disabled {
+      footer > button:disabled {
         color: var(--text-subtle);
         cursor: not-allowed;
       }
@@ -239,7 +239,8 @@ export class PatternUnderstandingChecks {
     this.activeIndex.set(next);
     this.revealed.set(false);
     this.announcement.set(
-      `Question ${next + 1} of ${this.checks().length}: ${this.categoryLabel(this.checks()[next].category)}.`,
+      `Question ${next + 1} ` +
+        `of ${this.checks().length}: ${this.categoryLabel(this.checks()[next].category)}.`,
     );
   }
 

@@ -1,7 +1,8 @@
 /**
- * Split ("side by side") diff of a Debug pair: the broken program on the left, the fix on the right, one row
- * per line, as a code review shows it. Rows start on the same first line; an unchanged line sits beside its
- * twin, a changed block pairs removed and added lines row by row and pads the shorter side with filler rows.
+ * Split ("side by side") diff of a Debug pair: the broken program on the left, the fix on the
+ * right, one row per line, as a code review shows it. Rows start on the same first line; an
+ * unchanged line sits beside its twin, a changed block pairs removed and added lines row by row and
+ * pads the shorter side with filler rows.
  */
 export type DiffKind = 'same' | 'del' | 'add';
 
@@ -12,13 +13,18 @@ export interface DiffCell {
   kind: DiffKind;
 }
 
-/** One row of the split view; null is a filler cell (the other side has more lines in this block). */
+/**
+ * One row of the split view; null is a filler cell (the other side has more lines in this block).
+ */
 export interface DiffRow {
   left: DiffCell | null;
   right: DiffCell | null;
 }
 
-/** Above this many line comparisons the diff falls back to a plain changed block (keeps rendering cheap). */
+/**
+ * Above this many line comparisons the diff falls back to a plain changed block (keeps rendering
+ * cheap).
+ */
 const MAX_CELLS = 250_000;
 
 function stem(fileName: string | undefined): string {
@@ -30,13 +36,19 @@ function escapeRegExp(text: string): string {
 }
 
 /**
- * The comparison key of a line: trailing spaces dropped, and the file's own name (a Java class named after its
- * file, e.g. NoNextCheck vs NextChecked) replaced by one placeholder, so a renamed class is not a change.
+ * The comparison key of a line: trailing spaces dropped, and the file's own name (a Java class
+ * named after its file, e.g. NoNextCheck vs NextChecked) replaced by one placeholder, so a renamed
+ * class is not a change.
  */
-function keys(lines: string[], fileName: string | undefined, otherName: string | undefined): string[] {
+function keys(
+  lines: string[],
+  fileName: string | undefined,
+  otherName: string | undefined,
+): string[] {
   const own = stem(fileName);
   const other = stem(otherName);
-  const rename = own && other && own !== other ? new RegExp(`\\b${escapeRegExp(own)}\\b`, 'g') : null;
+  const rename =
+    own && other && own !== other ? new RegExp(`\\b${escapeRegExp(own)}\\b`, 'g') : null;
   return lines.map((line) => {
     const trimmed = line.replace(/\s+$/, '');
     return rename ? trimmed.replace(rename, '\u0000') : trimmed;
@@ -81,10 +93,18 @@ function commonLines(a: string[], b: string[]): [number, number][] {
 }
 
 /** Rows of the split view for one file before (broken) and after (fixed). */
-export function splitDiff(before: string, after: string, beforeName?: string, afterName?: string): DiffRow[] {
+export function splitDiff(
+  before: string,
+  after: string,
+  beforeName?: string,
+  afterName?: string,
+): DiffRow[] {
   const left = splitLines(before);
   const right = splitLines(after);
-  const matches = commonLines(keys(left, beforeName, afterName), keys(right, afterName, beforeName));
+  const matches = commonLines(
+    keys(left, beforeName, afterName),
+    keys(right, afterName, beforeName),
+  );
   const rows: DiffRow[] = [];
   let i = 0;
   let j = 0;
@@ -101,7 +121,10 @@ export function splitDiff(before: string, after: string, beforeName?: string, af
   };
   for (const [mi, mj] of matches) {
     changedBlock(mi, mj);
-    rows.push({ left: { line: mi + 1, text: left[mi], kind: 'same' }, right: { line: mj + 1, text: right[mj], kind: 'same' } });
+    rows.push({
+      left: { line: mi + 1, text: left[mi], kind: 'same' },
+      right: { line: mj + 1, text: right[mj], kind: 'same' },
+    });
     i = mi + 1;
     j = mj + 1;
   }
@@ -117,24 +140,35 @@ export interface DiffFile<T> {
   fixed: T | null;
 }
 
-/** Below this share of common lines, two differently named files are not treated as one renamed file. */
+/**
+ * Below this share of common lines, two differently named files are not treated as one renamed
+ * file.
+ */
 const RENAME_SIMILARITY = 0.3;
 
 /** Share of lines two programs have in common (0 to 1), comparing lines as the diff does. */
-export function similarity(before: string, after: string, beforeName?: string, afterName?: string): number {
+export function similarity(
+  before: string,
+  after: string,
+  beforeName?: string,
+  afterName?: string,
+): number {
   const left = splitLines(before);
   const right = splitLines(after);
-  const common = commonLines(keys(left, beforeName, afterName), keys(right, afterName, beforeName)).length;
+  const common = commonLines(
+    keys(left, beforeName, afterName),
+    keys(right, afterName, beforeName),
+  ).length;
   return (2 * common) / (left.length + right.length);
 }
 
 /**
- * Pairs the files of a broken side with the files of its fix, as a code review would: the same file name first;
- * then renamed files, the most similar pairs of the same language that share at least 30% of their lines (or, when
- * exactly one file is left on each side, those two); anything else is shown on one side only. A file only on the
- * broken side is one the fix leaves alone (often the check that both versions run) unless the fixed side names it in
- * `deletedFiles`; a file only on the fixed side
- * is one the fix adds. Broken order first, then new files.
+ * Pairs the files of a broken side with the files of its fix, as a code review would: the same file
+ * name first; then renamed files, the most similar pairs of the same language that share at least
+ * 30% of their lines (or, when exactly one file is left on each side, those two); anything else is
+ * shown on one side only. A file only on the broken side is one the fix leaves alone (often the
+ * check that both versions run) unless the fixed side names it in `deletedFiles`; a file only on
+ * the fixed side is one the fix adds. Broken order first, then new files.
  */
 export function pairFiles<T extends { title: string; source: string; language?: string }>(
   broken: readonly T[],
@@ -162,12 +196,18 @@ export function pairFiles<T extends { title: string; source: string; language?: 
   if (unmatched.length === 1 && freeFixed.length === 1) {
     rename(unmatched[0], freeFixed[0]);
   } else {
-    // Best matches first, so a file that merely shares a class line does not take another file's real rename.
+    // Best matches first, so a file that merely shares a class line does not take another file's
+    // real rename.
     const candidates: { file: DiffFile<T>; other: T; score: number }[] = [];
     for (const file of unmatched) {
       for (const other of freeFixed) {
         if ((other.language ?? '') !== (file.broken!.language ?? '')) continue;
-        const score = similarity(file.broken!.source, other.source, file.broken!.title, other.title);
+        const score = similarity(
+          file.broken!.source,
+          other.source,
+          file.broken!.title,
+          other.title,
+        );
         if (score >= RENAME_SIMILARITY) candidates.push({ file, other, score });
       }
     }
@@ -181,15 +221,26 @@ export function pairFiles<T extends { title: string; source: string; language?: 
 }
 
 /**
- * Rows of one file of a pair: the split diff when both sides have it; all added lines for a file the fix adds;
- * the file as unchanged lines on the broken side when the fix leaves it alone, or as removed lines when the fix
- * deletes it.
+ * Rows of one file of a pair: the split diff when both sides have it; all added lines for a file
+ * the fix adds; the file as unchanged lines on the broken side when the fix leaves it alone, or as
+ * removed lines when the fix deletes it.
  */
-export function fileRows<T extends { title: string; source: string }>(file: DiffFile<T>, deleted = false): DiffRow[] {
-  if (file.broken && file.fixed) return splitDiff(file.broken.source, file.fixed.source, file.broken.title, file.fixed.title);
-  if (file.fixed) return splitLines(file.fixed.source).map((text, index) => ({ left: null, right: { line: index + 1, text, kind: 'add' } }));
+export function fileRows<T extends { title: string; source: string }>(
+  file: DiffFile<T>,
+  deleted = false,
+): DiffRow[] {
+  if (file.broken && file.fixed)
+    return splitDiff(file.broken.source, file.fixed.source, file.broken.title, file.fixed.title);
+  if (file.fixed)
+    return splitLines(file.fixed.source).map((text, index) => ({
+      left: null,
+      right: { line: index + 1, text, kind: 'add' },
+    }));
   const kind = deleted ? 'del' : 'same';
-  return splitLines(file.broken!.source).map((text, index) => ({ left: { line: index + 1, text, kind }, right: null }));
+  return splitLines(file.broken!.source).map((text, index) => ({
+    left: { line: index + 1, text, kind },
+    right: null,
+  }));
 }
 
 /** Lines removed from the broken side and added on the fixed side. */

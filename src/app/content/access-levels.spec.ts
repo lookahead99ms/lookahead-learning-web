@@ -65,7 +65,11 @@ describe('access levels', () => {
       'has-access',
     );
     expect(
-      accessViewerFor({ topicGrants: [], permissions: { feedbackRole: 'tester' } }, 'grow', 'kafka'),
+      accessViewerFor(
+        { topicGrants: [], permissions: { feedbackRole: 'tester' } },
+        'grow',
+        'kafka',
+      ),
     ).toBe('has-access');
     expect(
       accessViewerFor(
@@ -139,7 +143,9 @@ describe('AccessLevelsService', () => {
     const service = setUp();
     const first = firstValueFrom(service.levels$);
     const second = firstValueFrom(service.levels$);
-    TestBed.inject(HttpTestingController).expectOne(ACCESS_LEVELS_HREF).flush(ACCESS_LEVELS_FIXTURE);
+    TestBed.inject(HttpTestingController)
+      .expectOne(ACCESS_LEVELS_HREF)
+      .flush(ACCESS_LEVELS_FIXTURE);
     expect((await first)?.levelFor('learn', 'core-java', 'generics')).toBe('free');
     expect(await second).toBe(await first);
     expect(service.levels()?.freeUnitCount('learn', 'core-java')).toBe(3);

@@ -17,7 +17,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 export const CATALOG_PATHS = ['learn', 'grow', 'blaze'];
-/** Personal, internal and legacy-alias pages. Public catalog, course, lesson and /content/ stay crawlable. */
+/**
+ * Personal, internal and legacy-alias pages. Public catalog, course, lesson and /content/ stay
+ * crawlable.
+ */
 export const DISALLOWED_PATHS = [
   '/admin',
   '/author',
@@ -63,7 +66,8 @@ export function normalizeOrigin(value) {
     url.pathname !== '/'
   ) {
     throw new Error(
-      `LOOKAHEAD_SITE_ORIGIN must be an http(s) origin without path, query or credentials: ${value}`,
+      `LOOKAHEAD_SITE_ORIGIN must be an http(s) origin without path, query or ` +
+        `credentials: ${value}`,
     );
   }
   return url.origin;
@@ -88,7 +92,9 @@ export async function resolveContentRoot({
   return null;
 }
 
-/** Hidden course ids (`path:course`) from the app's own list in src/app/content/hidden-courses.ts. */
+/**
+ * Hidden course ids (`path:course`) from the app's own list in src/app/content/hidden-courses.ts.
+ */
 export async function readHiddenCourseIds(
   path = resolve(repositoryRoot, 'src/app/content/hidden-courses.ts'),
 ) {
@@ -104,7 +110,9 @@ export async function readIndexablePages(
 ) {
   const pages = await readJson(path);
   return Object.fromEntries(
-    Object.entries(pages).filter(([route, value]) => SLUG.test(route) && typeof value === 'boolean'),
+    Object.entries(pages).filter(
+      ([route, value]) => SLUG.test(route) && typeof value === 'boolean',
+    ),
   );
 }
 
@@ -149,7 +157,12 @@ function isRetiredLesson(retiredCourses, path, courseId, lessonId) {
 /** Lesson routes of one public unit, in curriculum order. */
 async function publicUnitPaths(contentRoot, unitKey, { hiddenCourseIds, retiredCourses, warn }) {
   const [path, courseId, unitId, extra] = String(unitKey).split('/');
-  if (extra !== undefined || !CATALOG_PATHS.includes(path) || !SLUG.test(courseId ?? '') || !SLUG.test(unitId ?? '')) {
+  if (
+    extra !== undefined ||
+    !CATALOG_PATHS.includes(path) ||
+    !SLUG.test(courseId ?? '') ||
+    !SLUG.test(unitId ?? '')
+  ) {
     warn(`Skipped malformed public unit ${unitKey}`);
     return [];
   }
@@ -175,7 +188,9 @@ async function publicUnitPaths(contentRoot, unitKey, { hiddenCourseIds, retiredC
     unit.questionModuleId,
     unit.practiceModuleId,
     ...(unit.moduleIds ?? []),
-  ].filter((id, index, all) => typeof id === 'string' && published.has(id) && all.indexOf(id) === index);
+  ].filter(
+    (id, index, all) => typeof id === 'string' && published.has(id) && all.indexOf(id) === index,
+  );
   const routes = [];
   for (const moduleId of moduleIds) {
     const modulePath = join(contentRoot, path, courseId, 'modules', `${moduleId}.json`);
@@ -280,7 +295,8 @@ export async function writeSeoFiles({
   warn = console.warn,
 } = {}) {
   const origin = normalizeOrigin(rawOrigin);
-  const root = contentRoot === undefined ? await resolveContentRoot({ protectedBuild }) : contentRoot;
+  const root =
+    contentRoot === undefined ? await resolveContentRoot({ protectedBuild }) : contentRoot;
   await mkdir(outputDir, { recursive: true });
   const robotsPath = join(outputDir, 'robots.txt');
   const sitemapPath = join(outputDir, 'sitemap.xml');
@@ -301,8 +317,14 @@ export async function writeSeoFiles({
   await writeFile(sitemapPath, renderSitemap(origin, paths));
   log(
     `SEO files: robots.txt and sitemap.xml (${paths.length} pages for ${origin}; ` +
-      `${root ? 'catalog from the build content root' : 'no content root found, home and catalogs only'}; ` +
-      `${policy ? 'public-unit lessons from policies/content-samples.json' : 'no content samples policy, lessons omitted'}).`,
+      (root
+        ? 'catalog from the build content root'
+        : 'no content root found, home and catalogs only') +
+      '; ' +
+      (policy
+        ? 'public-unit lessons from policies/content-samples.json'
+        : 'no content samples policy, lessons omitted') +
+      ').',
   );
   return { robotsPath, sitemapPath, paths };
 }
@@ -313,7 +335,7 @@ export function isProtectedBuild(args) {
     const value = argument.startsWith('--configuration=')
       ? argument.slice('--configuration='.length)
       : argument === '--configuration' || argument === '-c'
-        ? args[index + 1] ?? ''
+        ? (args[index + 1] ?? '')
         : '';
     return value.split(',').includes('protected');
   });

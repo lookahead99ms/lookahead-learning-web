@@ -22,7 +22,8 @@
         }
       </div>
     </div>
-    <!-- DLV-969 (owner, 2026-11-04): the Essence plays here instead of a blurred placeholder, fitted to the screen. -->
+    <!-- DLV-969 (owner, 2026-11-04): the Essence plays here instead of a blurred placeholder,
+         fitted to the screen. -->
     <section appEssenceStory [autoplay]="true"></section>
   } @else {
     <h1 id="recovery-title">{{ heading() }}</h1>
@@ -36,10 +37,12 @@
   }
   <!-- Go back on the left edge, Home on the right edge. -->
   <nav class="recovery-links" aria-label="Continue exploring">
-    <a class="action-link" [routerLink]="backUrl">Go back</a><a class="action-link" routerLink="/">Home</a>
+    <a class="action-link" [routerLink]="backUrl">Go back</a
+    ><a class="action-link" routerLink="/">Home</a>
   </nav>
   @if (locked()) {
-    <dialog appScrollLock
+    <dialog
+      appScrollLock
       #accessDialog
       aria-labelledby="access-title"
       aria-describedby="access-description"
@@ -60,17 +63,20 @@
         <p class="plans-line">{{ included }}</p>
       }
       <div class="dialog-actions recovery-actions">
-        <!-- DLV-209: everyone may see prices. DLV-969 (owner, 2026-11-04): a signed-in learner without the lesson
-             is offered a subscription, never "manage access". -->
+        <!-- DLV-209: everyone may see prices. DLV-969 (owner, 2026-11-04): a signed-in learner
+             without the lesson is offered a subscription, never "manage access". -->
         @if (kind() === 'sign-in') {
-          <a class="primary-action" routerLink="/sign-in" [queryParams]="{ returnTo: returnTo() }">Sign in</a>
+          <a class="primary-action" routerLink="/sign-in" [queryParams]="{ returnTo: returnTo() }"
+            >Sign in</a
+          >
           <a class="action-link plans-action" routerLink="/" fragment="pricing">See pricing</a>
         } @else {
           <a class="primary-action" routerLink="/pricing">See plans</a>
         }
       </div>
       <nav class="recovery-links" aria-label="Access dialog navigation">
-        <a class="action-link" [routerLink]="backUrl">Go back</a><a class="action-link" routerLink="/">Home</a>
+        <a class="action-link" [routerLink]="backUrl">Go back</a
+        ><a class="action-link" routerLink="/">Home</a>
       </nav>
     </dialog>
   }

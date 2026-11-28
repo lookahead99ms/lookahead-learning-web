@@ -960,7 +960,8 @@
 }
 .plan-card-grid {
   display: grid;
-  /* DLV-803: as many 22rem plan columns as the page allows (two on a laptop); one when zoomed in. */
+  /* DLV-803: as many 22rem plan columns as the page allows (two on a laptop); one when zoomed in.
+  */
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
   gap: 24px;
 }
@@ -1370,8 +1371,14 @@
   border-style: dashed;
 }
 
-.plan-lifecycle .draft-actions { justify-content: center; }
+.plan-lifecycle .draft-actions {
+  justify-content: center;
+}
 @media (max-width: 640px) {
-  .plan-lifecycle .draft-actions { flex-direction: column; }
-  .plan-lifecycle .draft-actions button { width: 100%; }
+  .plan-lifecycle .draft-actions {
+    flex-direction: column;
+  }
+  .plan-lifecycle .draft-actions button {
+    width: 100%;
+  }
 }

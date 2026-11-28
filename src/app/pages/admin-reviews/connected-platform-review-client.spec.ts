@@ -100,9 +100,16 @@ describe('ConnectedPlatformReviewClient', () => {
 
   it('turns server failures into reader-facing errors', async () => {
     responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
-    responses.push(json(409, { code: 'PLATFORM_REVIEW_LOCKED', message: 'The owner has already reviewed this item.' }));
+    responses.push(
+      json(409, {
+        code: 'PLATFORM_REVIEW_LOCKED',
+        message: 'The owner has already reviewed this item.',
+      }),
+    );
     const failure = await client.remove(itemId).catch((error) => error);
-    expect(failure).toEqual(new PlatformReviewError('conflict', 'The owner has already reviewed this item.'));
+    expect(failure).toEqual(
+      new PlatformReviewError('conflict', 'The owner has already reviewed this item.'),
+    );
     responses.push(json(403, { code: 'PLATFORM_REVIEW_ACCESS_DENIED' }));
     expect((await client.viewer().catch((error) => error)).kind).toBe('forbidden');
     responses.push(new Response(null, { status: 503 }));
@@ -112,75 +119,121 @@ describe('ConnectedPlatformReviewClient', () => {
     expect((await client.list().catch((error) => error)).kind).toBe('unauthorized');
   });
 
-  it('passes the kind, request type and reference of a learner request through unchanged (DLV-971)', async () => {
-    const stored = {
-      id: itemId,
-      kind: 'request',
-      requestType: 'question',
-      reference: 'SUP-42',
-      submitterRole: 'user',
-      category: 'idea',
-      page: 'Support',
-      status: 'new',
+  it(
+    'passes the kind, request type and reference of a learner request through unchanged ' +
+      '(DLV-971)',
+    async () => {
+      const stored = {
+        id: itemId,
+        kind: 'request',
+        requestType: 'question',
+        reference: 'SUP-42',
+        submitterRole: 'user',
+        category: 'idea',
+        page: 'Support',
+        status: 'new',
+      };
+      responses.push(json(200, { data: stored }));
+      expect(await client.item(itemId)).toEqual(stored);
+      responses.push(
+        json(200, { data: { items: [{ ...stored, attachmentCount: 0 }], nextBefore: null } }),
+      );
+      const page = await client.list();
+      expect(page.items[0]).toEqual(
+        expect.objectContaining({ kind: 'request', requestType: 'question', reference: 'SUP-42' }),
+      );
+      // A review arrives without the fields; nothing is invented.
+      responses.push(json(200, { data: { id: itemId, category: 'problem' } }));
+      const review = await client.item(itemId);
+      expect(review.kind).toBeUndefined();
+      expect(review.reference).toBeUndefined();
+    },
+  );
+
+  it(
+    'promotes an item with CSRF and an Idempotency-Key and returns the ticket with the ' +
+      'stored item (DLV-971)',
+    async () => {
+      responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+      responses.push(
+        json(201, {
+          data: {
+            ticketId: 'DLV-0042',
+            item: { id: itemId, ticketId: 'DLV-0042', ticketStatus: 'Backlog' },
+          },
+        }),
+      );
+      const result = await client.promote(itemId);
+      expect(calls[1].url).toBe(`/bff/api/v1/platform-reviews/${itemId}/promote`);
+      expect(calls[1].init.method).toBe('POST');
+      expect(calls[1].init.headers).toEqual(expect.objectContaining({ 'X-CSRF-TOKEN': 't' }));
+      expect((calls[1].init.headers as Record<string, string>)['Idempotency-Key']).toMatch(
+        /[0-9a-f-]{36}/,
+      );
+      expect(calls[1].init.body).toBeUndefined();
+      expect(result).toEqual({
+        ticketId: 'DLV-0042',
+        item: { id: itemId, ticketId: 'DLV-0042', ticketStatus: 'Backlog' },
+      });
+      // Already promoted: the Domain's 409 reaches the page as a conflict.
+      responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+      responses.push(
+        json(409, { code: 'PLATFORM_REVIEW_PROMOTED', message: 'This item already has a ticket.' }),
+      );
+      expect(await client.promote(itemId).catch((error) => error)).toEqual(
+        new PlatformReviewError('conflict', 'This item already has a ticket.'),
+      );
+    },
+  );
+
+  it('runs one 4-hour job now with the CSRF token; relays Domain refusals (DLV-971)', async () => {
+    const ran = {
+      job: 'delivery-inbox',
+      ranAt: '2026-11-06T18:30:00Z',
+      supportRequestsClosed: null,
+      inboxMerged: true,
+      inboxResult: '12',
+      admissionsRemoved: null,
     };
-    responses.push(json(200, { data: stored }));
-    expect(await client.item(itemId)).toEqual(stored);
-    responses.push(json(200, { data: { items: [{ ...stored, attachmentCount: 0 }], nextBefore: null } }));
-    const page = await client.list();
-    expect(page.items[0]).toEqual(expect.objectContaining({ kind: 'request', requestType: 'question', reference: 'SUP-42' }));
-    // A review arrives without the fields; nothing is invented.
-    responses.push(json(200, { data: { id: itemId, category: 'problem' } }));
-    const review = await client.item(itemId);
-    expect(review.kind).toBeUndefined();
-    expect(review.reference).toBeUndefined();
-  });
-
-  it('promotes an item with CSRF and an Idempotency-Key and returns the ticket with the stored item (DLV-971)', async () => {
-    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
-    responses.push(json(201, { data: { ticketId: 'DLV-0042', item: { id: itemId, ticketId: 'DLV-0042', ticketStatus: 'Backlog' } } }));
-    const result = await client.promote(itemId);
-    expect(calls[1].url).toBe(`/bff/api/v1/platform-reviews/${itemId}/promote`);
-    expect(calls[1].init.method).toBe('POST');
-    expect(calls[1].init.headers).toEqual(expect.objectContaining({ 'X-CSRF-TOKEN': 't' }));
-    expect((calls[1].init.headers as Record<string, string>)['Idempotency-Key']).toMatch(/[0-9a-f-]{36}/);
-    expect(calls[1].init.body).toBeUndefined();
-    expect(result).toEqual({ ticketId: 'DLV-0042', item: { id: itemId, ticketId: 'DLV-0042', ticketStatus: 'Backlog' } });
-    // Already promoted: the Domain's 409 reaches the page as a conflict.
-    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
-    responses.push(json(409, { code: 'PLATFORM_REVIEW_PROMOTED', message: 'This item already has a ticket.' }));
-    expect(await client.promote(itemId).catch((error) => error)).toEqual(
-      new PlatformReviewError('conflict', 'This item already has a ticket.'),
-    );
-  });
-
-  it('runs one 4-hour job now with the CSRF token and relays the Domain refusals (DLV-971)', async () => {
-    const ran = { job: 'delivery-inbox', ranAt: '2026-11-06T18:30:00Z', supportRequestsClosed: null, inboxMerged: true, inboxResult: '12', admissionsRemoved: null };
     responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
     responses.push(json(200, { data: ran }));
     expect(await client.runSweeps('delivery-inbox')).toEqual(ran);
     expect(calls[1].url).toBe('/bff/api/v1/sweeps/run');
     expect(calls[1].init.method).toBe('POST');
-    expect(calls[1].init.headers).toEqual({ 'X-CSRF-TOKEN': 't', 'Content-Type': 'application/json' });
+    expect(calls[1].init.headers).toEqual({
+      'X-CSRF-TOKEN': 't',
+      'Content-Type': 'application/json',
+    });
     expect(calls[1].init.body).toBe('{"job":"delivery-inbox"}');
-    // An admin: the Domain's 403 reaches the page as forbidden; a local Domain's 409 for the admission cleanup as conflict.
+    // An admin: the Domain's 403 reaches the page as forbidden; a local Domain's 409 for the
+    // admission cleanup as conflict.
     responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
     responses.push(json(403, { code: 'PLATFORM_REVIEW_ACCESS_DENIED' }));
     expect((await client.runSweeps('all').catch((error) => error)).kind).toBe('forbidden');
     responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
-    responses.push(json(409, { code: 'SWEEP_NOT_AVAILABLE', message: 'The admission cleanup runs only in cloud mode; this Domain has none.' }));
+    responses.push(
+      json(409, {
+        code: 'SWEEP_NOT_AVAILABLE',
+        message: 'The admission cleanup runs only in cloud mode; this Domain has none.',
+      }),
+    );
     expect((await client.runSweeps('admissions').catch((error) => error)).kind).toBe('conflict');
   });
 
-  it('accepts the numbered record ids of the runtime stores and still rejects anything else (DLV-971)', async () => {
-    for (const id of ['REV-000001', 'SUP-000001']) {
-      responses.push(json(200, { data: { id } }));
-      expect(await client.item(id)).toEqual({ id });
-      expect(calls.at(-1)!.url).toBe(`/bff/api/v1/platform-reviews/${id}`);
-    }
-    for (const id of ['REV-1', 'DLV-000001', 'rev-000001', 'REV-000001/x', '']) {
-      expect((await client.item(id).catch((error) => error)).kind).toBe('not-found');
-    }
-  });
+  it(
+    'accepts the numbered record ids of the runtime stores and still rejects anything ' +
+      'else (DLV-971)',
+    async () => {
+      for (const id of ['REV-000001', 'SUP-000001']) {
+        responses.push(json(200, { data: { id } }));
+        expect(await client.item(id)).toEqual({ id });
+        expect(calls.at(-1)!.url).toBe(`/bff/api/v1/platform-reviews/${id}`);
+      }
+      for (const id of ['REV-1', 'DLV-000001', 'rev-000001', 'REV-000001/x', '']) {
+        expect((await client.item(id).catch((error) => error)).kind).toBe('not-found');
+      }
+    },
+  );
 
   it('pages older days and shows images through blob URLs', async () => {
     responses.push(json(200, { data: { items: [], nextBefore: null } }));

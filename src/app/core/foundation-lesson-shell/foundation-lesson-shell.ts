@@ -47,7 +47,8 @@ export function plainText(html: string): string {
 
 @Component({
   selector: 'app-foundation-lesson-shell',
-  imports: [LearningCode,
+  imports: [
+    LearningCode,
     NgTemplateOutlet,
     RouterLink,
     CodeCopyButton,
@@ -72,96 +73,111 @@ export function plainText(html: string): string {
     @if (isSystem()) {
       <ng-container [ngTemplateOutlet]="systemLesson" />
     } @else {
-    @if (lesson().learningFlow; as flow) {
-      <article class="foundation-lesson beginner-guide" aria-label="Lesson introduction">
-        <section class="lesson-section" id="foundation-start" aria-labelledby="foundation-start-heading">
-          <h2 id="foundation-start-heading">Before you start</h2>
-          <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
-          @if (guide(); as guide) { <p><span class="rich" [innerHTML]="guide.prerequisite"></span></p> }
-        </section>
-        <section class="lesson-section" id="foundation-why" aria-labelledby="foundation-why-heading">
-          <h2 id="foundation-why-heading">Why this matters</h2>
-          <p><span class="rich" [innerHTML]="flow.whyItMatters"></span></p>
-          <h3 id="foundation-outcomes-heading">What you’ll learn</h3>
-          <ul>@for (outcome of lesson().learningOutcomes; track outcome) { <li><span class="rich" [innerHTML]="outcome"></span></li> }</ul>
-        </section>
-      </article>
-    }
-    @if (guide(); as guide) {
-      <article class="foundation-lesson beginner-guide" [attr.aria-label]="guideLabel()">
-        @if (!lesson().learningFlow) {
-        <p class="guide-summary"><span class="rich" [innerHTML]="lesson().summary"></span></p>
-        <section
-          class="lesson-section"
-          id="foundation-start"
-          aria-labelledby="foundation-start-heading"
-        >
-          <h2 id="foundation-start-heading">Before you start</h2>
-          <p><span class="rich" [innerHTML]="guide.prerequisite"></span></p>
-        </section>
-        }
-        <section
-          class="lesson-section guided-example"
-          id="foundation-example"
-          aria-labelledby="foundation-example-heading"
-        >
-          <h2 id="foundation-example-heading">{{ guide.exampleTitle }}</h2>
-          @if (lesson().teachingGuide) {
-            <div class="guide-scenario">
-              <p>{{ guide.code }}</p>
-            </div>
-          } @else {
-            <section class="foundation-code">
-              <header>
-                <span>{{ guide.language }}</span>
-                <app-code-copy-button [code]="guide.code" />
-              </header>
-              <pre><code [appLearningCode]="guide.code" [codeLanguage]="guide.language"></code></pre>
+      @if (lesson().learningFlow; as flow) {
+        <article class="foundation-lesson beginner-guide" aria-label="Lesson introduction">
+          <section
+            class="lesson-section"
+            id="foundation-start"
+            aria-labelledby="foundation-start-heading"
+          >
+            <h2 id="foundation-start-heading">Before you start</h2>
+            <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
+            @if (guide(); as guide) {
+              <p><span class="rich" [innerHTML]="guide.prerequisite"></span></p>
+            }
+          </section>
+          <section
+            class="lesson-section"
+            id="foundation-why"
+            aria-labelledby="foundation-why-heading"
+          >
+            <h2 id="foundation-why-heading">Why this matters</h2>
+            <p><span class="rich" [innerHTML]="flow.whyItMatters"></span></p>
+            <h3 id="foundation-outcomes-heading">What you’ll learn</h3>
+            <ul>
+              @for (outcome of lesson().learningOutcomes; track outcome) {
+                <li><span class="rich" [innerHTML]="outcome"></span></li>
+              }
+            </ul>
+          </section>
+        </article>
+      }
+      @if (guide(); as guide) {
+        <article class="foundation-lesson beginner-guide" [attr.aria-label]="guideLabel()">
+          @if (!lesson().learningFlow) {
+            <p class="guide-summary"><span class="rich" [innerHTML]="lesson().summary"></span></p>
+            <section
+              class="lesson-section"
+              id="foundation-start"
+              aria-labelledby="foundation-start-heading"
+            >
+              <h2 id="foundation-start-heading">Before you start</h2>
+              <p><span class="rich" [innerHTML]="guide.prerequisite"></span></p>
             </section>
           }
-          <div class="guide-walkthrough">
-            <h3>Let's walk through it</h3>
-            <ol class="walkthrough-points">
-              @for (paragraph of guide.walkthrough; track paragraph) {
-                <li [innerHTML]="paragraph"></li>
-              }
-            </ol>
-          </div>
-        </section>
-        @if (!lesson().learningFlow) {
-        <section
-          class="lesson-section"
-          id="foundation-try"
-          aria-labelledby="foundation-try-heading"
-        >
-          <h2 id="foundation-try-heading">{{ exerciseLabel() }}</h2>
-          <p><span class="rich" [innerHTML]="guide.try"></span></p>
-          <details class="guide-answer">
-            <summary>Check your answer</summary>
-            <p><span class="rich" [innerHTML]="guide.answer"></span></p>
-          </details>
-        </section>
-        <section
-          class="lesson-section"
-          id="foundation-remember"
-          aria-labelledby="foundation-remember-heading"
-        >
-          <h2 id="foundation-remember-heading">What to remember</h2>
-          <ul>
-            @for (takeaway of guide.takeaways; track takeaway) {
-              <li><span class="rich" [innerHTML]="takeaway"></span></li>
+          <section
+            class="lesson-section guided-example"
+            id="foundation-example"
+            aria-labelledby="foundation-example-heading"
+          >
+            <h2 id="foundation-example-heading">{{ guide.exampleTitle }}</h2>
+            @if (lesson().teachingGuide) {
+              <div class="guide-scenario">
+                <p>{{ guide.code }}</p>
+              </div>
+            } @else {
+              <section class="foundation-code">
+                <header>
+                  <span>{{ guide.language }}</span>
+                  <app-code-copy-button [code]="guide.code" />
+                </header>
+                <pre><code [appLearningCode]="guide.code"
+                  [codeLanguage]="guide.language"></code></pre>
+              </section>
             }
-          </ul>
-          <p><span class="rich" [innerHTML]="guide.later"></span></p>
-        </section>
-        }
-      </article>
-      <div id="foundation-reference" class="foundation-reference">
+            <div class="guide-walkthrough">
+              <h3>Let's walk through it</h3>
+              <ol class="walkthrough-points">
+                @for (paragraph of guide.walkthrough; track paragraph) {
+                  <li [innerHTML]="paragraph"></li>
+                }
+              </ol>
+            </div>
+          </section>
+          @if (!lesson().learningFlow) {
+            <section
+              class="lesson-section"
+              id="foundation-try"
+              aria-labelledby="foundation-try-heading"
+            >
+              <h2 id="foundation-try-heading">{{ exerciseLabel() }}</h2>
+              <p><span class="rich" [innerHTML]="guide.try"></span></p>
+              <details class="guide-answer">
+                <summary>Check your answer</summary>
+                <p><span class="rich" [innerHTML]="guide.answer"></span></p>
+              </details>
+            </section>
+            <section
+              class="lesson-section"
+              id="foundation-remember"
+              aria-labelledby="foundation-remember-heading"
+            >
+              <h2 id="foundation-remember-heading">What to remember</h2>
+              <ul>
+                @for (takeaway of guide.takeaways; track takeaway) {
+                  <li><span class="rich" [innerHTML]="takeaway"></span></li>
+                }
+              </ul>
+              <p><span class="rich" [innerHTML]="guide.later"></span></p>
+            </section>
+          }
+        </article>
+        <div id="foundation-reference" class="foundation-reference">
+          <ng-container [ngTemplateOutlet]="referenceLesson" />
+        </div>
+      } @else {
         <ng-container [ngTemplateOutlet]="referenceLesson" />
-      </div>
-    } @else {
-      <ng-container [ngTemplateOutlet]="referenceLesson" />
-    }
+      }
     }
     <ng-template #systemLesson>
       <article class="foundation-lesson system" [class.algo-lesson]="isAlgo()" aria-label="Lesson">
@@ -191,19 +207,40 @@ export function plainText(html: string): string {
                 [lesson]="lesson()"
                 [stageLabel]="stageLabel(slots().scenario)"
               ></section>
-              <section class="lesson-section" id="foundation-start" aria-labelledby="foundation-start-heading">
-                <p class="section-label stage-label"><span>{{ stageLabel(slots().scenario) }}</span>Before you start</p>
-                <h2 id="foundation-start-heading" data-sidebar-label="Before you start">Before you start</h2>
+              <section
+                class="lesson-section"
+                id="foundation-start"
+                aria-labelledby="foundation-start-heading"
+              >
+                <p class="section-label stage-label"
+                  ><span>{{ stageLabel(slots().scenario) }}</span
+                  >Before you start</p
+                >
+                <h2 id="foundation-start-heading" data-sidebar-label="Before you start"
+                  >Before you start</h2
+                >
                 @if (lesson().beforeYouStart ?? guide()?.prerequisite; as intro) {
                   <p><span class="rich" [innerHTML]="intro"></span></p>
                 }
-                <app-lesson-start [prerequisites]="lesson().prerequisites ?? []" [runLocally]="lesson().runLocally ?? null" />
+                <app-lesson-start
+                  [prerequisites]="lesson().prerequisites ?? []"
+                  [runLocally]="lesson().runLocally ?? null"
+                />
               </section>
             }
             @if (stage.id === slots().keep) {
-              <section class="lesson-section takeaways" id="lesson-takeaways" aria-labelledby="lesson-takeaways-heading">
-                <p class="section-label stage-label"><span>{{ stageLabel(slots().keep) }}</span>Key takeaways</p>
-                <h2 id="lesson-takeaways-heading" data-sidebar-label="Key takeaways">Key takeaways</h2>
+              <section
+                class="lesson-section takeaways"
+                id="lesson-takeaways"
+                aria-labelledby="lesson-takeaways-heading"
+              >
+                <p class="section-label stage-label"
+                  ><span>{{ stageLabel(slots().keep) }}</span
+                  >Key takeaways</p
+                >
+                <h2 id="lesson-takeaways-heading" data-sidebar-label="Key takeaways"
+                  >Key takeaways</h2
+                >
                 <ul>
                   @for (takeaway of lesson().keyTakeaways; track takeaway) {
                     <li><span class="rich" [innerHTML]="takeaway"></span></li>
@@ -211,22 +248,31 @@ export function plainText(html: string): string {
                 </ul>
                 <aside class="memory-anchor" aria-label="Memory anchor">
                   <span>Memory anchor</span>
-                  <strong><span class="rich" [innerHTML]="lesson().memoryAnchor.phrase"></span></strong>
+                  <strong
+                    ><span class="rich" [innerHTML]="lesson().memoryAnchor.phrase"></span
+                  ></strong>
                   <p><span class="rich" [innerHTML]="lesson().memoryAnchor.mentalModel"></span></p>
-                  <p><b>Recall cue:</b>{{ ' ' }}<span class="rich" [innerHTML]="lesson().memoryAnchor.retrievalCue"></span></p>
+                  <p
+                    ><b>Recall cue:</b>{{ ' '
+                    }}<span class="rich" [innerHTML]="lesson().memoryAnchor.retrievalCue"></span
+                  ></p>
                 </aside>
                 @if (lesson().languageNotes?.length) {
                   <div class="language-notes" aria-label="Language notes">
                     @for (note of lesson().languageNotes; track note.language) {
-                      <p><strong>{{ note.language }}</strong><span class="rich" [innerHTML]="note.note"></span></p>
+                      <p
+                        ><strong>{{ note.language }}</strong
+                        ><span class="rich" [innerHTML]="note.note"></span
+                      ></p>
                     }
                   </div>
                 }
               </section>
             }
             @if (stage.id === 'variations' && variationGroups(stage.sections).length > 1) {
-              <!-- Variations as underlined tabs (user review, 2026-10-05): one variation at a time, with its
-                   companion sections (e.g. the code after Variation A). Hidden panels stay findable. -->
+              <!-- Variations as underlined tabs (user review, 2026-10-05): one variation at a time,
+                   with its companion sections (e.g. the code after Variation A). Hidden panels stay
+                   findable. -->
               @let groups = variationGroups(stage.sections);
               @let picked = tabIndex('variations', groups.length);
               <div class="lesson-tabbed" id="lesson-variations">
@@ -247,38 +293,80 @@ export function plainText(html: string): string {
                     (beforematch)="setTab('variations', index)"
                   >
                     @for (section of group.sections; track section.id) {
-                      <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id, inTabs: true }" />
+                      <ng-container
+                        [ngTemplateOutlet]="sectionCard"
+                        [ngTemplateOutletContext]="{
+                          $implicit: section,
+                          stage: stage.id,
+                          inTabs: true,
+                        }"
+                      />
                     }
                   </div>
                 }
-                <ng-container [ngTemplateOutlet]="tabStep" [ngTemplateOutletContext]="{ key: 'variations', count: groups.length, prefix: 'lesson-variations' }" />
+                <ng-container
+                  [ngTemplateOutlet]="tabStep"
+                  [ngTemplateOutletContext]="{
+                    key: 'variations',
+                    count: groups.length,
+                    prefix: 'lesson-variations',
+                  }"
+                />
               </div>
             } @else {
               @for (section of stage.sections; track section.id) {
                 @if (!section.sidebar) {
-                  <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id }" />
+                  <ng-container
+                    [ngTemplateOutlet]="sectionCard"
+                    [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id }"
+                  />
                 }
               }
             }
             @if (stage.id === slots().mistakes) {
-              <section class="lesson-section wide-section" id="foundation-pitfalls" aria-labelledby="foundation-pitfalls-heading">
-                <p class="section-label stage-label"><span>{{ stageLabel(slots().mistakes) }}</span>Common mistakes</p>
-                <h2 id="foundation-pitfalls-heading" data-sidebar-label="Common mistakes">Common mistakes, in one line each</h2>
+              <section
+                class="lesson-section wide-section"
+                id="foundation-pitfalls"
+                aria-labelledby="foundation-pitfalls-heading"
+              >
+                <p class="section-label stage-label"
+                  ><span>{{ stageLabel(slots().mistakes) }}</span
+                  >Common mistakes</p
+                >
+                <h2 id="foundation-pitfalls-heading" data-sidebar-label="Common mistakes"
+                  >Common mistakes, in one line each</h2
+                >
                 <div class="pitfall-list">
                   @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {
                     <article>
                       <h3><span class="rich" [innerHTML]="pitfall.failedAssumption"></span></h3>
-                      <p><strong>Symptom:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.symptom"></span></p>
-                      <p><strong>Correction:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.correction"></span></p>
+                      <p
+                        ><strong>Symptom:</strong>{{ ' '
+                        }}<span class="rich" [innerHTML]="pitfall.symptom"></span
+                      ></p>
+                      <p
+                        ><strong>Correction:</strong>{{ ' '
+                        }}<span class="rich" [innerHTML]="pitfall.correction"></span
+                      ></p>
                     </article>
                   }
                 </div>
               </section>
             }
             @if (stage.id === slots().interview) {
-              <section class="lesson-section interview-answer-card" id="lesson-interview-answer" data-sidebar-support aria-labelledby="lesson-interview-answer-heading">
-                <p class="section-label stage-label"><span>{{ stageLabel(slots().interview) }}</span>Interview answer</p>
-                <h2 id="lesson-interview-answer-heading" data-sidebar-label="Interview answer">Interview answer: say it in one minute</h2>
+              <section
+                class="lesson-section interview-answer-card"
+                id="lesson-interview-answer"
+                data-sidebar-support
+                aria-labelledby="lesson-interview-answer-heading"
+              >
+                <p class="section-label stage-label"
+                  ><span>{{ stageLabel(slots().interview) }}</span
+                  >Interview answer</p
+                >
+                <h2 id="lesson-interview-answer-heading" data-sidebar-label="Interview answer"
+                  >Interview answer: say it in one minute</h2
+                >
                 <p class="spoken-answer" [innerHTML]="lesson().interviewAnswer"></p>
                 @if (lesson().followUps.length) {
                   <h3>Likely follow-up questions</h3>
@@ -293,13 +381,25 @@ export function plainText(html: string): string {
             }
             @for (section of stage.sections; track section.id) {
               @if (section.sidebar) {
-                <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id }" />
+                <ng-container
+                  [ngTemplateOutlet]="sectionCard"
+                  [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id }"
+                />
               }
             }
             @if (stage.id === slots().prove) {
-              <section class="lesson-section wide-section" id="foundation-understand" aria-labelledby="foundation-understand-heading">
-                <p class="section-label stage-label"><span>{{ stageLabel(slots().prove) }}</span>Check understanding</p>
-                <h2 id="foundation-understand-heading" data-sidebar-label="Check understanding">Check your understanding</h2>
+              <section
+                class="lesson-section wide-section"
+                id="foundation-understand"
+                aria-labelledby="foundation-understand-heading"
+              >
+                <p class="section-label stage-label"
+                  ><span>{{ stageLabel(slots().prove) }}</span
+                  >Check understanding</p
+                >
+                <h2 id="foundation-understand-heading" data-sidebar-label="Check understanding"
+                  >Check your understanding</h2
+                >
                 <app-pattern-understanding-checks [checks]="checks()" />
                 @if (questionModuleId(); as moduleId) {
                   @if (questionCount() > 0) {
@@ -315,32 +415,63 @@ export function plainText(html: string): string {
                 }
               </section>
               @if (lesson().learningFlow; as flow) {
-                <section id="foundation-try" class="lesson-section" data-sidebar-support aria-labelledby="foundation-try-heading">
-                  <p class="section-label stage-label"><span>{{ stageLabel(slots().prove) }}</span>Try it yourself</p>
-                  <h2 id="foundation-try-heading" data-sidebar-label="Try it yourself">Try it yourself</h2>
+                <section
+                  id="foundation-try"
+                  class="lesson-section"
+                  data-sidebar-support
+                  aria-labelledby="foundation-try-heading"
+                >
+                  <p class="section-label stage-label"
+                    ><span>{{ stageLabel(slots().prove) }}</span
+                    >Try it yourself</p
+                  >
+                  <h2 id="foundation-try-heading" data-sidebar-label="Try it yourself"
+                    >Try it yourself</h2
+                  >
                   @for (exercise of exercises(); track exercise.prompt; let index = $index) {
                     <div class="try-exercise">
                       <h3>Exercise {{ index + 1 }}</h3>
                       <p><span class="rich" [innerHTML]="exercise.prompt"></span></p>
                       @if (exercise.hint) {
-                        <details class="guide-answer"><summary>Show a hint</summary><p><span class="rich" [innerHTML]="exercise.hint"></span></p></details>
+                        <details class="guide-answer"
+                          ><summary>Show a hint</summary
+                          ><p><span class="rich" [innerHTML]="exercise.hint"></span></p
+                        ></details>
                       }
-                      <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer"><span class="rich" [innerHTML]="exercise.answer"></span></p></details>
+                      <details class="guide-answer"
+                        ><summary>Check your answer</summary
+                        ><p class="practice-answer"
+                          ><span class="rich" [innerHTML]="exercise.answer"></span></p
+                      ></details>
                     </div>
                   }
                   <details class="guide-answer">
                     <summary>Practice explaining your choice</summary>
                     <p><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span></p>
-                    <details><summary>Compare your explanation</summary>
-                      <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li class="rich" [innerHTML]="step"></li> }</ol>
+                    <details
+                      ><summary>Compare your explanation</summary>
+                      <ol>
+                        @for (step of lesson().interviewRecall.answerFramework; track step) {
+                          <li class="rich" [innerHTML]="step"></li>
+                        }
+                      </ol>
                     </details>
                   </details>
                 </section>
               }
               @if (practiceItems().length && !hasLadder()) {
-                <section id="foundation-practice" class="lesson-section practice-section" aria-labelledby="foundation-practice-heading">
-                  <p class="section-label stage-label"><span>{{ stageLabel(slots().prove) }}</span>More practice</p>
-                  <h2 id="foundation-practice-heading" data-sidebar-label="More practice">Practice with intent</h2>
+                <section
+                  id="foundation-practice"
+                  class="lesson-section practice-section"
+                  aria-labelledby="foundation-practice-heading"
+                >
+                  <p class="section-label stage-label"
+                    ><span>{{ stageLabel(slots().prove) }}</span
+                    >More practice</p
+                  >
+                  <h2 id="foundation-practice-heading" data-sidebar-label="More practice"
+                    >Practice with intent</h2
+                  >
                   <div class="practice-grid">
                     @for (item of practiceItems(); track item.id) {
                       <a [routerLink]="['/', pathId(), courseId(), item.id]">
@@ -359,7 +490,8 @@ export function plainText(html: string): string {
       </article>
     </ng-template>
     <ng-template #tabStep let-key="key" let-count="count" let-prefix="prefix">
-      <!-- Previous / Next under tabbed panels, for reading them in order (user review, 2026-10-05). -->
+      <!-- Previous / Next under tabbed panels, for reading them in order (user review, 2026-10-05).
+      -->
       <div
         class="tab-step"
         appLessonTabStep
@@ -372,14 +504,15 @@ export function plainText(html: string): string {
       <section
         class="lesson-section wide-section"
         [class.text-section]="
-          !section.code &&
-          !section.visual &&
-          !section.solutions?.length &&
-          section.body.length > 1
+          !section.code && !section.visual && !section.solutions?.length && section.body.length > 1
         "
         [class.three-explanations]="section.body.length === 3"
-        [class.code-section]="section.code && !section.solutions?.length && !section.visual && !stage"
-        [class.code-section]="stage && (section.code || section.codeTabs?.length) && !section.solutions?.length"
+        [class.code-section]="
+          section.code && !section.solutions?.length && !section.visual && !stage
+        "
+        [class.code-section]="
+          stage && (section.code || section.codeTabs?.length) && !section.solutions?.length
+        "
         [class.quick-revision]="stage && section.sidebar"
         [class.invariants-section]="stage && section.navLabel === 'Invariants'"
         [id]="section.id"
@@ -387,40 +520,62 @@ export function plainText(html: string): string {
         [attr.data-sidebar-support]="section.sidebar ? '' : null"
       >
         @if (section.problem; as problem) {
-          <!-- algo-pattern-v1 Problem first: the problem's name, level and source, then the problem card on its own. -->
+          <!-- algo-pattern-v1 Problem first: the problem's name, level and source, then the problem
+               card on its own. -->
           <p class="section-label stage-label problem-label">
-            <span>{{ stageLabel(stage) }}</span>{{ problem.title }}
-            <em class="difficulty-pill" [attr.data-level]="problem.difficulty.toLowerCase()">{{ problem.difficulty }}</em>
+            <span>{{ stageLabel(stage) }}</span
+            >{{ problem.title }}
+            <em class="difficulty-pill" [attr.data-level]="problem.difficulty.toLowerCase()">{{
+              problem.difficulty
+            }}</em>
             @if (problem.source) {
               <em class="problem-source">{{ problem.source }}</em>
             }
           </p>
-          <h2 class="visually-hidden" [attr.data-sidebar-label]="stage ? section.navLabel : null"><span class="rich" [innerHTML]="section.heading"></span></h2>
+          <h2 class="visually-hidden" [attr.data-sidebar-label]="stage ? section.navLabel : null"
+            ><span class="rich" [innerHTML]="section.heading"></span
+          ></h2>
           <div class="problem-card">
-            <p><strong>The problem.</strong>{{ ' ' }}<span class="rich" [innerHTML]="problem.statement"></span></p>
+            <p
+              ><strong>The problem.</strong>{{ ' '
+              }}<span class="rich" [innerHTML]="problem.statement"></span
+            ></p>
             @if (problem.example) {
               <p class="problem-example" [innerHTML]="problem.example"></p>
             }
           </div>
         } @else {
-        @if ((stage === 'overview' || isAlgo()) && section.navLabel === stageLabel(stage)) {
-          <!-- The stage title already says it (e.g. Overview, Brief); no repeated label line. -->
-        } @else if (stage) {
-          <p class="section-label stage-label"><span>{{ stageLabel(stage) }}</span>{{ section.navLabel }}</p>
-        } @else {
-          <p class="section-label">{{ section.navLabel }}</p>
-        }
-        @if (inTabs) {
-          <!-- Inside tabs the side nav keeps one stable entry for the stage, so no sidebar label here. -->
-          <h3 class="tab-panel-heading"><span class="rich" [innerHTML]="section.heading"></span></h3>
-        } @else {
-          <h2 [attr.data-sidebar-label]="stage ? section.navLabel : null"><span class="rich" [innerHTML]="section.heading"></span></h2>
-        }
+          @if ((stage === 'overview' || isAlgo()) && section.navLabel === stageLabel(stage)) {
+            <!-- The stage title already says it (e.g. Overview, Brief); no repeated label line. -->
+          } @else if (stage) {
+            <p class="section-label stage-label"
+              ><span>{{ stageLabel(stage) }}</span
+              >{{ section.navLabel }}</p
+            >
+          } @else {
+            <p class="section-label">{{ section.navLabel }}</p>
+          }
+          @if (inTabs) {
+            <!-- Inside tabs the side nav keeps one stable entry for the stage, so no sidebar label
+                 here. -->
+            <h3 class="tab-panel-heading"
+              ><span class="rich" [innerHTML]="section.heading"></span
+            ></h3>
+          } @else {
+            <h2 [attr.data-sidebar-label]="stage ? section.navLabel : null"
+              ><span class="rich" [innerHTML]="section.heading"></span
+            ></h2>
+          }
         }
         @if (section.visualBeside && section.visual?.type === 'storyboard') {
-          <!-- A storyboard with the explanation beside it: in Problem first (and a concept-v1 Concept story) a short
-               explanation and the cost line (sticky Pause/Play bar), elsewhere one bullet per body paragraph. -->
-          <app-lesson-storyboard [visual]="section.visual" [variant]="isStory(section, stage) ? 'story' : 'scene'" [beside]="true">
+          <!-- A storyboard with the explanation beside it: in Problem first (and a concept-v1
+               Concept story) a short explanation and the cost line (sticky Pause/Play bar),
+               elsewhere one bullet per body paragraph. -->
+          <app-lesson-storyboard
+            [visual]="section.visual"
+            [variant]="isStory(section, stage) ? 'story' : 'scene'"
+            [beside]="true"
+          >
             @if (isStory(section, stage)) {
               @for (paragraph of section.body; track paragraph) {
                 <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
@@ -436,248 +591,602 @@ export function plainText(html: string): string {
               </ul>
             }
           </app-lesson-storyboard>
-          <ng-container [ngTemplateOutlet]="transcript" [ngTemplateOutletContext]="{ $implicit: section }" />
-        } @else if (stage && (section.code || section.codeTabs?.length) && !section.solutions?.length) {
-          <ng-container [ngTemplateOutlet]="systemCode" [ngTemplateOutletContext]="{ $implicit: section, stage: stage }" />
-          <ng-container [ngTemplateOutlet]="sectionCards" [ngTemplateOutletContext]="{ $implicit: section }" />
+          <ng-container
+            [ngTemplateOutlet]="transcript"
+            [ngTemplateOutletContext]="{ $implicit: section }"
+          />
+        } @else if (
+          stage && (section.code || section.codeTabs?.length) && !section.solutions?.length
+        ) {
+          <ng-container
+            [ngTemplateOutlet]="systemCode"
+            [ngTemplateOutletContext]="{ $implicit: section, stage: stage }"
+          />
+          <ng-container
+            [ngTemplateOutlet]="sectionCards"
+            [ngTemplateOutletContext]="{ $implicit: section }"
+          />
         } @else {
-        @if (section.code; as code) {
-          @if (!section.solutions?.length) {
-            <div class="section-code-column">
-            <section class="foundation-code">
-              <header>
-                <span>{{ code.title }}</span>
-                <div>
-                  <small>{{ languageLabel(code.language) }}</small
-                  ><app-code-copy-button [code]="code.source" />
-                </div>
-              </header>
-              <pre><code [appLearningCode]="code.source" [codeLanguage]="code.language"></code></pre>
-            </section>
-            </div>
-          }
-        }
-        <div class="explanation">
-          @if (section.navLabel === 'References') {
-            @for (paragraph of referenceParagraphs(section.body); track paragraph) {
-              <div class="prose" [innerHTML]="cardPoints(paragraph)"></div>
-            }
-            @if (referenceLinks(section.body).length) {
-              <div class="reference-links-card">
-                <ul>
-                  @for (link of referenceLinks(section.body); track link) {
-                    <li [innerHTML]="link"></li>
-                  }
-                </ul>
+          @if (section.code; as code) {
+            @if (!section.solutions?.length) {
+              <div class="section-code-column">
+                <section class="foundation-code">
+                  <header>
+                    <span>{{ code.title }}</span>
+                    <div>
+                      <small>{{ languageLabel(code.language) }}</small
+                      ><app-code-copy-button [code]="code.source" />
+                    </div>
+                  </header>
+                  <pre><code [appLearningCode]="code.source"
+                    [codeLanguage]="code.language"></code></pre>
+                </section>
               </div>
             }
-          } @else {
-            @for (paragraph of section.body; track paragraph; let index = $index) {
-              @if (stage && promptText(paragraph); as prompt) {
-                <figure class="ai-prompt">
-                  <figcaption>Prompt to give your AI tool<app-code-copy-button [code]="prompt" /></figcaption>
-                  <p>{{ prompt }}</p>
-                </figure>
-              } @else {
-                <div class="prose" [innerHTML]="cardPoints(paragraph, !!stage)"></div>
+          }
+          <div class="explanation">
+            @if (section.navLabel === 'References') {
+              @for (paragraph of referenceParagraphs(section.body); track paragraph) {
+                <div class="prose" [innerHTML]="cardPoints(paragraph)"></div>
               }
-              @if (section.table && !section.patternMap && !besideVisual(section) && tableAfter(section) === index) {
-                <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: section.table }" />
+              @if (referenceLinks(section.body).length) {
+                <div class="reference-links-card">
+                  <ul>
+                    @for (link of referenceLinks(section.body); track link) {
+                      <li [innerHTML]="link"></li>
+                    }
+                  </ul>
+                </div>
+              }
+            } @else {
+              @for (paragraph of section.body; track paragraph; let index = $index) {
+                @if (stage && promptText(paragraph); as prompt) {
+                  <figure class="ai-prompt">
+                    <figcaption
+                      >Prompt to give your AI tool<app-code-copy-button [code]="prompt"
+                    /></figcaption>
+                    <p>{{ prompt }}</p>
+                  </figure>
+                } @else {
+                  <div class="prose" [innerHTML]="cardPoints(paragraph, !!stage)"></div>
+                }
+                @if (
+                  section.table &&
+                  !section.patternMap &&
+                  !besideVisual(section) &&
+                  tableAfter(section) === index
+                ) {
+                  <ng-container
+                    [ngTemplateOutlet]="lessonTable"
+                    [ngTemplateOutletContext]="{ $implicit: section.table }"
+                  />
+                }
               }
             }
-          }
-          @if (section.callout?.title !== 'Example boundary' && section.visual?.type !== 'storyboard' && section.callout; as callout) {
-            <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
-              <strong>{{ callout.title }}</strong>
-              <p [innerHTML]="callout.text"></p>
-            </aside>
-          }
-        </div>
-        @if (stage && section.patternMap && section.table) {
-          <!-- Recognize the Pattern: the 20 units as a route with a signal finder (user review, 2026-10-05). -->
-          <app-pattern-map class="pattern-map" [table]="section.table" [map]="section.patternMap" />
-        }
-        <ng-container [ngTemplateOutlet]="sectionCards" [ngTemplateOutletContext]="{ $implicit: section }" />
-        @if (stage && section.cheatSheet; as sheet) {
-          <div
-            class="cheat-sheet"
-            appLessonCheatSheet
-            [sheet]="sheet"
-            [sectionId]="section.id"
-            [languageCode]="isLanguageTabs(sheet.codeTabs) ? languageCode : null"
-          ></div>
-        }
-        @if (stage && section.pairs?.length) {
-          @let pairTabs = section.pairs.length > 1;
-          @let pairPick = tabIndex(section.id + '-pairs', section.pairs.length);
-          <div [class.lesson-tabbed]="pairTabs" [attr.id]="pairTabs ? section.id + '-tabs' : null">
-          @if (pairTabs) {
-            <app-lesson-tabs
-              [items]="pairTabItems(section)"
-              [selected]="pairPick"
-              [idPrefix]="section.id + '-pairs'"
-              [panelIds]="pairPanelIds(section)"
-              [ariaLabel]="section.navLabel ?? section.heading"
-              (select)="setTab(section.id + '-pairs', $event)"
+            @if (
+              section.callout?.title !== 'Example boundary' &&
+                section.visual?.type !== 'storyboard' &&
+                section.callout;
+              as callout
+            ) {
+              <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
+                <strong>{{ callout.title }}</strong>
+                <p [innerHTML]="callout.text"></p>
+              </aside>
+            }
+          </div>
+          @if (stage && section.patternMap && section.table) {
+            <!-- Recognize the Pattern: the 20 units as a route with a signal finder (user review,
+                 2026-10-05). -->
+            <app-pattern-map
+              class="pattern-map"
+              [table]="section.table"
+              [map]="section.patternMap"
             />
           }
-          <ol class="pair-list" [attr.role]="pairTabs ? 'presentation' : null">
-            @for (pair of section.pairs; track pair.n; let pairIndex = $index) {
-              <li
-                class="pair-card"
-                [id]="section.id + '-' + pair.n"
-                [attr.role]="pairTabs ? 'tabpanel' : null"
-                [attr.aria-labelledby]="pairTabs ? section.id + '-pairs-tab-' + pairIndex : null"
-                [attr.hidden]="pairTabs && pairIndex !== pairPick ? 'until-found' : null"
-                (beforematch)="setTab(section.id + '-pairs', pairIndex)"
-              >
-                <div class="pair-head">
-                  <h3><span class="pair-number" aria-hidden="true">{{ pair.n }}</span><span class="rich" [innerHTML]="pair.title"></span></h3>
-                  @for (paragraph of pair.problem; track paragraph) {
-                    <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-                  }
-                </div>
-                @if (pairDiff(section, pair); as diff) {
-                  <ng-container [ngTemplateOutlet]="splitDiffPair" [ngTemplateOutletContext]="{ $implicit: diff, section: section, pair: pair }" />
-                } @else {
-                <div class="pair-grid">
-                    <section class="pair-side pair-broken" [attr.aria-label]="pairLabel(section, 'broken') + ': ' + pair.title">
-                      <div class="pair-side-head">
-                        <p class="pair-label">{{ pairLabel(section, 'broken') }}</p>
-                        @if (pair.broken.title) {
-                          <p class="pair-fix-title"><span class="rich" [innerHTML]="pair.broken.title"></span></p>
-                        }
-                        @for (paragraph of pair.broken.body; track paragraph) {
-                          <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-                        }
-                      </div>
-                      @if (isLanguageTabs(pair.broken.codeTabs)) {
-                      <div class="pair-side-code">
-                        <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: pair.broken.codeTabs, key: sideKey(section, pair, 'broken'), label: pairLabel(section, 'broken') + ': ' + pair.title }" />
-                      </div>
-                      } @else if (pair.broken.codeTabs?.length) {
-                      <div class="pair-side-code">
-                        @if (pair.broken.codeTabs.length > 1) {
-                          <div class="code-tabs" role="tablist" [attr.aria-label]="pairLabel(section, 'broken') + ': files'">
-                            @for (tab of pair.broken.codeTabs; track tab.id; let index = $index) {
-                              <button
-                                type="button"
-                                role="tab"
-                                [id]="sideKey(section, pair, 'broken') + '-tab-' + tab.id"
-                                [attr.aria-selected]="tabIndex(sideKey(section, pair, 'broken'), pair.broken.codeTabs.length) === index"
-                                [attr.aria-controls]="sideKey(section, pair, 'broken') + '-panel'"
-                                [attr.tabindex]="tabIndex(sideKey(section, pair, 'broken'), pair.broken.codeTabs.length) === index ? 0 : -1"
-                                (click)="setTab(sideKey(section, pair, 'broken'), index)"
-                                (keydown)="moveTab($event, sideKey(section, pair, 'broken'), pair.broken.codeTabs.length)"
-                              >{{ tab.title }}</button>
-                            }
-                          </div>
-                        }
-                        <div [attr.role]="pair.broken.codeTabs.length > 1 ? 'tabpanel' : null" [id]="sideKey(section, pair, 'broken') + '-panel'">
-                          <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: sideTab(section, pair, 'broken') }" />
-                        </div>
-                      </div>
-                      }
-                      @if (pair.broken.output || pair.broken.table) {
-                        <div class="pair-side-output">
-                          @if (pair.broken.table; as table) {
-                            <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: table }" />
-                          }
-                          @if (pair.broken.output; as output) {
-                            <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-                          }
-                        </div>
-                      }
-                    </section>
-                    <section class="pair-side pair-fixed" [attr.aria-label]="pairLabel(section, 'fixed') + ': ' + pair.title">
-                      <div class="pair-side-head">
-                        <p class="pair-label">{{ pairLabel(section, 'fixed') }}</p>
-                        @if (pair.fixed.title) {
-                          <p class="pair-fix-title"><span class="rich" [innerHTML]="pair.fixed.title"></span></p>
-                        }
-                        @for (paragraph of pair.fixed.body; track paragraph) {
-                          <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-                        }
-                      </div>
-                      @if (isLanguageTabs(pair.fixed.codeTabs)) {
-                      <div class="pair-side-code">
-                        <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: pair.fixed.codeTabs, key: sideKey(section, pair, 'fixed'), label: pairLabel(section, 'fixed') + ': ' + pair.title }" />
-                      </div>
-                      } @else if (pair.fixed.codeTabs?.length) {
-                      <div class="pair-side-code">
-                        @if (pair.fixed.codeTabs.length > 1) {
-                          <div class="code-tabs" role="tablist" [attr.aria-label]="pairLabel(section, 'fixed') + ': files'">
-                            @for (tab of pair.fixed.codeTabs; track tab.id; let index = $index) {
-                              <button
-                                type="button"
-                                role="tab"
-                                [id]="sideKey(section, pair, 'fixed') + '-tab-' + tab.id"
-                                [attr.aria-selected]="tabIndex(sideKey(section, pair, 'fixed'), pair.fixed.codeTabs.length) === index"
-                                [attr.aria-controls]="sideKey(section, pair, 'fixed') + '-panel'"
-                                [attr.tabindex]="tabIndex(sideKey(section, pair, 'fixed'), pair.fixed.codeTabs.length) === index ? 0 : -1"
-                                (click)="setTab(sideKey(section, pair, 'fixed'), index)"
-                                (keydown)="moveTab($event, sideKey(section, pair, 'fixed'), pair.fixed.codeTabs.length)"
-                              >{{ tab.title }}</button>
-                            }
-                          </div>
-                        }
-                        <div [attr.role]="pair.fixed.codeTabs.length > 1 ? 'tabpanel' : null" [id]="sideKey(section, pair, 'fixed') + '-panel'">
-                          <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: sideTab(section, pair, 'fixed') }" />
-                        </div>
-                      </div>
-                      }
-                      @if (pair.fixed.output || pair.fixed.table) {
-                        <div class="pair-side-output">
-                          @if (pair.fixed.table; as table) {
-                            <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: table }" />
-                          }
-                          @if (pair.fixed.output; as output) {
-                            <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-                          }
-                        </div>
-                      }
-                    </section>
-                </div>
-                }
-              </li>
-            }
-          </ol>
-          @if (pairTabs) {
-            <ng-container [ngTemplateOutlet]="tabStep" [ngTemplateOutletContext]="{ key: section.id + '-pairs', count: section.pairs.length, prefix: section.id + '-pairs' }" />
+          <ng-container
+            [ngTemplateOutlet]="sectionCards"
+            [ngTemplateOutletContext]="{ $implicit: section }"
+          />
+          @if (stage && section.cheatSheet; as sheet) {
+            <div
+              class="cheat-sheet"
+              appLessonCheatSheet
+              [sheet]="sheet"
+              [sectionId]="section.id"
+              [languageCode]="isLanguageTabs(sheet.codeTabs) ? languageCode : null"
+            ></div>
           }
-          </div>
-        }
-        @if (stage && section.practiceTimer; as timer) {
-          <div class="practice-timer" role="group" [attr.aria-label]="'Speaking timer, ' + formatTime(timer.seconds)">
-            @if (timer.prompt) {
-              <p class="practice-timer-prompt"><span class="rich" [innerHTML]="timer.prompt"></span></p>
-            }
-            <p class="practice-timer-clock" aria-hidden="true">{{ formatTime(timerRemaining(section.id, timer.seconds)) }}</p>
-            <div class="practice-timer-actions">
-              <button type="button" (click)="toggleTimer(section.id, timer.seconds)">{{ timerRunning(section.id) ? 'Pause' : 'Start' }}</button>
-              <button type="button" (click)="resetTimer(section.id)">Reset</button>
+          @if (stage && section.pairs?.length) {
+            @let pairTabs = section.pairs.length > 1;
+            @let pairPick = tabIndex(section.id + '-pairs', section.pairs.length);
+            <div
+              [class.lesson-tabbed]="pairTabs"
+              [attr.id]="pairTabs ? section.id + '-tabs' : null"
+            >
+              @if (pairTabs) {
+                <app-lesson-tabs
+                  [items]="pairTabItems(section)"
+                  [selected]="pairPick"
+                  [idPrefix]="section.id + '-pairs'"
+                  [panelIds]="pairPanelIds(section)"
+                  [ariaLabel]="section.navLabel ?? section.heading"
+                  (select)="setTab(section.id + '-pairs', $event)"
+                />
+              }
+              <ol class="pair-list" [attr.role]="pairTabs ? 'presentation' : null">
+                @for (pair of section.pairs; track pair.n; let pairIndex = $index) {
+                  <li
+                    class="pair-card"
+                    [id]="section.id + '-' + pair.n"
+                    [attr.role]="pairTabs ? 'tabpanel' : null"
+                    [attr.aria-labelledby]="
+                      pairTabs ? section.id + '-pairs-tab-' + pairIndex : null
+                    "
+                    [attr.hidden]="pairTabs && pairIndex !== pairPick ? 'until-found' : null"
+                    (beforematch)="setTab(section.id + '-pairs', pairIndex)"
+                  >
+                    <div class="pair-head">
+                      <h3
+                        ><span class="pair-number" aria-hidden="true">{{ pair.n }}</span
+                        ><span class="rich" [innerHTML]="pair.title"></span
+                      ></h3>
+                      @for (paragraph of pair.problem; track paragraph) {
+                        <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
+                      }
+                    </div>
+                    @if (pairDiff(section, pair); as diff) {
+                      <ng-container
+                        [ngTemplateOutlet]="splitDiffPair"
+                        [ngTemplateOutletContext]="{
+                          $implicit: diff,
+                          section: section,
+                          pair: pair,
+                        }"
+                      />
+                    } @else {
+                      <div class="pair-grid">
+                        <section
+                          class="pair-side pair-broken"
+                          [attr.aria-label]="pairLabel(section, 'broken') + ': ' + pair.title"
+                        >
+                          <div class="pair-side-head">
+                            <p class="pair-label">{{ pairLabel(section, 'broken') }}</p>
+                            @if (pair.broken.title) {
+                              <p class="pair-fix-title"
+                                ><span class="rich" [innerHTML]="pair.broken.title"></span
+                              ></p>
+                            }
+                            @for (paragraph of pair.broken.body; track paragraph) {
+                              <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
+                            }
+                          </div>
+                          @if (isLanguageTabs(pair.broken.codeTabs)) {
+                            <div class="pair-side-code">
+                              <ng-container
+                                [ngTemplateOutlet]="languageCode"
+                                [ngTemplateOutletContext]="{
+                                  $implicit: pair.broken.codeTabs,
+                                  key: sideKey(section, pair, 'broken'),
+                                  label: pairLabel(section, 'broken') + ': ' + pair.title,
+                                }"
+                              />
+                            </div>
+                          } @else if (pair.broken.codeTabs?.length) {
+                            <div class="pair-side-code">
+                              @if (pair.broken.codeTabs.length > 1) {
+                                <div
+                                  class="code-tabs"
+                                  role="tablist"
+                                  [attr.aria-label]="pairLabel(section, 'broken') + ': files'"
+                                >
+                                  @for (
+                                    tab of pair.broken.codeTabs;
+                                    track tab.id;
+                                    let index = $index
+                                  ) {
+                                    <button
+                                      type="button"
+                                      role="tab"
+                                      [id]="sideKey(section, pair, 'broken') + '-tab-' + tab.id"
+                                      [attr.aria-selected]="
+                                        tabIndex(
+                                          sideKey(section, pair, 'broken'),
+                                          pair.broken.codeTabs.length
+                                        ) === index
+                                      "
+                                      [attr.aria-controls]="
+                                        sideKey(section, pair, 'broken') + '-panel'
+                                      "
+                                      [attr.tabindex]="
+                                        tabIndex(
+                                          sideKey(section, pair, 'broken'),
+                                          pair.broken.codeTabs.length
+                                        ) === index
+                                          ? 0
+                                          : -1
+                                      "
+                                      (click)="setTab(sideKey(section, pair, 'broken'), index)"
+                                      (keydown)="
+                                        moveTab(
+                                          $event,
+                                          sideKey(section, pair, 'broken'),
+                                          pair.broken.codeTabs.length
+                                        )
+                                      "
+                                      >{{ tab.title }}</button
+                                    >
+                                  }
+                                </div>
+                              }
+                              <div
+                                [attr.role]="pair.broken.codeTabs.length > 1 ? 'tabpanel' : null"
+                                [id]="sideKey(section, pair, 'broken') + '-panel'"
+                              >
+                                <ng-container
+                                  [ngTemplateOutlet]="codeBlock"
+                                  [ngTemplateOutletContext]="{
+                                    $implicit: sideTab(section, pair, 'broken'),
+                                  }"
+                                />
+                              </div>
+                            </div>
+                          }
+                          @if (pair.broken.output || pair.broken.table) {
+                            <div class="pair-side-output">
+                              @if (pair.broken.table; as table) {
+                                <ng-container
+                                  [ngTemplateOutlet]="lessonTable"
+                                  [ngTemplateOutletContext]="{ $implicit: table }"
+                                />
+                              }
+                              @if (pair.broken.output; as output) {
+                                <ng-container
+                                  [ngTemplateOutlet]="runConsole"
+                                  [ngTemplateOutletContext]="{ $implicit: output }"
+                                />
+                              }
+                            </div>
+                          }
+                        </section>
+                        <section
+                          class="pair-side pair-fixed"
+                          [attr.aria-label]="pairLabel(section, 'fixed') + ': ' + pair.title"
+                        >
+                          <div class="pair-side-head">
+                            <p class="pair-label">{{ pairLabel(section, 'fixed') }}</p>
+                            @if (pair.fixed.title) {
+                              <p class="pair-fix-title"
+                                ><span class="rich" [innerHTML]="pair.fixed.title"></span
+                              ></p>
+                            }
+                            @for (paragraph of pair.fixed.body; track paragraph) {
+                              <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
+                            }
+                          </div>
+                          @if (isLanguageTabs(pair.fixed.codeTabs)) {
+                            <div class="pair-side-code">
+                              <ng-container
+                                [ngTemplateOutlet]="languageCode"
+                                [ngTemplateOutletContext]="{
+                                  $implicit: pair.fixed.codeTabs,
+                                  key: sideKey(section, pair, 'fixed'),
+                                  label: pairLabel(section, 'fixed') + ': ' + pair.title,
+                                }"
+                              />
+                            </div>
+                          } @else if (pair.fixed.codeTabs?.length) {
+                            <div class="pair-side-code">
+                              @if (pair.fixed.codeTabs.length > 1) {
+                                <div
+                                  class="code-tabs"
+                                  role="tablist"
+                                  [attr.aria-label]="pairLabel(section, 'fixed') + ': files'"
+                                >
+                                  @for (
+                                    tab of pair.fixed.codeTabs;
+                                    track tab.id;
+                                    let index = $index
+                                  ) {
+                                    <button
+                                      type="button"
+                                      role="tab"
+                                      [id]="sideKey(section, pair, 'fixed') + '-tab-' + tab.id"
+                                      [attr.aria-selected]="
+                                        tabIndex(
+                                          sideKey(section, pair, 'fixed'),
+                                          pair.fixed.codeTabs.length
+                                        ) === index
+                                      "
+                                      [attr.aria-controls]="
+                                        sideKey(section, pair, 'fixed') + '-panel'
+                                      "
+                                      [attr.tabindex]="
+                                        tabIndex(
+                                          sideKey(section, pair, 'fixed'),
+                                          pair.fixed.codeTabs.length
+                                        ) === index
+                                          ? 0
+                                          : -1
+                                      "
+                                      (click)="setTab(sideKey(section, pair, 'fixed'), index)"
+                                      (keydown)="
+                                        moveTab(
+                                          $event,
+                                          sideKey(section, pair, 'fixed'),
+                                          pair.fixed.codeTabs.length
+                                        )
+                                      "
+                                      >{{ tab.title }}</button
+                                    >
+                                  }
+                                </div>
+                              }
+                              <div
+                                [attr.role]="pair.fixed.codeTabs.length > 1 ? 'tabpanel' : null"
+                                [id]="sideKey(section, pair, 'fixed') + '-panel'"
+                              >
+                                <ng-container
+                                  [ngTemplateOutlet]="codeBlock"
+                                  [ngTemplateOutletContext]="{
+                                    $implicit: sideTab(section, pair, 'fixed'),
+                                  }"
+                                />
+                              </div>
+                            </div>
+                          }
+                          @if (pair.fixed.output || pair.fixed.table) {
+                            <div class="pair-side-output">
+                              @if (pair.fixed.table; as table) {
+                                <ng-container
+                                  [ngTemplateOutlet]="lessonTable"
+                                  [ngTemplateOutletContext]="{ $implicit: table }"
+                                />
+                              }
+                              @if (pair.fixed.output; as output) {
+                                <ng-container
+                                  [ngTemplateOutlet]="runConsole"
+                                  [ngTemplateOutletContext]="{ $implicit: output }"
+                                />
+                              }
+                            </div>
+                          }
+                        </section>
+                      </div>
+                    }
+                  </li>
+                }
+              </ol>
+              @if (pairTabs) {
+                <ng-container
+                  [ngTemplateOutlet]="tabStep"
+                  [ngTemplateOutletContext]="{
+                    key: section.id + '-pairs',
+                    count: section.pairs.length,
+                    prefix: section.id + '-pairs',
+                  }"
+                />
+              }
             </div>
-            <p class="visually-hidden" aria-live="polite">{{ timerAnnouncement(section.id) }}</p>
+          }
+          @if (stage && section.practiceTimer; as timer) {
+            <div
+              class="practice-timer"
+              role="group"
+              [attr.aria-label]="'Speaking timer, ' + formatTime(timer.seconds)"
+            >
+              @if (timer.prompt) {
+                <p class="practice-timer-prompt"
+                  ><span class="rich" [innerHTML]="timer.prompt"></span
+                ></p>
+              }
+              <p class="practice-timer-clock" aria-hidden="true">{{
+                formatTime(timerRemaining(section.id, timer.seconds))
+              }}</p>
+              <div class="practice-timer-actions">
+                <button type="button" (click)="toggleTimer(section.id, timer.seconds)">{{
+                  timerRunning(section.id) ? 'Pause' : 'Start'
+                }}</button>
+                <button type="button" (click)="resetTimer(section.id)">Reset</button>
+              </div>
+              <p class="visually-hidden" aria-live="polite">{{ timerAnnouncement(section.id) }}</p>
+            </div>
+          }
+          @if (stage && section.ladder?.length) {
+            <ng-container
+              [ngTemplateOutlet]="problemLadder"
+              [ngTemplateOutletContext]="{ $implicit: section }"
+            />
+          }
+          @if (stage && section.spot; as drill) {
+            <ng-container
+              [ngTemplateOutlet]="spotDrill"
+              [ngTemplateOutletContext]="{ $implicit: drill, section: section }"
+            />
+          }
+          @if (section.solutions?.length) {
+            <app-coding-solution-tabs
+              [solutions]="section.solutions!"
+              [pseudocode]="section.code ?? null"
+              [showPractice]="section.showPractice !== false"
+              [useLanguageThemes]="section.useLanguageThemes === true"
+            />
+          }
+          @if (besideVisual(section)) {
+            <ng-container
+              [ngTemplateOutlet]="traceBeside"
+              [ngTemplateOutletContext]="{ $implicit: section }"
+            />
+          } @else if (section.visual?.type === 'storyboard') {
+            <ng-container
+              [ngTemplateOutlet]="storyboardVisual"
+              [ngTemplateOutletContext]="{ $implicit: section }"
+            />
+          } @else if (section.visual; as visual) {
+            <figure class="concept-visual">
+              @if (visual.type === 'interactive') {
+                <app-interactive-theory-visual [visual]="visual" />
+              } @else {
+                <img [src]="visual.assetPath" [alt]="visual.alt" />
+              }
+              @if (visual.caption; as caption) {
+                <figcaption>{{ caption }}</figcaption>
+              }
+            </figure>
+            @if (section.visualTranscript?.length) {
+              <details class="visual-transcript">
+                <summary>Read the complete visual transcript</summary>
+                <ol>
+                  @for (step of section.visualTranscript; track step) {
+                    <li>{{ step }}</li>
+                  }
+                </ol>
+              </details>
+            }
+          }
+        }
+      </section>
+    </ng-template>
+    <!-- Code reads top to bottom: the lead-in paragraph(s), the code at the full content width, the
+         run console right under the code it came from, then the paragraphs that explain the run
+         (codeAfterParagraph picks the split; default: after the first paragraph). A DLV-935 guided
+         project step reads its whole guide (goal, prompt, mistakes, checks) first, then the step's
+         code and its test console. Tables and visuals follow below. -->
+    <ng-template #systemCode let-section let-stage="stage">
+      @if (isLanguageTabs(section.codeTabs)) {
+        <!-- DSA core courses and guided steps: the same program in two or three languages; one
+             choice for the page. -->
+        <div class="code-stack" [class.code-stack-guided]="section.guidedStep">
+          <ng-container
+            [ngTemplateOutlet]="stackProse"
+            [ngTemplateOutletContext]="{
+              $implicit: section,
+              from: 0,
+              to: codeAfter(section),
+              callout: !!section.guidedStep,
+            }"
+          />
+          <div class="code-stack-code">
+            <ng-container
+              [ngTemplateOutlet]="languageCode"
+              [ngTemplateOutletContext]="{
+                $implicit: section.codeTabs,
+                key: section.id,
+                label: section.heading,
+                console: false,
+              }"
+            />
+          </div>
+          @if (languageTab(section.codeTabs).output; as output) {
+            <div class="code-stack-console">
+              <ng-container
+                [ngTemplateOutlet]="runConsole"
+                [ngTemplateOutletContext]="{ $implicit: output }"
+              />
+            </div>
+          }
+          <ng-container
+            [ngTemplateOutlet]="stackProse"
+            [ngTemplateOutletContext]="{
+              $implicit: section,
+              from: codeAfter(section),
+              to: section.body.length,
+              callout: !section.guidedStep,
+            }"
+          />
+        </div>
+      } @else if (section.codeTabs?.length) {
+        @for (paragraph of section.body; track paragraph) {
+          <div class="prose section-intro" [innerHTML]="cardPoints(paragraph, true)"></div>
+        }
+        <div class="code-tabs" role="tablist" [attr.aria-label]="section.heading + ': files'">
+          @for (tab of section.codeTabs; track tab.id; let index = $index) {
+            <button
+              type="button"
+              role="tab"
+              [id]="section.id + '-tab-' + tab.id"
+              [attr.aria-selected]="activeTab(section) === index"
+              [attr.aria-controls]="section.id + '-panel'"
+              [attr.tabindex]="activeTab(section) === index ? 0 : -1"
+              (click)="selectTab(section, index)"
+              (keydown)="tabKeydown($event, section)"
+              >{{ tab.title }}</button
+            >
+          }
+        </div>
+        @if (currentTab(section); as tab) {
+          <div
+            class="code-stack"
+            role="tabpanel"
+            [id]="section.id + '-panel'"
+            [attr.aria-labelledby]="section.id + '-tab-' + tab.id"
+          >
+            <div class="code-stack-code">
+              <ng-container
+                [ngTemplateOutlet]="codeBlock"
+                [ngTemplateOutletContext]="{ $implicit: tab }"
+              />
+            </div>
+            <div class="explanation code-stack-text">
+              @for (paragraph of tab.body; track paragraph) {
+                <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
+              }
+            </div>
           </div>
         }
-        @if (stage && section.ladder?.length) {
-          <ng-container [ngTemplateOutlet]="problemLadder" [ngTemplateOutletContext]="{ $implicit: section }" />
-        }
-        @if (stage && section.spot; as drill) {
-          <ng-container [ngTemplateOutlet]="spotDrill" [ngTemplateOutletContext]="{ $implicit: drill, section: section }" />
-        }
-        @if (section.solutions?.length) {
-          <app-coding-solution-tabs
-            [solutions]="section.solutions!"
-            [pseudocode]="section.code ?? null"
-            [showPractice]="section.showPractice !== false"
-            [useLanguageThemes]="section.useLanguageThemes === true"
+      } @else {
+        <div class="code-stack" [class.code-stack-guided]="section.guidedStep">
+          <ng-container
+            [ngTemplateOutlet]="stackProse"
+            [ngTemplateOutletContext]="{
+              $implicit: section,
+              from: 0,
+              to: codeAfter(section),
+              callout: !!section.guidedStep,
+            }"
+          />
+          <div class="code-stack-code">
+            <ng-container
+              [ngTemplateOutlet]="codeBlock"
+              [ngTemplateOutletContext]="{ $implicit: section.code }"
+            />
+          </div>
+          @if (section.output; as output) {
+            <div class="code-stack-console">
+              <ng-container
+                [ngTemplateOutlet]="runConsole"
+                [ngTemplateOutletContext]="{ $implicit: output }"
+              />
+            </div>
+          }
+          <ng-container
+            [ngTemplateOutlet]="stackProse"
+            [ngTemplateOutletContext]="{
+              $implicit: section,
+              from: codeAfter(section),
+              to: section.body.length,
+              callout: !section.guidedStep,
+            }"
+          />
+        </div>
+      }
+      @if (besideVisual(section)) {
+        <ng-container
+          [ngTemplateOutlet]="traceBeside"
+          [ngTemplateOutletContext]="{ $implicit: section }"
+        />
+      } @else {
+        @if (section.table; as table) {
+          <ng-container
+            [ngTemplateOutlet]="lessonTable"
+            [ngTemplateOutletContext]="{ $implicit: table }"
           />
         }
-        @if (besideVisual(section)) {
-          <ng-container [ngTemplateOutlet]="traceBeside" [ngTemplateOutletContext]="{ $implicit: section }" />
-        } @else if (section.visual?.type === 'storyboard') {
-          <ng-container [ngTemplateOutlet]="storyboardVisual" [ngTemplateOutletContext]="{ $implicit: section }" />
+        @if (section.visual?.type === 'storyboard') {
+          <ng-container
+            [ngTemplateOutlet]="storyboardVisual"
+            [ngTemplateOutletContext]="{ $implicit: section }"
+          />
         } @else if (section.visual; as visual) {
           <figure class="concept-visual">
             @if (visual.type === 'interactive') {
@@ -700,116 +1209,19 @@ export function plainText(html: string): string {
             </details>
           }
         }
-        }
-      </section>
-    </ng-template>
-    <!-- Code reads top to bottom: the lead-in paragraph(s), the code at the full content width, the run console
-         right under the code it came from, then the paragraphs that explain the run (codeAfterParagraph picks
-         the split; default: after the first paragraph). A DLV-935 guided project step reads its whole guide
-         (goal, prompt, mistakes, checks) first, then the step's code and its test console. Tables and visuals
-         follow below. -->
-    <ng-template #systemCode let-section let-stage="stage">
-      @if (isLanguageTabs(section.codeTabs)) {
-        <!-- DSA core courses and guided steps: the same program in two or three languages; one choice for the page. -->
-        <div class="code-stack" [class.code-stack-guided]="section.guidedStep">
-          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: 0, to: codeAfter(section), callout: !!section.guidedStep }" />
-          <div class="code-stack-code">
-            <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: section.codeTabs, key: section.id, label: section.heading, console: false }" />
-          </div>
-          @if (languageTab(section.codeTabs).output; as output) {
-            <div class="code-stack-console">
-              <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-            </div>
-          }
-          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: codeAfter(section), to: section.body.length, callout: !section.guidedStep }" />
-        </div>
-      } @else if (section.codeTabs?.length) {
-        @for (paragraph of section.body; track paragraph) {
-          <div class="prose section-intro" [innerHTML]="cardPoints(paragraph, true)"></div>
-        }
-        <div class="code-tabs" role="tablist" [attr.aria-label]="section.heading + ': files'">
-          @for (tab of section.codeTabs; track tab.id; let index = $index) {
-            <button
-              type="button"
-              role="tab"
-              [id]="section.id + '-tab-' + tab.id"
-              [attr.aria-selected]="activeTab(section) === index"
-              [attr.aria-controls]="section.id + '-panel'"
-              [attr.tabindex]="activeTab(section) === index ? 0 : -1"
-              (click)="selectTab(section, index)"
-              (keydown)="tabKeydown($event, section)"
-            >{{ tab.title }}</button>
-          }
-        </div>
-        @if (currentTab(section); as tab) {
-          <div
-            class="code-stack"
-            role="tabpanel"
-            [id]="section.id + '-panel'"
-            [attr.aria-labelledby]="section.id + '-tab-' + tab.id"
-          >
-            <div class="code-stack-code">
-              <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: tab }" />
-            </div>
-            <div class="explanation code-stack-text">
-              @for (paragraph of tab.body; track paragraph) {
-                <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-              }
-            </div>
-          </div>
-        }
-      } @else {
-        <div class="code-stack" [class.code-stack-guided]="section.guidedStep">
-          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: 0, to: codeAfter(section), callout: !!section.guidedStep }" />
-          <div class="code-stack-code">
-            <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: section.code }" />
-          </div>
-          @if (section.output; as output) {
-            <div class="code-stack-console">
-              <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-            </div>
-          }
-          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: codeAfter(section), to: section.body.length, callout: !section.guidedStep }" />
-        </div>
-      }
-      @if (besideVisual(section)) {
-        <ng-container [ngTemplateOutlet]="traceBeside" [ngTemplateOutletContext]="{ $implicit: section }" />
-      } @else {
-      @if (section.table; as table) {
-        <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: table }" />
-      }
-      @if (section.visual?.type === 'storyboard') {
-        <ng-container [ngTemplateOutlet]="storyboardVisual" [ngTemplateOutletContext]="{ $implicit: section }" />
-      } @else if (section.visual; as visual) {
-        <figure class="concept-visual">
-          @if (visual.type === 'interactive') {
-            <app-interactive-theory-visual [visual]="visual" />
-          } @else {
-            <img [src]="visual.assetPath" [alt]="visual.alt" />
-          }
-          @if (visual.caption; as caption) {
-            <figcaption>{{ caption }}</figcaption>
-          }
-        </figure>
-        @if (section.visualTranscript?.length) {
-          <details class="visual-transcript">
-            <summary>Read the complete visual transcript</summary>
-            <ol>
-              @for (step of section.visualTranscript; track step) {
-                <li>{{ step }}</li>
-              }
-            </ol>
-          </details>
-        }
-      }
       }
     </ng-template>
-    <!-- Debug pairs as a split diff, as a code review shows them: rows aligned from the same first line, removed
-         lines red (−) on the broken side, added lines green (+) on the fixed side, each side's console below it.
-         Java | Python | Go pairs follow the page's language choice. Stacks into broken-then-fixed in a narrow column. -->
+    <!-- Debug pairs as a split diff, as a code review shows them: rows aligned from the same first
+         line, removed lines red (−) on the broken side, added lines green (+) on the fixed side,
+         each side's console below it. Java | Python | Go pairs follow the page's language choice.
+         Stacks into broken-then-fixed in a narrow column. -->
     <ng-template #splitDiffPair let-diff let-section="section" let-pair="pair">
       @if (diff.languages; as tabs) {
-        <div class="code-tabs language-tabs diff-language-tabs" role="tablist" [attr.aria-label]="pair.title + ': language'">
+        <div
+          class="code-tabs language-tabs diff-language-tabs"
+          role="tablist"
+          [attr.aria-label]="pair.title + ': language'"
+        >
           @for (tab of tabs; track tab.id) {
             <button
               type="button"
@@ -820,7 +1232,8 @@ export function plainText(html: string): string {
               [attr.tabindex]="languageTab(tabs) === tab ? 0 : -1"
               (click)="chooseLanguage(tab.language, $event)"
               (keydown)="languageKeydown($event, tabs)"
-            >{{ languageName(tab.language) }}</button>
+              >{{ languageName(tab.language) }}</button
+            >
           }
         </div>
       }
@@ -836,11 +1249,24 @@ export function plainText(html: string): string {
         [runConsole]="runConsole"
         [id]="pairKey(section, pair) + (diff.languages ? '-lang-panel' : '-diff')"
         [attr.role]="diff.languages ? 'tabpanel' : 'group'"
-        [attr.aria-labelledby]="diff.languages ? pairKey(section, pair) + '-lang-' + languageTab(diff.languages).language : null"
-        [attr.aria-label]="diff.languages ? null : pair.title + ': ' + pairLabel(section, 'broken') + ' and ' + pairLabel(section, 'fixed')"
+        [attr.aria-labelledby]="
+          diff.languages
+            ? pairKey(section, pair) + '-lang-' + languageTab(diff.languages).language
+            : null
+        "
+        [attr.aria-label]="
+          diff.languages
+            ? null
+            : pair.title +
+              ': ' +
+              pairLabel(section, 'broken') +
+              ' and ' +
+              pairLabel(section, 'fixed')
+        "
       ></div>
     </ng-template>
-    <!-- A storyboard animation on its own (played in view), the key idea under it, then its transcript. -->
+    <!-- A storyboard animation on its own (played in view), the key idea under it, then its
+         transcript. -->
     <ng-template #storyboardVisual let-section>
       <app-lesson-storyboard [visual]="section.visual" />
       @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
@@ -849,7 +1275,10 @@ export function plainText(html: string): string {
           <p [innerHTML]="callout.text"></p>
         </aside>
       }
-      <ng-container [ngTemplateOutlet]="transcript" [ngTemplateOutletContext]="{ $implicit: section }" />
+      <ng-container
+        [ngTemplateOutlet]="transcript"
+        [ngTemplateOutletContext]="{ $implicit: section }"
+      />
     </ng-template>
     <ng-template #transcript let-section>
       @if (section.visualTranscript?.length) {
@@ -863,11 +1292,15 @@ export function plainText(html: string): string {
         </details>
       }
     </ng-template>
-    <!-- algo-pattern-v1: a trace table beside its animation (stacked in a narrow column), transcript below. -->
+    <!-- algo-pattern-v1: a trace table beside its animation (stacked in a narrow column),
+         transcript below. -->
     <ng-template #traceBeside let-section>
       <div class="trace-beside">
         <div class="trace-beside-table">
-          <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: section.table }" />
+          <ng-container
+            [ngTemplateOutlet]="lessonTable"
+            [ngTemplateOutletContext]="{ $implicit: section.table }"
+          />
         </div>
         <figure class="concept-visual trace-beside-visual">
           <img [src]="section.visual.assetPath" [alt]="section.visual.alt" />
@@ -887,7 +1320,8 @@ export function plainText(html: string): string {
         </details>
       }
     </ng-template>
-    <!-- algo-pattern-v1 Problems: rungs from easy to hard, each a link to its hands-on problem page. -->
+    <!-- algo-pattern-v1 Problems: rungs from easy to hard, each a link to its hands-on problem
+         page. -->
     <ng-template #problemLadder let-section>
       <ol
         class="problem-ladder"
@@ -898,7 +1332,8 @@ export function plainText(html: string): string {
         [courseId]="courseId()"
       ></ol>
     </ng-template>
-    <!-- algo-pattern-v1 Spot the pattern: pick a pattern per problem, then see whether it fits and why. -->
+    <!-- algo-pattern-v1 Spot the pattern: pick a pattern per problem, then see whether it fits and
+         why. -->
     <ng-template #spotDrill let-drill let-section="section">
       <ol
         class="spot-list"
@@ -909,23 +1344,31 @@ export function plainText(html: string): string {
         (pick)="pickSpot(section.id, $event.index, $event.option)"
       ></ol>
     </ng-template>
-    <!-- Small titled cards after the body: side by side when the lesson column is wide, stacked otherwise. -->
-    <!-- The paragraphs of a code section in [from, to): before the code the lead-in, after it the explanation.
-         The prompt to paste into an AI tool is its own copyable block. -->
+    <!-- Small titled cards after the body: side by side when the lesson column is wide, stacked
+         otherwise. -->
+    <!-- The paragraphs of a code section in [from, to): before the code the lead-in, after it the
+         explanation. The prompt to paste into an AI tool is its own copyable block. -->
     <ng-template #stackProse let-section let-from="from" let-to="to" let-callout="callout">
-      @if (to > from || (callout && section.callout?.title !== 'Example boundary' && section.callout)) {
+      @if (
+        to > from || (callout && section.callout?.title !== 'Example boundary' && section.callout)
+      ) {
         <div class="explanation code-stack-text">
           @for (paragraph of section.body.slice(from, to); track paragraph) {
             @if (promptText(paragraph); as prompt) {
               <figure class="ai-prompt">
-                <figcaption>Prompt to give your AI tool<app-code-copy-button [code]="prompt" /></figcaption>
+                <figcaption
+                  >Prompt to give your AI tool<app-code-copy-button [code]="prompt"
+                /></figcaption>
                 <p>{{ prompt }}</p>
               </figure>
             } @else {
               <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
             }
           }
-          @if (callout && section.callout?.title !== 'Example boundary' && section.callout; as callout) {
+          @if (
+            callout && section.callout?.title !== 'Example boundary' && section.callout;
+            as callout
+          ) {
             <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
               <strong>{{ callout.title }}</strong>
               <p [innerHTML]="callout.text"></p>
@@ -956,8 +1399,9 @@ export function plainText(html: string): string {
         </div>
       }
     </ng-template>
-    <!-- DSA core courses: Java | Python | Go tabs. One choice drives every block on the page (and the
-         Hands-On DSA problem page); the console belongs to the tab, so it switches with the code. -->
+    <!-- DSA core courses: Java | Python | Go tabs. One choice drives every block on the page (and
+         the Hands-On DSA problem page); the console belongs to the tab, so it switches with the
+         code. -->
     <ng-template #languageCode let-tabs let-key="key" let-label="label" let-withConsole="console">
       <div class="code-tabs language-tabs" role="tablist" [attr.aria-label]="label + ': language'">
         @for (tab of tabs; track tab.id) {
@@ -970,15 +1414,27 @@ export function plainText(html: string): string {
             [attr.tabindex]="languageTab(tabs) === tab ? 0 : -1"
             (click)="chooseLanguage(tab.language, $event)"
             (keydown)="languageKeydown($event, tabs)"
-          >{{ languageName(tab.language) }}</button>
+            >{{ languageName(tab.language) }}</button
+          >
         }
       </div>
       @if (languageTab(tabs); as tab) {
-        <div class="language-panel" role="tabpanel" [id]="key + '-lang-panel'" [attr.aria-labelledby]="key + '-lang-' + tab.language">
-          <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: tab }" />
+        <div
+          class="language-panel"
+          role="tabpanel"
+          [id]="key + '-lang-panel'"
+          [attr.aria-labelledby]="key + '-lang-' + tab.language"
+        >
+          <ng-container
+            [ngTemplateOutlet]="codeBlock"
+            [ngTemplateOutletContext]="{ $implicit: tab }"
+          />
           <!-- A code pair places the console itself (beside the explanation when it fits). -->
           @if (withConsole !== false && tab.output; as output) {
-            <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
+            <ng-container
+              [ngTemplateOutlet]="runConsole"
+              [ngTemplateOutletContext]="{ $implicit: output }"
+            />
           }
         </div>
       }
@@ -1014,30 +1470,36 @@ export function plainText(html: string): string {
     <ng-template #referenceLesson>
       <article class="foundation-lesson" aria-label="Foundation lesson">
         @if (!lesson().learningFlow) {
-        <header class="lesson-intro" [class.guided-outcomes]="guide()">
-          @if (!guide()) {
-            <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
-          }
-          <section aria-labelledby="foundation-outcomes-heading">
-            <span>After this lesson</span>
-            <h2 id="foundation-outcomes-heading">You will be able to</h2>
-            <ul>
-              @for (outcome of lesson().learningOutcomes; track outcome) {
-                <li><span class="rich" [innerHTML]="outcome"></span></li>
-              }
-            </ul>
-          </section>
-          <aside class="memory-anchor" aria-label="Memory anchor and interview retrieval cue">
-            <span>Memory anchor</span>
-            <strong><span class="rich" [innerHTML]="lesson().memoryAnchor.phrase"></span></strong>
-            <p><span class="rich" [innerHTML]="lesson().memoryAnchor.mentalModel"></span></p>
-            <p><b>Interview cue:</b>{{ ' ' }}<span class="rich" [innerHTML]="lesson().memoryAnchor.retrievalCue"></span></p>
-          </aside>
-        </header>
+          <header class="lesson-intro" [class.guided-outcomes]="guide()">
+            @if (!guide()) {
+              <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
+            }
+            <section aria-labelledby="foundation-outcomes-heading">
+              <span>After this lesson</span>
+              <h2 id="foundation-outcomes-heading">You will be able to</h2>
+              <ul>
+                @for (outcome of lesson().learningOutcomes; track outcome) {
+                  <li><span class="rich" [innerHTML]="outcome"></span></li>
+                }
+              </ul>
+            </section>
+            <aside class="memory-anchor" aria-label="Memory anchor and interview retrieval cue">
+              <span>Memory anchor</span>
+              <strong><span class="rich" [innerHTML]="lesson().memoryAnchor.phrase"></span></strong>
+              <p><span class="rich" [innerHTML]="lesson().memoryAnchor.mentalModel"></span></p>
+              <p
+                ><b>Interview cue:</b>{{ ' '
+                }}<span class="rich" [innerHTML]="lesson().memoryAnchor.retrievalCue"></span
+              ></p>
+            </aside>
+          </header>
         }
 
         @for (section of lesson().sections; track section.id) {
-          <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section }" />
+          <ng-container
+            [ngTemplateOutlet]="sectionCard"
+            [ngTemplateOutletContext]="{ $implicit: section }"
+          />
         }
 
         <section
@@ -1046,11 +1508,15 @@ export function plainText(html: string): string {
           aria-labelledby="foundation-model-heading"
         >
           <p class="section-label"><span>Model</span>Reason before choosing</p>
-          <h2 id="foundation-model-heading"><span class="rich" [innerHTML]="lesson().foundationModel.heading"></span></h2>
+          <h2 id="foundation-model-heading"
+            ><span class="rich" [innerHTML]="lesson().foundationModel.heading"></span
+          ></h2>
           <div class="model-grid">
             <article>
               <span>What we are working with</span>
-              <p><span class="rich" [innerHTML]="lesson().foundationModel.representation"></span></p>
+              <p
+                ><span class="rich" [innerHTML]="lesson().foundationModel.representation"></span
+              ></p>
             </article>
             <article class="model-invariant">
               <span>What must stay true</span>
@@ -1068,13 +1534,26 @@ export function plainText(html: string): string {
         </section>
 
         @if (lesson().learningFlow) {
-          <section id="foundation-remember" class="lesson-section takeaways" aria-labelledby="foundation-remember-heading">
+          <section
+            id="foundation-remember"
+            class="lesson-section takeaways"
+            aria-labelledby="foundation-remember-heading"
+          >
             <h2 id="foundation-remember-heading">What to remember</h2>
-            <ul>@for (takeaway of guide()?.takeaways ?? lesson().keyTakeaways; track takeaway) { <li><span class="rich" [innerHTML]="takeaway"></span></li> }</ul>
-            @if (guide(); as guide) { <p><span class="rich" [innerHTML]="guide.later"></span></p> }
+            <ul>
+              @for (takeaway of guide()?.takeaways ?? lesson().keyTakeaways; track takeaway) {
+                <li><span class="rich" [innerHTML]="takeaway"></span></li>
+              }
+            </ul>
+            @if (guide(); as guide) {
+              <p><span class="rich" [innerHTML]="guide.later"></span></p>
+            }
             <div class="language-notes" aria-label="Language notes">
               @for (note of lesson().languageNotes; track note.language) {
-                <p><strong>{{ note.language }}</strong><span class="rich" [innerHTML]="note.note"></span></p>
+                <p
+                  ><strong>{{ note.language }}</strong
+                  ><span class="rich" [innerHTML]="note.note"></span
+                ></p>
               }
             </div>
           </section>
@@ -1085,13 +1564,21 @@ export function plainText(html: string): string {
           aria-labelledby="foundation-pitfalls-heading"
         >
           <p class="section-label"><span>Common mistakes</span>Failure contrasts</p>
-          <h2 id="foundation-pitfalls-heading">{{ lesson().learningFlow ? "Common mistakes" : "Common failure modes" }}</h2>
+          <h2 id="foundation-pitfalls-heading">{{
+            lesson().learningFlow ? 'Common mistakes' : 'Common failure modes'
+          }}</h2>
           <div class="pitfall-list">
             @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {
               <article>
                 <h3><span class="rich" [innerHTML]="pitfall.failedAssumption"></span></h3>
-                <p><strong>Symptom:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.symptom"></span></p>
-                <p><strong>Correction:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.correction"></span></p>
+                <p
+                  ><strong>Symptom:</strong>{{ ' '
+                  }}<span class="rich" [innerHTML]="pitfall.symptom"></span
+                ></p>
+                <p
+                  ><strong>Correction:</strong>{{ ' '
+                  }}<span class="rich" [innerHTML]="pitfall.correction"></span
+                ></p>
               </article>
             }
           </div>
@@ -1120,54 +1607,74 @@ export function plainText(html: string): string {
         </section>
 
         @if (!lesson().learningFlow) {
-        <section
-          id="foundation-recall"
-          class="lesson-section takeaways"
-          aria-labelledby="foundation-recall-heading"
-        >
-          <p class="section-label"><span>Keep</span>Recall under pressure</p>
-          <h2 id="foundation-recall-heading">Key takeaways</h2>
-          <ul>
-            @for (takeaway of lesson().keyTakeaways; track takeaway) {
-              <li><span class="rich" [innerHTML]="takeaway"></span></li>
-            }
-          </ul>
-          <div class="language-notes" aria-label="Language notes">
-            @for (note of lesson().languageNotes; track note.language) {
-              <p>
-                <strong>{{ note.language }}</strong
-                ><span class="rich" [innerHTML]="note.note"></span>
-              </p>
-            }
-          </div>
-          <aside class="interview-recall" aria-labelledby="interview-recall-prompt">
-            <span>Interview recall prompt</span>
-            <h3 id="interview-recall-prompt"><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span></h3>
-            <ol>
-              @for (step of lesson().interviewRecall.answerFramework; track step) {
-                <li class="rich" [innerHTML]="step"></li>
+          <section
+            id="foundation-recall"
+            class="lesson-section takeaways"
+            aria-labelledby="foundation-recall-heading"
+          >
+            <p class="section-label"><span>Keep</span>Recall under pressure</p>
+            <h2 id="foundation-recall-heading">Key takeaways</h2>
+            <ul>
+              @for (takeaway of lesson().keyTakeaways; track takeaway) {
+                <li><span class="rich" [innerHTML]="takeaway"></span></li>
               }
-            </ol>
-          </aside>
-        </section>
-
+            </ul>
+            <div class="language-notes" aria-label="Language notes">
+              @for (note of lesson().languageNotes; track note.language) {
+                <p>
+                  <strong>{{ note.language }}</strong
+                  ><span class="rich" [innerHTML]="note.note"></span>
+                </p>
+              }
+            </div>
+            <aside class="interview-recall" aria-labelledby="interview-recall-prompt">
+              <span>Interview recall prompt</span>
+              <h3 id="interview-recall-prompt"
+                ><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span
+              ></h3>
+              <ol>
+                @for (step of lesson().interviewRecall.answerFramework; track step) {
+                  <li class="rich" [innerHTML]="step"></li>
+                }
+              </ol>
+            </aside>
+          </section>
         }
         @if (lesson().learningFlow; as flow) {
-          <section id="foundation-try" class="lesson-section" aria-labelledby="foundation-try-heading">
+          <section
+            id="foundation-try"
+            class="lesson-section"
+            aria-labelledby="foundation-try-heading"
+          >
             <h2 id="foundation-try-heading">Try it yourself</h2>
             <p><span class="rich" [innerHTML]="flow.practice.prompt"></span></p>
-            <details class="guide-answer"><summary>Show a hint</summary><p><span class="rich" [innerHTML]="flow.practice.hint"></span></p></details>
-            <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer"><span class="rich" [innerHTML]="flow.practice.answer"></span></p></details>
+            <details class="guide-answer"
+              ><summary>Show a hint</summary
+              ><p><span class="rich" [innerHTML]="flow.practice.hint"></span></p
+            ></details>
+            <details class="guide-answer"
+              ><summary>Check your answer</summary
+              ><p class="practice-answer"
+                ><span class="rich" [innerHTML]="flow.practice.answer"></span></p
+            ></details>
             @if (guide(); as guide) {
               <h3>One more small change</h3>
               <p><span class="rich" [innerHTML]="guide.try"></span></p>
-              <details class="guide-answer"><summary>Check the small change</summary><p><span class="rich" [innerHTML]="guide.answer"></span></p></details>
+              <details class="guide-answer"
+                ><summary>Check the small change</summary
+                ><p><span class="rich" [innerHTML]="guide.answer"></span></p
+              ></details>
             }
             <details class="guide-answer">
               <summary>Practice explaining your choice</summary>
               <p><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span></p>
-              <details><summary>Compare your explanation</summary>
-                <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li class="rich" [innerHTML]="step"></li> }</ol>
+              <details
+                ><summary>Compare your explanation</summary>
+                <ol>
+                  @for (step of lesson().interviewRecall.answerFramework; track step) {
+                    <li class="rich" [innerHTML]="step"></li>
+                  }
+                </ol>
               </details>
             </details>
           </section>
@@ -1197,7 +1704,9 @@ export function plainText(html: string): string {
   `,
   styles: [
     `
-      .practice-answer { white-space: pre-line; }
+      .practice-answer {
+        white-space: pre-line;
+      }
       :host {
         display: block;
       }
@@ -1638,8 +2147,9 @@ export function plainText(html: string): string {
         flex-direction: column;
         gap: 1.5rem;
       }
-      /* One flow: lead-in, code at the card width, its console right under it, then the explanation. Prose keeps
-         the reading measure (DLV-803); the code and console use the card width (user decision 2026-10-22). */
+      /* One flow: lead-in, code at the card width, its console right under it, then the
+         explanation. Prose keeps the reading measure (DLV-803); the code and console use the card
+         width (user decision 2026-10-22). */
       .code-stack {
         display: flex;
         min-width: 0;
@@ -1661,8 +2171,8 @@ export function plainText(html: string): string {
       .code-stack > .code-stack-code + .code-stack-text {
         margin-top: 0.5rem;
       }
-      /* The whole file shows; a long line wraps with a hanging indent (the .code-line rules live in styles.css,
-         since the spans arrive through innerHTML) instead of a scroll box. */
+      /* The whole file shows; a long line wraps with a hanging indent (the .code-line rules live in
+         styles.css, since the spans arrive through innerHTML) instead of a scroll box. */
       .system .code-stack .foundation-code pre {
         max-height: none;
         white-space: pre-wrap;
@@ -1707,7 +2217,8 @@ export function plainText(html: string): string {
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
-      /* Program output modelled on an IDE run tool window (lesson-run-console.ts styles its inside). */
+      /* Program output modelled on an IDE run tool window (lesson-run-console.ts styles its
+         inside). */
       .run-console {
         overflow: hidden;
         border: 1px solid #393b40;
@@ -1785,8 +2296,9 @@ export function plainText(html: string): string {
         gap: 0;
         margin-top: 0;
       }
-      /* hidden="until-found" hides only the content (content-visibility), so the box would stay: an empty
-         bordered card per hidden panel. With no box it takes no space, and Find in page still reveals it. */
+      /* hidden="until-found" hides only the content (content-visibility), so the box would stay: an
+         empty bordered card per hidden panel. With no box it takes no space, and Find in page still
+         reveals it. */
       .lesson-tabbed [hidden='until-found'] {
         margin: 0;
         padding: 0;
@@ -1969,7 +2481,8 @@ export function plainText(html: string): string {
         margin-top: 0;
         border-top-left-radius: 0;
       }
-      /* algo-pattern-v1: animated SVG diagrams stay at a readable size instead of filling a wide column. */
+      /* algo-pattern-v1: animated SVG diagrams stay at a readable size instead of filling a wide
+         column. */
       .algo-lesson .concept-visual img {
         max-width: 560px;
         margin-inline: auto;
@@ -1991,8 +2504,9 @@ export function plainText(html: string): string {
           gap: 1.75rem;
         }
       }
-      /* algo-pattern-v1 Problem first: the problem's name with its level and source, the problem card on its own,
-         then the storyboard with a short explanation and one cost line beside it. Fits a 1280 x 720 screen. */
+      /* algo-pattern-v1 Problem first: the problem's name with its level and source, the problem
+         card on its own, then the storyboard with a short explanation and one cost line beside it.
+         Fits a 1280 x 720 screen. */
       .system .problem-label {
         flex-wrap: wrap;
         row-gap: 0.4rem;
@@ -2062,8 +2576,8 @@ export function plainText(html: string): string {
       .storyboard-callout {
         margin-top: 1rem;
       }
-      /* Debug pairs as a split diff (every Learn and Grow pair of programs): lesson-split-diff.ts draws and
-         styles the diff; its language tabs sit above it here. */
+      /* Debug pairs as a split diff (every Learn and Grow pair of programs): lesson-split-diff.ts
+         draws and styles the diff; its language tabs sit above it here. */
       .diff-language-tabs {
         margin-bottom: 0.5rem;
       }
@@ -2189,7 +2703,8 @@ export function plainText(html: string): string {
         font-size: 0.98rem;
         line-height: 1.65;
       }
-      /* Check understanding and More practice: a light blueprint, so study blocks read as one family. */
+      /* Check understanding and More practice: a light blueprint, so study blocks read as one
+         family. */
       .system #foundation-understand,
       .system #foundation-practice {
         border-top-color: var(--study-accent);
@@ -2606,7 +3121,8 @@ export class FoundationLessonShell {
     const guide = this.guide();
     return [
       ...(flow ? [flow.practice, ...(flow.morePractice ?? [])] : []),
-      // System lessons author every exercise in learningFlow; the older guide's example may use another scenario.
+      // System lessons author every exercise in learningFlow; the older guide's example may use
+      // another scenario.
       ...(guide && !this.isSystem() ? [{ prompt: guide.try, hint: '', answer: guide.answer }] : []),
     ];
   });
@@ -2628,7 +3144,9 @@ export class FoundationLessonShell {
   /** Paragraph HTML as points (see card-points.ts); also used by the Debug split diff. */
   protected readonly cardPoints = cardPoints;
 
-  /** "<strong>Prompt:</strong> "…"" paragraphs in system lessons are text to paste into an AI tool. */
+  /**
+   * "<strong>Prompt:</strong> "…"" paragraphs in system lessons are text to paste into an AI tool.
+   */
   protected promptText(paragraph: string): string | null {
     const match = /^\s*<strong>Prompt:<\/strong>\s*([\s\S]+)$/.exec(paragraph);
     if (!match) return null;
@@ -2646,14 +3164,20 @@ export class FoundationLessonShell {
   protected isLanguageTabs(tabs: readonly { language: string }[] | null | undefined): boolean {
     if (!tabs || tabs.length < 2) return false;
     const languages = tabs.map((tab) => tab.language);
-    return languages.every((language) => isReferenceLanguage(language)) && new Set(languages).size === languages.length;
+    return (
+      languages.every((language) => isReferenceLanguage(language)) &&
+      new Set(languages).size === languages.length
+    );
   }
 
   protected languageTab(tabs: readonly LanguageTab[]): LanguageTab {
     return tabs.find((tab) => tab.language === this.referenceLanguage.selected()) ?? tabs[0];
   }
 
-  /** Switch every language block; keep the clicked tab row where it was, since blocks above may change height. */
+  /**
+   * Switch every language block; keep the clicked tab row where it was, since blocks above may
+   * change height.
+   */
   protected chooseLanguage(language: string, event?: Event): void {
     const anchor = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
     const before = anchor?.getBoundingClientRect().top;
@@ -2671,11 +3195,15 @@ export class FoundationLessonShell {
     const count = tabs.length;
     const current = tabs.indexOf(this.languageTab(tabs));
     const next =
-      event.key === 'ArrowRight' ? (current + 1) % count
-      : event.key === 'ArrowLeft' ? (current - 1 + count) % count
-      : event.key === 'Home' ? 0
-      : event.key === 'End' ? count - 1
-      : -1;
+      event.key === 'ArrowRight'
+        ? (current + 1) % count
+        : event.key === 'ArrowLeft'
+          ? (current - 1 + count) % count
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? count - 1
+              : -1;
     if (next < 0) return;
     event.preventDefault();
     const row = (event.currentTarget as HTMLElement).parentElement;
@@ -2699,23 +3227,33 @@ export class FoundationLessonShell {
   protected stepTab(key: string, count: number, delta: number, prefix: string, event: Event): void {
     const next = Math.min(Math.max(this.tabIndex(key, count) + delta, 0), count - 1);
     this.setTab(key, next);
-    const group = event.currentTarget instanceof HTMLElement ? event.currentTarget.closest<HTMLElement>('.lesson-tabbed') : null;
+    const group =
+      event.currentTarget instanceof HTMLElement
+        ? event.currentTarget.closest<HTMLElement>('.lesson-tabbed')
+        : null;
     const tab = group?.ownerDocument.getElementById(`${prefix}-tab-${next}`);
     group?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
     tab?.focus({ preventScroll: true });
   }
 
   /**
-   * Variation sections grouped for tabs: a section headed "Variation X · ..." starts a group; the sections after
-   * it (its code, its table) belong to it.
+   * Variation sections grouped for tabs: a section headed "Variation X · ..." starts a group; the
+   * sections after it (its code, its table) belong to it.
    */
-  protected variationGroups(sections: readonly TheorySection[]): { key: string; label: string; title: string; sections: TheorySection[] }[] {
+  protected variationGroups(
+    sections: readonly TheorySection[],
+  ): { key: string; label: string; title: string; sections: TheorySection[] }[] {
     const groups: { key: string; label: string; title: string; sections: TheorySection[] }[] = [];
     for (const section of sections) {
       if (section.sidebar) continue;
       const match = /^Variation ([A-Z])\s*·\s*/.exec(section.heading);
       if (match || !groups.length) {
-        groups.push({ key: match?.[1] ?? String.fromCharCode(65 + groups.length), label: section.navLabel ?? section.heading, title: section.heading, sections: [section] });
+        groups.push({
+          key: match?.[1] ?? String.fromCharCode(65 + groups.length),
+          label: section.navLabel ?? section.heading,
+          title: section.heading,
+          sections: [section],
+        });
       } else {
         groups[groups.length - 1].sections.push(section);
       }
@@ -2723,8 +3261,14 @@ export class FoundationLessonShell {
     return groups;
   }
 
-  protected variationTabs(groups: readonly { key: string; label: string; title: string }[]): LessonTabItem[] {
-    return groups.map(({ key, label, title }) => ({ key, label: plainText(label), title: plainText(title) }));
+  protected variationTabs(
+    groups: readonly { key: string; label: string; title: string }[],
+  ): LessonTabItem[] {
+    return groups.map(({ key, label, title }) => ({
+      key,
+      label: plainText(label),
+      title: plainText(title),
+    }));
   }
 
   protected pairTabItems(section: TheorySection): LessonTabItem[] {
@@ -2746,13 +3290,17 @@ export class FoundationLessonShell {
   private readonly diffs = new WeakMap<TheoryPair, Map<string, PairDiff | null>>();
 
   /**
-   * A Debug pair as a split diff, or null when it is not a pair of programs (a weak and a strong answer in text,
-   * pseudo-code, a side without code): those keep the side-by-side cards.
+   * A Debug pair as a split diff, or null when it is not a pair of programs (a weak and a strong
+   * answer in text, pseudo-code, a side without code): those keep the side-by-side cards.
    */
   protected pairDiff(section: TheorySection, pair: TheoryPair): PairDiff | null {
     const broken = pair.broken.codeTabs ?? [];
     const fixed = pair.fixed.codeTabs ?? [];
-    if (!broken.length || !fixed.length || [...broken, ...fixed].every((tab) => tab.language === 'text' || tab.language === 'pseudo')) {
+    if (
+      !broken.length ||
+      !fixed.length ||
+      [...broken, ...fixed].every((tab) => tab.language === 'text' || tab.language === 'pseudo')
+    ) {
       return null;
     }
     const languages = this.isLanguageTabs(broken) && this.isLanguageTabs(fixed);
@@ -2771,8 +3319,15 @@ export class FoundationLessonShell {
     let fixedOutput = pair.fixed.output ?? null;
     if (languages) {
       const before = this.languageTab(brokenTabs);
-      const after = fixedTabs.find((tab) => tab.language === before.language) ?? this.languageTab(fixedTabs);
-      files = [{ label: before.title === after.title ? before.title : `${before.title} → ${after.title}`, broken: before, fixed: after }];
+      const after =
+        fixedTabs.find((tab) => tab.language === before.language) ?? this.languageTab(fixedTabs);
+      files = [
+        {
+          label: before.title === after.title ? before.title : `${before.title} → ${after.title}`,
+          broken: before,
+          fixed: after,
+        },
+      ];
       brokenOutput = before.output ?? brokenOutput;
       fixedOutput = after.output ?? fixedOutput;
     } else {
@@ -2783,7 +3338,8 @@ export class FoundationLessonShell {
       brokenOutput,
       fixedOutput,
       files: files.map((file) => {
-        const deleted = !file.fixed && !!file.broken && !!pair.fixed.deletedFiles?.includes(file.broken.title);
+        const deleted =
+          !file.fixed && !!file.broken && !!pair.fixed.deletedFiles?.includes(file.broken.title);
         const rows = fileRows(file, deleted);
         const { removed, added } = changeCount(rows);
         const renamed = !!file.broken && !!file.fixed && file.broken.title !== file.fixed.title;
@@ -2828,15 +3384,21 @@ export class FoundationLessonShell {
   protected moveTab(event: KeyboardEvent, key: string, count: number): void {
     const current = this.tabIndex(key, count);
     const next =
-      event.key === 'ArrowRight' ? (current + 1) % count
-      : event.key === 'ArrowLeft' ? (current - 1 + count) % count
-      : event.key === 'Home' ? 0
-      : event.key === 'End' ? count - 1
-      : -1;
+      event.key === 'ArrowRight'
+        ? (current + 1) % count
+        : event.key === 'ArrowLeft'
+          ? (current - 1 + count) % count
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? count - 1
+              : -1;
     if (next < 0 || !count) return;
     event.preventDefault();
     this.setTab(key, next);
-    const tabs = (event.currentTarget as HTMLElement).parentElement?.querySelectorAll<HTMLElement>('[role="tab"]');
+    const tabs = (event.currentTarget as HTMLElement).parentElement?.querySelectorAll<HTMLElement>(
+      '[role="tab"]',
+    );
     tabs?.[next]?.focus();
   }
 
@@ -2853,7 +3415,12 @@ export class FoundationLessonShell {
   }
 
   /** Story practice timer: one timer runs at a time; announcements every minute and at the end. */
-  private readonly timer = signal<{ id: string; remaining: number; running: boolean; said: string } | null>(null);
+  private readonly timer = signal<{
+    id: string;
+    remaining: number;
+    running: boolean;
+    said: string;
+  } | null>(null);
   private timerHandle: ReturnType<typeof setInterval> | null = null;
   private readonly stopTimerOnDestroy = inject(DestroyRef).onDestroy(() => this.stopInterval());
 
@@ -2888,7 +3455,11 @@ export class FoundationLessonShell {
         this.stopInterval();
         this.timer.set({ ...current, remaining: 0, running: false, said: 'Time is up' });
       } else {
-        this.timer.set({ ...current, remaining: next, said: next % 60 === 0 ? `${next / 60} minute left` : current.said });
+        this.timer.set({
+          ...current,
+          remaining: next,
+          said: next % 60 === 0 ? `${next / 60} minute left` : current.said,
+        });
       }
     }, 1000);
   }
@@ -2912,8 +3483,9 @@ export class FoundationLessonShell {
   }
 
   /**
-   * The code follows body[codeAfterParagraph]; default: after the first paragraph (the "what we run" sentence).
-   * A guided project step (DLV-935) reads its whole guide first, so the code follows the last paragraph.
+   * The code follows body[codeAfterParagraph]; default: after the first paragraph (the "what we
+   * run" sentence). A guided project step (DLV-935) reads its whole guide first, so the code
+   * follows the last paragraph.
    */
   protected codeAfter(section: TheorySection): number {
     if (section.guidedStep) return section.body.length;
@@ -2926,17 +3498,28 @@ export class FoundationLessonShell {
   }
 
   /**
-   * The DSA core formats share one look: algo-pattern-v1 (Algorithmic Patterns, problem first) and concept-v1
-   * (Core Data Structures, Big O, Sorting and Searching: a concept, not a problem).
+   * The DSA core formats share one look: algo-pattern-v1 (Algorithmic Patterns, problem first) and
+   * concept-v1 (Core Data Structures, Big O, Sorting and Searching: a concept, not a problem).
    */
-  readonly isAlgo = computed(() => ['algo-pattern-v1', 'concept-v1'].includes(this.lesson().lessonPattern ?? ''));
+  readonly isAlgo = computed(() =>
+    ['algo-pattern-v1', 'concept-v1'].includes(this.lesson().lessonPattern ?? ''),
+  );
 
-  /** A storyboard told as a story (paragraphs, sticky Pause/Play bar): Problem first, or a concept-v1 Concept. */
+  /**
+   * A storyboard told as a story (paragraphs, sticky Pause/Play bar): Problem first, or a
+   * concept-v1 Concept.
+   */
   protected isStory(section: TheorySection, stage: string | null | undefined): boolean {
-    return !!section.problem || (stage === 'concept' && this.lesson().lessonPattern === 'concept-v1');
+    return (
+      !!section.problem || (stage === 'concept' && this.lesson().lessonPattern === 'concept-v1')
+    );
   }
-  /** algo-pattern-v1 and concept-v1: the authored ladder replaces the generic More practice grid. */
-  readonly hasLadder = computed(() => this.lesson().sections.some((section) => !!section.ladder?.length));
+  /**
+   * algo-pattern-v1 and concept-v1: the authored ladder replaces the generic More practice grid.
+   */
+  readonly hasLadder = computed(() =>
+    this.lesson().sections.some((section) => !!section.ladder?.length),
+  );
 
   protected besideVisual(section: TheorySection): boolean {
     return !!(section.tableBesideVisual && section.table && section.visual);

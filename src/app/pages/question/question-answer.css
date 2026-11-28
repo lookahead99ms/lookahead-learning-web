@@ -225,7 +225,8 @@
     padding: 20px;
   }
 }
-/* Aligned text (state tables, ASCII layouts) keeps its columns: scroll inside the block, never the page. */
+/* Aligned text (state tables, ASCII layouts) keeps its columns: scroll inside the block, never the
+   page. */
 .non-dsa-answer-layout .code-panel pre {
   max-width: 100%;
   overflow-x: auto;
@@ -278,7 +279,8 @@
 .walkthrough-cards .section-card li + li {
   margin-top: 0.35rem;
 }
-/* Likely follow-ups: one card per interviewer question; the strong answer stays closed until the learner has tried. */
+/* Likely follow-ups: one card per interviewer question; the strong answer stays closed until the
+   learner has tried. */
 .non-dsa-answer-layout .main-followups .panel-label {
   margin-bottom: 6px;
 }

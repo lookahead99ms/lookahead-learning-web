@@ -15,16 +15,21 @@
       <p class="eyebrow">Start free</p>
       <h1 class="reader-question-title">Start learning today, free.</h1>
       <p class="lede">
-        Read the open lessons now. A free account unlocks more. When you want the whole course,
-        a plan opens every lesson.
+        Read the open lessons now. A free account unlocks more. When you want the whole course, a
+        plan opens every lesson.
       </p>
       @if (state() === 'ready') {
         <ul class="hero-stats" aria-label="What you can read">
-          <li><strong>{{ counts().open }}</strong> open to everyone</li>
-          <li><strong>{{ counts().free }}</strong> more with a free account</li>
+          <li
+            ><strong>{{ counts().open }}</strong> open to everyone</li
+          >
+          <li
+            ><strong>{{ counts().free }}</strong> more with a free account</li
+          >
           @if (counts().paid) {
             <li>
-              <strong [attr.title]="counts().paid + ' lessons'">{{ paidShown() }}</strong> more with a plan
+              <strong [attr.title]="counts().paid + ' lessons'">{{ paidShown() }}</strong> more with
+              a plan
             </li>
           }
         </ul>
@@ -34,7 +39,9 @@
           <a class="action-button" routerLink="/sign-up">Create a free account</a>
         }
         <!-- DLV-209 (user, 2026-10-15): a way to every plan from here. -->
-        <a [class]="showAsVisitor() ? 'action-link' : 'action-button'" routerLink="/pricing">See all plans</a>
+        <a [class]="showAsVisitor() ? 'action-link' : 'action-button'" routerLink="/pricing"
+          >See all plans</a
+        >
       </div>
     </header>
 
@@ -58,7 +65,8 @@
             [attr.data-access-level]="group.level"
             [attr.aria-labelledby]="'start-free-' + group.level"
           >
-            <!-- Heading on the left, the section's one action on the right (Sign in is in the header). -->
+            <!-- Heading on the left, the section's one action on the right (Sign in is in the
+                 header). -->
             <div class="group-heading">
               <div class="group-title">
                 <h2 [id]="'start-free-' + group.level">{{ group.heading }}</h2>
@@ -71,7 +79,12 @@
                 }
               </div>
               @if (group.level === 'free' && showAsVisitor()) {
-                <a class="action-button" routerLink="/sign-up" [queryParams]="{ returnTo: '/start-free' }">Create a free account</a>
+                <a
+                  class="action-button"
+                  routerLink="/sign-up"
+                  [queryParams]="{ returnTo: '/start-free' }"
+                  >Create a free account</a
+                >
               }
             </div>
             <ul class="start-free-list">
@@ -79,10 +92,13 @@
                 <li class="start-free-item" [attr.data-path]="item.pathLabel.toLowerCase()">
                   <!-- The section heading already says the level; it stays for screen readers. -->
                   <p class="start-free-meta" [id]="'start-free-meta-' + $index + '-' + group.level">
-                    {{ item.pathLabel }} · {{ item.courseTitle }}<span class="start-free-hidden"> ·
-                    <span class="start-free-access" [attr.data-access-level]="item.level">{{
-                      label(item.level)
-                    }}</span></span>
+                    {{ item.pathLabel }} · {{ item.courseTitle
+                    }}<span class="start-free-hidden">
+                      ·
+                      <span class="start-free-access" [attr.data-access-level]="item.level">{{
+                        label(item.level)
+                      }}</span></span
+                    >
                   </p>
                   <a
                     class="start-free-link"
@@ -107,7 +123,12 @@
         }
 
         @if (paidCourses().length) {
-          <section id="missing" class="start-free-missing" tabindex="-1" aria-labelledby="missing-heading">
+          <section
+            id="missing"
+            class="start-free-missing"
+            tabindex="-1"
+            aria-labelledby="missing-heading"
+          >
             <div class="group-heading">
               <div class="group-title">
                 <h2 id="missing-heading">What you’re missing</h2>
@@ -130,7 +151,10 @@
                   <h3>
                     <a [routerLink]="course.courseRoute">{{ course.courseTitle }}</a>
                   </h3>
-                  <ul class="locked-units" [attr.aria-label]="'Paid units in ' + course.courseTitle">
+                  <ul
+                    class="locked-units"
+                    [attr.aria-label]="'Paid units in ' + course.courseTitle"
+                  >
                     @for (unit of course.units; track unit.key) {
                       <li>
                         <svg class="lock" viewBox="0 0 24 24" aria-hidden="true" focusable="false">

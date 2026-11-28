@@ -6,7 +6,10 @@ import { Component, input } from '@angular/core';
   preserveWhitespaces: true,
   host: { '[class.stacked]': 'stacked()' },
   // prettier-ignore
-  template: `<span class="signature-line"><span class="action">Build</span> with <span class="actor">AI</span>.</span> <span class="signature-line action">Understand</span> <span class="signature-line">what <span class="actor">you</span> <span class="action">ship</span>.</span>`,
+  template: `<span class="signature-line"><span class="action">Build</span> with <span
+  class="actor">AI</span>.</span> <span class="signature-line action">Understand</span> <span
+  class="signature-line">what <span class="actor">you</span> <span
+  class="action">ship</span>.</span>`,
   styles: `
     :host {
       color: var(--text-strong);

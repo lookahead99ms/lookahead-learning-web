@@ -110,16 +110,16 @@ describe('Account page management integration', () => {
     return input;
   }
 
-  it('uses the restored account plan list without additional requests or plan selection', async () => {
+  it('uses the restored account plan list without more requests or plan selection', async () => {
     savedPlans = [
       { planId: 'owned-plan', goal: 'Study Java', revision: 2, updatedAt: '2026-09-18T12:00:00Z' },
     ];
     await mount('/account?returnTo=%2Flearn%23courses');
     const element = harness.routeNativeElement!;
     expect(element.querySelector('app-account-study-plans h3')?.textContent).toBe('Study Java');
-    expect(element.querySelector('app-account-study-plans .plan-heading a')?.getAttribute('href')).toBe(
-      '/study-plan?plan=owned-plan',
-    );
+    expect(
+      element.querySelector('app-account-study-plans .plan-heading a')?.getAttribute('href'),
+    ).toBe('/study-plan?plan=owned-plan');
     expect(element.textContent).toContain('Session progress is not available yet.');
     expect(
       [...element.querySelectorAll('.account-footer a')].map((a) => a.getAttribute('href')),
@@ -168,13 +168,17 @@ describe('Account page management integration', () => {
     expect(links[0].getAttribute('aria-current')).toBe('true');
   });
 
-  it('never shows a Google account\'s internal name under the person\'s name (DLV-969)', async () => {
+  it("never shows a Google account's internal name under the person's name (DLV-969)", async () => {
     await mount();
     const store = TestBed.inject(StudyPlanAccount);
-    store.account.update((account) => (account ? { ...account, username: 'google_117602686039' } : account));
+    store.account.update((account) =>
+      account ? { ...account, username: 'google_117602686039' } : account,
+    );
     harness.detectChanges();
     const element = harness.routeNativeElement!;
-    expect(element.querySelector('.account-identity-name')?.textContent?.trim()).toBe('Sample Learner');
+    expect(element.querySelector('.account-identity-name')?.textContent?.trim()).toBe(
+      'Sample Learner',
+    );
     expect(element.querySelector('.account-identity-username')).toBeNull();
     expect(element.querySelector('.account-identity-meta')?.textContent).not.toContain('google_');
   });
@@ -243,84 +247,95 @@ describe('Account page management integration', () => {
     expect(TestBed.inject(StudyPlanAccount).account()).toBeNull();
   });
 
-  it('loads the production settings provider, edits the name and updates the shared account/header', async () => {
-    await mount();
-    expect(harness.routeNativeElement!.querySelector('h1')?.textContent).toContain(
-      'Manage account',
-    );
-    expect(requests.some((r) => r.path === '/api/v1/account/profile')).toBe(true);
-    button('Edit name').click();
-    harness.detectChanges();
-    await settle();
-    const name = fill('displayName', 'Updated Learner');
-    expect(document.activeElement).toBe(name);
-    button('Save name').click();
-    await settle();
-    expect(TestBed.inject(StudyPlanAccount).account()?.displayName).toBe('Updated Learner');
-    expect(harness.routeNativeElement!.textContent).toContain('Your name has been updated.');
-    expect(document.activeElement).toBe(button('Edit name'));
-    const post = requests.find((r) => r.path === '/api/v1/account/profile' && r.body);
-    expect(post?.body).toEqual({ displayName: 'Updated Learner' });
-  });
+  it(
+    'loads the production settings provider, edits the name and updates the shared ' +
+      'account/header',
+    async () => {
+      await mount();
+      expect(harness.routeNativeElement!.querySelector('h1')?.textContent).toContain(
+        'Manage account',
+      );
+      expect(requests.some((r) => r.path === '/api/v1/account/profile')).toBe(true);
+      button('Edit name').click();
+      harness.detectChanges();
+      await settle();
+      const name = fill('displayName', 'Updated Learner');
+      expect(document.activeElement).toBe(name);
+      button('Save name').click();
+      await settle();
+      expect(TestBed.inject(StudyPlanAccount).account()?.displayName).toBe('Updated Learner');
+      expect(harness.routeNativeElement!.textContent).toContain('Your name has been updated.');
+      expect(document.activeElement).toBe(button('Edit name'));
+      const post = requests.find((r) => r.path === '/api/v1/account/profile' && r.body);
+      expect(post?.body).toEqual({ displayName: 'Updated Learner' });
+    },
+  );
 
-  it('clears account state and shows password success only through the acknowledged navigation', async () => {
-    await mount();
-    button('Change password').click();
-    harness.detectChanges();
-    await settle();
-    expect(document.activeElement).toBe(
-      harness.routeNativeElement!.querySelector('input[name="currentPassword"]'),
-    );
-    fill('currentPassword', 'legacy');
-    fill('newPassword', 'a unique synthetic passphrase');
-    fill('confirmPassword', 'a unique synthetic passphrase');
-    button('Save new password').click();
-    await settle();
-    expect(TestBed.inject(Router).url).toBe('/sign-in');
-    expect(TestBed.inject(StudyPlanAccount).account()).toBeNull();
-    expect(harness.routeNativeElement!.textContent).toContain(
-      'Password changed. All sign-ins have ended, including this one.',
-    );
-    expect(
-      harness.routeNativeElement!.querySelector<HTMLInputElement>('input[name="password"]')?.value,
-    ).toBe('');
-    expect(requests.find((r) => r.path === '/api/v1/account/password')?.body).toEqual({
-      currentPassword: 'legacy',
-      newPassword: 'a unique synthetic passphrase',
-      confirmPassword: 'a unique synthetic passphrase',
-    });
-  });
+  it(
+    'clears account state and shows password success only through the acknowledged ' + 'navigation',
+    async () => {
+      await mount();
+      button('Change password').click();
+      harness.detectChanges();
+      await settle();
+      expect(document.activeElement).toBe(
+        harness.routeNativeElement!.querySelector('input[name="currentPassword"]'),
+      );
+      fill('currentPassword', 'legacy');
+      fill('newPassword', 'a unique synthetic passphrase');
+      fill('confirmPassword', 'a unique synthetic passphrase');
+      button('Save new password').click();
+      await settle();
+      expect(TestBed.inject(Router).url).toBe('/sign-in');
+      expect(TestBed.inject(StudyPlanAccount).account()).toBeNull();
+      expect(harness.routeNativeElement!.textContent).toContain(
+        'Password changed. All sign-ins have ended, including this one.',
+      );
+      expect(
+        harness.routeNativeElement!.querySelector<HTMLInputElement>('input[name="password"]')
+          ?.value,
+      ).toBe('');
+      expect(requests.find((r) => r.path === '/api/v1/account/password')?.body).toEqual({
+        currentPassword: 'legacy',
+        newPassword: 'a unique synthetic passphrase',
+        confirmPassword: 'a unique synthetic passphrase',
+      });
+    },
+  );
 
-  it('does not accept a query parameter as evidence of password change or global sign-out', async () => {
+  it('accepts no query parameter as proof of password change or global sign-out', async () => {
     signedIn = false;
     await mount('/sign-in?status=password-changed');
     expect(harness.routeNativeElement!.textContent).not.toContain('Password changed.');
     expect(harness.routeNativeElement!.querySelector('.success-status')).toBeNull();
   });
 
-  it('keeps Manage account after a rejected current password and clears all entered secrets', async () => {
-    passwordRejected = true;
-    await mount();
-    button('Change password').click();
-    harness.detectChanges();
-    fill('currentPassword', 'not the password');
-    fill('newPassword', 'a unique synthetic passphrase');
-    fill('confirmPassword', 'a unique synthetic passphrase');
-    button('Save new password').click();
-    await settle();
-    expect(TestBed.inject(Router).url).toBe('/account');
-    expect(TestBed.inject(StudyPlanAccount).account()).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelector('[role="alert"]')?.textContent).toContain(
-      'We could not confirm this change',
-    );
-    for (const input of harness.routeNativeElement!.querySelectorAll<HTMLInputElement>(
-      '.password-input input',
-    ))
-      expect(input.value).toBe('');
-    expect(document.activeElement).toBe(
-      harness.routeNativeElement!.querySelector('[role="alert"]'),
-    );
-  });
+  it(
+    'keeps Manage account after a rejected current password and clears all entered ' + 'secrets',
+    async () => {
+      passwordRejected = true;
+      await mount();
+      button('Change password').click();
+      harness.detectChanges();
+      fill('currentPassword', 'not the password');
+      fill('newPassword', 'a unique synthetic passphrase');
+      fill('confirmPassword', 'a unique synthetic passphrase');
+      button('Save new password').click();
+      await settle();
+      expect(TestBed.inject(Router).url).toBe('/account');
+      expect(TestBed.inject(StudyPlanAccount).account()).not.toBeNull();
+      expect(harness.routeNativeElement!.querySelector('[role="alert"]')?.textContent).toContain(
+        'We could not confirm this change',
+      );
+      for (const input of harness.routeNativeElement!.querySelectorAll<HTMLInputElement>(
+        '.password-input input',
+      ))
+        expect(input.value).toBe('');
+      expect(document.activeElement).toBe(
+        harness.routeNativeElement!.querySelector('[role="alert"]'),
+      );
+    },
+  );
 
   it.each([14, 128])(
     'registration applies Unicode limits to a %s-codepoint password',

@@ -2,8 +2,9 @@
   /* When the stairs start: after the three statements have been drawn in. */
   --stairs-start: 2.8s;
   /* Each step gets a slot: the step appears, then its circle and label (--step-label later), then
-     the arrow climbs up to it, turns right and runs to its end (--step-lead later, for --step-draw). The travel keyframes
-     below assume these values: four slots of 2.9s, travel from 1.4s to 2.5s of each. */
+     the arrow climbs up to it, turns right and runs to its end (--step-lead later, for
+     --step-draw). The travel keyframes below assume these values: four slots of 2.9s, travel from
+     1.4s to 2.5s of each. */
   --step-slot: 2.9s;
   --step-label: 0.7s;
   --step-lead: 1.4s;
@@ -13,8 +14,9 @@
   --top-label: 64px;
   display: block;
   width: 100%;
-  /* The steps' own width (owner, 2026-11-06): as wide as the homepage card gives them, never wider, so when the card
-     is zoomed down to fit a screen they shrink with the wordmark instead of stretching across the card. */
+  /* The steps' own width (owner, 2026-11-06): as wide as the homepage card gives them, never wider,
+     so when the card is zoomed down to fit a screen they shrink with the wordmark instead of
+     stretching across the card. */
   max-width: 1136px;
   margin-top: 8px;
   margin-inline: auto;
@@ -31,7 +33,8 @@ p {
   gap: 8px;
 }
 
-/* ---------- Growth: one line, three phrases; verb in a catalog colour, outcome in a contrasting one ---------- */
+/* ---------- Growth: one line, three phrases; verb in a catalog colour, outcome in a contrasting
+   one ---------- */
 .essence-growth {
   display: flex;
   flex-wrap: wrap;
@@ -174,7 +177,8 @@ p {
       calc(var(--stairs-start) + var(--step) * var(--step-slot) + var(--step-lead));
 }
 
-/* The arrow rides the tip of the line: it travels one step, stops while the step appears, then goes on. */
+/* The arrow rides the tip of the line: it travels one step, stops while the step appears, then goes
+   on. */
 .essence-traveller {
   position: absolute;
   inset-block-start: 0;
@@ -302,7 +306,8 @@ p {
   transition: opacity 0.4s ease;
 }
 
-/* Each step appears first, then its circle and label, then the arrow climbs to it and runs along it. */
+/* Each step appears first, then its circle and label, then the arrow climbs to it and runs along
+   it. */
 .essence-stairs li,
 .essence-step-label,
 .essence-dot {
@@ -315,7 +320,8 @@ p {
 :host([data-state='shown']) .essence-step-label,
 :host([data-state='shown']) .essence-dot {
   opacity: 1;
-  transition: opacity 0.5s ease calc(var(--stairs-start) + var(--step) * var(--step-slot) + var(--step-label));
+  transition: opacity 0.5s ease
+    calc(var(--stairs-start) + var(--step) * var(--step-slot) + var(--step-label));
 }
 /* Without the drawn line (stacked steps on phones), each step carries its own tread. */
 .essence-stairs-frame:not(.has-line) .essence-stairs li {

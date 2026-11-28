@@ -58,7 +58,7 @@ describe('DsaExecutionClient boundary', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
-  it('sends source only in explicit POST with CSRF, owned identity, and idempotency key', async () => {
+  it('sends source only in an explicit POST with CSRF, identity and idempotency key', async () => {
     transport.mockResolvedValueOnce(response(capability));
     await client.capabilities(owner);
     expect(transport.mock.calls[0][1].body).toBeUndefined();

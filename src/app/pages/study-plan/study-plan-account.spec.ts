@@ -70,45 +70,66 @@ describe('StudyPlanAccount transport and isolation', () => {
   let me: boolean;
   let nextPlan: AccountPlan;
   let fetcher: ReturnType<typeof vi.fn>;
-  it('activates managed invitations with session CSRF before loading grants and plans', async () => {
+  it('activates managed invitations with session CSRF before loading grants, plans', async () => {
     me = true;
-    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const original = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     fetcher.mockImplementation(async (path: string, options: RequestInit) => {
       if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: true });
       if (path.endsWith('/auth/invitations/activate')) {
         expect(options.method).toBe('POST');
         expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'test-csrf' });
         expect(options.body).toBeUndefined();
-        return json({ accountId: 'account-a', username: 'synthetic', displayName: 'Synthetic', topicGrants: ['learn:core-java'] });
+        return json({
+          accountId: 'account-a',
+          username: 'synthetic',
+          displayName: 'Synthetic',
+          topicGrants: ['learn:core-java'],
+        });
       }
       return original(path, options);
     });
     await store.initialize();
     expect(store.account()?.topicGrants).toEqual(['learn:core-java']);
     const paths = fetcher.mock.calls.map(([path]) => path);
-    expect(paths.indexOf('/bff/api/v1/auth/invitations/activate')).toBeLessThan(paths.indexOf('/bff/api/v1/account-catalog'));
-    expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/invitations/activate'))).toHaveLength(1);
+    expect(paths.indexOf('/bff/api/v1/auth/invitations/activate')).toBeLessThan(
+      paths.indexOf('/bff/api/v1/account-catalog'),
+    );
+    expect(
+      fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/invitations/activate')),
+    ).toHaveLength(1);
   });
-  it.each([true, false])('knows the session state once the identity check answers (signed in: %s) (DLV-969)', async (signedIn) => {
-    me = signedIn;
-    expect(store.sessionKnown()).toBe(false);
-    await store.initialize();
-    expect(store.sessionKnown()).toBe(true);
-    expect(store.account() !== null).toBe(signedIn);
-  });
-  it.each([403, 409, 503])('stops restoration when invitation activation fails with %s', async (status) => {
-    me = true;
-    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
-    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
-      if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: true });
-      if (path.endsWith('/auth/invitations/activate')) return new Response(null, { status });
-      return original(path, options);
-    });
-    await store.initialize();
-    expect(store.errorStatus()).toBe(status);
-    expect(fetcher.mock.calls.some(([path]) => path.endsWith('/account-catalog'))).toBe(false);
-    expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/me'))).toHaveLength(1);
-  });
+  it.each([true, false])(
+    'knows the session state once the identity check answers (signed in: %s) (DLV-969)',
+    async (signedIn) => {
+      me = signedIn;
+      expect(store.sessionKnown()).toBe(false);
+      await store.initialize();
+      expect(store.sessionKnown()).toBe(true);
+      expect(store.account() !== null).toBe(signedIn);
+    },
+  );
+  it.each([403, 409, 503])(
+    'stops restoration when invitation activation fails with %s',
+    async (status) => {
+      me = true;
+      const original = fetcher.getMockImplementation() as (
+        path: string,
+        options: RequestInit,
+      ) => Promise<Response>;
+      fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+        if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: true });
+        if (path.endsWith('/auth/invitations/activate')) return new Response(null, { status });
+        return original(path, options);
+      });
+      await store.initialize();
+      expect(store.errorStatus()).toBe(status);
+      expect(fetcher.mock.calls.some(([path]) => path.endsWith('/account-catalog'))).toBe(false);
+      expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/me'))).toHaveLength(1);
+    },
+  );
   beforeEach(() => {
     mutations = [];
     failMutation = 0;
@@ -152,7 +173,8 @@ describe('StudyPlanAccount transport and isolation', () => {
     });
     TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: fetcher }] });
     store = TestBed.inject(StudyPlanAccount);
-    // These tests count account requests; a header hint left in shared storage (DLV-969 S37) would add an early one.
+    // These tests count account requests; a header hint left in shared storage (DLV-969 S37) would
+    // add an early one.
     store.headerHint.set(null);
   });
 
@@ -162,12 +184,19 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(JSON.parse(mutations.at(-1)!.options.body as string).startDate).toBe('2026-10-20');
     await store.lifecycle('active', '2026-11-01');
     expect(mutations.at(-1)!.path).toContain('/plans/plan-a/lifecycle');
-    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({ expectedRevision: 1, state: 'active', startDate: '2026-11-01' });
+    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({
+      expectedRevision: 1,
+      state: 'active',
+      startDate: '2026-11-01',
+    });
     await store.lifecycle('archived');
-    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({ expectedRevision: 1, state: 'archived' });
+    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({
+      expectedRevision: 1,
+      state: 'archived',
+    });
   });
 
-  it('persists a custom creation name and uses the revision-guarded name-only endpoint', async () => {
+  it('persists a custom creation name via the revision-guarded name-only endpoint', async () => {
     await store.login('demo-a', 'test');
     nextPlan = { ...result, name: 'Mine', planNumber: 3 };
     await store.save({ ...local, name: 'Mine', customName: true });
@@ -186,40 +215,43 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(savedAccountPlan(nextPlan).name).toBe('Renamed');
   });
 
-  it('creates an account with explicit profile data and CSRF without importing browser plans', async () => {
-    const originalTransport = fetcher.getMockImplementation() as (
-      path: string,
-      options: RequestInit,
-    ) => Promise<Response>;
-    fetcher.mockImplementation(async (path: string, options: RequestInit) =>
-      path.endsWith('/auth/register')
-        ? json({
-            accountId: 'registered',
-            username: 'new@example.test',
-            displayName: 'New Learner',
-            topicGrants: [],
-          })
-        : originalTransport(path, options),
-    );
-    const details = {
-      firstName: 'New',
-      lastName: 'Learner',
-      email: 'new@example.test',
-      password: 'long test passphrase',
-      confirmPassword: 'long test passphrase',
-      countryCode: 'US',
-    };
-    expect(await store.register(details)).toBe(true);
-    const call = fetcher.mock.calls.find(([path]) => path.endsWith('/auth/register'))!;
-    expect(JSON.parse(call[1].body as string)).toEqual(details);
-    expect(call[1].headers).toEqual({
-      'X-CSRF-TOKEN': 'test-csrf',
-      'Content-Type': 'application/json',
-    });
-    expect(store.account()?.accountId).toBe('registered');
-    expect(store.active()).toBeNull();
-    expect(fetcher.mock.calls.some(([path]) => path.includes('/plans/imports'))).toBe(false);
-  });
+  it(
+    'creates an account with explicit profile data and CSRF without importing browser ' + 'plans',
+    async () => {
+      const originalTransport = fetcher.getMockImplementation() as (
+        path: string,
+        options: RequestInit,
+      ) => Promise<Response>;
+      fetcher.mockImplementation(async (path: string, options: RequestInit) =>
+        path.endsWith('/auth/register')
+          ? json({
+              accountId: 'registered',
+              username: 'new@example.test',
+              displayName: 'New Learner',
+              topicGrants: [],
+            })
+          : originalTransport(path, options),
+      );
+      const details = {
+        firstName: 'New',
+        lastName: 'Learner',
+        email: 'new@example.test',
+        password: 'long test passphrase',
+        confirmPassword: 'long test passphrase',
+        countryCode: 'US',
+      };
+      expect(await store.register(details)).toBe(true);
+      const call = fetcher.mock.calls.find(([path]) => path.endsWith('/auth/register'))!;
+      expect(JSON.parse(call[1].body as string)).toEqual(details);
+      expect(call[1].headers).toEqual({
+        'X-CSRF-TOKEN': 'test-csrf',
+        'Content-Type': 'application/json',
+      });
+      expect(store.account()?.accountId).toBe('registered');
+      expect(store.active()).toBeNull();
+      expect(fetcher.mock.calls.some(([path]) => path.includes('/plans/imports'))).toBe(false);
+    },
+  );
 
   it('does not authenticate or report a plan conflict when registration is rejected', async () => {
     const originalTransport = fetcher.getMockImplementation() as (
@@ -246,72 +278,86 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.error()).not.toContain('plan changed');
   });
 
-  it('uses session login and refreshes CSRF without storing credentials or copying a browser plan', async () => {
-    await store.initialize();
-    expect(store.account()).toBeNull();
-    expect(await store.login('demo-a', 'synthetic-test-password')).toBe(true);
-    const call = fetcher.mock.calls.find(([path]) => path.endsWith('/auth/login'))!;
-    expect(call[1].body).toBeInstanceOf(URLSearchParams);
-    expect(call[1].headers).toEqual({ 'X-CSRF-TOKEN': 'test-csrf' });
-    expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/csrf'))).toHaveLength(2);
-    expect(mutations).toEqual([]);
-    expect(store.active()).toBeNull();
-  });
+  it(
+    'uses session login and refreshes CSRF without storing credentials or copying a ' +
+      'browser plan',
+    async () => {
+      await store.initialize();
+      expect(store.account()).toBeNull();
+      expect(await store.login('demo-a', 'synthetic-test-password')).toBe(true);
+      const call = fetcher.mock.calls.find(([path]) => path.endsWith('/auth/login'))!;
+      expect(call[1].body).toBeInstanceOf(URLSearchParams);
+      expect(call[1].headers).toEqual({ 'X-CSRF-TOKEN': 'test-csrf' });
+      expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/csrf'))).toHaveLength(2);
+      expect(mutations).toEqual([]);
+      expect(store.active()).toBeNull();
+    },
+  );
 
-  it('uses the gateway after OAuth discovery and keeps identity login separate until the redirect completes', async () => {
-    const transport = fetcher.getMockImplementation() as (
-      path: string,
-      options: RequestInit,
-    ) => Promise<Response>;
-    fetcher.mockImplementation((path: string, options: RequestInit) =>
-      path === '/api/v1/auth/options'
-        ? Promise.resolve(json({ registration: true, google: false, oauth: true }))
-        : transport(path, options),
-    );
-    await store.initialize();
-    expect(fetcher.mock.calls.some(([path]) => path === '/bff/api/v1/auth/me')).toBe(true);
-    expect(await store.login('demo-a', 'synthetic-test-password')).toBe(true);
-    expect(store.account()).toBeNull();
-    expect(fetcher.mock.calls.some(([path]) => path === '/api/v1/auth/csrf')).toBe(true);
-    expect(fetcher.mock.calls.some(([path]) => path === '/api/v1/auth/login')).toBe(true);
-    expect(fetcher.mock.calls.some(([path]) => path.includes('account-catalog'))).toBe(false);
-    expect(store.apiPath('/plans')).toBe('/bff/api/v1/plans');
-  });
+  it(
+    'uses the gateway after OAuth discovery and keeps identity login separate until the ' +
+      'redirect completes',
+    async () => {
+      const transport = fetcher.getMockImplementation() as (
+        path: string,
+        options: RequestInit,
+      ) => Promise<Response>;
+      fetcher.mockImplementation((path: string, options: RequestInit) =>
+        path === '/api/v1/auth/options'
+          ? Promise.resolve(json({ registration: true, google: false, oauth: true }))
+          : transport(path, options),
+      );
+      await store.initialize();
+      expect(fetcher.mock.calls.some(([path]) => path === '/bff/api/v1/auth/me')).toBe(true);
+      expect(await store.login('demo-a', 'synthetic-test-password')).toBe(true);
+      expect(store.account()).toBeNull();
+      expect(fetcher.mock.calls.some(([path]) => path === '/api/v1/auth/csrf')).toBe(true);
+      expect(fetcher.mock.calls.some(([path]) => path === '/api/v1/auth/login')).toBe(true);
+      expect(fetcher.mock.calls.some(([path]) => path.includes('account-catalog'))).toBe(false);
+      expect(store.apiPath('/plans')).toBe('/bff/api/v1/plans');
+    },
+  );
 
-  it('restores an OAuth gateway session without placing bearer credentials on browser requests', async () => {
-    const transport = fetcher.getMockImplementation() as (
-      path: string,
-      options: RequestInit,
-    ) => Promise<Response>;
-    me = true;
-    fetcher.mockImplementation((path: string, options: RequestInit) =>
-      path === '/api/v1/auth/options'
-        ? Promise.resolve(json({ registration: true, google: false, oauth: true }))
-        : transport(path, options),
-    );
-    await store.initialize();
-    expect(store.account()?.accountId).toBe('account-a');
-    const protectedCalls = fetcher.mock.calls.filter(([path]) => !path.endsWith('/auth/options'));
-    expect(protectedCalls.length).toBeGreaterThan(2);
-    for (const [path, options] of protectedCalls) {
-      expect(path.startsWith('/bff/')).toBe(true);
-      expect(new Headers(options.headers).has('Authorization')).toBe(false);
-    }
-  });
+  it(
+    'restores an OAuth gateway session without placing bearer credentials on browser ' + 'requests',
+    async () => {
+      const transport = fetcher.getMockImplementation() as (
+        path: string,
+        options: RequestInit,
+      ) => Promise<Response>;
+      me = true;
+      fetcher.mockImplementation((path: string, options: RequestInit) =>
+        path === '/api/v1/auth/options'
+          ? Promise.resolve(json({ registration: true, google: false, oauth: true }))
+          : transport(path, options),
+      );
+      await store.initialize();
+      expect(store.account()?.accountId).toBe('account-a');
+      const protectedCalls = fetcher.mock.calls.filter(([path]) => !path.endsWith('/auth/options'));
+      expect(protectedCalls.length).toBeGreaterThan(2);
+      for (const [path, options] of protectedCalls) {
+        expect(path.startsWith('/bff/')).toBe(true);
+        expect(new Headers(options.headers).has('Authorization')).toBe(false);
+      }
+    },
+  );
 
-  it('imports the original snapshot explicitly without inventing historical catalog provenance', async () => {
-    await store.login('demo-a', 'test');
-    const before = JSON.stringify(local);
-    await store.importLocal(local);
-    const sent = JSON.parse(mutations[0].options.body as string);
-    expect(sent.localSnapshot).toEqual(local);
-    expect(sent.provenance.catalogVersion).toBeNull();
-    expect(sent.provenance.rankingVersion).toBeNull();
-    expect(JSON.stringify(local)).toBe(before);
-    expect(store.active()?.planId).toBe('plan-a');
-    // Legacy import evidence alone must not be silently promoted into canonical completion.
-    expect(savedAccountPlan(store.active()!).completedIds).toEqual([]);
-  });
+  it(
+    'imports the original snapshot explicitly without inventing historical catalog ' + 'provenance',
+    async () => {
+      await store.login('demo-a', 'test');
+      const before = JSON.stringify(local);
+      await store.importLocal(local);
+      const sent = JSON.parse(mutations[0].options.body as string);
+      expect(sent.localSnapshot).toEqual(local);
+      expect(sent.provenance.catalogVersion).toBeNull();
+      expect(sent.provenance.rankingVersion).toBeNull();
+      expect(JSON.stringify(local)).toBe(before);
+      expect(store.active()?.planId).toBe('plan-a');
+      // Legacy import evidence alone must not be silently promoted into canonical completion.
+      expect(savedAccountPlan(store.active()!).completedIds).toEqual([]);
+    },
+  );
 
   it('retries an uncertain mutation with the same immutable body and idempotency key', async () => {
     await store.login('demo-a', 'test');
@@ -352,25 +398,29 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(fetcher.mock.calls.some(([path]) => /account-catalog|plans\?/.test(path))).toBe(false);
   });
 
-  it('reports a failed account-data restore after identity succeeds instead of implying no saved plans', async () => {
-    me = true;
-    const originalFetch = fetcher.getMockImplementation() as (
-      path: string,
-      options: RequestInit,
-    ) => Promise<Response>;
-    fetcher.mockImplementation(async (path: string, options: RequestInit) =>
-      path.endsWith('/account-catalog')
-        ? new Response(null, { status: 401 })
-        : originalFetch(path, options),
-    );
-    await store.initialize();
-    expect(store.account()).not.toBeNull();
-    expect(store.sessionExpired()).toBe(true);
-    expect(store.errorStatus()).toBe(401);
-    expect(store.error()).toContain('session expired');
-    expect(store.active()).toBeNull();
-    expect(store.planSummariesState()).toBe('error');
-  });
+  it(
+    'reports a failed account-data restore after identity succeeds instead of implying no ' +
+      'saved plans',
+    async () => {
+      me = true;
+      const originalFetch = fetcher.getMockImplementation() as (
+        path: string,
+        options: RequestInit,
+      ) => Promise<Response>;
+      fetcher.mockImplementation(async (path: string, options: RequestInit) =>
+        path.endsWith('/account-catalog')
+          ? new Response(null, { status: 401 })
+          : originalFetch(path, options),
+      );
+      await store.initialize();
+      expect(store.account()).not.toBeNull();
+      expect(store.sessionExpired()).toBe(true);
+      expect(store.errorStatus()).toBe(401);
+      expect(store.error()).toContain('session expired');
+      expect(store.active()).toBeNull();
+      expect(store.planSummariesState()).toBe('error');
+    },
+  );
 
   it('marks the plan summary ready only after all pages load', async () => {
     me = true;
@@ -437,33 +487,42 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.pending()).toBe(false);
   });
 
-  it('clears account data on logout and starts a new plan without copying another plan’s progress', async () => {
-    await store.login('demo-a', 'test');
-    await store.open('plan-a');
-    store.newPlan();
-    expect(store.active()).toBeNull();
-    await store.save(local);
-    expect(mutations[0].path).toBe('/api/v1/plans');
-    const create = JSON.parse(mutations[0].options.body as string);
-    expect(create.progress).toBeUndefined();
-    expect(create.startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    await store.logout();
-    expect(store.account()).toBeNull();
-    expect(store.active()).toBeNull();
-    expect(store.catalog()).toBeNull();
-    expect(store.plans()).toEqual([]);
-    expect(store.planSummariesState()).toBe('idle');
-  });
+  it(
+    'clears account data on logout and starts a new plan without copying another plan’s ' +
+      'progress',
+    async () => {
+      await store.login('demo-a', 'test');
+      await store.open('plan-a');
+      store.newPlan();
+      expect(store.active()).toBeNull();
+      await store.save(local);
+      expect(mutations[0].path).toBe('/api/v1/plans');
+      const create = JSON.parse(mutations[0].options.body as string);
+      expect(create.progress).toBeUndefined();
+      expect(create.startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      await store.logout();
+      expect(store.account()).toBeNull();
+      expect(store.active()).toBeNull();
+      expect(store.catalog()).toBeNull();
+      expect(store.plans()).toEqual([]);
+      expect(store.planSummariesState()).toBe('idle');
+    },
+  );
 
   it('retries an uncertain deletion with the same key and quoted revision', async () => {
     await store.login('demo-a', 'test');
     store.plans.set([{ planId: 'plan-a', goal: 'Prepare Java', revision: 1, updatedAt: '' }]);
-    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const original = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     let attempts = 0;
     fetcher.mockImplementation(async (path: string, options: RequestInit) => {
       if (path.endsWith('/plans/plan-a') && options.method === 'DELETE') {
         mutations.push({ path, options });
-        return ++attempts === 1 ? new Response(null, { status: 503 }) : new Response(null, { status: 204 });
+        return ++attempts === 1
+          ? new Response(null, { status: 503 })
+          : new Response(null, { status: 204 });
       }
       return original(path, options);
     });
@@ -482,7 +541,10 @@ describe('StudyPlanAccount transport and isolation', () => {
 
   it('explains a free-plan slot refusal instead of calling it a revision conflict', async () => {
     await store.login('demo-a', 'test');
-    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const original = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     fetcher.mockImplementation(async (path: string, options: RequestInit) =>
       path.endsWith('/plans') && options.method === 'POST'
         ? new Response(JSON.stringify({ code: 'FREE_ACTIVE_PLAN_LIMIT' }), { status: 409 })
@@ -508,36 +570,50 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.plans()).toEqual([]);
   });
 
-  it('closes Local Identity with its own CSRF token instead of navigating to a stale ID-token hint', async () => {
-    await store.login('demo-a', 'test');
-    store.authOptions.set({ registration: false, google: false, oauth: true });
-    fetcher.mockClear();
-    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
-      if (path.endsWith('/auth/csrf')) return json({ token: path.startsWith('/bff') ? 'bff-token' : 'identity-token', headerName: 'X-CSRF-TOKEN' });
-      if (path === '/bff/api/v1/auth/logout') {
-        expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'bff-token' });
-        return json({ logoutUrl: 'https://untrusted.invalid/connect/logout?id_token_hint=stale' });
-      }
-      expect(path).toBe('/api/v1/auth/logout');
-      expect(options.method).toBe('POST');
-      expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'identity-token' });
-      return new Response(null, { status: 204 });
-    });
-    expect(await store.logout()).toBe(true);
-    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([
-      '/bff/api/v1/auth/csrf', '/bff/api/v1/auth/logout', '/api/v1/auth/csrf', '/api/v1/auth/logout',
-    ]);
-    expect(store.logoutRedirectPending()).toBe(false);
-    expect(store.account()).toBeNull();
-  });
+  it(
+    'closes Local Identity with its own CSRF token instead of navigating to a stale ' +
+      'ID-token hint',
+    async () => {
+      await store.login('demo-a', 'test');
+      store.authOptions.set({ registration: false, google: false, oauth: true });
+      fetcher.mockClear();
+      fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+        if (path.endsWith('/auth/csrf'))
+          return json({
+            token: path.startsWith('/bff') ? 'bff-token' : 'identity-token',
+            headerName: 'X-CSRF-TOKEN',
+          });
+        if (path === '/bff/api/v1/auth/logout') {
+          expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'bff-token' });
+          return json({
+            logoutUrl: 'https://untrusted.invalid/connect/logout?id_token_hint=stale',
+          });
+        }
+        expect(path).toBe('/api/v1/auth/logout');
+        expect(options.method).toBe('POST');
+        expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'identity-token' });
+        return new Response(null, { status: 204 });
+      });
+      expect(await store.logout()).toBe(true);
+      expect(fetcher.mock.calls.map(([path]) => path)).toEqual([
+        '/bff/api/v1/auth/csrf',
+        '/bff/api/v1/auth/logout',
+        '/api/v1/auth/csrf',
+        '/api/v1/auth/logout',
+      ]);
+      expect(store.logoutRedirectPending()).toBe(false);
+      expect(store.account()).toBeNull();
+    },
+  );
 
-  it('retries Identity cleanup after BFF logout completed and rejects partial success', async () => {
+  it('retries Identity cleanup after BFF logout and rejects partial success', async () => {
     await store.login('demo-a', 'test');
     store.authOptions.set({ registration: false, google: false, oauth: true });
     let identityAvailable = false;
     fetcher.mockImplementation(async (path: string) => {
       if (path.startsWith('/bff')) return new Response(null, { status: 401 });
-      if (path.endsWith('/csrf')) return json({ token: 'identity-token', headerName: 'X-CSRF-TOKEN' });
+      if (path.endsWith('/csrf'))
+        return json({ token: 'identity-token', headerName: 'X-CSRF-TOKEN' });
       return new Response(null, { status: identityAvailable ? 204 : 503 });
     });
     expect(await store.logout()).toBe(false);
@@ -551,14 +627,23 @@ describe('StudyPlanAccount transport and isolation', () => {
   it('accepts only the configured same-origin managed logout bridge', async () => {
     await store.login('demo-a', 'test');
     store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
-    const transport = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const transport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     let destination = new URL('/bff/logout/complete', window.location.origin).href;
     fetcher.mockImplementation((path: string, options: RequestInit) =>
-      path.endsWith('/auth/logout') ? Promise.resolve(json({ logoutUrl: destination })) : transport(path, options),
+      path.endsWith('/auth/logout')
+        ? Promise.resolve(json({ logoutUrl: destination }))
+        : transport(path, options),
     );
     expect(await store.logout()).toBe(true);
     expect(store.logoutRedirectPending()).toBe(true);
-    for (const rejected of ['/bff/logout/complete?next=https://external.example', '/bff/logout/complete#extra', 'https://external.example/bff/logout/complete']) {
+    for (const rejected of [
+      '/bff/logout/complete?next=https://external.example',
+      '/bff/logout/complete#extra',
+      'https://external.example/bff/logout/complete',
+    ]) {
       destination = new URL(rejected, window.location.origin).href;
       expect(await store.logout()).toBe(false);
       expect(store.logoutRedirectPending()).toBe(false);
@@ -595,29 +680,33 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(await store.retry()).toBeNull();
     expect(mutations).toHaveLength(1);
   });
-  it('preserves server provenance for recovery and resets update strategy without losing elapsed days', async () => {
-    await store.login('demo-a', 'test');
-    nextPlan.provenance.origin = 'generated';
-    nextPlan.recovery = {
-      strategy: 'fixed-window',
-      elapsedDays: 4,
-      deadlineDays: 7,
-      deferredContentIds: [],
-    };
-    await store.open('plan-a');
-    await store.save(local, 'recovery', nextPlan.recovery);
-    expect(JSON.parse(mutations[0].options.body as string).provenance.origin).toBe('generated');
-    expect((mutations[0].options.headers as Record<string, string>)['X-LookAhead-Account']).toBe(
-      'account-a',
-    );
-    await store.save(local);
-    expect(JSON.parse(mutations[1].options.body as string).recovery).toEqual({
-      strategy: 'none',
-      elapsedDays: 4,
-      deadlineDays: 7,
-      deferredContentIds: [],
-    });
-  });
+  it(
+    'preserves server provenance for recovery and resets update strategy without losing ' +
+      'elapsed days',
+    async () => {
+      await store.login('demo-a', 'test');
+      nextPlan.provenance.origin = 'generated';
+      nextPlan.recovery = {
+        strategy: 'fixed-window',
+        elapsedDays: 4,
+        deadlineDays: 7,
+        deferredContentIds: [],
+      };
+      await store.open('plan-a');
+      await store.save(local, 'recovery', nextPlan.recovery);
+      expect(JSON.parse(mutations[0].options.body as string).provenance.origin).toBe('generated');
+      expect((mutations[0].options.headers as Record<string, string>)['X-LookAhead-Account']).toBe(
+        'account-a',
+      );
+      await store.save(local);
+      expect(JSON.parse(mutations[1].options.body as string).recovery).toEqual({
+        strategy: 'none',
+        elapsedDays: 4,
+        deadlineDays: 7,
+        deferredContentIds: [],
+      });
+    },
+  );
 
   it('completes the identity transition even if post-login CSRF refresh fails', async () => {
     await store.login('demo-a', 'test');
@@ -638,9 +727,17 @@ describe('StudyPlanAccount transport and isolation', () => {
   });
 });
 
-/** DLV-969 S37 (user, 2026-11-03): the header shows what this browser last knew at once, and the identity check starts early. */
+/**
+ * DLV-969 S37 (user, 2026-11-03): the header shows what this browser last knew at once, and the
+ * identity check starts early.
+ */
 describe('StudyPlanAccount header hint', () => {
-  const person = { accountId: 'account-m', username: 'google_117602686039051948589', displayName: 'Mohiddin Shaik', topicGrants: [] };
+  const person = {
+    accountId: 'account-m',
+    username: 'google_117602686039051948589',
+    displayName: 'Mohiddin Shaik',
+    topicGrants: [],
+  };
   const key = 'lookahead.header-hint';
   /** The test environment has no localStorage; each test gets its own in-memory one. */
   function memoryStorage(): Storage {
@@ -651,7 +748,9 @@ describe('StudyPlanAccount header hint', () => {
       removeItem: (name: string) => void items.delete(name),
       clear: () => items.clear(),
       key: (index: number) => [...items.keys()][index] ?? null,
-      get length() { return items.size; },
+      get length() {
+        return items.size;
+      },
     };
   }
   beforeEach(() => vi.stubGlobal('localStorage', memoryStorage()));
@@ -663,17 +762,35 @@ describe('StudyPlanAccount header hint', () => {
   }
   const signedIn = (oauth: boolean) =>
     vi.fn(async (path: string) =>
-      path === '/api/v1/auth/options' ? json({ oauth, managedLogin: false }) : path.endsWith('/auth/me') ? json(person) : json([]));
+      path === '/api/v1/auth/options'
+        ? json({ oauth, managedLogin: false })
+        : path.endsWith('/auth/me')
+          ? json(person)
+          : json([]),
+    );
 
   it('remembers who was signed in, then that they signed out, for the next page load', async () => {
     const first = store(signedIn(true));
     expect(first.headerHint()).toBeNull();
     await first.initialize();
     TestBed.tick();
-    expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
-    expect(store(signedIn(true)).headerHint()).toEqual({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
-    const out = store(vi.fn(async (path: string) =>
-      path === '/api/v1/auth/options' ? json({ oauth: true }) : new Response(null, { status: 401 })));
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual({
+      signedIn: true,
+      displayName: 'Mohiddin Shaik',
+      gateway: true,
+    });
+    expect(store(signedIn(true)).headerHint()).toEqual({
+      signedIn: true,
+      displayName: 'Mohiddin Shaik',
+      gateway: true,
+    });
+    const out = store(
+      vi.fn(async (path: string) =>
+        path === '/api/v1/auth/options'
+          ? json({ oauth: true })
+          : new Response(null, { status: 401 }),
+      ),
+    );
     await out.initialize();
     TestBed.tick();
     expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ signedIn: false, gateway: true });
@@ -682,49 +799,81 @@ describe('StudyPlanAccount header hint', () => {
   it('reads back only a well-formed hint, and keeps working when storage is blocked', () => {
     for (const bad of ['{not json', '{"signedIn":"yes"}', '{"signedIn":true}', '42'])
       expect((localStorage.setItem(key, bad), readHeaderHint())).toBeNull();
-    localStorage.setItem(key, JSON.stringify({ signedIn: true, displayName: 'x'.repeat(400), accountId: 'never-kept' }));
+    localStorage.setItem(
+      key,
+      JSON.stringify({ signedIn: true, displayName: 'x'.repeat(400), accountId: 'never-kept' }),
+    );
     expect(readHeaderHint()).toEqual({ signedIn: true, displayName: 'x'.repeat(160) });
     localStorage.setItem(key, JSON.stringify({ signedIn: false, gateway: 'yes' }));
     expect(readHeaderHint()).toEqual({ signedIn: false });
-    const blockedStorage = { ...memoryStorage(), getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
+    const blockedStorage = {
+      ...memoryStorage(),
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+    };
     vi.stubGlobal('localStorage', blockedStorage);
     expect(readHeaderHint()).toBeNull();
     const blocked = store(signedIn(true));
-    expect(() => { void blocked.initialize(); TestBed.tick(); }).not.toThrow();
+    expect(() => {
+      void blocked.initialize();
+      TestBed.tick();
+    }).not.toThrow();
   });
 
-  it('asks who you are before the sign-in options answer, at the address that answered last time', async () => {
-    localStorage.setItem(key, JSON.stringify({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true }));
-    let answerOptions!: () => void;
-    const calls: string[] = [];
-    const fetcher = vi.fn((path: string) => {
-      calls.push(path);
-      if (path === '/api/v1/auth/options')
-        return new Promise<Response>((resolve) => (answerOptions = () => resolve(json({ oauth: true, managedLogin: false }))));
-      return Promise.resolve(path.endsWith('/auth/me') ? json(person) : json([]));
-    });
-    const early = store(fetcher);
-    const started = early.initialize();
-    await Promise.resolve();
-    expect(calls.slice(0, 2).sort()).toEqual(['/api/v1/auth/options', '/bff/api/v1/auth/me']);
-    answerOptions();
-    await started;
-    expect(early.account()?.displayName).toBe('Mohiddin Shaik');
-    expect(calls.filter((path) => path.endsWith('/auth/me'))).toEqual(['/bff/api/v1/auth/me']);
-  });
+  it(
+    'asks who you are before the sign-in options answer, at the address that answered ' +
+      'last time',
+    async () => {
+      localStorage.setItem(
+        key,
+        JSON.stringify({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true }),
+      );
+      let answerOptions!: () => void;
+      const calls: string[] = [];
+      const fetcher = vi.fn((path: string) => {
+        calls.push(path);
+        if (path === '/api/v1/auth/options')
+          return new Promise<Response>(
+            (resolve) =>
+              (answerOptions = () => resolve(json({ oauth: true, managedLogin: false }))),
+          );
+        return Promise.resolve(path.endsWith('/auth/me') ? json(person) : json([]));
+      });
+      const early = store(fetcher);
+      const started = early.initialize();
+      await Promise.resolve();
+      expect(calls.slice(0, 2).sort()).toEqual(['/api/v1/auth/options', '/bff/api/v1/auth/me']);
+      answerOptions();
+      await started;
+      expect(early.account()?.displayName).toBe('Mohiddin Shaik');
+      expect(calls.filter((path) => path.endsWith('/auth/me'))).toEqual(['/bff/api/v1/auth/me']);
+    },
+  );
 
-  it('drops the early answer and asks again when the sign-in options say the address changed', async () => {
-    localStorage.setItem(key, JSON.stringify({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: false }));
-    const fetcher = vi.fn(async (path: string) => {
-      if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: false });
-      if (path === '/api/v1/auth/me') return new Response(null, { status: 404 });
-      return path === '/bff/api/v1/auth/me' ? json(person) : json([]);
-    });
-    const moved = store(fetcher);
-    await moved.initialize();
-    expect(fetcher.mock.calls.map(([path]) => path).filter((path) => path.endsWith('/auth/me'))).toEqual(['/api/v1/auth/me', '/bff/api/v1/auth/me']);
-    expect(moved.account()?.accountId).toBe('account-m');
-    // The dropped early answer (404) never becomes the page's error.
-    expect(moved.errorStatus()).not.toBe(404);
-  });
+  it(
+    'drops the early answer and asks again when the sign-in options say the address ' + 'changed',
+    async () => {
+      localStorage.setItem(
+        key,
+        JSON.stringify({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: false }),
+      );
+      const fetcher = vi.fn(async (path: string) => {
+        if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: false });
+        if (path === '/api/v1/auth/me') return new Response(null, { status: 404 });
+        return path === '/bff/api/v1/auth/me' ? json(person) : json([]);
+      });
+      const moved = store(fetcher);
+      await moved.initialize();
+      expect(
+        fetcher.mock.calls.map(([path]) => path).filter((path) => path.endsWith('/auth/me')),
+      ).toEqual(['/api/v1/auth/me', '/bff/api/v1/auth/me']);
+      expect(moved.account()?.accountId).toBe('account-m');
+      // The dropped early answer (404) never becomes the page's error.
+      expect(moved.errorStatus()).not.toBe(404);
+    },
+  );
 });

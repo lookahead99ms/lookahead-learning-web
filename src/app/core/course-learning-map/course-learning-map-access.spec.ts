@@ -12,10 +12,31 @@ import { CourseLearningMap } from './course-learning-map';
  * DLV-209: the label depends on who is looking.
  */
 const units: CourseLearningUnit[] = [
-  { id: 'java-platform', title: 'Java Platform', description: 'Run Java.', theoryModuleId: 'platform' },
-  { id: 'error-handling', title: 'Error Handling', description: 'Handle errors.', theoryModuleId: 'errors' },
-  { id: 'collections', title: 'Collections', description: 'Use lists.', theoryModuleId: 'collections' },
-  { id: 'records', title: 'Records', description: 'Coming later.', theoryModuleId: 'records', planned: true },
+  {
+    id: 'java-platform',
+    title: 'Java Platform',
+    description: 'Run Java.',
+    theoryModuleId: 'platform',
+  },
+  {
+    id: 'error-handling',
+    title: 'Error Handling',
+    description: 'Handle errors.',
+    theoryModuleId: 'errors',
+  },
+  {
+    id: 'collections',
+    title: 'Collections',
+    description: 'Use lists.',
+    theoryModuleId: 'collections',
+  },
+  {
+    id: 'records',
+    title: 'Records',
+    description: 'Coming later.',
+    theoryModuleId: 'records',
+    planned: true,
+  },
 ];
 
 const course: CourseOutline = {
@@ -125,9 +146,9 @@ describe('CourseLearningMap access labels', () => {
       expect(label.classList).not.toContain('unit-card-pill');
     }
     // Only Paid plan carries the decorative lock.
-    expect(root().querySelector('#unit-collections .unit-card-access-lock')?.getAttribute('aria-hidden')).toBe(
-      'true',
-    );
+    expect(
+      root().querySelector('#unit-collections .unit-card-access-lock')?.getAttribute('aria-hidden'),
+    ).toBe('true');
     expect(root().querySelector('#unit-java-platform .unit-card-access-lock')).toBeNull();
   });
 
@@ -165,7 +186,11 @@ describe('CourseLearningMap access labels', () => {
     fixture.componentRef.setInput('accessLevels', levels);
     fixture.detectChanges();
 
-    expect(labelTexts().map(([, , text]) => text)).toEqual(['Open', 'Sign in to read', 'Paid plan']);
+    expect(labelTexts().map(([, , text]) => text)).toEqual([
+      'Open',
+      'Sign in to read',
+      'Paid plan',
+    ]);
   });
 
   it('includes the level in the card link accessible name', () => {

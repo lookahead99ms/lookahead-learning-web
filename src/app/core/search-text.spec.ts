@@ -15,9 +15,9 @@ import {
 
 describe('search text matching (DLV-962 search audit)', () => {
   it('keeps comparison signs in problem statements as text and decodes entities once', () => {
-    expect(plainSearchText('Count index pairs i<j such that words[i] is a prefix of words[j] >')).toBe(
-      'Count index pairs i<j such that words[i] is a prefix of words[j] >',
-    );
+    expect(
+      plainSearchText('Count index pairs i<j such that words[i] is a prefix of words[j] >'),
+    ).toBe('Count index pairs i<j such that words[i] is a prefix of words[j] >');
     expect(plainSearchText('<p>A concise <strong>lesson</strong> overview.</p>')).toBe(
       'A concise lesson overview.',
     );
@@ -26,7 +26,9 @@ describe('search text matching (DLV-962 search audit)', () => {
       'as in List<String> and a & b',
     );
     expect(plainSearchText('i<b and c>d')).toBe('i<b and c>d');
-    expect(decodeEntities('&#65;&#x42;&quot;&apos;&nbsp;&unknown;&#0;')).toBe('AB"\' &unknown;&#0;');
+    expect(decodeEntities('&#65;&#x42;&quot;&apos;&nbsp;&unknown;&#0;')).toBe(
+      'AB"\' &unknown;&#0;',
+    );
   });
 
   it('folds case, entities and word joiners so two-sum and two sum match each other', () => {
@@ -63,25 +65,29 @@ describe('search text matching (DLV-962 search audit)', () => {
     expect(wordForms('key').map(({ text }) => text)).toEqual(['key']);
   });
 
-  it('matches every word in any order, singular or plural, and short words only at a word start', () => {
-    const text = foldSearchText('Binary Search finds a pair in a sorted array of boxes');
-    expect(matchesSearchWords(text, searchWords('search binary'))).toBe(true);
-    expect(matchesSearchWords(text, searchWords('pairs'))).toBe(true);
-    expect(matchesSearchWords(text, searchWords('box'))).toBe(true);
-    expect(matchesSearchWords(text, searchWords('binary tree'))).toBe(false);
-    expect(matchesSearchWords(text, [])).toBe(true);
-    expect(hasSearchWord(foldSearchText('Algorithms in Go'), 'go')).toBe(true);
-    expect(hasSearchWord(foldSearchText('An algorithm'), 'go')).toBe(false);
-    expect(hasSearchWord(foldSearchText('Go, and Go-style errors'), 'go')).toBe(true);
-    expect(hasSearchWord(foldSearchText('Jakarta EE'), 'ja')).toBe(true);
-    expect(hasSearchWord(foldSearchText('A summary'), 'sum')).toBe(true);
-    expect(hasSearchWord(foldSearchText('We assume'), 'sum')).toBe(false);
-    expect(hasSearchWord(foldSearchText('JavaScript closures'), 'script')).toBe(true);
-    expect(hasSearchWord(foldSearchText('caching layers'), 'caches')).toBe(false);
-    expect(hasSearchWord(foldSearchText('one patch'), 'patches')).toBe(true);
-    expect(hasSearchWord(foldSearchText('patching'), 'patches')).toBe(false);
-    expect(hasSearchWord(foldSearchText('f(x) and (a)'), '(')).toBe(true);
-  });
+  it(
+    'matches every word in any order, singular or plural, and short words only at a word ' +
+      'start',
+    () => {
+      const text = foldSearchText('Binary Search finds a pair in a sorted array of boxes');
+      expect(matchesSearchWords(text, searchWords('search binary'))).toBe(true);
+      expect(matchesSearchWords(text, searchWords('pairs'))).toBe(true);
+      expect(matchesSearchWords(text, searchWords('box'))).toBe(true);
+      expect(matchesSearchWords(text, searchWords('binary tree'))).toBe(false);
+      expect(matchesSearchWords(text, [])).toBe(true);
+      expect(hasSearchWord(foldSearchText('Algorithms in Go'), 'go')).toBe(true);
+      expect(hasSearchWord(foldSearchText('An algorithm'), 'go')).toBe(false);
+      expect(hasSearchWord(foldSearchText('Go, and Go-style errors'), 'go')).toBe(true);
+      expect(hasSearchWord(foldSearchText('Jakarta EE'), 'ja')).toBe(true);
+      expect(hasSearchWord(foldSearchText('A summary'), 'sum')).toBe(true);
+      expect(hasSearchWord(foldSearchText('We assume'), 'sum')).toBe(false);
+      expect(hasSearchWord(foldSearchText('JavaScript closures'), 'script')).toBe(true);
+      expect(hasSearchWord(foldSearchText('caching layers'), 'caches')).toBe(false);
+      expect(hasSearchWord(foldSearchText('one patch'), 'patches')).toBe(true);
+      expect(hasSearchWord(foldSearchText('patching'), 'patches')).toBe(false);
+      expect(hasSearchWord(foldSearchText('f(x) and (a)'), '(')).toBe(true);
+    },
+  );
 
   it('ranks the exact title first, then a title start, whole words, and context', () => {
     const words = searchWords('graph');
@@ -100,7 +106,9 @@ describe('search text matching (DLV-962 search audit)', () => {
     expect(searchRank({ title: 'Anything' }, [])).toBe(1);
     expect(
       searchRank({ title: 'Bridges', subjects: ['Two pointers'] }, searchWords('two pointers')),
-    ).toBeGreaterThan(searchRank({ title: 'Bridges', subjects: ['Pointers for two'] }, searchWords('two pointers')));
+    ).toBeGreaterThan(
+      searchRank({ title: 'Bridges', subjects: ['Pointers for two'] }, searchWords('two pointers')),
+    );
     const phrase = searchWords('two sum');
     expect(searchRank({ title: 'Hashing', text: 'the two sum problem' }, phrase)).toBeGreaterThan(
       searchRank({ title: 'Hashing', text: 'two arrays and a sum' }, phrase),

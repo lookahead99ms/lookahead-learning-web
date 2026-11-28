@@ -69,11 +69,14 @@ test('protected editor checks the current author session for reads and writes', 
   const initial = await request();
   assert.equal(initial.status, 200);
   status = 401;
-  assert.equal((await request('POST', '/work-items', { revision: initial.body.revision, item })).status, 401);
+  assert.equal(
+    (await request('POST', '/work-items', { revision: initial.body.revision, item })).status,
+    401,
+  );
   assert.equal(JSON.parse(await readFile(file, 'utf8')).workItems.length, source.workItems.length);
 });
 
-test('creates, edits, moves status and stage, and persists while preserving plan metadata', async (t) => {
+test('creates, edits, moves status and stage, and persists keeping plan metadata', async (t) => {
   const { request, item, file } = await fixture(t);
   const initial = (await request()).body;
   const created = await request('POST', '/work-items', { revision: initial.revision, item });
@@ -124,7 +127,7 @@ test('serializes competing saves so only one same-revision edit wins', async (t)
   assert.deepEqual([(await first).status, (await second).status].sort(), [201, 409]);
 });
 
-test('validates required fields, references, types, and unexpected properties without writes', async (t) => {
+test('validates required fields, references, types and extra properties, no writes', async (t) => {
   const { request, item } = await fixture(t);
   const { revision } = (await request()).body;
   for (const invalid of [
@@ -148,34 +151,41 @@ test('validates required fields, references, types, and unexpected properties wi
   assert.equal((await request()).body.revision, revision);
 });
 
-test('rejects missing local capability, cross-origin and non-loopback requests, and other methods', async (t) => {
-  const { request, item } = await fixture(t);
-  const { revision } = (await request()).body;
-  const body = { revision, item };
-  assert.equal((await request('GET', '/plan', undefined, { 'x-delivery-token': '' })).status, 403);
-  for (const override of [
-    { origin: 'https://untrusted.example' },
-    { origin: '' },
-    { 'sec-fetch-site': 'cross-site' },
-    { 'x-delivery-request': '' },
-    { 'x-forwarded-for': '192.0.2.10' },
-  ])
-    assert.equal((await request('POST', '/work-items', body, override)).status, 403);
-  assert.equal(
-    (await request('POST', '/work-items', body, { 'content-type': 'text/plain' })).status,
-    415,
-  );
-  assert.equal((await request('DELETE', '/work-items/test')).status, 405);
-  assert.equal(
-    (
-      await request('POST', '/work-items', {
-        revision,
-        item: { ...item, summary: 'x'.repeat(66000) },
-      })
-    ).status,
-    413,
-  );
-});
+test(
+  'rejects missing local capability, cross-origin and non-loopback requests, and other ' +
+    'methods',
+  async (t) => {
+    const { request, item } = await fixture(t);
+    const { revision } = (await request()).body;
+    const body = { revision, item };
+    assert.equal(
+      (await request('GET', '/plan', undefined, { 'x-delivery-token': '' })).status,
+      403,
+    );
+    for (const override of [
+      { origin: 'https://untrusted.example' },
+      { origin: '' },
+      { 'sec-fetch-site': 'cross-site' },
+      { 'x-delivery-request': '' },
+      { 'x-forwarded-for': '192.0.2.10' },
+    ])
+      assert.equal((await request('POST', '/work-items', body, override)).status, 403);
+    assert.equal(
+      (await request('POST', '/work-items', body, { 'content-type': 'text/plain' })).status,
+      415,
+    );
+    assert.equal((await request('DELETE', '/work-items/test')).status, 405);
+    assert.equal(
+      (
+        await request('POST', '/work-items', {
+          revision,
+          item: { ...item, summary: 'x'.repeat(66000) },
+        })
+      ).status,
+      413,
+    );
+  },
+);
 
 test('rejects self-dependency and cycles', async (t) => {
   const { request, item } = await fixture(t);
@@ -217,7 +227,9 @@ test('preserves review routes and unknown metadata when editing an existing item
   const plan = structuredClone(source);
   const existing = plan.workItems[0];
   existing.reviewRoutes = ['/delivery-plan'];
-  existing.evidence = [{ id: 'report', title: 'Review report', path: 'src/delivery-plan/evidence/report.md' }];
+  existing.evidence = [
+    { id: 'report', title: 'Review report', path: 'src/delivery-plan/evidence/report.md' },
+  ];
   existing.customMetadata = { owner: 'test' };
   await writeFile(file, JSON.stringify(plan));
   const snapshot = (await request()).body;
@@ -251,7 +263,7 @@ async function evidenceFixture(t) {
   };
 }
 
-test('renders evidence, accepts the .md alias, and preserves original source downloads', async (t) => {
+test('renders evidence, accepts the .md alias, and keeps original source downloads', async (t) => {
   const { request, path, markdown } = await evidenceFixture(t);
   const opened = await request('GET', path);
   assert.equal(opened.status, 200);
@@ -284,71 +296,77 @@ test('renders evidence, accepts the .md alias, and preserves original source dow
   assert.equal((await request('GET', path.replace(/report$/, 'unknown'))).status, 404);
 });
 
-test('formats tables, lists, and code while keeping report-supplied HTML and unsafe links inert', async (t) => {
-  const { request, path, directory, plan, file } = await evidenceFixture(t);
-  plan.workItems[0].evidence[0].title = '<img src=x onerror=alert(1)>';
-  await writeFile(file, JSON.stringify(plan));
-  await writeFile(
-    resolve(directory, 'src/delivery-plan/evidence/report.md'),
-    [
-      '# Report',
-      '',
-      '| Case | Result |',
-      '| --- | --- |',
-      '| R01 | **Passed** |',
-      '',
-      '- One check',
-      '- Another check',
-      '',
-      '```html',
+test(
+  'formats tables, lists, and code while keeping report-supplied HTML and unsafe links ' + 'inert',
+  async (t) => {
+    const { request, path, directory, plan, file } = await evidenceFixture(t);
+    plan.workItems[0].evidence[0].title = '<img src=x onerror=alert(1)>';
+    await writeFile(file, JSON.stringify(plan));
+    await writeFile(
+      resolve(directory, 'src/delivery-plan/evidence/report.md'),
+      [
+        '# Report',
+        '',
+        '| Case | Result |',
+        '| --- | --- |',
+        '| R01 | **Passed** |',
+        '',
+        '- One check',
+        '- Another check',
+        '',
+        '```html',
+        '<script>alert(1)</script>',
+        '```',
+        '',
+        '<img src="https://untrusted.example/pixel" onerror="alert(1)">',
+        '',
+        '<iframe src="https://untrusted.example"></iframe>',
+        '',
+        '<style>body { display: none }</style>',
+        '',
+        '![tracking](https://untrusted.example/image.png)',
+        '',
+        '[unsafe](javascript:alert%281%29)',
+        '[encoded](jav&#x61;script:alert%281%29)',
+        '[data](data:text/html,unsafe)',
+        '[relative](//untrusted.example/path)',
+        '[safe](https://example.com/report)',
+        '[local](/delivery-plan)',
+      ].join('\n'),
+    );
+    const response = await request('GET', path);
+    assert.equal(response.status, 200);
+    const dom = new JSDOM(response.body);
+    t.after(() => dom.window.close());
+    const document = dom.window.document;
+    assert.equal(document.querySelectorAll('table tbody tr').length, 1);
+    assert.equal(document.querySelector('td strong').textContent, 'Passed');
+    assert.equal(document.querySelectorAll('main ul li').length, 2);
+    assert.equal(
+      document.querySelector('pre code').textContent.trim(),
       '<script>alert(1)</script>',
-      '```',
-      '',
-      '<img src="https://untrusted.example/pixel" onerror="alert(1)">',
-      '',
-      '<iframe src="https://untrusted.example"></iframe>',
-      '',
-      '<style>body { display: none }</style>',
-      '',
-      '![tracking](https://untrusted.example/image.png)',
-      '',
-      '[unsafe](javascript:alert%281%29)',
-      '[encoded](jav&#x61;script:alert%281%29)',
-      '[data](data:text/html,unsafe)',
-      '[relative](//untrusted.example/path)',
-      '[safe](https://example.com/report)',
-      '[local](/delivery-plan)',
-    ].join('\n'),
-  );
-  const response = await request('GET', path);
-  assert.equal(response.status, 200);
-  const dom = new JSDOM(response.body);
-  t.after(() => dom.window.close());
-  const document = dom.window.document;
-  assert.equal(document.querySelectorAll('table tbody tr').length, 1);
-  assert.equal(document.querySelector('td strong').textContent, 'Passed');
-  assert.equal(document.querySelectorAll('main ul li').length, 2);
-  assert.equal(document.querySelector('pre code').textContent.trim(), '<script>alert(1)</script>');
-  assert.equal(
-    document.querySelectorAll('script, img, iframe, object, embed, form, base').length,
-    0,
-  );
-  assert.equal(document.querySelectorAll('style').length, 1);
-  assert.equal(document.querySelectorAll('[onerror], [onclick], [onload]').length, 0);
-  assert.ok(document.querySelector('meta[name="viewport"]'));
-  const hrefs = [...document.querySelectorAll('a')].map((link) => link.getAttribute('href'));
-  assert.deepEqual(
-    hrefs.sort(),
-    [
-      '#report',
-      '/__local/delivery/evidence/DEMO-1/report?download=1',
-      '/__local/delivery/evidence/DEMO-1/report?raw=1',
-      '/delivery-plan',
-      '/delivery-plan?q=DEMO-1&stage=all',
-      'https://example.com/report',
-    ].sort(),
-  );
-});
+    );
+    assert.equal(
+      document.querySelectorAll('script, img, iframe, object, embed, form, base').length,
+      0,
+    );
+    assert.equal(document.querySelectorAll('style').length, 1);
+    assert.equal(document.querySelectorAll('[onerror], [onclick], [onload]').length, 0);
+    assert.ok(document.querySelector('meta[name="viewport"]'));
+    const hrefs = [...document.querySelectorAll('a')].map((link) => link.getAttribute('href'));
+    assert.deepEqual(
+      hrefs.sort(),
+      [
+        '#report',
+        '/__local/delivery/evidence/DEMO-1/report?download=1',
+        '/__local/delivery/evidence/DEMO-1/report?raw=1',
+        '/delivery-plan',
+        '/delivery-plan?q=DEMO-1&stage=all',
+        'https://example.com/report',
+      ].sort(),
+    );
+  },
+);
 
 test('restricts evidence to local authorized requests and approved Markdown paths', async (t) => {
   const { request, path, plan, file, directory } = await evidenceFixture(t);
@@ -374,7 +392,10 @@ test('restricts evidence to local authorized requests and approved Markdown path
     assert.equal((await request('GET', path)).status, 404, invalid);
   }
   await writeFile(resolve(directory, 'private.md'), 'Not attached');
-  await symlink(resolve(directory, 'private.md'), resolve(directory, 'src/delivery-plan/evidence/escape.md'));
+  await symlink(
+    resolve(directory, 'private.md'),
+    resolve(directory, 'src/delivery-plan/evidence/escape.md'),
+  );
   plan.workItems[0].evidence[0].path = 'src/delivery-plan/evidence/escape.md';
   await writeFile(file, JSON.stringify(plan));
   assert.equal((await request('GET', path)).status, 404);
@@ -384,7 +405,7 @@ test('restricts evidence to local authorized requests and approved Markdown path
   assert.equal((await request('GET', path)).status, 404);
 });
 
-test('handles missing and oversized evidence without exposing private disk locations', async (t) => {
+test('handles missing and oversized evidence without exposing private disk paths', async (t) => {
   const { request, path, directory } = await evidenceFixture(t);
   const file = resolve(directory, 'src/delivery-plan/evidence/report.md');
   await rm(file);
@@ -395,24 +416,49 @@ test('handles missing and oversized evidence without exposing private disk locat
   assert.equal((await request('GET', path)).status, 413);
 });
 
-test('staff workflow permissions deny testers, constrain admins and protect reviewer sign-off', async (t) => {
-  let permissions = { deliveryRead: false };
-  const { request, item, file } = await fixture(t, async () => permissions);
-  assert.equal((await request()).status, 403);
-  permissions = { deliveryRead: true, deliveryCreate: true, deliveryReview: true };
-  let current = await request();
-  assert.equal((await request('POST', '/work-items', { revision: current.body.revision, item: { ...item, statusId: 'done' } })).status, 403);
-  const created = await request('POST', '/work-items', { revision: current.body.revision, item: { ...item, statusId: 'review' } });
-  assert.equal(created.status, 201);
-  const plan = JSON.parse(await readFile(file, 'utf8'));
-  const saved = plan.workItems.find(row => row.title === item.title);
-  current = await request();
-  const payload = { revision: current.body.revision, item: { ...item, statusId: 'done' } };
-  assert.equal((await request('PUT', `/work-items/${saved.id}`, payload)).status, 403);
-  permissions = { deliveryRead: true, deliveryDone: true };
-  assert.equal((await request('POST', '/work-items', { revision: current.body.revision, item })).status, 403);
-  assert.equal((await request('PUT', `/work-items/${saved.id}`, { ...payload, item: { ...payload.item, title: 'Unapproved content rewrite' } })).status, 403);
-  assert.equal((await request('PUT', `/work-items/${saved.id}`, payload)).status, 200);
-  permissions = { deliveryRead: false };
-  assert.equal((await request()).status, 403);
-});
+test(
+  'staff workflow permissions deny testers, constrain admins and protect reviewer ' + 'sign-off',
+  async (t) => {
+    let permissions = { deliveryRead: false };
+    const { request, item, file } = await fixture(t, async () => permissions);
+    assert.equal((await request()).status, 403);
+    permissions = { deliveryRead: true, deliveryCreate: true, deliveryReview: true };
+    let current = await request();
+    assert.equal(
+      (
+        await request('POST', '/work-items', {
+          revision: current.body.revision,
+          item: { ...item, statusId: 'done' },
+        })
+      ).status,
+      403,
+    );
+    const created = await request('POST', '/work-items', {
+      revision: current.body.revision,
+      item: { ...item, statusId: 'review' },
+    });
+    assert.equal(created.status, 201);
+    const plan = JSON.parse(await readFile(file, 'utf8'));
+    const saved = plan.workItems.find((row) => row.title === item.title);
+    current = await request();
+    const payload = { revision: current.body.revision, item: { ...item, statusId: 'done' } };
+    assert.equal((await request('PUT', `/work-items/${saved.id}`, payload)).status, 403);
+    permissions = { deliveryRead: true, deliveryDone: true };
+    assert.equal(
+      (await request('POST', '/work-items', { revision: current.body.revision, item })).status,
+      403,
+    );
+    assert.equal(
+      (
+        await request('PUT', `/work-items/${saved.id}`, {
+          ...payload,
+          item: { ...payload.item, title: 'Unapproved content rewrite' },
+        })
+      ).status,
+      403,
+    );
+    assert.equal((await request('PUT', `/work-items/${saved.id}`, payload)).status, 200);
+    permissions = { deliveryRead: false };
+    assert.equal((await request()).status, 403);
+  },
+);

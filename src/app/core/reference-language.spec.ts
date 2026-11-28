@@ -55,7 +55,9 @@ describe('ReferenceLanguageService', () => {
 
   it('follows a choice made in another tab', () => {
     const service = TestBed.inject(ReferenceLanguageService);
-    window.dispatchEvent(new StorageEvent('storage', { key: REFERENCE_LANGUAGE_KEY, newValue: 'go' }));
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: REFERENCE_LANGUAGE_KEY, newValue: 'go' }),
+    );
     expect(service.selected()).toBe('go');
   });
 });

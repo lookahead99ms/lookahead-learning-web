@@ -17,12 +17,16 @@ import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 let menuInstance = 0;
 
 /**
- * Admin navigation on the left; a separate documentation-only instance on the right. The host element is the page's navigation column.
+ * Admin navigation on the left; a separate documentation-only instance on the right. The host
+ * element is the page's navigation column.
  */
 @Component({
   selector: 'app-author-admin-menu',
   imports: [SidebarToggle],
-  host: { '[class.sidebar-collapsed]': '!open()', '[class.documentation-rail]': 'documentationOnly()' },
+  host: {
+    '[class.sidebar-collapsed]': '!open()',
+    '[class.documentation-rail]': 'documentationOnly()',
+  },
   templateUrl: './author-admin-menu.html',
   styleUrl: './author-admin-menu.css',
 })
@@ -30,10 +34,11 @@ export class AuthorAdminMenu {
   readonly documentationOnly = input(false);
   readonly pageId = input<AuthorWorkspacePageId | null>(null);
   /**
-   * The left Admin rail is always open (owner, 2026-11-09). Only the documentation-only rail on the right folds, and on a
-   * narrow screen it starts folded so the page content comes first.
+   * The left Admin rail is always open (owner, 2026-11-09). Only the documentation-only rail on the
+   * right folds, and on a narrow screen it starts folded so the page content comes first.
    */
-  private readonly narrow = !!inject(DOCUMENT).defaultView?.matchMedia?.('(max-width: 900px)').matches;
+  private readonly narrow =
+    !!inject(DOCUMENT).defaultView?.matchMedia?.('(max-width: 900px)').matches;
   protected readonly open = linkedSignal(() => !this.documentationOnly() || !this.narrow);
   protected readonly instance = ++menuInstance;
   protected readonly contentId = `author-admin-menu-${this.instance}`;
@@ -41,10 +46,13 @@ export class AuthorAdminMenu {
   private readonly accounts = inject(StudyPlanAccount);
   protected readonly workspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
   protected readonly documentationGroups = computed(() => {
-    const groupId = this.pageId() === 'docs'
-      ? documentationLandingGroup(this.document.location.search, this.document.location.hash)
-      : authorDocumentationGroup(this.pageId())?.id;
-    return visibleDocumentationGroups(this.accounts.account()).filter(group => group.id === groupId);
+    const groupId =
+      this.pageId() === 'docs'
+        ? documentationLandingGroup(this.document.location.search, this.document.location.hash)
+        : authorDocumentationGroup(this.pageId())?.id;
+    return visibleDocumentationGroups(this.accounts.account()).filter(
+      (group) => group.id === groupId,
+    );
   });
   protected readonly onDocumentationPage = computed(() => isAuthorDocumentationPage(this.pageId()));
 

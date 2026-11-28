@@ -74,12 +74,20 @@ export class Search implements OnInit, AfterViewInit {
   protected readonly reviewUnit = signal('');
   protected readonly reviewContext = computed(() => {
     if (this.selectedDiscoveryKind() !== 'practice') return null;
-    const item = this.questions().find((item) => item.path === this.selectedPath()
-      && item.courseId === this.selectedCourseId() && item.moduleId === this.selectedModuleId());
+    const item = this.questions().find(
+      (item) =>
+        item.path === this.selectedPath() &&
+        item.courseId === this.selectedCourseId() &&
+        item.moduleId === this.selectedModuleId(),
+    );
     if (!item) return null;
     const unit = this.reviewUnit() || item.moduleId;
     if (!/^[a-zA-Z0-9_-]+$/.test(unit)) return null;
-    return { title: item.moduleTitle, route: ['/', item.path, item.courseId], fragment: 'unit-' + unit };
+    return {
+      title: item.moduleTitle,
+      route: ['/', item.path, item.courseId],
+      fragment: 'unit-' + unit,
+    };
   });
   protected readonly query = signal('');
   protected readonly submittedQuery = signal('');
@@ -109,12 +117,7 @@ export class Search implements OnInit, AfterViewInit {
   protected readonly error = signal('');
   private readonly selectedAnswerRequest = effect(() => {
     const selected = this.selectedPreview();
-    if (
-      !selected ||
-      this.loading() ||
-      !this.canPreviewAnswer(selected)
-    )
-      return;
+    if (!selected || this.loading() || !this.canPreviewAnswer(selected)) return;
     untracked(() => this.loadQuestion(selected));
   });
   protected readonly selectedFilterCount = computed(
@@ -301,7 +304,9 @@ export class Search implements OnInit, AfterViewInit {
     return this.groups()
       .map((group) => ({
         ...group,
-        results: group.results.filter((result) => this.resultKey(result) !== this.resultKey(selected)),
+        results: group.results.filter(
+          (result) => this.resultKey(result) !== this.resultKey(selected),
+        ),
       }))
       .filter((group) => group.results.length > 0);
   });
@@ -314,7 +319,9 @@ export class Search implements OnInit, AfterViewInit {
   // signed-out visitor cannot reveal every item one click at a time (user decision, 2026-11-02).
   private readonly firstRenderedResult = computed(() => this.groups()[0]?.results[0] ?? null);
 
-  /** Signed-out visitors read the text of public items and of the first result only (2026-11-02). */
+  /**
+   * Signed-out visitors read the text of public items and of the first result only (2026-11-02).
+   */
   protected showsText(result: SearchDocument): boolean {
     if (!this.signedOut() || result.access.public === true) return true;
     const first = this.firstRenderedResult();
@@ -373,8 +380,14 @@ export class Search implements OnInit, AfterViewInit {
     const filters = this.modeFilterRow?.nativeElement;
     if (!page || !heading) return;
     const headingMargin = Number.parseFloat(getComputedStyle(heading).marginBottom) || 0;
-    page.style.setProperty('--search-heading-stack', `${Math.ceil(heading.getBoundingClientRect().height + headingMargin)}px`);
-    page.style.setProperty('--search-filter-height', `${Math.ceil(filters?.getBoundingClientRect().height ?? 0)}px`);
+    page.style.setProperty(
+      '--search-heading-stack',
+      `${Math.ceil(heading.getBoundingClientRect().height + headingMargin)}px`,
+    );
+    page.style.setProperty(
+      '--search-filter-height',
+      `${Math.ceil(filters?.getBoundingClientRect().height ?? 0)}px`,
+    );
   }
 
   protected readonly results = computed(() => {
@@ -402,7 +415,9 @@ export class Search implements OnInit, AfterViewInit {
 
   protected readonly selectedPreview = computed(() => {
     const id = this.selectedPreviewId();
-    return id ? (this.visibleResults().find((result) => this.resultKey(result) === id) ?? null) : null;
+    return id
+      ? (this.visibleResults().find((result) => this.resultKey(result) === id) ?? null)
+      : null;
   });
 
   protected readonly hasMoreResults = computed(
@@ -715,8 +730,10 @@ export class Search implements OnInit, AfterViewInit {
     const scrollY = this.previewScrollY;
     requestAnimationFrame(() => {
       window.scrollTo({ top: scrollY, behavior: 'auto' });
-      const trigger = [...document.querySelectorAll<HTMLElement>('.result-group .summary-toggle')]
-        .find((button) => button.dataset['resultId'] === selectedId) ?? this.previewTrigger;
+      const trigger =
+        [...document.querySelectorAll<HTMLElement>('.result-group .summary-toggle')].find(
+          (button) => button.dataset['resultId'] === selectedId,
+        ) ?? this.previewTrigger;
       trigger?.focus({ preventScroll: true });
     });
   }
@@ -725,9 +742,11 @@ export class Search implements OnInit, AfterViewInit {
   private previewScrollY = 0;
 
   private isCompactViewport(): boolean {
-    return typeof window !== 'undefined' &&
+    return (
+      typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
-      window.matchMedia('(max-width: 800px)').matches;
+      window.matchMedia('(max-width: 800px)').matches
+    );
   }
 
   private writeSelectionUrl(id: string | null, replaceUrl = true): void {
@@ -835,9 +854,15 @@ export class Search implements OnInit, AfterViewInit {
   protected resultRowSummary(result: SearchDocument): string {
     if (result.contentType === 'q-and-a' || !this.showsText(result)) return '';
     const description = this.preview(result);
-    return description.localeCompare(this.resultCardTitle(result).replace(/\s+/g, ' ').trim(), undefined, {
-      sensitivity: 'base',
-    }) === 0 ? '' : description;
+    return description.localeCompare(
+      this.resultCardTitle(result).replace(/\s+/g, ' ').trim(),
+      undefined,
+      {
+        sensitivity: 'base',
+      },
+    ) === 0
+      ? ''
+      : description;
   }
 
   protected summaryText(result: SearchDocument): string {
@@ -946,12 +971,18 @@ export class Search implements OnInit, AfterViewInit {
     const kind = this.discoveryKind(result);
     if (kind === 'practice') {
       switch (this.practiceFormat(result)) {
-        case 'explain': return result.contentType === 'q-and-a' ? 'Interview question' : 'Practice question';
-        case 'solve': return 'Coding practice';
-        case 'design': return 'Design practice';
-        case 'debug': return 'Debug scenario';
-        case 'rehearse': return 'Rehearsal';
-        default: return 'Practice';
+        case 'explain':
+          return result.contentType === 'q-and-a' ? 'Interview question' : 'Practice question';
+        case 'solve':
+          return 'Coding practice';
+        case 'design':
+          return 'Design practice';
+        case 'debug':
+          return 'Debug scenario';
+        case 'rehearse':
+          return 'Rehearsal';
+        default:
+          return 'Practice';
       }
     }
     return kind === 'tool' ? 'Learning tool' : `${kind[0].toUpperCase()}${kind.slice(1)}`;

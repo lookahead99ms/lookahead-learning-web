@@ -172,7 +172,8 @@ function problemDetail(): DsaProblemV2 {
     practice: {
       statement: {
         prompt:
-          'Given an integer array, return the first repeated value. Return -1 when no value repeats. Later sentences stay on the problem page.',
+          'Given an integer array, return the first repeated value. Return -1 when no ' +
+          'value repeats. Later sentences stay on the problem page.',
         inputs: [],
         output: '',
         constraints: [],
@@ -238,13 +239,16 @@ describe('Hands-On DSA route contracts', () => {
       .join('\n')
       .replace(/\s+/g, ' ');
     expect(css).toMatch(
-      /\.practice-hero\[[^\]]+\] h1\[[^\]]+\] \{[^}]*font-size: clamp\(2rem, 2\.2rem \+ 1\.65vw, 3\.8rem\);/,
+      new RegExp(
+        '\\.practice-hero\\[[^\\]]+\\] h1\\[[^\\]]+\\] \\{[^}]*font-size: clamp\\(2rem, ' +
+          '2\\.2rem \\+ 1\\.65vw, 3\\.8rem\\);',
+      ),
     );
     expect(css).toContain('font-size: clamp(1rem, 0.95rem + 0.25vw, 1.18rem);');
     expect(css).not.toContain('clamp(2rem, 4vw, 3.8rem)');
   });
 
-  it('uses a semantic table with both stable orders and hidden pattern names by default', async () => {
+  it('uses a semantic table with both stable orders and pattern names hidden', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
     // The page title is a name, not a statement.
@@ -263,9 +267,15 @@ describe('Hands-On DSA route contracts', () => {
       'Curriculum status',
     );
     expect(harness.routeNativeElement!.querySelector('[data-review-status]')).toBeNull();
-    // The hero counts come from the catalog: distinct problems, and only patterns that have problems.
-    const hero = harness.routeNativeElement!.querySelector('.practice-hero > p')!.textContent!.replace(/\s+/g, ' ').trim();
-    expect(hero.startsWith('2 problems across 2 patterns. Start from the pattern you just learned')).toBe(true);
+    // The hero counts come from the catalog: distinct problems, and only patterns that have
+    // problems.
+    const hero = harness
+      .routeNativeElement!.querySelector('.practice-hero > p')!
+      .textContent!.replace(/\s+/g, ' ')
+      .trim();
+    expect(
+      hero.startsWith('2 problems across 2 patterns. Start from the pattern you just learned'),
+    ).toBe(true);
     expect(hero).toContain('problems that make you adapt the same reasoning.');
     expect(harness.routeNativeElement!.querySelector('details')).toBeNull();
     expect(
@@ -312,50 +322,60 @@ describe('Hands-On DSA route contracts', () => {
     expect(harness.routeNativeElement!.querySelector('.ranked-problem-number')).toBeNull();
   });
 
-  it('opens a pattern from the course card, opens a problem, and returns via the DSA breadcrumb', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/algorithmic-patterns', Course);
-    // Course pages show one card per unit; a unit with a lesson opens the lesson,
-    // and pattern practice is reached through the filtered Hands-On DSA library.
-    const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('#unit-hashing')!;
-    expect(card.getAttribute('href')).toBe('/learn/algorithmic-patterns/hashing-lesson');
-    expect(harness.routeNativeElement!.querySelector('.learning-action.practice')).toBeNull();
-    await harness.navigateByUrl('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing');
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe(
-      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
-    );
-    // This test covers the legacy question shell after proving the indexed
-    // catalog route. Canonical fast-path behavior has focused tests below.
-    content.getHandsOnDsaIndex.mockReturnValueOnce(of(emptyPracticeIndex()));
-    harness.routeNativeElement!.querySelector<HTMLAnchorElement>('a.problem-link')!.click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe(
-      `/learn/algorithmic-patterns/hashing-complete?pattern=${patternContextToken('algorithmic-patterns:hashing')}&returnTo=%2Flearn%2Fhands-on-dsa%3Fpattern%3D${patternContextToken('algorithmic-patterns:hashing')}`,
-    );
-    const breadcrumbs = [
-      ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
-    ];
-    const libraryBreadcrumb = breadcrumbs.find(
-      (link) => link.textContent.trim() === 'Hands-On DSA',
-    )!;
-    const patternBreadcrumb = breadcrumbs.find((link) =>
-      link.getAttribute('href')?.includes(`pattern=${patternContextToken('algorithmic-patterns:hashing')}`),
-    )!;
-    expect(libraryBreadcrumb.getAttribute('href')).toBe('/learn/hands-on-dsa');
-    expect(patternBreadcrumb.getAttribute('href')).toBe(
-      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
-    );
-    expect(
-      harness.routeNativeElement!.querySelector('.breadcrumbs [aria-current="page"]')!.textContent,
-    ).toBe('hashing-complete');
-    patternBreadcrumb.click();
-    await harness.fixture.whenStable();
-    expect(TestBed.inject(Router).url).toBe(
-      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
-    );
-  });
+  it(
+    'opens a pattern from the course card, opens a problem, and returns via the DSA ' +
+      'breadcrumb',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/learn/algorithmic-patterns', Course);
+      // Course pages show one card per unit; a unit with a lesson opens the lesson,
+      // and pattern practice is reached through the filtered Hands-On DSA library.
+      const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('#unit-hashing')!;
+      expect(card.getAttribute('href')).toBe('/learn/algorithmic-patterns/hashing-lesson');
+      expect(harness.routeNativeElement!.querySelector('.learning-action.practice')).toBeNull();
+      await harness.navigateByUrl('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing');
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe(
+        `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
+      );
+      // This test covers the legacy question shell after proving the indexed
+      // catalog route. Canonical fast-path behavior has focused tests below.
+      content.getHandsOnDsaIndex.mockReturnValueOnce(of(emptyPracticeIndex()));
+      harness.routeNativeElement!.querySelector<HTMLAnchorElement>('a.problem-link')!.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe(
+        `/learn/algorithmic-patterns/hashing-complete?pattern=` +
+          `${patternContextToken('algorithmic-patterns:hashing')}` +
+          `&returnTo=%2Flearn%2Fhands-on-dsa%3Fpattern%3D` +
+          `${patternContextToken('algorithmic-patterns:hashing')}`,
+      );
+      const breadcrumbs = [
+        ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
+      ];
+      const libraryBreadcrumb = breadcrumbs.find(
+        (link) => link.textContent.trim() === 'Hands-On DSA',
+      )!;
+      const patternBreadcrumb = breadcrumbs.find((link) =>
+        link
+          .getAttribute('href')
+          ?.includes(`pattern=${patternContextToken('algorithmic-patterns:hashing')}`),
+      )!;
+      expect(libraryBreadcrumb.getAttribute('href')).toBe('/learn/hands-on-dsa');
+      expect(patternBreadcrumb.getAttribute('href')).toBe(
+        `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
+      );
+      expect(
+        harness.routeNativeElement!.querySelector('.breadcrumbs [aria-current="page"]')!
+          .textContent,
+      ).toBe('hashing-complete');
+      patternBreadcrumb.click();
+      await harness.fixture.whenStable();
+      expect(TestBed.inject(Router).url).toBe(
+        `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
+      );
+    },
+  );
 
   it('exposes a clear-filter action and restores the complete ordered table', async () => {
     const harness = await RouterTestingHarness.create();
@@ -389,78 +409,85 @@ describe('Hands-On DSA route contracts', () => {
       harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
     expect(selectedPattern.value).toBe('algorithmic-patterns:two-pointers');
     expect(selectedPattern.selectedOptions[0].textContent?.trim()).toBe('02 · two-pointers');
-    expect(
-      harness.routeNativeElement!.querySelector('#practice-results h2')?.textContent,
-    ).toBe('two-pointers problem set');
+    expect(harness.routeNativeElement!.querySelector('#practice-results h2')?.textContent).toBe(
+      'two-pointers problem set',
+    );
     expect(harness.routeNativeElement!.querySelectorAll('.problem-table-row')).toHaveLength(1);
   });
 
-  it('exposes the full pattern catalog in one labeled native selector, including its last entry', async () => {
-    const template = catalog.groups[0];
-    catalog.groups = Array.from({ length: 44 }, (_, index) => ({
-      ...template,
-      id: `algorithmic-patterns:pattern-${index + 1}`,
-      title: `Pattern ${index + 1}`,
-      preparationOrder: index + 1,
-    }));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:pattern-44',
-      HandsOnDsa,
-    );
-    const select =
-      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
-    expect(select.labels?.[0].textContent).toContain('Practice pattern');
-    expect(select.options).toHaveLength(45);
-    expect(select.options[0].textContent).toBe('All patterns');
-    expect([...select.options].slice(1).map((option) => option.value)).toEqual(
-      catalog.groups.map((group) => group.id),
-    );
-    expect(select.value).toBe(catalog.groups[43].id);
-    expect(select.selectedOptions[0].textContent?.trim()).toBe('44 · Pattern 44');
-    expect(
-      harness.routeNativeElement!.querySelector('#practice-results h2')?.textContent,
-    ).toBe('Pattern 44 problem set');
-  });
+  it(
+    'exposes the full pattern catalog in one labeled native selector, including its last ' +
+      'entry',
+    async () => {
+      const template = catalog.groups[0];
+      catalog.groups = Array.from({ length: 44 }, (_, index) => ({
+        ...template,
+        id: `algorithmic-patterns:pattern-${index + 1}`,
+        title: `Pattern ${index + 1}`,
+        preparationOrder: index + 1,
+      }));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?pattern=algorithmic-patterns:pattern-44',
+        HandsOnDsa,
+      );
+      const select =
+        harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
+      expect(select.labels?.[0].textContent).toContain('Practice pattern');
+      expect(select.options).toHaveLength(45);
+      expect(select.options[0].textContent).toBe('All patterns');
+      expect([...select.options].slice(1).map((option) => option.value)).toEqual(
+        catalog.groups.map((group) => group.id),
+      );
+      expect(select.value).toBe(catalog.groups[43].id);
+      expect(select.selectedOptions[0].textContent?.trim()).toBe('44 · Pattern 44');
+      expect(harness.routeNativeElement!.querySelector('#practice-results h2')?.textContent).toBe(
+        'Pattern 44 problem set',
+      );
+    },
+  );
 
-  it('changes and clears the pattern while retaining the other filters and resetting pagination', async () => {
-    catalog = paginatedIndex(80);
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
-      '/learn/hands-on-dsa?sort=interview-rank&scope=365&difficulty=Beginner&q=Problem&page=2',
-      HandsOnDsa,
-    );
-    const select =
-      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
-    select.focus();
-    select.value = catalog.groups[0].id;
-    select.dispatchEvent(new Event('change'));
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    let params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
-    expect(params.get('pattern')).toBe(patternContextToken(catalog.groups[0].id));
-    expect(params.has('page')).toBe(false);
-    expect(document.activeElement).toBe(select);
-    const allPatterns = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-      '.clear-pattern-filter',
-    )!;
-    expect(allPatterns.textContent?.trim()).toBe('× Clear filter');
-    allPatterns.click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
-    expect(params.has('pattern')).toBe(false);
-    expect(params.has('page')).toBe(false);
-    expect(Object.fromEntries(params)).toEqual({
-      sort: 'interview-rank',
-      scope: '365',
-      difficulty: 'Beginner',
-      q: 'Problem',
-    });
-    expect(select.value).toBe('');
-  });
+  it(
+    'changes and clears the pattern while retaining the other filters and resetting ' +
+      'pagination',
+    async () => {
+      catalog = paginatedIndex(80);
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?sort=interview-rank&scope=365&difficulty=Beginner&q=Problem&page=2',
+        HandsOnDsa,
+      );
+      const select =
+        harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
+      select.focus();
+      select.value = catalog.groups[0].id;
+      select.dispatchEvent(new Event('change'));
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      let params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
+      expect(params.get('pattern')).toBe(patternContextToken(catalog.groups[0].id));
+      expect(params.has('page')).toBe(false);
+      expect(document.activeElement).toBe(select);
+      const allPatterns =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.clear-pattern-filter')!;
+      expect(allPatterns.textContent?.trim()).toBe('× Clear filter');
+      allPatterns.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
+      expect(params.has('pattern')).toBe(false);
+      expect(params.has('page')).toBe(false);
+      expect(Object.fromEntries(params)).toEqual({
+        sort: 'interview-rank',
+        scope: '365',
+        difficulty: 'Beginner',
+        q: 'Problem',
+      });
+      expect(select.value).toBe('');
+    },
+  );
 
-  it('restores tier and sort selections from the URL and preserves them across filters', async () => {
+  it('restores tier and sort from the URL and preserves them across filters', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
       '/learn/hands-on-dsa?scope=150&sort=interview-rank&difficulty=Beginner&q=complete',
@@ -523,7 +550,8 @@ describe('Hands-On DSA route contracts', () => {
     harness.routeNativeElement!.querySelector<HTMLButtonElement>('.clear-catalog-filters')!.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
-    // The sort is how the list is shown, not a filter (user, 2026-10-06): clearing filters keeps it.
+    // The sort is how the list is shown, not a filter (user, 2026-10-06): clearing filters keeps
+    // it.
     expect(TestBed.inject(Router).url).toBe('/learn/hands-on-dsa?sort=interview-rank');
     expect(harness.routeNativeElement!.querySelectorAll('.problem-table-row')).toHaveLength(2);
     expect(harness.routeNativeElement!.querySelector('.clear-catalog-filters')).toBeNull();
@@ -552,7 +580,8 @@ describe('Hands-On DSA route contracts', () => {
   // budget under instrumented, parallel CI; ordinary tests keep the default timeout.
   it('visits 782 unique problems across 32 replacement pages, ending with seven', async () => {
     catalog = paginatedIndex(782);
-    // The same canonical problem may be placed in another pattern; it must not consume another slot.
+    // The same canonical problem may be placed in another pattern; it must not consume another
+    // slot.
     catalog.groups.push({
       ...catalog.groups[0],
       id: 'second-pattern',
@@ -613,7 +642,7 @@ describe('Hands-On DSA route contracts', () => {
     },
   );
 
-  it('clamps an out-of-range page after loading and removes pagination for zero matches', async () => {
+  it('clamps an out-of-range page after loading; no pagination for zero matches', async () => {
     const loading = new Subject<HandsOnDsaIndex>();
     content.getHandsOnDsaIndex.mockReturnValueOnce(loading);
     const harness = await RouterTestingHarness.create();
@@ -638,106 +667,124 @@ describe('Hands-On DSA route contracts', () => {
     expect(harness.routeNativeElement!.textContent).toContain('No matching practice yet');
   });
 
-  it('keeps native page links and problem return links filtered, resetting page for membership and ordering changes', async () => {
-    catalog = paginatedIndex(80);
-    const harness = await RouterTestingHarness.create();
-    const context =
-      `sort=study-order&scope=365&difficulty=Beginner&q=Problem&pattern=${patternContextToken('algorithmic-patterns:hashing')}`;
-    await harness.navigateByUrl('/learn/hands-on-dsa?' + context + '&page=2', HandsOnDsa);
-    const next = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.pagination-next')!;
-    expect(next.getAttribute('href')).toBe('/learn/hands-on-dsa?' + context + '&page=3');
-    const row = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.problem-table-row')!;
-    expect(
-      new URL(row.querySelector<HTMLAnchorElement>('.problem-link')!.href).searchParams.get(
-        'returnTo',
-      ),
-    ).toBe('/learn/hands-on-dsa?' + context + '&page=2');
-    const pattern =
-      harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.clear-pattern-filter')!;
-    expect(pattern.getAttribute('href')).not.toContain('page=');
-    harness
-      .routeNativeElement!.querySelector<HTMLButtonElement>('[data-sort-column="interview"]')!
-      .click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).not.toContain('page=');
-    expect(TestBed.inject(Router).url).toContain('sort=interview-rank');
-    expect(TestBed.inject(Router).url).toContain('q=Problem');
-    expect(
-      harness.routeNativeElement!.querySelector('.problem-interview-order')!.textContent?.trim(),
-    ).toBe('1');
-  });
+  it(
+    'keeps native page links and problem return links filtered, resetting page for ' +
+      'membership and ordering changes',
+    async () => {
+      catalog = paginatedIndex(80);
+      const harness = await RouterTestingHarness.create();
+      const context =
+        `sort=study-order&scope=365&difficulty=Beginner&q=Problem&pattern=` +
+        `${patternContextToken('algorithmic-patterns:hashing')}`;
+      await harness.navigateByUrl('/learn/hands-on-dsa?' + context + '&page=2', HandsOnDsa);
+      const next =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.pagination-next')!;
+      expect(next.getAttribute('href')).toBe('/learn/hands-on-dsa?' + context + '&page=3');
+      const row =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.problem-table-row')!;
+      expect(
+        new URL(row.querySelector<HTMLAnchorElement>('.problem-link')!.href).searchParams.get(
+          'returnTo',
+        ),
+      ).toBe('/learn/hands-on-dsa?' + context + '&page=2');
+      const pattern =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.clear-pattern-filter')!;
+      expect(pattern.getAttribute('href')).not.toContain('page=');
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>('[data-sort-column="interview"]')!
+        .click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).not.toContain('page=');
+      expect(TestBed.inject(Router).url).toContain('sort=interview-rank');
+      expect(TestBed.inject(Router).url).toContain('q=Problem');
+      expect(
+        harness.routeNativeElement!.querySelector('.problem-interview-order')!.textContent?.trim(),
+      ).toBe('1');
+    },
+  );
 
-  it('focuses the updated range only after an ordinary page activation and router scrolling', async () => {
-    catalog = paginatedIndex(80);
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/hands-on-dsa?sort=study-order', HandsOnDsa);
-    const results = harness.routeNativeElement!.querySelector<HTMLElement>('#practice-results')!;
-    const focus = vi.spyOn(results, 'focus');
-    const scroll = vi.fn();
-    Object.defineProperty(results, 'scrollIntoView', { value: scroll });
-    const frames: FrameRequestCallback[] = [];
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
-      frames.push(callback);
-      return frames.length;
-    });
-    const router = TestBed.inject(Router);
-    const events = router.events as Subject<unknown>;
-    const next = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.pagination-next')!;
-    next.dispatchEvent(new MouseEvent('click', { button: 0, ctrlKey: true }));
-    events.next(new Scroll(new NavigationEnd(10, '', ''), null, null));
-    for (const frame of frames.splice(0)) frame(0);
-    expect(focus).not.toHaveBeenCalled();
-    next.click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(focus).not.toHaveBeenCalled();
-    events.next(new Scroll(new NavigationEnd(11, router.url, router.url), null, null));
-    for (const frame of frames.splice(0)) frame(0);
-    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
-    expect(scroll).toHaveBeenCalledWith({ block: 'start', behavior: 'auto' });
-    expect(results.textContent).toContain('26–50 of 80 problems');
-    events.next(new Scroll(new NavigationEnd(12, '', ''), [0, 500], null));
-    for (const frame of frames.splice(0)) frame(0);
-    expect(focus).toHaveBeenCalledTimes(1);
-  });
+  it(
+    'focuses the updated range only after an ordinary page activation and router ' + 'scrolling',
+    async () => {
+      catalog = paginatedIndex(80);
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/learn/hands-on-dsa?sort=study-order', HandsOnDsa);
+      const results = harness.routeNativeElement!.querySelector<HTMLElement>('#practice-results')!;
+      const focus = vi.spyOn(results, 'focus');
+      const scroll = vi.fn();
+      Object.defineProperty(results, 'scrollIntoView', { value: scroll });
+      const frames: FrameRequestCallback[] = [];
+      vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+        frames.push(callback);
+        return frames.length;
+      });
+      const router = TestBed.inject(Router);
+      const events = router.events as Subject<unknown>;
+      const next =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.pagination-next')!;
+      next.dispatchEvent(new MouseEvent('click', { button: 0, ctrlKey: true }));
+      events.next(new Scroll(new NavigationEnd(10, '', ''), null, null));
+      for (const frame of frames.splice(0)) frame(0);
+      expect(focus).not.toHaveBeenCalled();
+      next.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(focus).not.toHaveBeenCalled();
+      events.next(new Scroll(new NavigationEnd(11, router.url, router.url), null, null));
+      for (const frame of frames.splice(0)) frame(0);
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+      expect(scroll).toHaveBeenCalledWith({ block: 'start', behavior: 'auto' });
+      expect(results.textContent).toContain('26–50 of 80 problems');
+      events.next(new Scroll(new NavigationEnd(12, '', ''), [0, 500], null));
+      for (const frame of frames.splice(0)) frame(0);
+      expect(focus).toHaveBeenCalledTimes(1);
+    },
+  );
 
-  it('opens the legacy Pattern URL as the grouped view, with the whole pattern, its lesson link and no pages', async () => {
-    catalog = paginatedIndex(40);
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
-      '/learn/hands-on-dsa?sort=pattern-order&pattern=algorithmic-patterns:hashing&page=2&patterns=show',
-      HandsOnDsa,
-    );
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    const root = harness.routeNativeElement!;
-    // The old grouping URL is rewritten in place to the grouped view, keeping the pattern.
-    expect(Object.fromEntries(searchParams(TestBed.inject(Router)))).toEqual({
-      pattern: patternContextToken('algorithmic-patterns:hashing'),
-      patterns: 'show',
-      view: 'groups',
-    });
-    // The result line names the chosen pattern and says how its problems are sorted.
-    expect(root.querySelector('.practice-result-range')!.textContent!.trim()).toBe(
-      '40 problems in hashing · sorted by learning order, first to last',
-    );
-    expect(root.querySelector('details')).toBeNull();
-    expect(root.querySelector('#pattern-detail-title')!.textContent!.replace(/\s+/g, ' ').trim()).toBe(
-      '01 hashing',
-    );
-    const lesson = root.querySelector<HTMLAnchorElement>('.pattern-detail .lesson-link')!;
-    expect(lesson.getAttribute('href')).toBe('/learn/algorithmic-patterns/hashing-lesson');
-    expect(lesson.textContent!.trim()).toBe('hashing lesson');
-    // No paging inside a pattern: all 40 problems, in learning order, and no page links.
-    expect(root.querySelectorAll('.pattern-problem-row')).toHaveLength(40);
-    expect(root.querySelector('.pattern-problem-row .problem-link')!.textContent).toBe('Problem 1');
-    expect(root.querySelector('.problem-pagination')).toBeNull();
-    expect(root.querySelector('[data-view="groups"]')!.getAttribute('aria-checked')).toBe('true');
-    expect(root.querySelector('[data-view="all"]')!.getAttribute('aria-checked')).toBe('false');
-  });
+  it(
+    'opens the legacy Pattern URL as the grouped view, with the whole pattern, its lesson ' +
+      'link and no pages',
+    async () => {
+      catalog = paginatedIndex(40);
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?sort=pattern-order&pattern=algorithmic-patterns:hashing' +
+          '&page=2&patterns=show',
+        HandsOnDsa,
+      );
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      const root = harness.routeNativeElement!;
+      // The old grouping URL is rewritten in place to the grouped view, keeping the pattern.
+      expect(Object.fromEntries(searchParams(TestBed.inject(Router)))).toEqual({
+        pattern: patternContextToken('algorithmic-patterns:hashing'),
+        patterns: 'show',
+        view: 'groups',
+      });
+      // The result line names the chosen pattern and says how its problems are sorted.
+      expect(root.querySelector('.practice-result-range')!.textContent!.trim()).toBe(
+        '40 problems in hashing · sorted by learning order, first to last',
+      );
+      expect(root.querySelector('details')).toBeNull();
+      expect(
+        root.querySelector('#pattern-detail-title')!.textContent!.replace(/\s+/g, ' ').trim(),
+      ).toBe('01 hashing');
+      const lesson = root.querySelector<HTMLAnchorElement>('.pattern-detail .lesson-link')!;
+      expect(lesson.getAttribute('href')).toBe('/learn/algorithmic-patterns/hashing-lesson');
+      expect(lesson.textContent!.trim()).toBe('hashing lesson');
+      // No paging inside a pattern: all 40 problems, in learning order, and no page links.
+      expect(root.querySelectorAll('.pattern-problem-row')).toHaveLength(40);
+      expect(root.querySelector('.pattern-problem-row .problem-link')!.textContent).toBe(
+        'Problem 1',
+      );
+      expect(root.querySelector('.problem-pagination')).toBeNull();
+      expect(root.querySelector('[data-view="groups"]')!.getAttribute('aria-checked')).toBe('true');
+      expect(root.querySelector('[data-view="all"]')!.getAttribute('aria-checked')).toBe('false');
+    },
+  );
 
-  it('lists a problem placed in two patterns under both, counting it once in the total', async () => {
+  it('lists a problem in two patterns under both, counting it once in the total', async () => {
     catalog = paginatedIndex(40);
     const all = catalog.groups[0].problems;
     catalog.groups.push({
@@ -752,7 +799,9 @@ describe('Hands-On DSA route contracts', () => {
     await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&patterns=show', HandsOnDsa);
     const root = harness.routeNativeElement!;
     const counts = () =>
-      [...root.querySelectorAll('[role="option"] .option-count')].map((node) => node.textContent!.trim());
+      [...root.querySelectorAll('[role="option"] .option-count')].map((node) =>
+        node.textContent!.trim(),
+      );
     expect(counts()).toEqual(['30', '20']);
     expect(root.querySelector('.practice-result-range')!.textContent!.trim()).toBe(
       '40 problems in 2 patterns · sorted by learning order, first to last',
@@ -774,7 +823,9 @@ describe('Hands-On DSA route contracts', () => {
     // Rows never repeat the pattern under each title.
     expect(root.querySelector('.pattern-problem-row .problem-pattern')).toBeNull();
     const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
-    expect(new URL(link.href).searchParams.get('pattern')).toBe(patternContextToken('algorithmic-patterns:second'));
+    expect(new URL(link.href).searchParams.get('pattern')).toBe(
+      patternContextToken('algorithmic-patterns:second'),
+    );
   });
 
   it('switches back to All problems without a redundant sort parameter', async () => {
@@ -801,27 +852,33 @@ describe('Hands-On DSA route contracts', () => {
     expect(harness.routeNativeElement!.querySelector('.problem-pagination')).not.toBeNull();
   });
 
-  it('has no quick-sort buttons: the column headers are the only sort, and sorting keeps the view', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
-      '/learn/hands-on-dsa?view=groups&pattern=algorithmic-patterns:two-pointers',
-      HandsOnDsa,
-    );
-    const root = harness.routeNativeElement!;
-    expect(root.querySelector('.quick-sort, [data-quick-sort], .group-patterns')).toBeNull();
-    expect(root.querySelector('.order-switch, [data-pattern-order]')).toBeNull();
-    expect(root.textContent).not.toContain('Group by pattern');
-    root.querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!.click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(Object.fromEntries(searchParams(TestBed.inject(Router)))).toEqual({
-      view: 'groups',
-      pattern: patternContextToken('algorithmic-patterns:two-pointers'),
-      sort: 'interview-rank',
-    });
-    expect(root.querySelector('app-pattern-browser')).not.toBeNull();
-    expect(root.querySelectorAll('.problem-table-row')).toHaveLength(0);
-  });
+  it(
+    'has no quick-sort buttons: the column headers are the only sort, and sorting keeps ' +
+      'the view',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&pattern=algorithmic-patterns:two-pointers',
+        HandsOnDsa,
+      );
+      const root = harness.routeNativeElement!;
+      expect(root.querySelector('.quick-sort, [data-quick-sort], .group-patterns')).toBeNull();
+      expect(root.querySelector('.order-switch, [data-pattern-order]')).toBeNull();
+      expect(root.textContent).not.toContain('Group by pattern');
+      root
+        .querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!
+        .click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(Object.fromEntries(searchParams(TestBed.inject(Router)))).toEqual({
+        view: 'groups',
+        pattern: patternContextToken('algorithmic-patterns:two-pointers'),
+        sort: 'interview-rank',
+      });
+      expect(root.querySelector('app-pattern-browser')).not.toBeNull();
+      expect(root.querySelectorAll('.problem-table-row')).toHaveLength(0);
+    },
+  );
 
   it('maps the legacy difficulty sort URL to ascending difficulty', async () => {
     const harness = await RouterTestingHarness.create();
@@ -839,7 +896,7 @@ describe('Hands-On DSA route contracts', () => {
     expect(button.disabled).toBe(false);
   });
 
-  it('disables redundant difficulty orders and resets one when a difficulty is selected', async () => {
+  it('disables redundant difficulty orders, resetting one when a difficulty is set', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa?sort=difficulty-descending', HandsOnDsa);
     const controls = [
@@ -949,7 +1006,9 @@ describe('Hands-On DSA route contracts', () => {
       HandsOnDsa,
     );
     expect(
-      harness.routeNativeElement!.querySelector('#surprise-problem-description')!.textContent?.trim(),
+      harness
+        .routeNativeElement!.querySelector('#surprise-problem-description')!
+        .textContent?.trim(),
     ).toBe('Opens a problem from your current filters without revealing its pattern.');
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     vi.spyOn(window.crypto, 'getRandomValues').mockImplementation((values) => {
@@ -962,9 +1021,9 @@ describe('Hands-On DSA route contracts', () => {
     expect(navigate.mock.calls.map(([commands]) => commands[2])).toEqual(
       Array(3).fill('two-pointers-complete'),
     );
-    expect(navigate.mock.calls.every(([, extras]) => extras?.queryParams?.['mode'] === 'surprise')).toBe(
-      true,
-    );
+    expect(
+      navigate.mock.calls.every(([, extras]) => extras?.queryParams?.['mode'] === 'surprise'),
+    ).toBe(true);
 
     navigate.mockClear();
     await harness.navigateByUrl('/learn/hands-on-dsa?scope=150', HandsOnDsa);
@@ -1011,7 +1070,10 @@ describe('Hands-On DSA route contracts', () => {
     const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.problem-link')!;
     expect(new URL(link.href).searchParams.get('returnTo')).toContain('patterns=show');
 
-    await harness.navigateByUrl('/learn/hands-on-dsa?patterns=show&difficulty=Beginner', HandsOnDsa);
+    await harness.navigateByUrl(
+      '/learn/hands-on-dsa?patterns=show&difficulty=Beginner',
+      HandsOnDsa,
+    );
     expect(toggle().checked).toBe(false);
     expect(patternLines()).toEqual(['hashing', 'two-pointers']);
 
@@ -1044,70 +1106,82 @@ describe('Hands-On DSA route contracts', () => {
     expect(rows[0].querySelector('.problem-pattern')!.textContent?.trim()).toBe('Sliding Window');
   });
 
-  it('sorts by interview priority or learning order from the headers and says how the list is sorted', async () => {
-    const harness = await RouterTestingHarness.create();
-    const router = TestBed.inject(Router);
-    await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
-    const header = (column: string) =>
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>(`[data-sort-column="${column}"]`)!;
-    const sortOf = (column: string) => header(column).closest('th')!.getAttribute('aria-sort');
-    const range = () =>
-      harness.routeNativeElement!.querySelector('.practice-result-range')!.textContent?.trim();
-    const titles = () =>
-      [...harness.routeNativeElement!.querySelectorAll('.problem-link')].map((link) =>
-        link.textContent?.trim(),
+  it(
+    'sorts by interview priority or learning order from the headers and says how the list ' +
+      'is sorted',
+    async () => {
+      const harness = await RouterTestingHarness.create();
+      const router = TestBed.inject(Router);
+      await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
+      const header = (column: string) =>
+        harness.routeNativeElement!.querySelector<HTMLButtonElement>(
+          `[data-sort-column="${column}"]`,
+        )!;
+      const sortOf = (column: string) => header(column).closest('th')!.getAttribute('aria-sort');
+      const range = () =>
+        harness.routeNativeElement!.querySelector('.practice-result-range')!.textContent?.trim();
+      const titles = () =>
+        [...harness.routeNativeElement!.querySelectorAll('.problem-link')].map((link) =>
+          link.textContent?.trim(),
+        );
+      expect(sortOf('learning')).toBe('ascending');
+      expect(sortOf('interview')).toBe('none');
+      expect(range()).toBe('1–2 of 2 problems · sorted by learning order, first to last');
+
+      header('interview').click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(searchParams(router).get('sort')).toBe('interview-rank');
+      expect(sortOf('learning')).toBe('none');
+      expect(titles()).toEqual(['two-pointers-complete', 'hashing-complete']);
+      expect(range()).toBe(
+        '1–2 of 2 problems · sorted by interview priority, highest priority first',
       );
-    expect(sortOf('learning')).toBe('ascending');
-    expect(sortOf('interview')).toBe('none');
-    expect(range()).toBe('1–2 of 2 problems · sorted by learning order, first to last');
+      expect(
+        harness
+          .routeNativeElement!.querySelector('[data-sort-column="interview"]')!
+          .closest('th')!
+          .getAttribute('aria-sort'),
+      ).toBe('ascending');
 
-    header('interview').click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(searchParams(router).get('sort')).toBe('interview-rank');
-    expect(sortOf('learning')).toBe('none');
-    expect(titles()).toEqual(['two-pointers-complete', 'hashing-complete']);
-    expect(range()).toBe(
-      '1–2 of 2 problems · sorted by interview priority, highest priority first',
-    );
-    expect(
+      header('learning').click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(searchParams(router).has('sort')).toBe(false);
+      expect(titles()).toEqual(['hashing-complete', 'two-pointers-complete']);
+
       harness
-        .routeNativeElement!.querySelector('[data-sort-column="interview"]')!
-        .closest('th')!
-        .getAttribute('aria-sort'),
-    ).toBe('ascending');
+        .routeNativeElement!.querySelector<HTMLButtonElement>('[data-sort-column="title"]')!
+        .click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>('[data-sort-column="title"]')!
+        .click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(range()).toBe('1–2 of 2 problems · sorted by problem name, Z to A');
+      expect(sortOf('title')).toBe('descending');
+      expect(sortOf('learning')).toBe('none');
+      expect(sortOf('interview')).toBe('none');
+    },
+  );
 
-    header('learning').click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(searchParams(router).has('sort')).toBe(false);
-    expect(titles()).toEqual(['hashing-complete', 'two-pointers-complete']);
-
-    harness
-      .routeNativeElement!.querySelector<HTMLButtonElement>('[data-sort-column="title"]')!
-      .click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    harness
-      .routeNativeElement!.querySelector<HTMLButtonElement>('[data-sort-column="title"]')!
-      .click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(range()).toBe('1–2 of 2 problems · sorted by problem name, Z to A');
-    expect(sortOf('title')).toBe('descending');
-    expect(sortOf('learning')).toBe('none');
-    expect(sortOf('interview')).toBe('none');
-  });
-
-  it('switches between All problems and By pattern with one radio group, kept in the URL', async () => {
+  it('switches All problems and By pattern with one radio group, kept in the URL', async () => {
     const harness = await RouterTestingHarness.create();
     const router = TestBed.inject(Router);
-    await harness.navigateByUrl('/learn/hands-on-dsa?difficulty=Beginner&patterns=show', HandsOnDsa);
+    await harness.navigateByUrl(
+      '/learn/hands-on-dsa?difficulty=Beginner&patterns=show',
+      HandsOnDsa,
+    );
     const root = harness.routeNativeElement!;
     const group = root.querySelector('.practice-results-bar [role="radiogroup"]')!;
     expect(group.getAttribute('aria-label')).toBe('View');
     const radios = () => [...group.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
-    expect(radios().map((radio) => radio.textContent!.trim())).toEqual(['All problems', 'By pattern']);
+    expect(radios().map((radio) => radio.textContent!.trim())).toEqual([
+      'All problems',
+      'By pattern',
+    ]);
     expect(radios().map((radio) => radio.getAttribute('aria-checked'))).toEqual(['true', 'false']);
     // One tab stop: the checked option.
     expect(radios().map((radio) => radio.tabIndex)).toEqual([0, -1]);
@@ -1144,7 +1218,8 @@ describe('Hands-On DSA route contracts', () => {
     const router = TestBed.inject(Router);
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
     const root = harness.routeNativeElement!;
-    const radio = (value: string) => root.querySelector<HTMLButtonElement>(`[data-view="${value}"]`)!;
+    const radio = (value: string) =>
+      root.querySelector<HTMLButtonElement>(`[data-view="${value}"]`)!;
     const press = async (key: string) => {
       const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
       (document.activeElement as HTMLElement).dispatchEvent(event);
@@ -1184,13 +1259,18 @@ describe('Hands-On DSA route contracts', () => {
     const router = TestBed.inject(Router);
     const root = () => harness.routeNativeElement!;
     const sortOf = (scope: string, column: string) =>
-      root().querySelector(`${scope} [data-sort-column="${column}"]`)!.closest('th')!.getAttribute('aria-sort');
+      root()
+        .querySelector(`${scope} [data-sort-column="${column}"]`)!
+        .closest('th')!
+        .getAttribute('aria-sort');
     // An old flat sort link still sorts the table.
     await harness.navigateByUrl('/learn/hands-on-dsa?sort=interview-rank', HandsOnDsa);
     expect(sortOf('.problem-table', 'interview')).toBe('ascending');
     expect(root().querySelector('[data-view="all"]')!.getAttribute('aria-checked')).toBe('true');
     expect(
-      [...root().querySelectorAll('.problem-table-row .problem-link')].map((link) => link.textContent),
+      [...root().querySelectorAll('.problem-table-row .problem-link')].map(
+        (link) => link.textContent,
+      ),
     ).toEqual(['two-pointers-complete', 'hashing-complete']);
     // An old grouped link with an order sorts the pattern's table.
     await harness.navigateByUrl(
@@ -1222,7 +1302,11 @@ describe('Hands-On DSA route contracts', () => {
       index.groups = Array.from({ length: 39 }, (_, position) => {
         const order = position + 1;
         const course =
-          order <= 12 ? 'core-data-structures' : order <= 17 ? 'sorting-and-searching' : 'algorithmic-patterns';
+          order <= 12
+            ? 'core-data-structures'
+            : order <= 17
+              ? 'sorting-and-searching'
+              : 'algorithmic-patterns';
         return {
           ...template,
           id: `${course}:pattern-${order}`,
@@ -1244,7 +1328,9 @@ describe('Hands-On DSA route contracts', () => {
       });
       return index;
     }
-    const options = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>('[role="option"]')];
+    const options = (root: HTMLElement) => [
+      ...root.querySelectorAll<HTMLElement>('[role="option"]'),
+    ];
     const settle = async (harness: RouterTestingHarness) => {
       await harness.fixture.whenStable();
       harness.detectChanges();
@@ -1261,22 +1347,30 @@ describe('Hands-On DSA route contracts', () => {
       expect(root.querySelector('#pattern-list-label')!.textContent!.trim()).toBe('Patterns');
       const all = options(root);
       expect(all).toHaveLength(39);
-      expect(all.map((option) => option.querySelector('.option-order')!.textContent!.trim())).toEqual(
-        Array.from({ length: 39 }, (_, index) => String(index + 1).padStart(2, '0')),
-      );
-      expect(all.map((option) => option.querySelector('.option-count')!.textContent!.trim())).toEqual(
-        Array.from({ length: 39 }, (_, index) => String(((index + 1) % 3) + 1)),
-      );
+      expect(
+        all.map((option) => option.querySelector('.option-order')!.textContent!.trim()),
+      ).toEqual(Array.from({ length: 39 }, (_, index) => String(index + 1).padStart(2, '0')));
+      expect(
+        all.map((option) => option.querySelector('.option-count')!.textContent!.trim()),
+      ).toEqual(Array.from({ length: 39 }, (_, index) => String(((index + 1) % 3) + 1)));
       expect(all[0].querySelector('.option-name')!.textContent!.trim()).toBe('Named pattern 1');
       expect(all[0].querySelector('.option-progress')!.textContent!.trim()).toBe('0/2 solved');
-      expect(all[0].getAttribute('aria-label')).toBe('1. Named pattern 1, 2 problems, 0 of 2 solved');
+      expect(all[0].getAttribute('aria-label')).toBe(
+        '1. Named pattern 1, 2 problems, 0 of 2 solved',
+      );
       // Patterns sit under their course, each course a labelled group of options.
       const groups = [...listbox.querySelectorAll('[role="group"]')];
-      expect(groups.map((group) => group.querySelectorAll('[role="option"]').length)).toEqual([12, 5, 22]);
-      expect(groups[0].getAttribute('aria-labelledby')).toBe(groups[0].querySelector('.course-label')!.id);
+      expect(groups.map((group) => group.querySelectorAll('[role="option"]').length)).toEqual([
+        12, 5, 22,
+      ]);
+      expect(groups[0].getAttribute('aria-labelledby')).toBe(
+        groups[0].querySelector('.course-label')!.id,
+      );
       // The pane opens on the first pattern, and the header carries its facts.
       expect(all[0].getAttribute('aria-selected')).toBe('true');
-      expect(all.filter((option) => option.getAttribute('aria-selected') === 'true')).toHaveLength(1);
+      expect(all.filter((option) => option.getAttribute('aria-selected') === 'true')).toHaveLength(
+        1,
+      );
       const detail = root.querySelector('.pattern-detail')!;
       expect(detail.getAttribute('role')).toBe('region');
       expect(detail.getAttribute('aria-labelledby')).toBe('pattern-detail-title');
@@ -1301,46 +1395,57 @@ describe('Hands-On DSA route contracts', () => {
       expect(root.querySelector('.clear-pattern-filter')).toBeNull();
     });
 
-    it('moves through the list with a roving tab stop and arrow keys, and opens a pattern with Enter', async () => {
-      catalog = thirtyNinePatterns();
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
-      const root = harness.routeNativeElement!;
-      const stops = () => options(root).filter((option) => option.tabIndex === 0);
-      expect(stops()).toHaveLength(1);
-      expect(stops()[0]).toBe(options(root)[0]);
-      const press = async (key: string) => {
-        (document.activeElement as HTMLElement).dispatchEvent(
-          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+    it(
+      'moves through the list with a roving tab stop and arrow keys, and opens a pattern ' +
+        'with Enter',
+      async () => {
+        catalog = thirtyNinePatterns();
+        const harness = await RouterTestingHarness.create();
+        await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
+        const root = harness.routeNativeElement!;
+        const stops = () => options(root).filter((option) => option.tabIndex === 0);
+        expect(stops()).toHaveLength(1);
+        expect(stops()[0]).toBe(options(root)[0]);
+        const press = async (key: string) => {
+          (document.activeElement as HTMLElement).dispatchEvent(
+            new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+          );
+          harness.detectChanges();
+        };
+        options(root)[0].focus();
+        await press('ArrowDown');
+        expect(document.activeElement).toBe(options(root)[1]);
+        expect(stops()).toEqual([options(root)[1]]);
+        await press('End');
+        expect(document.activeElement).toBe(options(root)[38]);
+        await press('Home');
+        expect(document.activeElement).toBe(options(root)[0]);
+        await press('ArrowUp');
+        expect(document.activeElement).toBe(options(root)[0]);
+        await press('ArrowDown');
+        await press('ArrowDown');
+        await press('Enter');
+        await settle(harness);
+        expect(searchParams(TestBed.inject(Router)).get('pattern')).toBe(
+          patternContextToken('core-data-structures:pattern-3'),
         );
-        harness.detectChanges();
-      };
-      options(root)[0].focus();
-      await press('ArrowDown');
-      expect(document.activeElement).toBe(options(root)[1]);
-      expect(stops()).toEqual([options(root)[1]]);
-      await press('End');
-      expect(document.activeElement).toBe(options(root)[38]);
-      await press('Home');
-      expect(document.activeElement).toBe(options(root)[0]);
-      await press('ArrowUp');
-      expect(document.activeElement).toBe(options(root)[0]);
-      await press('ArrowDown');
-      await press('ArrowDown');
-      await press('Enter');
-      await settle(harness);
-      expect(searchParams(TestBed.inject(Router)).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-3'));
-      expect(options(root)[2].getAttribute('aria-selected')).toBe('true');
-      expect(root.querySelector('#pattern-detail-title')!.textContent).toContain('Pattern 3');
-    });
+        expect(options(root)[2].getAttribute('aria-selected')).toBe('true');
+        expect(root.querySelector('#pattern-detail-title')!.textContent).toContain('Pattern 3');
+      },
+    );
 
     it('keeps the chosen pattern in the URL, so deep links and history work', async () => {
       catalog = thirtyNinePatterns();
       const harness = await RouterTestingHarness.create();
       const router = TestBed.inject(Router);
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&patterns=show&difficulty=Beginner', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&patterns=show&difficulty=Beginner',
+        HandsOnDsa,
+      );
       const root = harness.routeNativeElement!;
-      root.querySelector<HTMLElement>('[data-pattern-id="algorithmic-patterns:pattern-20"]')!.click();
+      root
+        .querySelector<HTMLElement>('[data-pattern-id="algorithmic-patterns:pattern-20"]')!
+        .click();
       await settle(harness);
       expect(Object.fromEntries(searchParams(router))).toEqual({
         view: 'groups',
@@ -1348,7 +1453,9 @@ describe('Hands-On DSA route contracts', () => {
         difficulty: 'Beginner',
         pattern: patternContextToken('algorithmic-patterns:pattern-20'),
       });
-      expect(root.querySelector('#pattern-detail-title')!.textContent).toContain('Named pattern 20');
+      expect(root.querySelector('#pattern-detail-title')!.textContent).toContain(
+        'Named pattern 20',
+      );
       // Problem links return here, to the same pattern.
       const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
       expect(new URL(link.href).searchParams.get('returnTo')).toContain(
@@ -1356,7 +1463,10 @@ describe('Hands-On DSA route contracts', () => {
       );
 
       // A deep link (or Back to it) opens the same pattern.
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=sorting-and-searching:pattern-14', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&pattern=sorting-and-searching:pattern-14',
+        HandsOnDsa,
+      );
       expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
         'sorting-and-searching:pattern-14',
       );
@@ -1367,50 +1477,66 @@ describe('Hands-On DSA route contracts', () => {
       );
     });
 
-    it('carries the chosen pattern as an opaque id: no link or URL names it while names are hidden (DLV-962)', async () => {
-      catalog = thirtyNinePatterns();
-      const harness = await RouterTestingHarness.create();
-      const router = TestBed.inject(Router);
-      router.setUpLocationChangeListener();
-      // An old readable link still opens its pattern, and is rewritten to the opaque id.
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-4', HandsOnDsa);
-      const root = harness.routeNativeElement!;
-      const exposed = () => [
-        router.url,
-        ...[...root.querySelectorAll<HTMLAnchorElement>('a[href]')].map((link) =>
-          decodeURIComponent(link.getAttribute('href')!),
-        ),
-      ];
-      const fourth = patternContextToken('core-data-structures:pattern-4');
-      expect(searchParams(router).get('pattern')).toBe(fourth);
-      expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
-        'core-data-structures:pattern-4',
-      );
-      for (const value of exposed()) expect(value).not.toMatch(/pattern-\d|Named pattern/);
-      const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
-      expect(new URL(link.href).searchParams.get('pattern')).toBe(fourth);
+    it(
+      'carries the chosen pattern as an opaque id: no link or URL names it while names ' +
+        'are hidden (DLV-962)',
+      async () => {
+        catalog = thirtyNinePatterns();
+        const harness = await RouterTestingHarness.create();
+        const router = TestBed.inject(Router);
+        router.setUpLocationChangeListener();
+        // An old readable link still opens its pattern, and is rewritten to the opaque id.
+        await harness.navigateByUrl(
+          '/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-4',
+          HandsOnDsa,
+        );
+        const root = harness.routeNativeElement!;
+        const exposed = () => [
+          router.url,
+          ...[...root.querySelectorAll<HTMLAnchorElement>('a[href]')].map((link) =>
+            decodeURIComponent(link.getAttribute('href')!),
+          ),
+        ];
+        const fourth = patternContextToken('core-data-structures:pattern-4');
+        expect(searchParams(router).get('pattern')).toBe(fourth);
+        expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
+          'core-data-structures:pattern-4',
+        );
+        for (const value of exposed()) expect(value).not.toMatch(/pattern-\d|Named pattern/);
+        const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
+        expect(new URL(link.href).searchParams.get('pattern')).toBe(fourth);
 
-      // Choosing another pattern writes its opaque id; Back returns to the first one.
-      root.querySelector<HTMLElement>('[data-pattern-id="core-data-structures:pattern-7"]')!.click();
-      await settle(harness);
-      expect(searchParams(router).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-7'));
-      for (const value of exposed()) expect(value).not.toMatch(/pattern-\d|Named pattern/);
-      TestBed.inject(Location).back();
-      await vi.waitFor(() => expect(searchParams(router).get('pattern')).toBe(fourth));
-      await settle(harness);
-      expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
-        'core-data-structures:pattern-4',
-      );
-    });
+        // Choosing another pattern writes its opaque id; Back returns to the first one.
+        root
+          .querySelector<HTMLElement>('[data-pattern-id="core-data-structures:pattern-7"]')!
+          .click();
+        await settle(harness);
+        expect(searchParams(router).get('pattern')).toBe(
+          patternContextToken('core-data-structures:pattern-7'),
+        );
+        for (const value of exposed()) expect(value).not.toMatch(/pattern-\d|Named pattern/);
+        TestBed.inject(Location).back();
+        await vi.waitFor(() => expect(searchParams(router).get('pattern')).toBe(fourth));
+        await settle(harness);
+        expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
+          'core-data-structures:pattern-4',
+        );
+      },
+    );
 
     it('sorts a pattern by its column headers without counting the sort as a filter', async () => {
       catalog = thirtyNinePatterns();
       const harness = await RouterTestingHarness.create();
       const router = TestBed.inject(Router);
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-2', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-2',
+        HandsOnDsa,
+      );
       const root = harness.routeNativeElement!;
       const titles = () =>
-        [...root.querySelectorAll('.pattern-problem-row .problem-link')].map((link) => link.textContent);
+        [...root.querySelectorAll('.pattern-problem-row .problem-link')].map(
+          (link) => link.textContent,
+        );
       const header = (column: string) =>
         root.querySelector<HTMLButtonElement>(`.pattern-problems [data-sort-column="${column}"]`)!;
       const sortOf = (column: string) => header(column).closest('th')!.getAttribute('aria-sort');
@@ -1418,8 +1544,12 @@ describe('Hands-On DSA route contracts', () => {
       // The pane has no order switch of its own: the headers are the flat table's sort buttons.
       expect(root.querySelector('.order-switch')).toBeNull();
       expect(sortOf('learning')).toBe('ascending');
-      expect(header('learning').getAttribute('aria-label')).toBe('Sort by learning order, descending');
-      expect(header('interview').getAttribute('aria-label')).toBe('Sort by interview priority, ascending');
+      expect(header('learning').getAttribute('aria-label')).toBe(
+        'Sort by learning order, descending',
+      );
+      expect(header('interview').getAttribute('aria-label')).toBe(
+        'Sort by interview priority, ascending',
+      );
       // Status is not sortable, as in the flat table.
       expect(root.querySelector('.pattern-problems th.col-status button')).toBeNull();
       expect(titles()).toEqual(['Problem 2.1', 'Problem 2.2', 'Problem 2.3']);
@@ -1459,37 +1589,55 @@ describe('Hands-On DSA route contracts', () => {
       await settle(harness);
       expect(searchParams(router).get('sort')).toBe('difficulty-ascending');
       expect(
-        [...root.querySelectorAll('.pattern-problem-row .cell-difficulty')].map((cell) => cell.textContent!.trim()),
+        [...root.querySelectorAll('.pattern-problem-row .cell-difficulty')].map((cell) =>
+          cell.textContent!.trim(),
+        ),
       ).toEqual(['Beginner', 'Intermediate', 'Advanced']);
       header('learning').click();
       await settle(harness);
       expect(searchParams(router).has('sort')).toBe(false);
       expect(titles()).toEqual(['Problem 2.1', 'Problem 2.2', 'Problem 2.3']);
-      expect(searchParams(router).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-2'));
+      expect(searchParams(router).get('pattern')).toBe(
+        patternContextToken('core-data-structures:pattern-2'),
+      );
     });
 
     it('carries the column sort across patterns and both views', async () => {
       catalog = thirtyNinePatterns();
       const harness = await RouterTestingHarness.create();
       const router = TestBed.inject(Router);
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-2&patterns=show', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-2&patterns=show',
+        HandsOnDsa,
+      );
       const root = harness.routeNativeElement!;
       const titles = (selector: string) =>
         [...root.querySelectorAll(`${selector} .problem-link`)].map((link) => link.textContent);
-      root.querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!.click();
+      root
+        .querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!
+        .click();
       await settle(harness);
-      root.querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!.click();
+      root
+        .querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!
+        .click();
       await settle(harness);
       expect(searchParams(router).get('sort')).toBe('interview-rank-descending');
       expect(titles('.pattern-problem-row')).toEqual(['Problem 2.1', 'Problem 2.2', 'Problem 2.3']);
 
       // Another pattern keeps the sort.
-      root.querySelector<HTMLElement>('[data-pattern-id="core-data-structures:pattern-5"]')!.click();
+      root
+        .querySelector<HTMLElement>('[data-pattern-id="core-data-structures:pattern-5"]')!
+        .click();
       await settle(harness);
-      expect(searchParams(router).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-5'));
+      expect(searchParams(router).get('pattern')).toBe(
+        patternContextToken('core-data-structures:pattern-5'),
+      );
       expect(searchParams(router).get('sort')).toBe('interview-rank-descending');
       expect(
-        root.querySelector('.pattern-problems [data-sort-column="interview"]')!.closest('th')!.getAttribute('aria-sort'),
+        root
+          .querySelector('.pattern-problems [data-sort-column="interview"]')!
+          .closest('th')!
+          .getAttribute('aria-sort'),
       ).toBe('descending');
       expect(titles('.pattern-problem-row')).toEqual(['Problem 5.1', 'Problem 5.2', 'Problem 5.3']);
       expect(root.querySelector('.practice-result-range')!.textContent!.trim()).toBe(
@@ -1504,7 +1652,10 @@ describe('Hands-On DSA route contracts', () => {
         sort: 'interview-rank-descending',
       });
       expect(
-        root.querySelector('.problem-table [data-sort-column="interview"]')!.closest('th')!.getAttribute('aria-sort'),
+        root
+          .querySelector('.problem-table [data-sort-column="interview"]')!
+          .closest('th')!
+          .getAttribute('aria-sort'),
       ).toBe('descending');
       expect(titles('.problem-table-row')[0]).toBe('Problem 1.1');
       expect(root.querySelector('.practice-result-range')!.textContent).toContain(
@@ -1525,7 +1676,10 @@ describe('Hands-On DSA route contracts', () => {
         view: 'groups',
       });
       expect(
-        root.querySelector('.pattern-problems [data-sort-column="title"]')!.closest('th')!.getAttribute('aria-sort'),
+        root
+          .querySelector('.pattern-problems [data-sort-column="title"]')!
+          .closest('th')!
+          .getAttribute('aria-sort'),
       ).toBe('descending');
       expect(titles('.pattern-problem-row')).toEqual(['Problem 1.2', 'Problem 1.1']);
       expect(root.querySelector('.practice-result-range')!.textContent!.trim()).toBe(
@@ -1533,63 +1687,87 @@ describe('Hands-On DSA route contracts', () => {
       );
     });
 
-    it('disables the difficulty header inside a pattern while one difficulty is shown', async () => {
+    it('disables the difficulty header in a pattern while one difficulty is shown', async () => {
       catalog = thirtyNinePatterns();
       const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&difficulty=Beginner&sort=difficulty-descending', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&difficulty=Beginner&sort=difficulty-descending',
+        HandsOnDsa,
+      );
       const root = harness.routeNativeElement!;
-      const difficulty = root.querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="difficulty"]')!;
+      const difficulty = root.querySelector<HTMLButtonElement>(
+        '.pattern-problems [data-sort-column="difficulty"]',
+      )!;
       expect(difficulty.disabled).toBe(true);
       expect(difficulty.getAttribute('aria-label')).toBe(
         'Difficulty: sorting unavailable while filtered to one difficulty',
       );
       // The redundant difficulty sort falls back to learning order.
       expect(
-        root.querySelector('.pattern-problems [data-sort-column="learning"]')!.closest('th')!.getAttribute('aria-sort'),
+        root
+          .querySelector('.pattern-problems [data-sort-column="learning"]')!
+          .closest('th')!
+          .getAttribute('aria-sort'),
       ).toBe('ascending');
     });
 
-    it('applies the filters inside each pattern, updating counts and dimming patterns with no match', async () => {
-      catalog = thirtyNinePatterns();
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&difficulty=Advanced', HandsOnDsa);
-      const root = harness.routeNativeElement!;
-      const all = options(root);
-      // Every pattern stays listed; only those with an Advanced problem (3 problems) keep a count.
-      expect(all).toHaveLength(39);
-      const counts = all.map((option) => option.querySelector('.option-count')!.textContent!.trim());
-      expect(counts).toEqual(
-        Array.from({ length: 39 }, (_, index) => ((index + 1) % 3 === 2 ? '1' : '0')),
-      );
-      expect(all.map((option) => option.classList.contains('is-empty'))).toEqual(
-        counts.map((count) => count === '0'),
-      );
-      expect(all[0].getAttribute('aria-label')).toBe('Pattern 1, no matching problems, 0 of 2 solved');
-      // With no pattern in the URL, the pane opens the first pattern that has a match.
-      expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
-        'core-data-structures:pattern-2',
-      );
-      expect(root.querySelector('.detail-count')!.textContent!.replace(/\s+/g, ' ').trim()).toBe(
-        '1 problem of 3',
-      );
-      expect(root.querySelector('.practice-result-range')!.textContent).toContain(
-        '13 problems in 13 patterns',
-      );
-      expect(root.querySelector('.clear-catalog-filters')).not.toBeNull();
+    it(
+      'applies the filters inside each pattern, updating counts and dimming patterns with ' +
+        'no match',
+      async () => {
+        catalog = thirtyNinePatterns();
+        const harness = await RouterTestingHarness.create();
+        await harness.navigateByUrl(
+          '/learn/hands-on-dsa?view=groups&difficulty=Advanced',
+          HandsOnDsa,
+        );
+        const root = harness.routeNativeElement!;
+        const all = options(root);
+        // Every pattern stays listed; only those with an Advanced problem (3 problems) keep a
+        // count.
+        expect(all).toHaveLength(39);
+        const counts = all.map((option) =>
+          option.querySelector('.option-count')!.textContent!.trim(),
+        );
+        expect(counts).toEqual(
+          Array.from({ length: 39 }, (_, index) => ((index + 1) % 3 === 2 ? '1' : '0')),
+        );
+        expect(all.map((option) => option.classList.contains('is-empty'))).toEqual(
+          counts.map((count) => count === '0'),
+        );
+        expect(all[0].getAttribute('aria-label')).toBe(
+          'Pattern 1, no matching problems, 0 of 2 solved',
+        );
+        // With no pattern in the URL, the pane opens the first pattern that has a match.
+        expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
+          'core-data-structures:pattern-2',
+        );
+        expect(root.querySelector('.detail-count')!.textContent!.replace(/\s+/g, ' ').trim()).toBe(
+          '1 problem of 3',
+        );
+        expect(root.querySelector('.practice-result-range')!.textContent).toContain(
+          '13 problems in 13 patterns',
+        );
+        expect(root.querySelector('.clear-catalog-filters')).not.toBeNull();
 
-      // A dimmed pattern still opens, and says why it is empty.
-      all[0].click();
-      await settle(harness);
-      expect(root.querySelector('.pattern-problems')).toBeNull();
-      expect(root.querySelector('.pattern-empty')!.textContent).toContain('No problems in this pattern match');
+        // A dimmed pattern still opens, and says why it is empty.
+        all[0].click();
+        await settle(harness);
+        expect(root.querySelector('.pattern-problems')).toBeNull();
+        expect(root.querySelector('.pattern-empty')!.textContent).toContain(
+          'No problems in this pattern match',
+        );
 
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&q=Problem%202.', HandsOnDsa);
-      expect(options(root).filter((option) => !option.classList.contains('is-empty')).map(
-        (option) => option.dataset['patternId'],
-      )).toEqual(['core-data-structures:pattern-2']);
-    });
+        await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&q=Problem%202.', HandsOnDsa);
+        expect(
+          options(root)
+            .filter((option) => !option.classList.contains('is-empty'))
+            .map((option) => option.dataset['patternId']),
+        ).toEqual(['core-data-structures:pattern-2']);
+      },
+    );
 
-    it('keeps grouping with pattern names hidden, and reveals one pattern with Show name', async () => {
+    it('keeps grouping with pattern names hidden; Show name reveals one pattern', async () => {
       catalog = thirtyNinePatterns();
       catalog.groups[1].title = 'Sliding Window';
       catalog.groups[1].tags = ['Window'];
@@ -1621,19 +1799,24 @@ describe('Hands-On DSA route contracts', () => {
       // Search matches problem titles only, never a hidden pattern's name or tags.
       await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&q=window', HandsOnDsa);
       expect(options(root).every((option) => option.classList.contains('is-empty'))).toBe(true);
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-2', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-2',
+        HandsOnDsa,
+      );
 
       const reveal = detail().querySelector<HTMLButtonElement>('.show-name')!;
       expect(reveal.textContent!.trim()).toBe('Show name');
       reveal.click();
       await settle(harness);
-      expect(root.querySelector('#pattern-detail-title')!.textContent!.replace(/\s+/g, ' ').trim()).toBe(
-        '02 Sliding Window',
-      );
+      expect(
+        root.querySelector('#pattern-detail-title')!.textContent!.replace(/\s+/g, ' ').trim(),
+      ).toBe('02 Sliding Window');
       expect(document.activeElement).toBe(root.querySelector('#pattern-detail-title'));
       expect(detail().querySelector('.show-name')).toBeNull();
       expect(detail().querySelector('.detail-description')!.textContent).toBe('Concept');
-      expect(detail().querySelector('.lesson-link')!.textContent!.trim()).toBe('Sliding Window lesson');
+      expect(detail().querySelector('.lesson-link')!.textContent!.trim()).toBe(
+        'Sliding Window lesson',
+      );
       // Only that pattern: the others stay numbered.
       expect(names().slice(0, 3)).toEqual(['Pattern 1', 'Sliding Window', 'Pattern 3']);
       expect(toggle().checked).toBe(true);
@@ -1650,32 +1833,39 @@ describe('Hands-On DSA route contracts', () => {
       expect(names().slice(0, 2)).toEqual(['Pattern 1', 'Pattern 2']);
     });
 
-    it('shows Clear all filters only for real filters, and keeps the grouped view when clearing', async () => {
-      const harness = await RouterTestingHarness.create();
-      const router = TestBed.inject(Router);
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
-      const root = harness.routeNativeElement!;
-      expect(root.querySelector('.clear-catalog-filters')).toBeNull();
-      await harness.navigateByUrl(
-        '/learn/hands-on-dsa?view=groups&sort=interview-rank&patterns=show&pattern=algorithmic-patterns:two-pointers',
-        HandsOnDsa,
-      );
-      expect(root.querySelector('.clear-catalog-filters')).toBeNull();
+    it(
+      'shows Clear all filters only for real filters, and keeps the grouped view when ' +
+        'clearing',
+      async () => {
+        const harness = await RouterTestingHarness.create();
+        const router = TestBed.inject(Router);
+        await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
+        const root = harness.routeNativeElement!;
+        expect(root.querySelector('.clear-catalog-filters')).toBeNull();
+        await harness.navigateByUrl(
+          '/learn/hands-on-dsa?view=groups&sort=interview-rank&patterns=show' +
+            '&pattern=algorithmic-patterns:two-pointers',
+          HandsOnDsa,
+        );
+        expect(root.querySelector('.clear-catalog-filters')).toBeNull();
 
-      await harness.navigateByUrl(
-        '/learn/hands-on-dsa?view=groups&sort=interview-rank&patterns=show&pattern=algorithmic-patterns:two-pointers&difficulty=Beginner&scope=150&solved=hide&q=complete',
-        HandsOnDsa,
-      );
-      root.querySelector<HTMLButtonElement>('.clear-catalog-filters')!.click();
-      await settle(harness);
-      expect(Object.fromEntries(searchParams(router))).toEqual({
-        patterns: 'show',
-        view: 'groups',
-        pattern: 'algorithmic-patterns:two-pointers',
-        sort: 'interview-rank',
-      });
-      expect(root.querySelector('.clear-catalog-filters')).toBeNull();
-    });
+        await harness.navigateByUrl(
+          '/learn/hands-on-dsa?view=groups&sort=interview-rank&patterns=show' +
+            '&pattern=algorithmic-patterns:two-pointers&difficulty=Beginner&scope=150' +
+            '&solved=hide&q=complete',
+          HandsOnDsa,
+        );
+        root.querySelector<HTMLButtonElement>('.clear-catalog-filters')!.click();
+        await settle(harness);
+        expect(Object.fromEntries(searchParams(router))).toEqual({
+          patterns: 'show',
+          view: 'groups',
+          pattern: 'algorithmic-patterns:two-pointers',
+          sort: 'interview-rank',
+        });
+        expect(root.querySelector('.clear-catalog-filters')).toBeNull();
+      },
+    );
 
     it('works as two screens on a phone: the list, then one pattern with a way back', async () => {
       catalog = thirtyNinePatterns();
@@ -1687,9 +1877,13 @@ describe('Hands-On DSA route contracts', () => {
       // No pattern in the URL: a phone shows the list screen.
       expect(panes().getAttribute('data-screen')).toBe('list');
 
-      root.querySelector<HTMLElement>('[data-pattern-id="algorithmic-patterns:pattern-25"]')!.click();
+      root
+        .querySelector<HTMLElement>('[data-pattern-id="algorithmic-patterns:pattern-25"]')!
+        .click();
       await settle(harness);
-      expect(searchParams(router).get('pattern')).toBe(patternContextToken('algorithmic-patterns:pattern-25'));
+      expect(searchParams(router).get('pattern')).toBe(
+        patternContextToken('algorithmic-patterns:pattern-25'),
+      );
       expect(panes().getAttribute('data-screen')).toBe('detail');
       // The pattern list is hidden on this screen, so focus moves to the pattern's heading.
       expect(document.activeElement).toBe(root.querySelector('#pattern-detail-title'));
@@ -1707,7 +1901,10 @@ describe('Hands-On DSA route contracts', () => {
       );
 
       // The browser's Back button walks the same URLs.
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=algorithmic-patterns:pattern-25', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&pattern=algorithmic-patterns:pattern-25',
+        HandsOnDsa,
+      );
       expect(panes().getAttribute('data-screen')).toBe('detail');
     });
   });
@@ -1742,8 +1939,8 @@ describe('Hands-On DSA route contracts', () => {
     );
     expect(preview()!.textContent).not.toContain('Later sentences');
     expect(
-      [...preview()!.querySelectorAll('.problem-preview-example code')].map((code) =>
-        code.textContent,
+      [...preview()!.querySelectorAll('.problem-preview-example code')].map(
+        (code) => code.textContent,
       ),
     ).toEqual(['values = [3,1,3]', '3']);
     const open = preview()!.querySelector<HTMLAnchorElement>('.problem-preview-open')!;
@@ -1764,7 +1961,9 @@ describe('Hands-On DSA route contracts', () => {
     content.getDsaProblem.mockReturnValueOnce(throwError(() => new Error('503')));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
-    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.problem-preview-toggle')!.click();
+    harness
+      .routeNativeElement!.querySelector<HTMLButtonElement>('.problem-preview-toggle')!
+      .click();
     harness.detectChanges();
     const preview = () => harness.routeNativeElement!.querySelector('.problem-preview-row')!;
     expect(preview().querySelector('[role="alert"]')!.textContent).toContain(
@@ -1777,30 +1976,37 @@ describe('Hands-On DSA route contracts', () => {
     expect(preview().querySelector('.problem-preview-summary')).not.toBeNull();
   });
 
-  it('shows a failure state instead of claiming an empty practice catalog loaded successfully', async () => {
-    content.getHandsOnDsaIndex.mockReturnValueOnce(throwError(() => new Error('404')));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
-    expect(harness.routeNativeElement!.textContent).toContain('We couldn’t load this content');
-    expect(harness.routeNativeElement!.querySelector('.pattern-groups')).toBeNull();
-    expect(
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('.surprise-problem')!.disabled,
-    ).toBe(true);
-  });
+  it(
+    'shows a failure state instead of claiming an empty practice catalog loaded ' + 'successfully',
+    async () => {
+      content.getHandsOnDsaIndex.mockReturnValueOnce(throwError(() => new Error('404')));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
+      expect(harness.routeNativeElement!.textContent).toContain('We couldn’t load this content');
+      expect(harness.routeNativeElement!.querySelector('.pattern-groups')).toBeNull();
+      expect(
+        harness.routeNativeElement!.querySelector<HTMLButtonElement>('.surprise-problem')!.disabled,
+      ).toBe(true);
+    },
+  );
 
-  it('hides the pattern context for a random challenge and restores it when that mode is removed', async () => {
-    content.getHandsOnDsaIndex.mockImplementation(() => of(emptyPracticeIndex()));
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
-      '/learn/algorithmic-patterns/hashing-complete?mode=surprise',
-      Question,
-    );
-    expect(harness.routeNativeElement!.querySelector('.surprise-challenge')).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.question-context-panel')).toBeNull();
-    await harness.navigateByUrl('/learn/algorithmic-patterns/hashing-complete', Question);
-    expect(harness.routeNativeElement!.querySelector('.surprise-challenge')).toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.question-context-panel')).not.toBeNull();
-  });
+  it(
+    'hides the pattern context for a random challenge and restores it when that mode is ' +
+      'removed',
+    async () => {
+      content.getHandsOnDsaIndex.mockImplementation(() => of(emptyPracticeIndex()));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        '/learn/algorithmic-patterns/hashing-complete?mode=surprise',
+        Question,
+      );
+      expect(harness.routeNativeElement!.querySelector('.surprise-challenge')).not.toBeNull();
+      expect(harness.routeNativeElement!.querySelector('.question-context-panel')).toBeNull();
+      await harness.navigateByUrl('/learn/algorithmic-patterns/hashing-complete', Question);
+      expect(harness.routeNativeElement!.querySelector('.surprise-challenge')).toBeNull();
+      expect(harness.routeNativeElement!.querySelector('.question-context-panel')).not.toBeNull();
+    },
+  );
   describe('device progress', () => {
     let storageDescriptor: PropertyDescriptor | undefined;
     let values: Map<string, string>;
@@ -1827,7 +2033,14 @@ describe('Hands-On DSA route contracts', () => {
           problems: Object.fromEntries(
             Object.entries(problems).map(([id, record]) => [
               id,
-              { status: 'started', rating: null, reviewAt: null, notes: '', updatedAt: '2026-10-01T00:00:00.000Z', ...record },
+              {
+                status: 'started',
+                rating: null,
+                reviewAt: null,
+                notes: '',
+                updatedAt: '2026-10-01T00:00:00.000Z',
+                ...record,
+              },
             ]),
           ),
         }),
@@ -1855,8 +2068,16 @@ describe('Hands-On DSA route contracts', () => {
 
     it('marks a review as due on and after its date', async () => {
       saveProgress({
-        'hashing-canonical': { status: 'solved', rating: 'Solved with hints', reviewAt: '2000-01-01' },
-        'two-pointers-canonical': { status: 'solved', rating: 'Solved with hints', reviewAt: '2999-01-01' },
+        'hashing-canonical': {
+          status: 'solved',
+          rating: 'Solved with hints',
+          reviewAt: '2000-01-01',
+        },
+        'two-pointers-canonical': {
+          status: 'solved',
+          rating: 'Solved with hints',
+          reviewAt: '2999-01-01',
+        },
       });
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
@@ -1865,7 +2086,11 @@ describe('Hands-On DSA route contracts', () => {
 
     it('shows a progress strip labelled for this device with honest counts', async () => {
       saveProgress({
-        'hashing-canonical': { status: 'solved', rating: 'Solved on my own', reviewAt: '2000-01-01' },
+        'hashing-canonical': {
+          status: 'solved',
+          rating: 'Solved on my own',
+          reviewAt: '2000-01-01',
+        },
         'two-pointers-canonical': { status: 'started' },
         'retired-problem': { status: 'solved', rating: 'Solved on my own' },
       });
@@ -1873,7 +2098,9 @@ describe('Hands-On DSA route contracts', () => {
       await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
       const strip = harness.routeNativeElement!.querySelector('app-practice-progress-strip')!;
       const controls = harness.routeNativeElement!.querySelector('.practice-controls')!;
-      expect(strip.compareDocumentPosition(controls) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(
+        strip.compareDocumentPosition(controls) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
       expect(strip.querySelector('.strip-title')!.textContent!.trim()).toBe('On this device');
       expect(strip.querySelector('section')!.getAttribute('aria-labelledby')).toBe(
         strip.querySelector('.strip-title')!.id,
@@ -1894,10 +2121,9 @@ describe('Hands-On DSA route contracts', () => {
       await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
       const root = harness.routeNativeElement!;
       const switches = root.querySelector('.practice-controls > .practice-switches')!;
-      expect([...switches.querySelectorAll('label')].map((label) => label.textContent!.trim())).toEqual([
-        'Hide pattern names',
-        'Hide solved',
-      ]);
+      expect(
+        [...switches.querySelectorAll('label')].map((label) => label.textContent!.trim()),
+      ).toEqual(['Hide pattern names', 'Hide solved']);
       expect(switches.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
       expect(TestBed.inject(PageSidebarContext).value()).toEqual({ excluded: false });
     });
@@ -1920,7 +2146,10 @@ describe('Hands-On DSA route contracts', () => {
       ]);
       expect(root.querySelector('.clear-catalog-filters')).not.toBeNull();
 
-      await harness.navigateByUrl('/learn/hands-on-dsa?solved=hide&difficulty=Beginner', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?solved=hide&difficulty=Beginner',
+        HandsOnDsa,
+      );
       expect(toggle().checked).toBe(true);
       expect(root.querySelectorAll('.problem-table-row')).toHaveLength(1);
       toggle().click();
@@ -1940,14 +2169,18 @@ describe('Hands-On DSA route contracts', () => {
         (values as Uint32Array)[0] = 0;
         return values;
       });
-      const button = harness.routeNativeElement!.querySelector<HTMLButtonElement>('.surprise-problem')!;
+      const button =
+        harness.routeNativeElement!.querySelector<HTMLButtonElement>('.surprise-problem')!;
       for (let count = 0; count < 3; count++) button.click();
       expect(navigate.mock.calls.map(([commands]) => commands[2])).toEqual(
         Array(3).fill('two-pointers-complete'),
       );
 
       navigate.mockClear();
-      await harness.navigateByUrl('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
+        HandsOnDsa,
+      );
       navigate.mockResolvedValue(true);
       button.click();
       expect(navigate.mock.calls.map(([commands]) => commands[2])).toEqual(['hashing-complete']);
@@ -1967,7 +2200,7 @@ describe('Hands-On DSA route contracts', () => {
       expect(statusLabels(root)).toEqual(['✓Solved', 'Not started']);
     });
 
-    it('shows progress per pattern and opens the next unsolved problem in the chosen order', async () => {
+    it('shows progress per pattern and opens the next unsolved problem in order', async () => {
       catalog = paginatedIndex(4);
       saveProgress({
         'problem-1': { status: 'solved', rating: 'Solved on my own' },
@@ -1977,9 +2210,13 @@ describe('Hands-On DSA route contracts', () => {
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
       const root = harness.routeNativeElement!;
-      expect(root.querySelector('[role="option"] .option-progress')!.textContent!.trim()).toBe('2/4 solved');
+      expect(root.querySelector('[role="option"] .option-progress')!.textContent!.trim()).toBe(
+        '2/4 solved',
+      );
       expect(root.querySelector('.detail-progress')!.textContent!.trim()).toBe('2 of 4 solved');
-      expect(root.querySelector<HTMLElement>('.detail-progress .meter span')!.style.width).toBe('50%');
+      expect(root.querySelector<HTMLElement>('.detail-progress .meter span')!.style.width).toBe(
+        '50%',
+      );
       expect(
         [...root.querySelectorAll('.pattern-problem-row app-practice-status-mark')].map((mark) =>
           mark.getAttribute('data-status'),
@@ -1990,33 +2227,49 @@ describe('Hands-On DSA route contracts', () => {
       expect(next().textContent!.replace(/\s+/g, ' ').trim()).toBe('Next unsolved Problem 2');
       expect(next().getAttribute('aria-label')).toBe('Next unsolved: Problem 2');
       expect(new URL(next().href).pathname).toBe('/learn/algorithmic-patterns/problem-2');
-      expect(new URL(next().href).searchParams.get('pattern')).toBe(patternContextToken('algorithmic-patterns:hashing'));
+      expect(new URL(next().href).searchParams.get('pattern')).toBe(
+        patternContextToken('algorithmic-patterns:hashing'),
+      );
 
       // Interview priority puts Problem 3 (rank 2) before Problem 2 (rank 3).
-      root.querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!.click();
+      root
+        .querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!
+        .click();
       await harness.fixture.whenStable();
       harness.detectChanges();
       expect(next().textContent!.replace(/\s+/g, ' ').trim()).toBe('Next unsolved Problem 3');
 
       // Every column sort counts: problem name Z to A puts Problem 3 first among the unsolved.
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&sort=title-descending', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&sort=title-descending',
+        HandsOnDsa,
+      );
       expect(
-        [...root.querySelectorAll('.pattern-problem-row .problem-link')].map((link) => link.textContent),
+        [...root.querySelectorAll('.pattern-problem-row .problem-link')].map(
+          (link) => link.textContent,
+        ),
       ).toEqual(['Problem 4', 'Problem 3', 'Problem 2', 'Problem 1']);
       expect(next().getAttribute('aria-label')).toBe('Next unsolved: Problem 3');
       // Its description says it follows the current order.
       const help = root.querySelector(`#${next().getAttribute('aria-describedby')}`)!;
       expect(help.textContent!.trim()).toBe(
-        'The first unsolved problem in this pattern, in the current order: sorted by problem name, Z to A.',
+        'The first unsolved problem in this pattern, in the current order: sorted by ' +
+          'problem name, Z to A.',
       );
 
       // Learning order, last to first: Problem 3 again (Problem 4 is solved).
-      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&sort=study-order-descending', HandsOnDsa);
+      await harness.navigateByUrl(
+        '/learn/hands-on-dsa?view=groups&sort=study-order-descending',
+        HandsOnDsa,
+      );
       expect(next().getAttribute('aria-label')).toBe('Next unsolved: Problem 3');
       await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
       expect(next().getAttribute('aria-label')).toBe('Next unsolved: Problem 2');
-      expect(root.querySelector(`#${next().getAttribute('aria-describedby')}`)!.textContent!.trim()).toBe(
-        'The first unsolved problem in this pattern, in the current order: sorted by learning order, first to last.',
+      expect(
+        root.querySelector(`#${next().getAttribute('aria-describedby')}`)!.textContent!.trim(),
+      ).toBe(
+        'The first unsolved problem in this pattern, in the current order: sorted by ' +
+          'learning order, first to last.',
       );
 
       // Hide solved leaves the pattern's progress as it is and lists only what is left.

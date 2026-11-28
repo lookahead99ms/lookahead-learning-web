@@ -128,7 +128,7 @@ type Language = 'java' | 'python' | 'go';
                 [code]="practiceCode()"
                 [language]="practiceLanguage()"
                 [draftKey]="practiceLanguage()"
-                [style.--studio-code-height]="(practiceEditorRows() * 24) + 'px'"
+                [style.--studio-code-height]="practiceEditorRows() * 24 + 'px'"
                 (codeChange)="updatePracticeCode($event)"
               />
             </div>
@@ -738,7 +738,9 @@ export class CodingSolutionTabs {
     const source = encodeURIComponent(btoa(unescape(encodeURIComponent(solution.source))));
     return {
       ...visual,
-      assetPath: `${path}?lang=${solution.language.toLowerCase()}&input=${this.visualInput()}${hash ? `&problem=${hash}` : ''}&source=${source}`,
+      assetPath:
+        `${path}?lang=${solution.language.toLowerCase()}&input=${this.visualInput()}` +
+        `${hash ? `&problem=${hash}` : ''}&source=${source}`,
     };
   });
   protected readonly visualInputExample = computed(() => {
@@ -993,15 +995,21 @@ export class CodingSolutionTabs {
     return (
       this.practiceStarters()[language] ??
       {
-        java: 'static int solve(int[] values) {\n  // State the invariant here.\n  // TODO: implement\n  return 0;\n}',
+        java:
+          'static int solve(int[] values) {\n  // State the invariant here.\n  // TODO: ' +
+          'implement\n  return 0;\n}',
         python: '# State the invariant here.\ndef solve(values):\n    # TODO: implement\n    pass',
-        go: 'func solve(values []int) int {\n    // State the invariant here.\n    // TODO: implement\n    return 0\n}',
+        go:
+          'func solve(values []int) int {\n    // State the invariant here.\n    // TODO: ' +
+          'implement\n    return 0\n}',
       }[language]
     );
   }
   private highlight(source: string): string {
-    return highlightLearningCode(source, this.activeSolution()?.language.toLowerCase())
-      .replaceAll('class="syntax-', 'class="token-');
+    return highlightLearningCode(source, this.activeSolution()?.language.toLowerCase()).replaceAll(
+      'class="syntax-',
+      'class="token-',
+    );
   }
   private highlightPseudocode(source: string): string {
     return source

@@ -4,9 +4,9 @@ import { TheoryCheatSheet } from '../../content/content.models';
 import { evenGridColumns } from '../even-grid';
 
 /**
- * Quick revision as a cheat sheet: the template (Java | Python | Go, drawn by the lesson's own language-code
- * block), white numbered tiles with the traps last, then the exact facts as chips. Same tile order in every lesson.
- * The host is the lesson's `div.cheat-sheet`.
+ * Quick revision as a cheat sheet: the template (Java | Python | Go, drawn by the lesson's own
+ * language-code block), white numbered tiles with the traps last, then the exact facts as chips.
+ * Same tile order in every lesson. The host is the lesson's `div.cheat-sheet`.
  */
 @Component({
   selector: 'div[appLessonCheatSheet]',
@@ -15,13 +15,23 @@ import { evenGridColumns } from '../even-grid';
     @if (languageCode(); as code) {
       <div class="cheat-template">
         <h3>The template</h3>
-        <ng-container [ngTemplateOutlet]="code" [ngTemplateOutletContext]="{ $implicit: sheet().codeTabs, key: sectionId() + '-template', label: 'Cheat sheet template' }" />
+        <ng-container
+          [ngTemplateOutlet]="code"
+          [ngTemplateOutletContext]="{
+            $implicit: sheet().codeTabs,
+            key: sectionId() + '-template',
+            label: 'Cheat sheet template',
+          }"
+        />
       </div>
     }
     <ol class="cheat-tiles" [attr.data-columns]="gridColumns(sheet().tiles.length)">
       @for (tile of sheet().tiles; track tile.title; let index = $index, last = $last) {
         <li class="cheat-tile" [class.cheat-traps]="last">
-          <h3><span class="cheat-number" aria-hidden="true">{{ index + 1 }}</span><span class="rich" [innerHTML]="tile.title"></span></h3>
+          <h3
+            ><span class="cheat-number" aria-hidden="true">{{ index + 1 }}</span
+            ><span class="rich" [innerHTML]="tile.title"></span
+          ></h3>
           <ul>
             @for (point of tile.points; track point) {
               <li [innerHTML]="point"></li>
@@ -51,8 +61,9 @@ import { evenGridColumns } from '../even-grid';
       .cheat-template {
         margin-bottom: 1.25rem;
       }
-      /* Tiles take their column count from the number of tiles (data-columns, even-grid.ts; user review #21):
-         4 are 2×2, 6 are 3 + 3, 5 are 3 + 2, so no row ends with one lonely tile. Narrow lessons drop to fewer columns. */
+      /* Tiles take their column count from the number of tiles (data-columns, even-grid.ts; user
+         review #21): 4 are 2×2, 6 are 3 + 3, 5 are 3 + 2, so no row ends with one lonely tile.
+         Narrow lessons drop to fewer columns. */
       @container lesson (min-width: 560px) {
         .cheat-tiles:not([data-columns='1']) {
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -138,7 +149,10 @@ export class LessonCheatSheet {
   readonly sheet = input.required<TheoryCheatSheet>();
   /** The section id, so the template's language tabs get ids of their own. */
   readonly sectionId = input.required<string>();
-  /** The lesson's Java | Python | Go code block, or null when the sheet has no template in three languages. */
+  /**
+   * The lesson's Java | Python | Go code block, or null when the sheet has no template in three
+   * languages.
+   */
   readonly languageCode = input<TemplateRef<unknown> | null>(null);
   protected readonly gridColumns = evenGridColumns;
 }

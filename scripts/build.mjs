@@ -10,20 +10,16 @@ const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 // DLV-941: robots.txt (and sitemap.xml when LOOKAHEAD_SITE_ORIGIN is set) ship from public/.
 await writeSeoFiles({ protectedBuild: isProtectedBuild(process.argv.slice(2)) });
 const angularCli = resolve(repositoryRoot, 'node_modules/@angular/cli/bin/ng.js');
-const child = spawn(
-  process.execPath,
-  [angularCli, 'build', ...process.argv.slice(2)],
-  {
-    cwd: repositoryRoot,
-    stdio: 'inherit',
-    env: {
-      ...process.env,
-      // Release validation must not share Angular's persistent cache with a
-      // concurrently running connected preview.
-      CI: 'true',
-    },
+const child = spawn(process.execPath, [angularCli, 'build', ...process.argv.slice(2)], {
+  cwd: repositoryRoot,
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    // Release validation must not share Angular's persistent cache with a
+    // concurrently running connected preview.
+    CI: 'true',
   },
-);
+});
 
 child.once('error', (error) => {
   console.error(error instanceof Error ? error.message : error);

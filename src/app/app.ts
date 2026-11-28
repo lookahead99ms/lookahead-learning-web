@@ -28,7 +28,8 @@ export class App {
     effect(() => root.toggleAttribute('data-page-loading', this.readiness.loading()));
     const account = inject(StudyPlanAccount);
     const router = inject(Router);
-    // DLV-969 (owner, 2026-11-06): staff without a GitHub account on file get the GitHub dialog after each sign-in.
+    // DLV-969 (owner, 2026-11-06): staff without a GitHub account on file get the GitHub dialog
+    // after each sign-in.
     inject(GithubPrompt).start();
     effect(() => {
       if (!account.sessionExpired()) return;

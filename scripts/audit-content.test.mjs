@@ -275,18 +275,21 @@ async function fixture(t) {
   return { root, put, data };
 }
 
-test('file audit is deterministic, excludes delivery, and recognizes the composed catalog route', async (t) => {
-  const { root, put } = await fixture(t);
-  const first = await auditContent(root);
-  await put('delivery/delivery-plan.json', { arbitrary: 'outside curriculum scope' });
-  assert.deepEqual(await auditContent(root), first);
-  assert.equal(first.paths[0].courses, 1);
-  assert.equal(first.paths[0].catalogs, 2);
-  assert.equal(first.paths[0].items, 2);
-  assert.deepEqual(first.issues, []);
-  await put('learn/catalog.json', [{ id: 'algorithmic-patterns' }]);
-  assert.notEqual((await auditContent(root)).sourceFingerprint, first.sourceFingerprint);
-});
+test(
+  'file audit is deterministic, excludes delivery, and recognizes the composed catalog ' + 'route',
+  async (t) => {
+    const { root, put } = await fixture(t);
+    const first = await auditContent(root);
+    await put('delivery/delivery-plan.json', { arbitrary: 'outside curriculum scope' });
+    assert.deepEqual(await auditContent(root), first);
+    assert.equal(first.paths[0].courses, 1);
+    assert.equal(first.paths[0].catalogs, 2);
+    assert.equal(first.paths[0].items, 2);
+    assert.deepEqual(first.issues, []);
+    await put('learn/catalog.json', [{ id: 'algorithmic-patterns' }]);
+    assert.notEqual((await auditContent(root)).sourceFingerprint, first.sourceFingerprint);
+  },
+);
 
 test('planned module records are counted on disk but excluded from active items', async (t) => {
   const { root, put, data } = await fixture(t);
@@ -298,7 +301,7 @@ test('planned module records are counted on disk but excluded from active items'
   assert.equal(report.modules.find((item) => item.id === 'practice-fixture').recordsOnDisk, 1);
 });
 
-test('missing related articles, visual files, modules, and orphan files are reported', async (t) => {
+test('missing related articles, visuals, modules, and orphan files are reported', async (t) => {
   const { root, put, data } = await fixture(t);
   data.modules.push({ id: 'missing-module' });
   await put('learn/algorithmic-patterns/course.json', data);
@@ -331,7 +334,7 @@ test('an exact repeated answer is a review signal, not discarded content', async
   assert.equal(report.duplicateAnswerGroups.length, 1);
 });
 
-test('lesson code counts exclude code found only inside its embedded guided problems', async (t) => {
+test('lesson code counts exclude code found only in its embedded guided problems', async (t) => {
   const { root } = await fixture(t);
   const report = await auditContent(root);
   assert.equal(report.paths[0].lessonsWithCode, 0);

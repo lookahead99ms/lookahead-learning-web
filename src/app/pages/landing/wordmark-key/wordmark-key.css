@@ -180,7 +180,6 @@
   outline-offset: 2px;
 }
 
-
 /* Skipped to the end: the finished wordmark at once (the loop's light still runs later). */
 :host-context([data-skip]) .key-drawing,
 :host-context([data-skip]) .recolour,

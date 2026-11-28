@@ -34,10 +34,16 @@ export class PasswordStepPage {
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly accounts = inject(StudyPlanAccount);
-  /** Continue with Google is offered on these pages (the same condition as the sign-in form's Google hint). */
+  /**
+   * Continue with Google is offered on these pages (the same condition as the sign-in form's Google
+   * hint).
+   */
   protected readonly google = computed(() => !!this.accounts.authOptions()?.google);
-  private readonly query = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
-  protected readonly kind = (this.route.snapshot.data['passwordStep'] ?? 'forgot') as PasswordStepKind;
+  private readonly query = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  protected readonly kind = (this.route.snapshot.data['passwordStep'] ??
+    'forgot') as PasswordStepKind;
   protected readonly returnTo = computed(() => safeAccountReturn(this.query().get('returnTo')));
   protected readonly rules = PASSWORD_RULES;
   protected readonly email = signal(this.api.email());
@@ -46,12 +52,21 @@ export class PasswordStepPage {
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly status = signal('');
-  /** DLV-969 S36.8: a finished sign-in that reports another account with this email shows "Check your inbox". */
+  /**
+   * DLV-969 S36.8: a finished sign-in that reports another account with this email shows "Check
+   * your inbox".
+   */
   protected readonly mergeNext = signal<string | null>(null);
-  /** The address the code went to: Cognito's masked form when it gave one, otherwise our own mask. */
-  protected readonly destination = computed(() => this.api.destination() || (this.email() ? maskEmail(this.email()) : ''));
+  /**
+   * The address the code went to: Cognito's masked form when it gave one, otherwise our own mask.
+   */
+  protected readonly destination = computed(
+    () => this.api.destination() || (this.email() ? maskEmail(this.email()) : ''),
+  );
   /** A reload loses the in-memory email; then the screen asks for it again. */
-  protected readonly needsEmail = computed(() => this.kind !== 'new-password' && this.kind !== 'code' && !this.api.email());
+  protected readonly needsEmail = computed(
+    () => this.kind !== 'new-password' && this.kind !== 'code' && !this.api.email(),
+  );
 
   constructor() {
     if (!this.accounts.authOptions()) void this.accounts.loadAuthOptions();
@@ -107,13 +122,22 @@ export class PasswordStepPage {
           router: this.router,
           document: this.document,
           returnTo: this.returnTo(),
-          after: this.kind === 'forgot' ? 'reset' : this.kind === 'reset' ? 'reset' : this.kind === 'confirm' ? 'sign-up' : 'sign-in',
+          after:
+            this.kind === 'forgot'
+              ? 'reset'
+              : this.kind === 'reset'
+                ? 'reset'
+                : this.kind === 'confirm'
+                  ? 'sign-up'
+                  : 'sign-in',
         },
         this.api,
       );
     } catch (error) {
       this.newPassword.set('');
-      this.error.set(problemMessage(error instanceof PasswordSignInError ? error.problem : 'unavailable'));
+      this.error.set(
+        problemMessage(error instanceof PasswordSignInError ? error.problem : 'unavailable'),
+      );
     } finally {
       this.busy.set(false);
     }
@@ -128,7 +152,9 @@ export class PasswordStepPage {
       if (step.kind === 'code-sent' && step.destination) this.api.destination.set(step.destination);
       this.status.set('We sent a new code.');
     } catch (error) {
-      this.error.set(problemMessage(error instanceof PasswordSignInError ? error.problem : 'unavailable'));
+      this.error.set(
+        problemMessage(error instanceof PasswordSignInError ? error.problem : 'unavailable'),
+      );
     } finally {
       this.busy.set(false);
     }

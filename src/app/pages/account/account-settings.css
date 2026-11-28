@@ -433,7 +433,9 @@ input:focus-visible,
   border-radius: 12px;
   background: var(--surface);
   cursor: pointer;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 .theme-option:hover {
   border-color: color-mix(in srgb, var(--accent-strong) 45%, var(--line));
@@ -530,7 +532,8 @@ input:focus-visible,
     block-size: 44px;
   }
 }
-/* Wide page grid (see account.css): Profile | Membership, links across, Security | Active sign-ins. */
+/* Wide page grid (see account.css): Profile | Membership, links across, Security | Active sign-ins.
+*/
 @media (min-width: 1360px) {
   #links {
     grid-column: 1 / -1;
@@ -627,7 +630,9 @@ input:focus-visible,
   background: var(--surface);
   color: var(--text-strong);
   text-decoration: none;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 .path-action[data-path='grow'] {
   --path-color: var(--path-grow);
@@ -655,8 +660,16 @@ input:focus-visible,
   border-radius: 8px;
   border-block-start: 3px solid var(--path-color);
   background:
-    radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--path-color) 28%, transparent), transparent 60%),
-    linear-gradient(135deg, color-mix(in srgb, var(--path-color) 18%, var(--surface)), color-mix(in srgb, var(--path-color) 6%, var(--surface)));
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in srgb, var(--path-color) 28%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--path-color) 18%, var(--surface)),
+      color-mix(in srgb, var(--path-color) 6%, var(--surface))
+    );
   text-align: center;
 }
 .path-mark {

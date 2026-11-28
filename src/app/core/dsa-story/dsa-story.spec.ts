@@ -26,14 +26,20 @@ function render(problem: PatternProblemV1 = twoSumProblem()) {
     fixture.detectChanges();
   };
   const text = (selector: string) => element.querySelector(selector)?.textContent?.trim();
-  const names = () => [...element.querySelectorAll('.values .variable dt')].map((node) => node.textContent?.trim());
+  const names = () =>
+    [...element.querySelectorAll('.values .variable dt')].map((node) => node.textContent?.trim());
   return { fixture, element, click, button, key, text, names };
 }
 
 /** The Two Sum fixture with a second example whose recorded Python trace has state. */
 function withSecondExample(): PatternProblemV1 {
   const problem = twoSumProblem();
-  const event = (id: string, anchor: string, variables: { name: string; value: string; changed?: boolean; type?: string }[], result?: string) => ({
+  const event = (
+    id: string,
+    anchor: string,
+    variables: { name: string; value: string; changed?: boolean; type?: string }[],
+    result?: string,
+  ) => ({
     id,
     label: anchor,
     phase: 'Run',
@@ -73,7 +79,10 @@ function withSecondExample(): PatternProblemV1 {
           event('p2', 'py-7', [], '[0, 1]'),
         ],
         languagePaths: {
-          python: ['py-2', 'py-3', 'py-7'].map((sourceAnchor, eventIndex) => ({ sourceAnchor, eventIndex })),
+          python: ['py-2', 'py-3', 'py-7'].map((sourceAnchor, eventIndex) => ({
+            sourceAnchor,
+            eventIndex,
+          })),
         },
       },
     ],
@@ -90,13 +99,21 @@ describe('DsaStory', () => {
     expect(text('.approach-sum')).toContain('One pass with a hash map.');
     expect(text('.approach-sum')).toContain('Time O(n)');
     click('Approach');
-    expect(element.querySelector('.approach-box')?.textContent).toContain('One pass with a hash map.');
-    expect(element.querySelector('.approach-box')?.textContent).toContain('Unsorted input; O(1) lookups.');
+    expect(element.querySelector('.approach-box')?.textContent).toContain(
+      'One pass with a hash map.',
+    );
+    expect(element.querySelector('.approach-box')?.textContent).toContain(
+      'Unsorted input; O(1) lookups.',
+    );
     expect(element.querySelector('.approach-box')?.textContent).toContain('Time O(n)');
-    const captions = [...element.querySelectorAll('.view figcaption')].map((node) => node.textContent?.trim());
+    const captions = [...element.querySelectorAll('.view figcaption')].map((node) =>
+      node.textContent?.trim(),
+    );
     expect(captions[0]).toContain('values');
     expect(captions[1]).toContain('seen');
-    expect(element.querySelector('.values')?.getAttribute('aria-label')).toBe('Values at this step');
+    expect(element.querySelector('.values')?.getAttribute('aria-label')).toBe(
+      'Values at this step',
+    );
     // values and seen are drawn above, so they fold behind "+2 drawn above".
     expect(names()).toEqual(['target', 'index', 'value', 'need', 'result']);
     click('+2 drawn above');
@@ -106,23 +123,30 @@ describe('DsaStory', () => {
     expect(text('.step-count')).toBe('Step 1 of 6');
   });
 
-  it('steps forward: pointer, tones, changed values, text alternative and code line all move', () => {
-    const { element, click, text } = render();
-    click('Next step');
-    click('Next step');
-    expect(text('.step-count')).toBe('Step 3 of 6');
-    expect(text('.caption')).toBe('Is 7 in seen? No.');
-    expect(element.querySelector('.entry.tone-miss')?.textContent).toContain('7');
-    expect(element.querySelector('.cell.tone-active .v')?.textContent).toBe('2');
-    const summaries = [...element.querySelectorAll('.view .sr-only')].map((node) => node.textContent);
-    expect(summaries[1]).toContain('Looked up 7: not present.');
-    click('Next step');
-    click('+2 drawn above');
-    const changed = [...element.querySelectorAll('.variable.changed dt')].map((node) => node.textContent?.trim());
-    expect(changed).toEqual(['seen']);
-    expect(element.querySelector('.variable.changed')?.classList).toContain('drawn');
-    expect(element.querySelector('.entry.tone-new .k')?.textContent).toBe('2');
-  });
+  it(
+    'steps forward: pointer, tones, changed values, text alternative and code line all ' + 'move',
+    () => {
+      const { element, click, text } = render();
+      click('Next step');
+      click('Next step');
+      expect(text('.step-count')).toBe('Step 3 of 6');
+      expect(text('.caption')).toBe('Is 7 in seen? No.');
+      expect(element.querySelector('.entry.tone-miss')?.textContent).toContain('7');
+      expect(element.querySelector('.cell.tone-active .v')?.textContent).toBe('2');
+      const summaries = [...element.querySelectorAll('.view .sr-only')].map(
+        (node) => node.textContent,
+      );
+      expect(summaries[1]).toContain('Looked up 7: not present.');
+      click('Next step');
+      click('+2 drawn above');
+      const changed = [...element.querySelectorAll('.variable.changed dt')].map((node) =>
+        node.textContent?.trim(),
+      );
+      expect(changed).toEqual(['seen']);
+      expect(element.querySelector('.variable.changed')?.classList).toContain('drawn');
+      expect(element.querySelector('.entry.tone-new .k')?.textContent).toBe('2');
+    },
+  );
 
   it('highlights the lines the step ran in the page-wide language and switches languages', () => {
     const { element, click } = render();
@@ -130,15 +154,16 @@ describe('DsaStory', () => {
     language.select('python');
     click('Next step');
     expect(element.querySelector('.line.current')?.textContent).toContain('py-5');
-    expect([...element.querySelectorAll('.line.ran')].map((line) => line.textContent?.trim())).toEqual([
-      '3# py-3',
-      '4# py-4',
-    ]);
+    expect(
+      [...element.querySelectorAll('.line.ran')].map((line) => line.textContent?.trim()),
+    ).toEqual(['3# py-3', '4# py-4']);
     click('Java');
     expect(language.selected()).toBe('java');
     expect(element.querySelector('pre code')?.getAttribute('data-code-language')).toBe('java');
     expect(element.querySelector('.line.current')?.textContent).toContain('j-5');
-    expect(element.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()).toBe('Java');
+    expect(element.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()).toBe(
+      'Java',
+    );
   });
 
   it('keeps the code panel on the line of every step, in every language', () => {
@@ -169,7 +194,9 @@ describe('DsaStory', () => {
     const result = element.querySelector('.variable[data-kind="result"] dd');
     expect(result?.textContent).toBe('[0, 1]');
     expect(element.querySelectorAll('.cell.tone-found')).toHaveLength(2);
-    expect((element.querySelector('button[aria-label="Next step"]') as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (element.querySelector('button[aria-label="Next step"]') as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it('steps with the arrow keys and keeps the caption quiet while playing', () => {
@@ -229,7 +256,9 @@ describe('DsaStory', () => {
       // A modifier keeps the browser's meaning.
       element
         .querySelector('.walkthrough')!
-        .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
+        .dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+        );
       expect(text('.step-count')).toBe('Step 1 of 6');
     });
 
@@ -264,7 +293,7 @@ describe('DsaStory', () => {
       }
     });
 
-    it('draws the recorded state with the story\'s own cells, not a second drawing style', () => {
+    it("draws the recorded state with the story's own cells, not a second drawing style", () => {
       const { element, fixture, click } = render(withSecondExample());
       TestBed.inject(ReferenceLanguageService).select('python');
       fixture.detectChanges();
@@ -284,8 +313,12 @@ describe('DsaStory', () => {
       expect(cells.map((cell) => cell.querySelector('.v')?.textContent)).toEqual(['3', '3']);
       expect(cells[0].classList).toContain('tone-active');
       // Inside the player the state inspector uses the player's type sizes.
-      expect(element.querySelector('app-studio-inspector')?.getAttribute('data-scale')).toBe('player');
-      expect(element.querySelector('app-studio-essential-state')?.getAttribute('data-scale')).toBe('player');
+      expect(element.querySelector('app-studio-inspector')?.getAttribute('data-scale')).toBe(
+        'player',
+      );
+      expect(element.querySelector('app-studio-essential-state')?.getAttribute('data-scale')).toBe(
+        'player',
+      );
     });
 
     it('steps the same player through the recorded lines of the same example', () => {
@@ -297,7 +330,9 @@ describe('DsaStory', () => {
       click('Next step');
       click('Every line');
       expect(story.everyLine()).toBe(true);
-      expect(element.querySelector('.mode-switch [aria-pressed="true"]')?.textContent?.trim()).toBe('Every line');
+      expect(element.querySelector('.mode-switch [aria-pressed="true"]')?.textContent?.trim()).toBe(
+        'Every line',
+      );
       expect(text('.step-count')).toBe('Step 1 of 11');
       expect(text('.caption-line')).toBe('Line 2: # py-2');
       expect(element.querySelector('.line.current')?.textContent).toContain('py-2');
@@ -308,7 +343,9 @@ describe('DsaStory', () => {
       click('Next step');
       expect(text('.step-count')).toBe('Step 2 of 11');
       expect(element.querySelector('.line.current')?.textContent).toContain('py-3');
-      expect([...element.querySelectorAll('.line.ran')].map((line) => line.textContent?.trim())).toEqual(['2# py-2']);
+      expect(
+        [...element.querySelectorAll('.line.ran')].map((line) => line.textContent?.trim()),
+      ).toEqual(['2# py-2']);
       // The ideas stay as a jump list; choosing one returns to the story's steps.
       const ideas = [...element.querySelectorAll<HTMLButtonElement>('.ideas button')];
       expect(ideas.map((item) => item.getAttribute('aria-current'))).toEqual([null, null, null]);
@@ -320,46 +357,57 @@ describe('DsaStory', () => {
       expect(text('.caption')).toBe('Is 7 in seen? No.');
     });
 
-    it('runs another example line by line with its own trace, and Steps returns to the story', () => {
-      const { element, fixture, click, text, names } = render(withSecondExample());
-      TestBed.inject(ReferenceLanguageService).select('python');
-      fixture.detectChanges();
-      const select = element.querySelector<HTMLSelectElement>('.example select')!;
-      expect([...select.options].map((option) => option.textContent?.trim())).toEqual([
-        'values = [2,7,11,15], target = 26 → [2,3]',
-        'values = [3,3], target = 6 → [0,1] (line by line)',
-      ]);
-      select.value = 'pair';
-      select.dispatchEvent(new Event('change'));
-      fixture.detectChanges();
-      expect(text('.notice')).toContain('Steps animate values = [2,7,11,15], target = 26.');
-      expect(text('.notice')).toContain('Two equal values make the pair.');
-      expect(text('.step-count')).toBe('Step 1 of 3');
-      expect(names()).toEqual(['seen', 'result']);
-      click('Next step');
-      click('Next step');
-      expect(element.querySelector('.variable[data-kind="result"] dd')?.textContent).toBe('[0, 1]');
-      expect(text('.caption')).toContain('Returns [0, 1].');
-      // The state inspector and the transcript are folded under the values.
-      const details = [...element.querySelectorAll('app-walkthrough-line-detail > details > summary')].map((node) =>
-        node.textContent?.trim(),
-      );
-      expect(details).toEqual(['State inspector and all recorded locals', 'Read every line as text']);
-      expect(element.querySelector('app-walkthrough-line-detail .essential-state')).not.toBeNull();
-      expect(element.querySelector('app-walkthrough-line-detail li[aria-current="step"]')?.textContent).toContain(
-        'line 7: # py-7',
-      );
-      click('Steps');
-      expect(select.value).toBe('standard');
-      expect(text('.step-count')).toBe('Step 1 of 6');
-      expect(element.querySelector('.notice')).toBeNull();
-    });
+    it(
+      'runs another example line by line with its own trace, and Steps returns to the ' + 'story',
+      () => {
+        const { element, fixture, click, text, names } = render(withSecondExample());
+        TestBed.inject(ReferenceLanguageService).select('python');
+        fixture.detectChanges();
+        const select = element.querySelector<HTMLSelectElement>('.example select')!;
+        expect([...select.options].map((option) => option.textContent?.trim())).toEqual([
+          'values = [2,7,11,15], target = 26 → [2,3]',
+          'values = [3,3], target = 6 → [0,1] (line by line)',
+        ]);
+        select.value = 'pair';
+        select.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        expect(text('.notice')).toContain('Steps animate values = [2,7,11,15], target = 26.');
+        expect(text('.notice')).toContain('Two equal values make the pair.');
+        expect(text('.step-count')).toBe('Step 1 of 3');
+        expect(names()).toEqual(['seen', 'result']);
+        click('Next step');
+        click('Next step');
+        expect(element.querySelector('.variable[data-kind="result"] dd')?.textContent).toBe(
+          '[0, 1]',
+        );
+        expect(text('.caption')).toContain('Returns [0, 1].');
+        // The state inspector and the transcript are folded under the values.
+        const details = [
+          ...element.querySelectorAll('app-walkthrough-line-detail > details > summary'),
+        ].map((node) => node.textContent?.trim());
+        expect(details).toEqual([
+          'State inspector and all recorded locals',
+          'Read every line as text',
+        ]);
+        expect(
+          element.querySelector('app-walkthrough-line-detail .essential-state'),
+        ).not.toBeNull();
+        expect(
+          element.querySelector('app-walkthrough-line-detail li[aria-current="step"]')?.textContent,
+        ).toContain('line 7: # py-7');
+        click('Steps');
+        expect(select.value).toBe('standard');
+        expect(text('.step-count')).toBe('Step 1 of 6');
+        expect(element.querySelector('.notice')).toBeNull();
+      },
+    );
   });
 
   it('switches between Drawing and Code on a narrow screen', () => {
     const { element, click } = render();
     const walkthrough = element.querySelector('.walkthrough')!;
-    const pressed = () => element.querySelector('.pane-switch [aria-pressed="true"]')?.textContent?.trim();
+    const pressed = () =>
+      element.querySelector('.pane-switch [aria-pressed="true"]')?.textContent?.trim();
     expect(walkthrough.getAttribute('data-pane')).toBe('drawing');
     expect(pressed()).toBe('Drawing');
     click('Code');

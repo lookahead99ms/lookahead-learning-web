@@ -151,8 +151,10 @@ export function buildInterviewSprint(
           requiredSessionId: entry.source.id,
           reviewDueDay: entry.dueDay,
           instructions: final
-            ? 'Explain your approach without notes, test one failure case, then recap your error notes. This is rehearsal, not proof of mastery.'
-            : 'Recall the approach without notes. Revisit your mistake or uncertainty, then explain the correction. Record what still needs review.',
+            ? 'Explain your approach without notes, test one failure case, then recap ' +
+              'your error notes. This is rehearsal, not proof of mastery.'
+            : 'Recall the approach without notes. Revisit your mistake or uncertainty, ' +
+              'then explain the correction. Record what still needs review.',
         });
         reviewed.add(entry.source.sourceContentId!);
         entry.count++;
@@ -205,10 +207,15 @@ export function buildInterviewSprint(
           relatedLessonIds: doc.studyRelatedLessonIds ?? [],
           coverageKey: next.key,
           instructions: learning
-            ? 'Learn or practise the published material at your pace. This duration is an estimate; unfinished work stays unfinished.'
+            ? 'Learn or practise the published material at your pace. This duration is an ' +
+              'estimate; unfinished work stays unfinished.'
             : isLesson(doc)
-              ? 'First explain the concept from memory. Use the lesson to repair a specific gap, then note what remains unclear. This refresh does not complete the full lesson.'
-              : 'Spend about 15 minutes attempting the task, then 5 minutes explaining the approach and checking errors. Stop at the timebox; an attempt does not mean the full problem is completed.',
+              ? 'First explain the concept from memory. Use the lesson to repair a ' +
+                'specific gap, then note what remains unclear. This refresh does not ' +
+                'complete the full lesson.'
+              : 'Spend about 15 minutes attempting the task, then 5 minutes explaining ' +
+                'the approach and checking errors. Stop at the timebox; an attempt does ' +
+                'not mean the full problem is completed.',
         };
         append(item);
         used.add(id);

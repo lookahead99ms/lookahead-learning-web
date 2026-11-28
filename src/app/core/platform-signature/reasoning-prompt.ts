@@ -32,7 +32,9 @@ export const REASONING_STATEMENTS: Record<'reasoning' | 'ai', readonly Statement
   preserveWhitespaces: true,
   host: { '[class.stacked]': 'stacked()' },
   // prettier-ignore
-  template: `@for (line of lines(); track line.key) {<span class="line"><span class="lead">{{ line.lead }}</span> {{ line.middle }} <span class="key" [class.actor]="line.actor">{{ line.key }}</span>@if (line.tail) { {{ line.tail }}}.</span> }`,
+  template: `@for (line of lines(); track line.key) {<span class="line"><span class="lead">{{
+  line.lead }}</span> {{ line.middle }} <span class="key" [class.actor]="line.actor">{{ line.key
+  }}</span>@if (line.tail) { {{ line.tail }}}.</span> }`,
   styles: `
     :host {
       color: var(--text-strong);

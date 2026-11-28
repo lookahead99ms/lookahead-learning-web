@@ -21,7 +21,9 @@ export interface OptimalApproachLink {
 }
 
 /** The siblings as links, Approach 1 first, then by approach number. */
-export function optimalApproachLinks(family: DsaApproachFamily | null | undefined): OptimalApproachLink[] {
+export function optimalApproachLinks(
+  family: DsaApproachFamily | null | undefined,
+): OptimalApproachLink[] {
   if (!family?.siblings?.length) return [];
   return [...family.siblings]
     .sort((left, right) => left.approach - right.approach)
@@ -52,8 +54,9 @@ export function optimalApproachLinks(family: DsaApproachFamily | null | undefine
  *   line on when to prefer it. Approach 1 is marked as the best for its pattern. Its heading takes
  *   focus when the workspace's "Other optimal solutions" control jumps to it.
  * - `finish`: one line in Finish and review. With `named` (the learner revealed the pattern or
- *   solved the problem) "Also solvable optimally with <pattern>: <title>"; otherwise "Another optimal
- *   approach: <title>", so Finish and review never names a pattern the learner has not seen.
+ *   solved the problem) "Also solvable optimally with <pattern>: <title>"; otherwise "Another
+ *   optimal approach: <title>", so Finish and review never names a pattern the learner has not
+ *   seen.
  *
  * Links are prose links (AGENTS "Interaction Visual Semantics"): styled, no pills, no arrows.
  */
@@ -67,11 +70,18 @@ export function optimalApproachLinks(family: DsaApproachFamily | null | undefine
           <nav class="approach-switch" aria-label="Optimal approaches">
             @for (segment of segments(); track segment.approach) {
               @if (segment.current) {
-                <span class="segment" aria-current="page" [attr.aria-label]="'Approach ' + segment.approach + ' of ' + total() + ', this page'"
+                <span
+                  class="segment"
+                  aria-current="page"
+                  [attr.aria-label]="
+                    'Approach ' + segment.approach + ' of ' + total() + ', this page'
+                  "
                   >Approach {{ segment.approach }}</span
                 >
               } @else {
-                <a class="segment" [routerLink]="segment.route" [queryParams]="planContext()">Approach {{ segment.approach }}</a>
+                <a class="segment" [routerLink]="segment.route" [queryParams]="planContext()"
+                  >Approach {{ segment.approach }}</a
+                >
               }
             }
           </nav>
@@ -92,16 +102,19 @@ export function optimalApproachLinks(family: DsaApproachFamily | null | undefine
         }
         @default {
           <section class="other-approaches" [attr.aria-labelledby]="headingId()">
-            <h4 class="other-approaches-heading" [id]="headingId()" tabindex="-1">Other optimal approaches</h4>
+            <h4 class="other-approaches-heading" [id]="headingId()" tabindex="-1"
+              >Other optimal approaches</h4
+            >
             <p class="same-bounds">
-              Same bounds as this one: time {{ links()[0].time }}, extra space {{ links()[0].space }}.
-              The pattern you reach for decides which to carry.
+              Same bounds as this one: time {{ links()[0].time }}, extra space
+              {{ links()[0].space }}. The pattern you reach for decides which to carry.
             </p>
             <ul>
               @for (link of links(); track link.problemId) {
                 <li>
                   <p class="approach-line">
                     <a [routerLink]="link.route">{{ link.title }}</a>
+                    <!-- prettier-ignore -->
                     <span class="approach-pattern"
                       >{{ link.pattern }}@if (link.best) {, best for this pattern}</span
                     >
@@ -138,8 +151,9 @@ export function optimalApproachLinks(family: DsaApproachFamily | null | undefine
       outline-offset: 2px;
     }
     /* The header's Light / Dark switch, at the size it had beside "Help me recognize the pattern"
-       (user, 2026-10-16), now beside "Show solution": this page's approach is the filled segment, the
-       others are outlined in the same accent, so it never reads as if this page were Approach 1. */
+       (user, 2026-10-16), now beside "Show solution": this page's approach is the filled segment,
+       the others are outlined in the same accent, so it never reads as if this page were Approach
+       1. */
     .approach-switch {
       display: inline-flex;
       flex-wrap: wrap;
@@ -245,7 +259,10 @@ export class OptimalApproaches {
   readonly variant = input<OptimalApproachesVariant>('block');
   /** Lets a page with two blocks keep distinct heading ids. */
   readonly idPrefix = input('optimal-approaches');
-  /** `finish` only: the learner revealed the pattern or solved the problem, so patterns may be named. */
+  /**
+   * `finish` only: the learner revealed the pattern or solved the problem, so patterns may be
+   * named.
+   */
   readonly named = input(false);
 
   protected readonly links = computed(() => optimalApproachLinks(this.family()));
@@ -269,10 +286,13 @@ export class OptimalApproaches {
   protected readonly segments = computed(() => {
     const family = this.family();
     if (!family) return [];
-    // Only the number and the route: the switch is on screen before the learner tries (no spoilers).
+    // Only the number and the route: the switch is on screen before the learner tries (no
+    // spoilers).
     const others = this.links().map(({ approach, route }) => ({ approach, route, current: false }));
     const self = { approach: family.approach, current: true, route: [] as string[] };
     return [...others, self].sort((left, right) => left.approach - right.approach);
   });
-  protected readonly headingId = computed(() => `${this.idPrefix()}-${this.family()?.bestProblemId ?? 'family'}`);
+  protected readonly headingId = computed(
+    () => `${this.idPrefix()}-${this.family()?.bestProblemId ?? 'family'}`,
+  );
 }

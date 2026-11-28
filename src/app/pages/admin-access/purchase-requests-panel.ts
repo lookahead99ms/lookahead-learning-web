@@ -1,4 +1,16 @@
-import { Component, ElementRef, Injector, afterNextRender, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { MembershipApi, MembershipRequestError } from '../../content/membership-api';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
@@ -18,14 +30,23 @@ import {
 } from '../../content/purchase-requests';
 import type { TestAccountRow } from './test-accounts';
 
-/** DLV-969 (owner wording, 2026-11-04): what Approve or Decline did, with the way into the test account. */
+/**
+ * DLV-969 (owner wording, 2026-11-04): what Approve or Decline did, with the way into the test
+ * account.
+ */
 export interface DecisionResult {
   decision: PurchaseDecision;
   accountId: string;
-  /** The test account's display name ("Learner06"), or its username when the switcher list does not have it. */
+  /**
+   * The test account's display name ("Learner06"), or its username when the switcher list does not
+   * have it.
+   */
   name: string;
   plan: string;
-  /** Where Switch lands: the page the purchase started from when this review came from the DEV checkout screen, else "/". */
+  /**
+   * Where Switch lands: the page the purchase started from when this review came from the DEV
+   * checkout screen, else "/".
+   */
   next: string;
 }
 
@@ -46,29 +67,42 @@ export interface PurchaseRequestItem {
 }
 
 /**
- * DLV-971 (owner, 2026-11-06): who approves or declines purchase requests, by the permission flags the Domain checks
- * (manage access, or triage feedback, which admins have), not the one role label: a co-author who is also an admin is
- * labelled co-author and would otherwise lose it. Without permissions, author preview counts as the owner, as elsewhere.
+ * DLV-971 (owner, 2026-11-06): who approves or declines purchase requests, by the permission flags
+ * the Domain checks (manage access, or triage feedback, which admins have), not the one role label:
+ * a co-author who is also an admin is labelled co-author and would otherwise lose it. Without
+ * permissions, author preview counts as the owner, as elsewhere.
  */
 export function canDecidePurchases(
-  account: { authorPreview?: boolean; permissions?: { manageAccess?: boolean; triageFeedback?: boolean } } | null | undefined,
+  account:
+    | {
+        authorPreview?: boolean;
+        permissions?: { manageAccess?: boolean; triageFeedback?: boolean };
+      }
+    | null
+    | undefined,
 ): boolean {
   const permissions = account?.permissions;
   if (permissions) return !!(permissions.manageAccess || permissions.triageFeedback);
   return account?.authorPreview === true;
 }
 
-/** The role this viewer has on People and access; authorPreview without a role counts as the owner, as elsewhere. */
-export function viewerRole(account: { authorPreview?: boolean; permissions?: { feedbackRole?: string } } | null | undefined): string {
+/**
+ * The role this viewer has on People and access; authorPreview without a role counts as the owner,
+ * as elsewhere.
+ */
+export function viewerRole(
+  account: { authorPreview?: boolean; permissions?: { feedbackRole?: string } } | null | undefined,
+): string {
   return account?.permissions?.feedbackRole ?? (account?.authorPreview ? 'owner' : 'user');
 }
 
 /**
- * DLV-969 (owner, 2026-11-04, after testing DEV): the DEV test accounts' purchase requests, on People and access →
- * Review requests → Purchase requests. The owner and admins approve or decline them; co-authors and everyone else see
- * nothing (the Domain sends `pendingPurchase` to the owner and admins only and refuses anyone else with 403
- * PURCHASE_APPROVAL_FORBIDDEN). The page loads the test-account rows (it needs the count for its tab label) and passes
- * them in; `reload` asks it for fresh rows after a decision or on Refresh.
+ * DLV-969 (owner, 2026-11-04, after testing DEV): the DEV test accounts' purchase requests, on
+ * People and access → Review requests → Purchase requests. The owner and admins approve or decline
+ * them; co-authors and everyone else see nothing (the Domain sends `pendingPurchase` to the owner
+ * and admins only and refuses anyone else with 403 PURCHASE_APPROVAL_FORBIDDEN). The page loads the
+ * test-account rows (it needs the count for its tab label) and passes them in; `reload` asks it for
+ * fresh rows after a decision or on Refresh.
  */
 @Component({
   selector: 'app-purchase-requests',
@@ -84,7 +118,10 @@ export class PurchaseRequestsPanel {
   private readonly host = inject(ElementRef, { optional: true });
   /** `GET /admin/test-accounts` as the page loaded it. */
   readonly rows = input<readonly TestAccountRow[]>([]);
-  /** True once the page has an answer (or a failure), so a review knows whether its request is still waiting. */
+  /**
+   * True once the page has an answer (or a failure), so a review knows whether its request is still
+   * waiting.
+   */
   readonly loaded = input(false);
   /** The page could not load the rows: said in place of the list. */
   readonly loadError = input('');
@@ -107,7 +144,10 @@ export class PurchaseRequestsPanel {
     const decided = this.decided();
     return this.rows()
       .map((row) => ({ row, request: pendingPurchaseOf(row) }))
-      .filter((item): item is { row: TestAccountRow; request: PendingPurchase } => item.request !== null && !decided.has(item.request.purchaseId))
+      .filter(
+        (item): item is { row: TestAccountRow; request: PendingPurchase } =>
+          item.request !== null && !decided.has(item.request.purchaseId),
+      )
       .sort((a, b) => a.request.requestedAt.localeCompare(b.request.requestedAt))
       .map(({ row, request }) => ({
         row,
@@ -116,14 +156,19 @@ export class PurchaseRequestsPanel {
         term: requestTerm(request),
         price: requestPrice(request.priceCents),
         difference:
-          request.kind === 'upgrade' && request.differenceCents !== null ? `difference ${requestPrice(request.differenceCents)}` : null,
+          request.kind === 'upgrade' && request.differenceCents !== null
+            ? `difference ${requestPrice(request.differenceCents)}`
+            : null,
         by: submittedBy(request, owner),
         requested: requestedText(request.requestedAt),
       }));
   });
   /** The request whose Decline is waiting for its one-click confirmation. */
   readonly declining = signal<PurchaseRequestItem | null>(null);
-  /** Why the last Approve or Decline failed, shown in that request's own card (its confirmation stays open). */
+  /**
+   * Why the last Approve or Decline failed, shown in that request's own card (its confirmation
+   * stays open).
+   */
   readonly failure = signal<{ purchaseId: string; message: string } | null>(null);
   readonly notice = signal('');
   readonly busy = signal(false);
@@ -131,7 +176,10 @@ export class PurchaseRequestsPanel {
   readonly result = signal<DecisionResult | null>(null);
   /** The request card highlighted for the review. */
   readonly highlighted = signal<string | null>(null);
-  /** The review this panel opened, kept for Switch after the decision (the page clears its own copy). */
+  /**
+   * The review this panel opened, kept for Switch after the decision (the page clears its own
+   * copy).
+   */
   private opened: RequestReview | null = null;
   private readonly opening = effect(() => {
     const review = this.review();
@@ -139,9 +187,13 @@ export class PurchaseRequestsPanel {
     untracked(() => {
       this.opened = review;
       this.reviewOpened.emit();
-      const item = this.purchaseRequests().find((entry) => entry.request.purchaseId === review.purchaseId);
+      const item = this.purchaseRequests().find(
+        (entry) => entry.request.purchaseId === review.purchaseId,
+      );
       if (!item) {
-        this.notice.set('That purchase request is no longer waiting. It may already be approved or declined.');
+        this.notice.set(
+          'That purchase request is no longer waiting. It may already be approved or declined.',
+        );
         return;
       }
       this.highlighted.set(review.purchaseId);
@@ -152,7 +204,9 @@ export class PurchaseRequestsPanel {
   /** Scrolls the request card into view and focuses it, so a keyboard user starts on it. */
   private reveal(purchaseId: string) {
     const root = this.host?.nativeElement as HTMLElement | undefined;
-    const card = [...(root?.querySelectorAll<HTMLElement>('.request-item') ?? [])].find((item) => item.dataset['purchase'] === purchaseId);
+    const card = [...(root?.querySelectorAll<HTMLElement>('.request-item') ?? [])].find(
+      (item) => item.dataset['purchase'] === purchaseId,
+    );
     card?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     card?.focus({ preventScroll: true });
   }
@@ -175,12 +229,14 @@ export class PurchaseRequestsPanel {
   }
 
   /**
-   * Approve is one click (the owner or admin chose to); Decline comes here after its confirmation. On success the card
-   * and its confirmation go and the result shows; on failure both stay, with the reason inside the card.
+   * Approve is one click (the owner or admin chose to); Decline comes here after its confirmation.
+   * On success the card and its confirmation go and the result shows; on failure both stay, with
+   * the reason inside the card.
    */
   async decide(item: PurchaseRequestItem, decision: PurchaseDecision) {
     if (!this.canDecide() || this.busy()) return;
-    if (decision === 'decline' && this.declining()?.request.purchaseId !== item.request.purchaseId) return;
+    if (decision === 'decline' && this.declining()?.request.purchaseId !== item.request.purchaseId)
+      return;
     if (decision === 'approve') this.declining.set(null);
     this.busy.set(true);
     this.failure.set(null);
@@ -192,9 +248,13 @@ export class PurchaseRequestsPanel {
       this.highlighted.set(null);
       this.decided.update((ids) => new Set([...ids, item.request.purchaseId]));
       this.reload.emit();
-      // DLV-969 (owner wording, 2026-11-04): the result says how to verify it, with Switch to the test account. Switch
-      // goes back to the page the purchase started from only when this is the request the DEV checkout screen opened.
-      const reviewed = this.opened?.purchaseId === item.request.purchaseId ? sameSitePath(this.opened.returnTo) : null;
+      // DLV-969 (owner wording, 2026-11-04): the result says how to verify it, with Switch to the
+      // test account. Switch goes back to the page the purchase started from only when this is the
+      // request the DEV checkout screen opened.
+      const reviewed =
+        this.opened?.purchaseId === item.request.purchaseId
+          ? sameSitePath(this.opened.returnTo)
+          : null;
       const usable = await this.usable(item.row.accountId);
       this.result.set({
         decision,
@@ -203,31 +263,46 @@ export class PurchaseRequestsPanel {
         plan: item.request.toPlan.name,
         next: reviewed ?? '/',
       });
-      afterNextRender(() => (this.host?.nativeElement as HTMLElement | undefined)?.querySelector<HTMLElement>('.decision-result')?.focus(), {
-        injector: this.injector,
-      });
+      afterNextRender(
+        () =>
+          (this.host?.nativeElement as HTMLElement | undefined)
+            ?.querySelector<HTMLElement>('.decision-result')
+            ?.focus(),
+        {
+          injector: this.injector,
+        },
+      );
     } catch (failure) {
-      // 403 PURCHASE_APPROVAL_FORBIDDEN ("Only the owner or an admin can approve purchase requests.") in the server's words.
+      // 403 PURCHASE_APPROVAL_FORBIDDEN ("Only the owner or an admin can approve purchase
+      // requests.") in the server's words.
       this.failure.set({
         purchaseId: item.request.purchaseId,
         message:
           failure instanceof MembershipRequestError && failure.status === 403
             ? failure.message
-            : reason(failure) + (decision === 'approve' ? 'Approval' : 'Decline') + ' was not confirmed. Refresh and retry.',
+            : reason(failure) +
+              (decision === 'approve' ? 'Approval' : 'Decline') +
+              ' was not confirmed. Refresh and retry.',
       });
     } finally {
       this.busy.set(false);
     }
   }
 
-  /** The switcher's own entry for this test account (its display name), loading the list once; null when it is not there. */
+  /**
+   * The switcher's own entry for this test account (its display name), loading the list once; null
+   * when it is not there.
+   */
   private async usable(accountId: string): Promise<UsableTestAccount | null> {
     if (!this.dev()) return null;
     if (this.sessions.accounts() === null) await this.sessions.load();
     return this.sessions.accounts()?.find((account) => account.accountId === accountId) ?? null;
   }
 
-  /** Switch to Learner06: starts the test session, landing on the page the purchase started from or Learner06's home. */
+  /**
+   * Switch to Learner06: starts the test session, landing on the page the purchase started from or
+   * Learner06's home.
+   */
   async switchToResult() {
     const result = this.result();
     if (!result) return;

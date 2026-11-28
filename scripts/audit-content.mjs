@@ -530,15 +530,26 @@ export async function auditContent(root) {
     sourceFingerprint: createHash('sha256').update(JSON.stringify(hashes)).digest('hex'),
     methodology: {
       scope:
-        'Local source files in Learn, Grow, and Blaze. Planned modules are counted but their records are excluded, matching the course loader. Delivery, generated indexes, and application behavior are not audited.',
+        'Local source files in Learn, Grow, and Blaze. Planned modules are counted but ' +
+        'their records are excluded, matching the course loader. Delivery, generated ' +
+        'indexes, and application behavior are not audited.',
       evidence:
-        'Structural presence only. Review booleans and complete labels are assertions, not independently verified quality. No learner code is executed. Missing code can be intentional for conceptual or technology-specific lessons.',
+        'Structural presence only. Review booleans and complete labels are assertions, ' +
+        'not independently verified quality. No learner code is executed. Missing code ' +
+        'can be intentional for conceptual or technology-specific lessons.',
       lessons:
-        'A lesson needs contentType theory plus a versioned lesson schema or nonempty sections, matching article discovery. Legacy tag-only records remain counted separately, not as lesson payloads.',
+        'A lesson needs contentType theory plus a versioned lesson schema or nonempty ' +
+        'sections, matching article discovery. Legacy tag-only records remain counted ' +
+        'separately, not as lesson payloads.',
       dsaIdentity:
-        'Canonical DSA ids are authoritative when present; legacy records retain UI-equivalent normalized-title grouping until migrated. Guided and practice-ready overlap; never add those counts without subtracting their intersection.',
+        'Canonical DSA ids are authoritative when present; legacy records retain ' +
+        'UI-equivalent normalized-title grouping until migrated. Guided and ' +
+        'practice-ready overlap; never add those counts without subtracting their ' +
+        'intersection.',
       verification:
-        'Zero solutions executed by this inventory, not a claim that prior verification never happened. Use the separately attached sampled review and validation evidence.',
+        'Zero solutions executed by this inventory, not a claim that prior verification ' +
+        'never happened. Use the separately attached sampled review and validation ' +
+        'evidence.',
     },
     derivedCatalogEntries: paths.flatMap((path) =>
       catalogs[path]

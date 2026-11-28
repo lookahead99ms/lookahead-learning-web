@@ -32,11 +32,11 @@ export type PlanScope =
   | { kind: 'courses'; min: number; max: number };
 
 export type PlanDuration =
-  | { kind: 'ongoing' }
-  | { kind: 'years' | 'months' | 'days'; count: number }
-  | { kind: 'pending' };
+  { kind: 'ongoing' } | { kind: 'years' | 'months' | 'days'; count: number } | { kind: 'pending' };
 
-/** Free accounts have nothing to renew; every paid plan, promo and pass is renewed by buying again. */
+/**
+ * Free accounts have nothing to renew; every paid plan, promo and pass is renewed by buying again.
+ */
 export type RenewalPolicy = 'not-applicable' | 'manual';
 
 export interface PlanDefinition {
@@ -150,7 +150,8 @@ export const PLANS: readonly PlanDefinition[] = [
     scope: { kind: 'catalogs', catalogs: ALL_CATALOGS },
     duration: { kind: 'months', count: 1 },
     renewal: 'manual',
-    // Offered only while a sale runs (sale-preview.ts); no sale is live until the server supports it.
+    // Offered only while a sale runs (sale-preview.ts); no sale is live until the server supports
+    // it.
     pending: [],
   },
   {
@@ -162,7 +163,8 @@ export const PLANS: readonly PlanDefinition[] = [
     scope: { kind: 'catalogs', catalogs: ALL_CATALOGS },
     duration: { kind: 'years', count: 1 },
     renewal: 'manual',
-    // Offered only while a sale runs (sale-preview.ts); no sale is live until the server supports it.
+    // Offered only while a sale runs (sale-preview.ts); no sale is live until the server supports
+    // it.
     pending: [],
   },
   {
@@ -174,7 +176,8 @@ export const PLANS: readonly PlanDefinition[] = [
     scope: { kind: 'catalogs', catalogs: ALL_CATALOGS },
     duration: { kind: 'days', count: 90 },
     renewal: 'manual',
-    // Offered only while a sale runs (sale-preview.ts); no sale is live until the server supports it.
+    // Offered only while a sale runs (sale-preview.ts); no sale is live until the server supports
+    // it.
     pending: [],
   },
 ];
@@ -276,8 +279,9 @@ const YEARLY_CATALOG_PLANS: ReadonlySet<PlanId> = new Set(['learn', 'grow', 'adv
  * Moving between the yearly catalog plans (user rule, 2026-10-15):
  * - 'upgrade': the new plan includes every catalog of the current one and more. Allowed any time;
  *   the learner pays the difference for the time left and the end date stays the same.
- * - 'at-renewal': anything else (smaller, or a different catalog such as Learn to Grow). Allowed only
- *   in the last CHANGE_WINDOW_DAYS before the current plan ends; the new plan starts when it ends.
+ * - 'at-renewal': anything else (smaller, or a different catalog such as Learn to Grow). Allowed
+ *   only in the last CHANGE_WINDOW_DAYS before the current plan ends; the new plan starts when it
+ *   ends.
  * - null: same plan, or a plan outside these four, where no change rule has been decided.
  */
 export function planChange(fromId: PlanId, toId: PlanId): 'upgrade' | 'at-renewal' | null {
@@ -332,10 +336,12 @@ export function planCatalogRows(plans: readonly PlanDefinition[] = PLANS): PlanC
         : !isOfferComplete(plan)
           ? `Pending: ${plan.pending.join(', ')}`
           : plan.onSale !== undefined
-            ? (plan.onSale ? 'Available for local mock purchase' : 'Not currently on sale')
+            ? plan.onSale
+              ? 'Available for local mock purchase'
+              : 'Not currently on sale'
             : plan.group === 'promo'
-            ? 'Only during a sale; checkout not connected'
-            : 'Not on sale: checkout not connected',
+              ? 'Only during a sale; checkout not connected'
+              : 'Not on sale: checkout not connected',
   }));
 }
 
@@ -352,5 +358,7 @@ export function plansIncluding(catalog: CatalogId): { names: string[]; from: str
       plan.scope.kind === 'catalogs' &&
       plan.scope.catalogs.includes(catalog),
   ).sort((a, b) => a.priceCents - b.priceCents);
-  return plans.length ? { names: plans.map((plan) => plan.name), from: priceLabel(plans[0]) } : null;
+  return plans.length
+    ? { names: plans.map((plan) => plan.name), from: priceLabel(plans[0]) }
+    : null;
 }

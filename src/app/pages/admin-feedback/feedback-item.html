@@ -16,7 +16,9 @@
   <div class="item-columns">
     <div class="item-main" data-scroll-lock-allow>
       <div class="item-head">
-        <span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span>
+        <span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{
+          statusLabel(item)
+        }}</span>
         <span class="hint">{{ isRequest(item) ? 'Learner support ticket' : 'Feedback' }}</span>
       </div>
       <h2 class="item-title">{{ item.title }}</h2>
@@ -35,7 +37,11 @@
           @for (attachment of item.attachments; track attachment.id) {
             <li>
               @if (attachmentUrls()[attachment.id]; as url) {
-                <button type="button" class="thumbnail-button" (click)="openImage(attachment, imageDialog)">
+                <button
+                  type="button"
+                  class="thumbnail-button"
+                  (click)="openImage(attachment, imageDialog)"
+                >
                   <img [src]="url" alt="" />
                   <span class="visually-hidden">Open image {{ attachment.name }}</span>
                 </button>
@@ -70,8 +76,14 @@
           <h3>{{ isRequest(item) ? 'Note to the learner' : 'Owner’s note' }}</h3>
           <textarea name="note" rows="3" maxlength="2000" [(ngModel)]="note"></textarea>
           <div class="actions">
-            <button type="submit" class="primary" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
-            <span class="hint">Sets the status chosen on the right{{ isRequest(item) ? ' and sends the note by email' : '' }}.</span>
+            <button type="submit" class="primary" [disabled]="saving()">{{
+              saving() ? 'Saving…' : 'Save'
+            }}</button>
+            <span class="hint"
+              >Sets the status chosen on the right{{
+                isRequest(item) ? ' and sends the note by email' : ''
+              }}.</span
+            >
             <span role="status" class="message">{{ message() }}</span>
           </div>
         </form>
@@ -82,7 +94,10 @@
         <div class="actions own-actions">
           <button type="button" class="secondary" (click)="edit()">Edit</button>
           <button type="button" class="secondary danger" (click)="remove()">Delete</button>
-          <span class="hint">Your own item; you can change or remove it until the owner reviews it. Edit opens Support with the item loaded.</span>
+          <span class="hint"
+            >Your own item; you can change or remove it until the owner reviews it. Edit opens
+            Support with the item loaded.</span
+          >
           <span role="status" class="message">{{ message() }}</span>
         </div>
       }
@@ -93,11 +108,15 @@
         @if (canTriage()) {
           <select name="status" aria-label="Status" [(ngModel)]="status">
             @for (option of statuses; track option.id) {
-              <option [value]="option.id">{{ isRequest(item) && option.id === 'declined' ? 'Closed' : option.label }}</option>
+              <option [value]="option.id">{{
+                isRequest(item) && option.id === 'declined' ? 'Closed' : option.label
+              }}</option>
             }
           </select>
         } @else {
-          <span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span>
+          <span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{
+            statusLabel(item)
+          }}</span>
           @if (!isRequest(item)) {
             <p class="hint lock">Only the owner sets the status of a feedback item.</p>
           }
@@ -113,7 +132,9 @@
           <dd>{{ item.page }}</dd>
           @if (item.reference) {
             <dt>Reference</dt>
-            <dd><code>{{ item.reference }}</code></dd>
+            <dd
+              ><code>{{ item.reference }}</code></dd
+            >
           }
           <dt>Created</dt>
           <dd>{{ momentLabel(item.createdAt) }}</dd>
@@ -128,7 +149,9 @@
       <section class="side-box">
         <h3 class="side-heading">Delivery Plan</h3>
         @if (item.ticketId) {
-          <a class="ticket-link" routerLink="/delivery-plan" [fragment]="item.ticketId">🗺️ {{ ticketPill(item) }}</a>
+          <a class="ticket-link" routerLink="/delivery-plan" [fragment]="item.ticketId"
+            >🗺️ {{ ticketPill(item) }}</a
+          >
           <p class="hint">Opens the ticket on the Delivery Plan.</p>
         } @else {
           <p class="hint">Not a ticket yet.</p>
@@ -143,7 +166,13 @@
     </aside>
   </div>
 }
-<dialog appScrollLock #imageDialog class="image-dialog" aria-label="Image" (close)="viewing.set(null)">
+<dialog
+  appScrollLock
+  #imageDialog
+  class="image-dialog"
+  aria-label="Image"
+  (close)="viewing.set(null)"
+>
   @if (viewing(); as image) {
     <img [src]="image.url" [alt]="image.name" />
     <button type="button" class="secondary" (click)="imageDialog.close()">Close</button>

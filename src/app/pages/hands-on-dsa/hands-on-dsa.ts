@@ -1,4 +1,8 @@
-import { ContentRecovery, RecoveryKind, recoveryKind } from '../../core/content-recovery/content-recovery';
+import {
+  ContentRecovery,
+  RecoveryKind,
+  recoveryKind,
+} from '../../core/content-recovery/content-recovery';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, ElementRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -810,10 +814,14 @@ export class HandsOnDsa implements OnInit {
    * It is a view, not a filter, it works with pattern names hidden, and it keeps the table's sort.
    */
   protected readonly grouped = signal(false);
-  /** `patterns=show` in the URL; names are hidden by default so the list does not give them away. */
+  /**
+   * `patterns=show` in the URL; names are hidden by default so the list does not give them away.
+   */
   protected readonly patternNamesShown = signal(false);
   protected readonly patternNamesHidden = computed(() => !this.patternNamesShown());
-  /** Patterns whose name the learner revealed one at a time with "Show name" while names are hidden. */
+  /**
+   * Patterns whose name the learner revealed one at a time with "Show name" while names are hidden.
+   */
   protected readonly revealedPatterns = signal<ReadonlySet<string>>(new Set());
   /** `solved=hide` in the URL: leave out problems marked solved on this device. */
   protected readonly solvedHidden = signal(false);
@@ -874,7 +882,10 @@ export class HandsOnDsa implements OnInit {
     return order.toString().padStart(2, '0');
   }
   protected readonly groups = computed(() => this.catalog()?.groups ?? []);
-  /** Hero line counts from the published catalog: distinct problems, and only patterns that have problems. */
+  /**
+   * Hero line counts from the published catalog: distinct problems, and only patterns that have
+   * problems.
+   */
   protected readonly heroCounts = computed(() => {
     const catalog = this.catalog();
     if (!catalog) return null;
@@ -888,7 +899,9 @@ export class HandsOnDsa implements OnInit {
   protected readonly selectedGroup = computed(() =>
     resolveHandsOnDsaIndexGroup(this.groups(), this.patternId()),
   );
-  /** In the flat table `pattern` filters to one pattern; in the grouped view it only selects one. */
+  /**
+   * In the flat table `pattern` filters to one pattern; in the grouped view it only selects one.
+   */
   protected readonly filterGroup = computed(() => (this.grouped() ? null : this.selectedGroup()));
   /**
    * Every pattern with problems, in preparation order, with its problems after the filters. A
@@ -931,7 +944,10 @@ export class HandsOnDsa implements OnInit {
       };
     });
   });
-  /** The pattern in the URL, or else the first one with an unsolved match, so the pane is never empty. */
+  /**
+   * The pattern in the URL, or else the first one with an unsolved match, so the pane is never
+   * empty.
+   */
   protected readonly selectedPattern = computed<PatternEntry | null>(() => {
     const entries = this.patternEntries();
     const chosen = this.selectedGroup();
@@ -1011,13 +1027,23 @@ export class HandsOnDsa implements OnInit {
           this.patternNamesHidden() && !this.revealedPatterns().has(chosen.group.id)
             ? `Pattern ${chosen.group.preparationOrder}`
             : chosen.group.title;
-        return `${shown} ${shown === 1 ? 'problem' : 'problems'} in ${name} · ${this.sortDescription()}`;
+        return (
+          `${shown} ${shown === 1 ? 'problem' : 'problems'} in ${name} ` +
+          `· ${this.sortDescription()}`
+        );
       }
       const patterns = this.patternEntries().filter(({ problems }) => problems.length).length;
-      return `${count} ${count === 1 ? 'problem' : 'problems'} in ${patterns} ${patterns === 1 ? 'pattern' : 'patterns'} · ${this.sortDescription()}`;
+      return (
+        `${count} ${count === 1 ? 'problem' : 'problems'} ` +
+        `in ${patterns} ${patterns === 1 ? 'pattern' : 'patterns'} ` +
+        `· ${this.sortDescription()}`
+      );
     }
     if (!count) return '0 problems';
-    return `${this.pageOffset() + 1}–${Math.min(this.pageOffset() + this.pageSize, count)} of ${count} ${count === 1 ? 'problem' : 'problems'} · ${this.sortDescription()}`;
+    return (
+      `${this.pageOffset() + 1}–${Math.min(this.pageOffset() + this.pageSize, count)} ` +
+      `of ${count} ${count === 1 ? 'problem' : 'problems'} · ${this.sortDescription()}`
+    );
   });
   protected readonly sortDescription = computed(() => SORT_DESCRIPTIONS[this.sort()]);
   protected readonly pageLinks = computed(() => {
@@ -1041,7 +1067,8 @@ export class HandsOnDsa implements OnInit {
       Boolean(this.query()) ||
       this.difficulty() !== 'All' ||
       this.tierScope() !== '782' ||
-      // The view (All problems / By pattern) and the sort are how the list is shown, not filters (user, 2026-10-06).
+      // The view (All problems / By pattern) and the sort are how the list is shown, not filters
+      // (user, 2026-10-06).
       this.solvedHidden(),
   );
   /**
@@ -1073,7 +1100,10 @@ export class HandsOnDsa implements OnInit {
           this.catalog.set(catalog);
           queueMicrotask(() => this.canonicalizePage());
         },
-        error: (error) => { this.recovery.set(recoveryKind(error)); this.error.set('The practice catalog could not be loaded.'); },
+        error: (error) => {
+          this.recovery.set(recoveryKind(error));
+          this.error.set('The practice catalog could not be loaded.');
+        },
       });
   }
 
@@ -1193,7 +1223,9 @@ export class HandsOnDsa implements OnInit {
 
   /** Radio-group keys: the arrows move to the other view and choose it; Home and End too. */
   protected viewKeys(event: KeyboardEvent): void {
-    const index = this.views.findIndex(({ value }) => value === (this.grouped() ? 'groups' : 'all'));
+    const index = this.views.findIndex(
+      ({ value }) => value === (this.grouped() ? 'groups' : 'all'),
+    );
     const last = this.views.length - 1;
     const target =
       event.key === 'Home'
@@ -1326,7 +1358,8 @@ export class HandsOnDsa implements OnInit {
   }
 
   protected clearCatalogFilters(): void {
-    // Showing pattern names, the view, the chosen pattern and the sort are how the list is shown, not filters.
+    // Showing pattern names, the view, the chosen pattern and the sort are how the list is shown,
+    // not filters.
     const params = this.route.snapshot.queryParamMap;
     const kept: Record<string, string> = this.patternNamesShown() ? { patterns: 'show' } : {};
     if (this.grouped()) {

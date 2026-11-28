@@ -10,11 +10,15 @@ export function outputLines(text: string): string[] {
 }
 
 /**
- * Console lines a real IDE would show in red: exceptions, stack frames, compiler errors, failed checks,
- * and, in a run that crashed, everything from the start of the crash report (a Java exception, a Python
- * traceback or a Go panic) to the end.
+ * Console lines a real IDE would show in red: exceptions, stack frames, compiler errors, failed
+ * checks, and, in a run that crashed, everything from the start of the crash report (a Java
+ * exception, a Python traceback or a Go panic) to the end.
  */
-export function isErrorLine(line: string, output: { exitCode?: number; tool?: string; text?: string }, index = -1): boolean {
+export function isErrorLine(
+  line: string,
+  output: { exitCode?: number; tool?: string; text?: string },
+  index = -1,
+): boolean {
   if (/^(Exception in thread|\s+at |\[ERROR\]|FAILED)|: error: |\berrors?$/.test(line)) return true;
   if ((output.exitCode ?? 0) !== 0 && index >= 0 && output.text) {
     const start = outputLines(output.text).findIndex((text) => CRASH_START.test(text));
@@ -28,9 +32,10 @@ export function isPassLine(line: string): boolean {
 }
 
 /**
- * Program output modelled on an IDE run tool window (dark, as the code block): a "Run" tab strip, the command
- * in grey, one row per printed line, then the exit line after a blank row. The host is the lesson's
- * `div.run-console` (its role, label and failed state are set where it is placed); the note under it stays there too.
+ * Program output modelled on an IDE run tool window (dark, as the code block): a "Run" tab strip,
+ * the command in grey, one row per printed line, then the exit line after a blank row. The host is
+ * the lesson's `div.run-console` (its role, label and failed state are set where it is placed); the
+ * note under it stays there too.
  */
 @Component({
   selector: 'div[appLessonRunConsole]',
@@ -44,7 +49,12 @@ export function isPassLine(line: string): boolean {
         <div class="run-command">{{ output().command }}</div>
       }
       @for (line of lines(); track $index) {
-        <div class="run-line" [class.run-line-error]="isErrorLine(line, output(), $index)" [class.run-line-pass]="isPassLine(line)">{{ line }}</div>
+        <div
+          class="run-line"
+          [class.run-line-error]="isErrorLine(line, output(), $index)"
+          [class.run-line-pass]="isPassLine(line)"
+          >{{ line }}</div
+        >
       }
       <div class="run-exit">Process finished with exit code {{ output().exitCode ?? 0 }}</div>
     </div>
@@ -91,7 +101,8 @@ export function isPassLine(line: string): boolean {
         margin-top: 1.6em;
         color: #bcbec4;
       }
-      /* IDE colours for stderr-style lines and passing checks; a failed run shows a red exit line. */
+      /* IDE colours for stderr-style lines and passing checks; a failed run shows a red exit line.
+      */
       .run-line-error {
         color: #f75464;
       }
@@ -101,8 +112,8 @@ export function isPassLine(line: string): boolean {
       :host(.run-console-failed) .run-exit {
         color: #f75464;
       }
-      /* Console lines wrap so a long exception message is read in place instead of scrolled sideways
-         (algo-pattern-v1 and concept-v1 lessons, and every Debug split diff). */
+      /* Console lines wrap so a long exception message is read in place instead of scrolled
+         sideways (algo-pattern-v1 and concept-v1 lessons, and every Debug split diff). */
       :host-context(.algo-lesson) .run-console-body > div {
         white-space: pre-wrap;
         overflow-wrap: anywhere;

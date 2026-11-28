@@ -7,14 +7,21 @@ const TOKEN = 'a'.repeat(20) + '_-' + 'B9'.repeat(10) + 'z';
 const candidate = (id: string, extra: Record<string, unknown> = {}) => ({
   accountId: id,
   displayName: 'Priya ' + id,
-  signInMethods: [{ provider: 'cognito', email: 'priya@gmail.com' }, { provider: 'google', email: 'priya@gmail.com' }],
+  signInMethods: [
+    { provider: 'cognito', email: 'priya@gmail.com' },
+    { provider: 'google', email: 'priya@gmail.com' },
+  ],
   admitted: true,
   createdAt: '2026-10-01T10:00:00Z',
   lastSignInAt: '2026-11-02T09:00:00Z',
   studyPlans: [{ id: 'p1', title: 'Java basics', progressPercent: 42.4 }],
   ...extra,
 });
-const merge = { email: 'priya@gmail.com', expiresAt: '2026-11-04T10:30:00Z', candidates: [candidate('k1'), candidate('k2')] };
+const merge = {
+  email: 'priya@gmail.com',
+  expiresAt: '2026-11-04T10:30:00Z',
+  candidates: [candidate('k1'), candidate('k2')],
+};
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
 
 function setup(answer: (path: string, options: RequestInit) => Response | Promise<Response>) {
@@ -22,7 +29,8 @@ function setup(answer: (path: string, options: RequestInit) => Response | Promis
     expect(options.credentials).toBe('same-origin');
     expect(options.cache).toBe('no-store');
     expect(options.signal).toBeInstanceOf(AbortSignal);
-    if (path === '/api/v1/auth/csrf') return json(200, { data: { token: 'csrf-token', headerName: 'X-CSRF-TOKEN' } });
+    if (path === '/api/v1/auth/csrf')
+      return json(200, { data: { token: 'csrf-token', headerName: 'X-CSRF-TOKEN' } });
     return answer(path, options);
   });
   TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: transport }] });
@@ -35,7 +43,10 @@ describe('AccountMergeClient', () => {
     const { client, transport } = setup((path, options) => {
       expect(path).toBe('/api/v1/account/merge/request');
       expect(options.method).toBe('POST');
-      expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'csrf-token', 'Content-Type': 'application/json' });
+      expect(options.headers).toMatchObject({
+        'X-CSRF-TOKEN': 'csrf-token',
+        'Content-Type': 'application/json',
+      });
       expect(options.body).toBe('{}');
       return new Response(status === 202 ? '{}' : JSON.stringify({ code: 'X' }), { status });
     });
@@ -51,12 +62,18 @@ describe('AccountMergeClient', () => {
 
   it('reports a failed CSRF step or network as unavailable, never throws', async () => {
     const transport = vi.fn(async (path: string) =>
-      path.endsWith('/csrf') ? json(200, { data: { token: 'x', headerName: 'bad header' } }) : json(202, {}),
+      path.endsWith('/csrf')
+        ? json(200, { data: { token: 'x', headerName: 'bad header' } })
+        : json(202, {}),
     );
-    TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: transport }] });
+    TestBed.configureTestingModule({
+      providers: [{ provide: ACCOUNT_FETCH, useValue: transport }],
+    });
     const client = TestBed.inject(AccountMergeClient);
     expect(await client.requestMergeEmail()).toEqual({ kind: 'unavailable' });
-    transport.mockImplementation(async (path: string) => (path.endsWith('/csrf') ? new Response('', { status: 500 }) : json(202, {})));
+    transport.mockImplementation(async (path: string) =>
+      path.endsWith('/csrf') ? new Response('', { status: 500 }) : json(202, {}),
+    );
     expect(await client.requestMergeEmail()).toEqual({ kind: 'unavailable' });
     transport.mockRejectedValue(new TypeError('offline'));
     expect(await client.requestMergeEmail()).toEqual({ kind: 'unavailable' });
@@ -77,24 +94,62 @@ describe('AccountMergeClient', () => {
     if (result.kind !== 'ready') return;
     expect(result.merge.email).toBe('priya@gmail.com');
     expect(result.merge.candidates).toHaveLength(2);
-    expect(result.merge.candidates[0].signInMethods.map((m) => m.provider)).toEqual(['google', 'cognito']);
+    expect(result.merge.candidates[0].signInMethods.map((m) => m.provider)).toEqual([
+      'google',
+      'cognito',
+    ]);
     expect(result.merge.candidates[0].studyPlans[0].progressPercent).toBe(42);
     // paidMembership is optional: absent reads as none.
     expect(result.merge.candidates.map((c) => c.paidMembership)).toEqual([false, false]);
 
-    body = { data: { ...merge, candidates: [candidate('k1', { lastSignInAt: null, studyPlans: [{ id: 'p', title: 'T', progressPercent: 140 }] }), candidate('k2')] } };
+    body = {
+      data: {
+        ...merge,
+        candidates: [
+          candidate('k1', {
+            lastSignInAt: null,
+            studyPlans: [{ id: 'p', title: 'T', progressPercent: 140 }],
+          }),
+          candidate('k2'),
+        ],
+      },
+    };
     const capped = await client.loadMerge(TOKEN);
-    expect(capped.kind === 'ready' && capped.merge.candidates[0]).toMatchObject({ lastSignInAt: null, studyPlans: [{ progressPercent: 100 }] });
+    expect(capped.kind === 'ready' && capped.merge.candidates[0]).toMatchObject({
+      lastSignInAt: null,
+      studyPlans: [{ progressPercent: 100 }],
+    });
 
-    body = { data: { ...merge, candidates: [candidate('k1', { paidMembership: true }), candidate('k2', { paidMembership: 'yes' })] } };
+    body = {
+      data: {
+        ...merge,
+        candidates: [
+          candidate('k1', { paidMembership: true }),
+          candidate('k2', { paidMembership: 'yes' }),
+        ],
+      },
+    };
     const paid = await client.loadMerge(TOKEN);
-    expect(paid.kind === 'ready' && paid.merge.candidates.map((c) => c.paidMembership)).toEqual([true, false]);
+    expect(paid.kind === 'ready' && paid.merge.candidates.map((c) => c.paidMembership)).toEqual([
+      true,
+      false,
+    ]);
 
     for (const bad of [
       { data: { ...merge, candidates: [candidate('k1')] } },
       { data: { ...merge, candidates: [candidate('k1'), candidate('k1')] } },
-      { data: { ...merge, candidates: [candidate('k1'), candidate('k2', { createdAt: 'yesterday' })] } },
-      { data: { ...merge, candidates: [candidate('k1'), candidate('k2', { studyPlans: [{ id: 'p' }] })] } },
+      {
+        data: {
+          ...merge,
+          candidates: [candidate('k1'), candidate('k2', { createdAt: 'yesterday' })],
+        },
+      },
+      {
+        data: {
+          ...merge,
+          candidates: [candidate('k1'), candidate('k2', { studyPlans: [{ id: 'p' }] })],
+        },
+      },
       { data: { ...merge, candidates: [candidate('k1'), null] } },
       { data: { email: 5, candidates: [] } },
       {},

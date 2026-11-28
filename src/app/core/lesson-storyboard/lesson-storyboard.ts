@@ -16,17 +16,23 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { TheoryVisual } from '../../content/content.models';
-import { StoryboardClock, StoryboardPlayer, StoryboardState, sanitizeStoryboardSvg } from './storyboard-player';
+import {
+  StoryboardClock,
+  StoryboardPlayer,
+  StoryboardState,
+  sanitizeStoryboardSvg,
+} from './storyboard-player';
 
 /** One fetch per drawing, shared by every storyboard on the page that shows it. */
 const sources = new Map<string, Promise<string>>();
 let instances = 0;
 
 /**
- * An animated lesson drawing (TheoryVisual type "storyboard"). It starts playing when it scrolls into view,
- * holds the last frame (5 s by default), loops, and pauses when it leaves the screen, when the tab is hidden or
- * when the reader presses Pause. Under prefers-reduced-motion it shows the last frame and no control.
- * Until the drawing is inlined (or when it cannot be) the SVG file is shown as an image of its last frame.
+ * An animated lesson drawing (TheoryVisual type "storyboard"). It starts playing when it scrolls
+ * into view, holds the last frame (5 s by default), loops, and pauses when it leaves the screen,
+ * when the tab is hidden or when the reader presses Pause. Under prefers-reduced-motion it shows
+ * the last frame and no control. Until the drawing is inlined (or when it cannot be) the SVG file
+ * is shown as an image of its last frame.
  *
  * variant "story": the Problem-first storyboard, with a sticky Pause/Play bar and a status line.
  * variant "scene": a smaller toggle under the drawing.
@@ -55,7 +61,10 @@ let instances = 0;
           @if (board()?.legend?.length) {
             <div class="storyboard-legend">
               @for (entry of board()!.legend!; track entry.text) {
-                <span><i [class]="'storyboard-mark mark-' + entry.mark" aria-hidden="true"></i>{{ entry.text }}</span>
+                <span
+                  ><i [class]="'storyboard-mark mark-' + entry.mark" aria-hidden="true"></i
+                  >{{ entry.text }}</span
+                >
               }
             </div>
           }
@@ -84,7 +93,8 @@ let instances = 0;
             [attr.aria-label]="userPaused() ? 'Play animation' : 'Pause animation'"
             (click)="toggle()"
           >
-            <span aria-hidden="true">{{ userPaused() ? '▶' : '❚❚' }}</span> {{ userPaused() ? 'Play' : 'Pause' }}
+            <span aria-hidden="true">{{ userPaused() ? '▶' : '❚❚' }}</span>
+            {{ userPaused() ? 'Play' : 'Pause' }}
           </button>
         }
         <span class="storyboard-status" aria-live="polite">{{ status() }}</span>
@@ -148,9 +158,10 @@ let instances = 0;
       .lesson-storyboard .storyboard-beside {
         min-width: 0;
       }
-      /* Problem first fits one 1280 x 720 screen: a slightly smaller explanation beside the drawing, with a small
-         gap between its paragraphs. The shell projects these .prose paragraphs; its scoped .system .prose rule
-         (line-height 1.8, no margin) cannot see this template, so these selectors carry one class more than it. */
+      /* Problem first fits one 1280 x 720 screen: a slightly smaller explanation beside the
+         drawing, with a small gap between its paragraphs. The shell projects these .prose
+         paragraphs; its scoped .system .prose rule (line-height 1.8, no margin) cannot see this
+         template, so these selectors carry one class more than it. */
       .lesson-storyboard.storyboard-story .storyboard-beside {
         font-size: 1rem;
       }
@@ -232,7 +243,8 @@ let instances = 0;
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
-      /* Problem first: the control stays on screen while the story plays (sticky to the bottom of the view). */
+      /* Problem first: the control stays on screen while the story plays (sticky to the bottom of
+         the view). */
       .lesson-storyboard.storyboard-story {
         margin-top: 1rem;
       }
@@ -393,14 +405,19 @@ export class LessonStoryboard {
   private player: StoryboardPlayer | null = null;
   private observers: { disconnect(): void }[] = [];
   private loadedPath = '';
-  /** Until the observer reports, the drawing counts as off screen, so it starts when the reader reaches it. */
+  /**
+   * Until the observer reports, the drawing counts as off screen, so it starts when the reader
+   * reaches it.
+   */
   private offscreen = true;
 
   protected readonly board = computed(() => this.visual().storyboard ?? null);
   protected readonly narrow = signal(false);
   protected readonly assetPath = computed(() => {
     const board = this.board();
-    return this.narrow() && board?.narrowAssetPath ? board.narrowAssetPath : this.visual().assetPath;
+    return this.narrow() && board?.narrowAssetPath
+      ? board.narrowAssetPath
+      : this.visual().assetPath;
   });
   protected readonly inline = signal(false);
   protected readonly reduced = signal(false);
@@ -421,7 +438,8 @@ export class LessonStoryboard {
     const view = this.document.defaultView;
     this.reduced.set(!!view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     afterNextRender(() => this.setUp());
-    const visibility = () => this.player?.setPaused('hidden', this.document.visibilityState === 'hidden');
+    const visibility = () =>
+      this.player?.setPaused('hidden', this.document.visibilityState === 'hidden');
     this.document.addEventListener('visibilitychange', visibility);
     inject(DestroyRef).onDestroy(() => {
       this.document.removeEventListener('visibilitychange', visibility);
@@ -469,7 +487,10 @@ export class LessonStoryboard {
     void this.load();
   }
 
-  /** Fetches the drawing, inlines a sanitized copy and starts (or, under reduced motion, shows the last frame). */
+  /**
+   * Fetches the drawing, inlines a sanitized copy and starts (or, under reduced motion, shows the
+   * last frame).
+   */
   private async load(): Promise<void> {
     const path = this.assetPath();
     const board = this.board();

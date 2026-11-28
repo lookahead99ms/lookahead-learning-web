@@ -127,17 +127,21 @@ describe('Identity sign-in management contract', () => {
     expect(accounts.active()).toBeNull();
     expect(accounts.pending()).toBe(false);
   });
-  it('preserves the caller on recent-auth rejection and reauthenticates through the existing login contract', async () => {
-    postFailure = failure(403, 'RECENT_AUTHENTICATION_REQUIRED');
-    await expect(api.revokeOthers()).rejects.toMatchObject({ kind: 'reauthentication-required' });
-    expect(accounts.account()?.accountId).toBe('owner');
-    postFailure = null;
-    await api.reauthenticate('test password');
-    const request = transport.mock.calls.find(([path]) => path.endsWith('/login'))!;
-    expect((request[1].body as URLSearchParams).get('username')).toBe('sample');
-    expect((request[1].body as URLSearchParams).get('password')).toBe('test password');
-    expect(accounts.account()?.accountId).toBe('owner');
-  });
+  it(
+    'preserves the caller on recent-auth rejection and reauthenticates through the ' +
+      'existing login contract',
+    async () => {
+      postFailure = failure(403, 'RECENT_AUTHENTICATION_REQUIRED');
+      await expect(api.revokeOthers()).rejects.toMatchObject({ kind: 'reauthentication-required' });
+      expect(accounts.account()?.accountId).toBe('owner');
+      postFailure = null;
+      await api.reauthenticate('test password');
+      const request = transport.mock.calls.find(([path]) => path.endsWith('/login'))!;
+      expect((request[1].body as URLSearchParams).get('username')).toBe('sample');
+      expect((request[1].body as URLSearchParams).get('password')).toBe('test password');
+      expect(accounts.account()?.accountId).toBe('owner');
+    },
+  );
   it('does not call a wrong password an expired admitted session', async () => {
     postFailure = failure(401, 'AUTHENTICATION_REQUIRED');
     await expect(api.reauthenticate('wrong')).rejects.toMatchObject({
@@ -150,17 +154,23 @@ describe('Identity sign-in management contract', () => {
     await expect(api.revoke('current-id')).rejects.toMatchObject({ kind: 'unconfirmed' });
     expect(accounts.account()?.accountId).toBe('owner');
   });
-  it('reads the restricted challenge while signed out without initializing learner account data', async () => {
-    accounts.account.set(null);
-    const initialize = vi.spyOn(accounts, 'initialize');
-    expect(await api.loadChallenge()).toMatchObject({
-      limit: 2,
-      expiresAt: '2026-09-19T12:05:00Z',
-    });
-    expect(initialize).not.toHaveBeenCalled();
-    expect(transport.mock.calls.map(([path]) => path)).toEqual(['/api/v1/auth/sign-in-challenge']);
-  });
-  it('acknowledges replacement and refreshes CSRF without constructing a protected account', async () => {
+  it(
+    'reads the restricted challenge while signed out without initializing learner account ' +
+      'data',
+    async () => {
+      accounts.account.set(null);
+      const initialize = vi.spyOn(accounts, 'initialize');
+      expect(await api.loadChallenge()).toMatchObject({
+        limit: 2,
+        expiresAt: '2026-09-19T12:05:00Z',
+      });
+      expect(initialize).not.toHaveBeenCalled();
+      expect(transport.mock.calls.map(([path]) => path)).toEqual([
+        '/api/v1/auth/sign-in-challenge',
+      ]);
+    },
+  );
+  it('acknowledges replacement, refreshes CSRF, builds no protected account', async () => {
     accounts.account.set(null);
     expect(await api.replace('other-id')).toEqual({ oauth: true });
     expect(accounts.account()).toBeNull();

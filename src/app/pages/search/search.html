@@ -1,5 +1,10 @@
 <app-platform-header />
-<main #searchPage id="main-content" class="search-page" [class.harbor-learn]="selectedPath() === 'learn'">
+<main
+  #searchPage
+  id="main-content"
+  class="search-page"
+  [class.harbor-learn]="selectedPath() === 'learn'"
+>
   <section class="search-shell" aria-labelledby="search-title">
     <header #searchHeading class="search-heading" [class.review-heading]="reviewContext()">
       @if (reviewContext(); as context) {
@@ -7,208 +12,212 @@
           <h1 id="search-title">Review questions</h1>
           <p class="search-intro">{{ context.title }}</p>
           <nav class="review-navigation" aria-label="Review navigation">
-            <a class="review-back" [routerLink]="context.route" [fragment]="context.fragment">Back to {{ context.title }}</a>
+            <a class="review-back" [routerLink]="context.route" [fragment]="context.fragment"
+              >Back to {{ context.title }}</a
+            >
             <a class="review-search" routerLink="/search">Search all content</a>
           </nav>
         </div>
       } @else {
-      <div>
-        <p class="eyebrow">Across Learn, Grow, and Blaze</p>
-        <h1 id="search-title">Search topics and questions.</h1>
-        <p class="search-intro">
-          Find courses, lessons, interview questions, and practice in one place.
-        </p>
-      </div>
-      <form class="search-form" role="search" (ngSubmit)="submitSearch()">
-        <input
-          class="search-input"
-          type="search"
-          aria-label="Search across the platform"
-          placeholder="Try Java, graphs, caching, or system design…"
-          [value]="query()"
-          (input)="updateQuery($any($event.target).value)"
-        />
-        <button class="search-submit" type="submit">Search</button>
-      </form>
+        <div>
+          <p class="eyebrow">Across Learn, Grow, and Blaze</p>
+          <h1 id="search-title">Search topics and questions.</h1>
+          <p class="search-intro">
+            Find courses, lessons, interview questions, and practice in one place.
+          </p>
+        </div>
+        <form class="search-form" role="search" (ngSubmit)="submitSearch()">
+          <input
+            class="search-input"
+            type="search"
+            aria-label="Search across the platform"
+            placeholder="Try Java, graphs, caching, or system design…"
+            [value]="query()"
+            (input)="updateQuery($any($event.target).value)"
+          />
+          <button class="search-submit" type="submit">Search</button>
+        </form>
       }
     </header>
 
     <section class="search-workspace" aria-label="Search controls and results">
       @if (!reviewContext()) {
-      <div #modeFilterRow class="mode-filter-row">
-        <div class="activity-filters" role="group" aria-label="Learning activity">
-          @for (activity of activityOptions; track activity.id) {
-            <button
-              type="button"
-              [attr.aria-pressed]="activitySelected(activity.id)"
-              (click)="selectActivity(activity.id)"
-            >
-              {{ activity.label }}
-            </button>
-          }
-        </div>
-        <details #filterDetails class="filter-details">
-          <summary>
-            Filters
-            @if (selectedFilterCount()) {
-              <span>{{ selectedFilterCount() }} active</span>
+        <div #modeFilterRow class="mode-filter-row">
+          <div class="activity-filters" role="group" aria-label="Learning activity">
+            @for (activity of activityOptions; track activity.id) {
+              <button
+                type="button"
+                [attr.aria-pressed]="activitySelected(activity.id)"
+                (click)="selectActivity(activity.id)"
+              >
+                {{ activity.label }}
+              </button>
             }
-          </summary>
-          <div class="filter-panel">
-            <div class="search-toolbar">
-              <label class="control"
-                >Path
-                <select [ngModel]="selectedPath()" (ngModelChange)="updatePath($event)">
-                  <option value="all">All available content</option>
-                  <option value="learn">Learn</option>
-                  <option value="grow">Grow</option>
-                  <option value="blaze">Blaze</option>
-                </select>
-              </label>
-              <label class="control"
-                >Course
-                <select [ngModel]="selectedCourseId()" (ngModelChange)="updateCourse($event)">
-                  <option value="all">All courses</option>
-                  @for (course of availableCourses(); track course.id) {
-                    <option [value]="course.id">{{ course.title }}</option>
-                  }
-                </select>
-              </label>
-              <label class="control"
-                >Module
-                <select [ngModel]="selectedModuleId()" (ngModelChange)="updateModule($event)">
-                  <option value="all">All modules</option>
-                  @for (module of availableModules(); track module.id) {
-                    <option [value]="module.id">{{ module.title }}</option>
-                  }
-                </select>
-              </label>
-              <label class="control"
-                >Difficulty
-                <select [ngModel]="selectedDifficulty()" (ngModelChange)="updateDifficulty($event)">
-                  <option value="all">All levels</option>
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
-              </label>
-              <label class="control"
-                >Language
-                <select [ngModel]="selectedLanguage()" (ngModelChange)="updateLanguage($event)">
-                  <option value="all">All languages</option>
-                  <option value="java">Java</option>
-                  <option value="python">Python</option>
-                  <option value="go">Go</option>
-                  <option value="unspecified">Language neutral / not specified</option>
-                </select>
-              </label>
-              <label class="control"
-                >Practice format
-                <select
-                  [ngModel]="selectedPracticeFormat()"
-                  (ngModelChange)="updatePracticeFormat($event)"
-                >
-                  <option value="all">All formats</option>
-                  <option value="explain">Explain</option>
-                  <option value="solve">Solve</option>
-                  <option value="design">Design</option>
-                  <option value="debug">Debug</option>
-                  <option value="rehearse">Rehearse</option>
-                </select>
-              </label>
-              <label class="control"
-                >Result type
-                <select
-                  [ngModel]="selectedDiscoveryKind()"
-                  (ngModelChange)="updateDiscoveryKind($event)"
-                >
-                  <option value="all">All results</option>
-                  <option value="course">Courses</option>
-                  <option value="topic">Topics</option>
-                  <option value="lesson">Lessons</option>
-                  <option value="practice">Practice</option>
-                  <option value="tool">Learning tools</option>
-                </select>
-              </label>
-              <label class="control"
-                >Content type
-                <select
-                  [ngModel]="selectedContentType()"
-                  (ngModelChange)="updateContentType($event)"
-                >
-                  <option value="all">All types</option>
-                  <option value="q-and-a">Q&amp;A</option>
-                  <option value="dsa-problem">Coding and DSA problems</option>
-                  <option value="theory">Theory</option>
-                  <option value="dsa-pattern">DSA patterns</option>
-                  <option value="system-design">System design</option>
-                  <option value="language-comparison">Java / Python / Go</option>
-                  <option value="guide">Guides</option>
-                </select>
-              </label>
-              <label class="control"
-                >Group by
-                <select [ngModel]="groupBy()" (ngModelChange)="updateGroup($event)">
-                  <option value="none">None</option>
-                  <option value="path">Learn / Grow / Blaze</option>
-                  <option value="course">Course</option>
-                  <option value="module">Module</option>
-                  <option value="tag">Primary tag</option>
-                  <option value="content-type">Content type</option>
-                </select>
-              </label>
-            </div>
-            <section class="subject-filter" aria-labelledby="subject-filter-title">
-              <div class="subject-filter-heading">
-                <div>
-                  <h2 id="subject-filter-title">Subjects</h2>
-                  <p class="tag-panel-title">
-                    {{ selectedTags().size }} active · {{ visibleTags().length }} of
-                    {{ availableTags().length }} shown
-                  </p>
-                </div>
-                <label class="subject-search"
-                  ><span>Find a subject</span>
-                  <input
-                    type="search"
-                    placeholder="Filter subjects…"
-                    [value]="tagQuery()"
-                    (input)="updateTagQuery($any($event.target).value)"
-                  />
+          </div>
+          <details #filterDetails class="filter-details">
+            <summary>
+              Filters
+              @if (selectedFilterCount()) {
+                <span>{{ selectedFilterCount() }} active</span>
+              }
+            </summary>
+            <div class="filter-panel">
+              <div class="search-toolbar">
+                <label class="control"
+                  >Path
+                  <select [ngModel]="selectedPath()" (ngModelChange)="updatePath($event)">
+                    <option value="all">All available content</option>
+                    <option value="learn">Learn</option>
+                    <option value="grow">Grow</option>
+                    <option value="blaze">Blaze</option>
+                  </select>
+                </label>
+                <label class="control"
+                  >Course
+                  <select [ngModel]="selectedCourseId()" (ngModelChange)="updateCourse($event)">
+                    <option value="all">All courses</option>
+                    @for (course of availableCourses(); track course.id) {
+                      <option [value]="course.id">{{ course.title }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="control"
+                  >Module
+                  <select [ngModel]="selectedModuleId()" (ngModelChange)="updateModule($event)">
+                    <option value="all">All modules</option>
+                    @for (module of availableModules(); track module.id) {
+                      <option [value]="module.id">{{ module.title }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="control"
+                  >Difficulty
+                  <select
+                    [ngModel]="selectedDifficulty()"
+                    (ngModelChange)="updateDifficulty($event)"
+                  >
+                    <option value="all">All levels</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </label>
+                <label class="control"
+                  >Language
+                  <select [ngModel]="selectedLanguage()" (ngModelChange)="updateLanguage($event)">
+                    <option value="all">All languages</option>
+                    <option value="java">Java</option>
+                    <option value="python">Python</option>
+                    <option value="go">Go</option>
+                    <option value="unspecified">Language neutral / not specified</option>
+                  </select>
+                </label>
+                <label class="control"
+                  >Practice format
+                  <select
+                    [ngModel]="selectedPracticeFormat()"
+                    (ngModelChange)="updatePracticeFormat($event)"
+                  >
+                    <option value="all">All formats</option>
+                    <option value="explain">Explain</option>
+                    <option value="solve">Solve</option>
+                    <option value="design">Design</option>
+                    <option value="debug">Debug</option>
+                    <option value="rehearse">Rehearse</option>
+                  </select>
+                </label>
+                <label class="control"
+                  >Result type
+                  <select
+                    [ngModel]="selectedDiscoveryKind()"
+                    (ngModelChange)="updateDiscoveryKind($event)"
+                  >
+                    <option value="all">All results</option>
+                    <option value="course">Courses</option>
+                    <option value="topic">Topics</option>
+                    <option value="lesson">Lessons</option>
+                    <option value="practice">Practice</option>
+                    <option value="tool">Learning tools</option>
+                  </select>
+                </label>
+                <label class="control"
+                  >Content type
+                  <select
+                    [ngModel]="selectedContentType()"
+                    (ngModelChange)="updateContentType($event)"
+                  >
+                    <option value="all">All types</option>
+                    <option value="q-and-a">Q&amp;A</option>
+                    <option value="dsa-problem">Coding and DSA problems</option>
+                    <option value="theory">Theory</option>
+                    <option value="dsa-pattern">DSA patterns</option>
+                    <option value="system-design">System design</option>
+                    <option value="language-comparison">Java / Python / Go</option>
+                    <option value="guide">Guides</option>
+                  </select>
+                </label>
+                <label class="control"
+                  >Group by
+                  <select [ngModel]="groupBy()" (ngModelChange)="updateGroup($event)">
+                    <option value="none">None</option>
+                    <option value="path">Learn / Grow / Blaze</option>
+                    <option value="course">Course</option>
+                    <option value="module">Module</option>
+                    <option value="tag">Primary tag</option>
+                    <option value="content-type">Content type</option>
+                  </select>
                 </label>
               </div>
-              <div class="tag-strip">
-                <button
-                  class="tag-pill"
-                  [class.active]="selectedTags().size === 0"
-                  [attr.aria-pressed]="selectedTags().size === 0"
-                  type="button"
-                  (click)="clearSubjects()"
-                >
-                  All subjects
-                </button>
-                @for (tag of visibleTags(); track tag) {
+              <section class="subject-filter" aria-labelledby="subject-filter-title">
+                <div class="subject-filter-heading">
+                  <div>
+                    <h2 id="subject-filter-title">Subjects</h2>
+                    <p class="tag-panel-title">
+                      {{ selectedTags().size }} active · {{ visibleTags().length }} of
+                      {{ availableTags().length }} shown
+                    </p>
+                  </div>
+                  <label class="subject-search"
+                    ><span>Find a subject</span>
+                    <input
+                      type="search"
+                      placeholder="Filter subjects…"
+                      [value]="tagQuery()"
+                      (input)="updateTagQuery($any($event.target).value)"
+                    />
+                  </label>
+                </div>
+                <div class="tag-strip">
                   <button
                     class="tag-pill"
-                    [class.active]="isTagSelected(tag)"
-                    [attr.aria-pressed]="isTagSelected(tag)"
+                    [class.active]="selectedTags().size === 0"
+                    [attr.aria-pressed]="selectedTags().size === 0"
                     type="button"
-                    (click)="selectTag(tag)"
+                    (click)="clearSubjects()"
                   >
-                    {{ tag }}
+                    All subjects
                   </button>
-                } @empty {
-                  <span class="no-tags">No subjects match the current search.</span>
-                }
-              </div>
-            </section>
-            <button class="clear-filters" type="button" (click)="clearFilters()">
-              Clear filters
-            </button>
-          </div>
-        </details>
-      </div>
-
+                  @for (tag of visibleTags(); track tag) {
+                    <button
+                      class="tag-pill"
+                      [class.active]="isTagSelected(tag)"
+                      [attr.aria-pressed]="isTagSelected(tag)"
+                      type="button"
+                      (click)="selectTag(tag)"
+                    >
+                      {{ tag }}
+                    </button>
+                  } @empty {
+                    <span class="no-tags">No subjects match the current search.</span>
+                  }
+                </div>
+              </section>
+              <button class="clear-filters" type="button" (click)="clearFilters()">
+                Clear filters
+              </button>
+            </div>
+          </details>
+        </div>
       }
 
       @if (loading()) {
@@ -220,42 +229,51 @@
         </div>
       } @else {
         @if (!reviewContext()) {
-        <div class="results-toolbar">
-          <section id="search-results" class="results-anchor" aria-live="polite">
-            <h2>Results</h2>
-            <p class="result-summary">
-              Showing {{ visibleResults().length }} of {{ results().length }} matching result{{
-                results().length === 1 ? '' : 's'
-              }}
-            </p>
-            @if (correctedWords(); as fixed) {
-              <p class="search-correction">
-                No results for “{{ query().trim() }}”. Showing results for “{{ fixed.join(' ') }}”.
+          <div class="results-toolbar">
+            <section id="search-results" class="results-anchor" aria-live="polite">
+              <h2>Results</h2>
+              <p class="result-summary">
+                Showing {{ visibleResults().length }} of {{ results().length }} matching result{{
+                  results().length === 1 ? '' : 's'
+                }}
               </p>
-            }
-          </section>
-          <label class="sort-control"
-            >Sort by
-            <select [ngModel]="sortBy()" (ngModelChange)="updateSort($event)">
-              <option value="relevance">Relevance</option>
-              <option value="title">Title</option>
-              <option value="difficulty">Difficulty</option>
-            </select>
-          </label>
-        </div>
-
+              @if (correctedWords(); as fixed) {
+                <p class="search-correction">
+                  No results for “{{ query().trim() }}”. Showing results for “{{
+                    fixed.join(' ')
+                  }}”.
+                </p>
+              }
+            </section>
+            <label class="sort-control"
+              >Sort by
+              <select [ngModel]="sortBy()" (ngModelChange)="updateSort($event)">
+                <option value="relevance">Relevance</option>
+                <option value="title">Title</option>
+                <option value="difficulty">Difficulty</option>
+              </select>
+            </label>
+          </div>
         }
 
         @if (results().length) {
-          <div class="result-preview-layout" [class.has-preview]="!compactPreview() && selectedPreview()">
+          <div
+            class="result-preview-layout"
+            [class.has-preview]="!compactPreview() && selectedPreview()"
+          >
             <div class="result-list-area">
               @if (!compactPreview() && selectedPreview(); as selected) {
                 <section class="pinned-selection" aria-label="Selected result">
                   <div class="pinned-header">
                     <p class="pinned-label">Selected result</p>
-                    <button class="pinned-close" type="button" (click)="closePreview()">Close preview</button>
+                    <button class="pinned-close" type="button" (click)="closePreview()"
+                      >Close preview</button
+                    >
                   </div>
-                  <ng-container [ngTemplateOutlet]="resultCard" [ngTemplateOutletContext]="{ $implicit: selected }" />
+                  <ng-container
+                    [ngTemplateOutlet]="resultCard"
+                    [ngTemplateOutletContext]="{ $implicit: selected }"
+                  />
                 </section>
               }
               @for (group of remainingGroups(); track group.label) {
@@ -264,7 +282,10 @@
                     <h2 class="group-title">{{ group.label }}</h2>
                   }
                   @for (result of group.results; track result.id) {
-                    <ng-container [ngTemplateOutlet]="resultCard" [ngTemplateOutletContext]="{ $implicit: result }" />
+                    <ng-container
+                      [ngTemplateOutlet]="resultCard"
+                      [ngTemplateOutletContext]="{ $implicit: result }"
+                    />
                   }
                 </section>
               }
@@ -275,75 +296,85 @@
               }
             </div>
             @if (!compactPreview() && selectedPreview(); as selected) {
-              <aside id="search-preview-pane" class="summary-pane" aria-labelledby="summary-pane-title">
-                <ng-container [ngTemplateOutlet]="previewContent" [ngTemplateOutletContext]="{ $implicit: selected }" />
+              <aside
+                id="search-preview-pane"
+                class="summary-pane"
+                aria-labelledby="summary-pane-title"
+              >
+                <ng-container
+                  [ngTemplateOutlet]="previewContent"
+                  [ngTemplateOutletContext]="{ $implicit: selected }"
+                />
               </aside>
             }
           </div>
 
           <ng-template #resultCard let-result>
-                    <article
-                      class="result-card"
-                      [class.selected]="previewSelected(result)"
-                    >
-                      <h2 class="result-title">
-                        <button
-                          class="summary-toggle"
-                          type="button"
-                          [attr.data-result-id]="result.id"
-                          [attr.aria-expanded]="previewExpanded(result)"
-                          [attr.aria-current]="previewSelected(result) ? 'true' : null"
-                          [attr.aria-controls]="previewControlsId()"
-                          (click)="openPreview(result, $event)"
-                        >
-                          <span class="result-kind">{{ resultTypeLabel(result) }}</span>
-                          <span class="result-title-text">{{ resultCardTitle(result) }}</span>
-                          @if (resultRowSummary(result); as description) {
-                            <span class="result-row-summary">{{ description }}</span>
-                          }
-                          @if (previewSelected(result)) {
-                            <span class="result-open-state">Preview open</span>
-                          }
-                        </button>
-                      </h2>
-                      <nav
-                        class="result-context"
-                        [attr.aria-label]="resultCardTitle(result) + ' metadata'"
-                      >
-                        <a
-                          class="result-path metadata-link"
-                          [attr.data-path]="result.path"
-                          [routerLink]="pathLink(result)"
-                          >{{ pathLabel(result.path) }}</a
-                        >
-                        @if (courseLink(result); as link) {
-                          <a class="metadata-link" [routerLink]="link">{{ result.courseTitle }}</a>
-                        } @else {
-                          <span>{{ result.courseTitle }}</span>
-                        }
-                        @if (difficultyFilter(result); as params) {
-                          <a class="metadata-link" routerLink="/search" [queryParams]="params">{{
-                            result.difficulty
-                          }}</a>
-                        }
-                        @if (result.access.tier === 'premium') {
-                          <span>Premium</span>
-                        } @else if (!showsText(result)) {
-                          <span class="access-label">Sign in to read</span>
-                        }
-                      </nav>
-                      @if (compactPreview() && previewSelected(result)) {
-                        <aside id="search-preview-pane" class="summary-pane inline-preview" aria-labelledby="summary-pane-title">
-                          <ng-container [ngTemplateOutlet]="previewContent" [ngTemplateOutletContext]="{ $implicit: result }" />
-                        </aside>
-                      }
-                    </article>
+            <article class="result-card" [class.selected]="previewSelected(result)">
+              <h2 class="result-title">
+                <button
+                  class="summary-toggle"
+                  type="button"
+                  [attr.data-result-id]="result.id"
+                  [attr.aria-expanded]="previewExpanded(result)"
+                  [attr.aria-current]="previewSelected(result) ? 'true' : null"
+                  [attr.aria-controls]="previewControlsId()"
+                  (click)="openPreview(result, $event)"
+                >
+                  <span class="result-kind">{{ resultTypeLabel(result) }}</span>
+                  <span class="result-title-text">{{ resultCardTitle(result) }}</span>
+                  @if (resultRowSummary(result); as description) {
+                    <span class="result-row-summary">{{ description }}</span>
+                  }
+                  @if (previewSelected(result)) {
+                    <span class="result-open-state">Preview open</span>
+                  }
+                </button>
+              </h2>
+              <nav class="result-context" [attr.aria-label]="resultCardTitle(result) + ' metadata'">
+                <a
+                  class="result-path metadata-link"
+                  [attr.data-path]="result.path"
+                  [routerLink]="pathLink(result)"
+                  >{{ pathLabel(result.path) }}</a
+                >
+                @if (courseLink(result); as link) {
+                  <a class="metadata-link" [routerLink]="link">{{ result.courseTitle }}</a>
+                } @else {
+                  <span>{{ result.courseTitle }}</span>
+                }
+                @if (difficultyFilter(result); as params) {
+                  <a class="metadata-link" routerLink="/search" [queryParams]="params">{{
+                    result.difficulty
+                  }}</a>
+                }
+                @if (result.access.tier === 'premium') {
+                  <span>Premium</span>
+                } @else if (!showsText(result)) {
+                  <span class="access-label">Sign in to read</span>
+                }
+              </nav>
+              @if (compactPreview() && previewSelected(result)) {
+                <aside
+                  id="search-preview-pane"
+                  class="summary-pane inline-preview"
+                  aria-labelledby="summary-pane-title"
+                >
+                  <ng-container
+                    [ngTemplateOutlet]="previewContent"
+                    [ngTemplateOutletContext]="{ $implicit: result }"
+                  />
+                </aside>
+              }
+            </article>
           </ng-template>
 
           <ng-template #previewContent let-selected>
             <div class="companion-heading">
               <span class="summary-kind">{{ resultTypeLabel(selected) }}</span>
-              <button class="summary-close" type="button" (click)="closePreview()">Close preview</button>
+              <button class="summary-close" type="button" (click)="closePreview()"
+                >Close preview</button
+              >
             </div>
             <h2 id="summary-pane-title" class="preview-title">{{ resultCardTitle(selected) }}</h2>
             @if (selected.contentType === 'q-and-a' && practiceFormat(selected) === 'explain') {
@@ -351,36 +382,72 @@
             } @else {
               <p class="summary-copy">{{ summaryText(selected) }}</p>
             }
-            <a class="detail-link" [routerLink]="questionLink(selected)" [queryParams]="questionQueryParams(selected)">{{ resultActionLabel(selected) }}</a>
+            <a
+              class="detail-link"
+              [routerLink]="questionLink(selected)"
+              [queryParams]="questionQueryParams(selected)"
+              >{{ resultActionLabel(selected) }}</a
+            >
             <details #details class="preview-details" (toggle)="detailsOpen.set(details.open)">
               <summary>{{ detailsOpen() ? 'Hide details' : 'Show details' }}</summary>
               <dl class="summary-metadata">
                 <dt>Path</dt>
-                <dd><a class="metadata-link" data-metadata="path" [routerLink]="pathLink(selected)">{{ pathLabel(selected.path) }}</a></dd>
+                <dd
+                  ><a
+                    class="metadata-link"
+                    data-metadata="path"
+                    [routerLink]="pathLink(selected)"
+                    >{{ pathLabel(selected.path) }}</a
+                  ></dd
+                >
                 <dt>Course</dt>
                 <dd>
                   @if (courseLink(selected); as link) {
-                    <a class="metadata-link" data-metadata="course" [routerLink]="link">{{ selected.courseTitle }}</a>
-                  } @else { {{ selected.courseTitle }} }
+                    <a class="metadata-link" data-metadata="course" [routerLink]="link">{{
+                      selected.courseTitle
+                    }}</a>
+                  } @else {
+                    {{ selected.courseTitle }}
+                  }
                 </dd>
                 <dt>Module</dt>
                 <dd>
                   @if (moduleLink(selected); as link) {
-                    <a class="metadata-link" data-metadata="module" [routerLink]="link">{{ selected.moduleTitle }}</a>
-                  } @else { {{ selected.moduleTitle }} }
+                    <a class="metadata-link" data-metadata="module" [routerLink]="link">{{
+                      selected.moduleTitle
+                    }}</a>
+                  } @else {
+                    {{ selected.moduleTitle }}
+                  }
                 </dd>
                 <dt>Difficulty</dt>
                 <dd>
                   @if (difficultyFilter(selected); as params) {
-                    <a class="metadata-link" data-metadata="difficulty" routerLink="/search" [queryParams]="params">{{ selected.difficulty }}</a>
-                  } @else { <span>Not specified</span> }
+                    <a
+                      class="metadata-link"
+                      data-metadata="difficulty"
+                      routerLink="/search"
+                      [queryParams]="params"
+                      >{{ selected.difficulty }}</a
+                    >
+                  } @else {
+                    <span>Not specified</span>
+                  }
                 </dd>
                 @if (selected.languages.length) {
                   <dt>Languages</dt>
                   <dd class="metadata-link-list">
                     @for (language of selected.languages; track language; let last = $last) {
-                      <a class="metadata-link" data-metadata="language" routerLink="/search" [queryParams]="languageFilter(language)">{{ languageLabel(language) }}</a>
-                      @if (!last) { <span aria-hidden="true">, </span> }
+                      <a
+                        class="metadata-link"
+                        data-metadata="language"
+                        routerLink="/search"
+                        [queryParams]="languageFilter(language)"
+                        >{{ languageLabel(language) }}</a
+                      >
+                      @if (!last) {
+                        <span aria-hidden="true">, </span>
+                      }
                     }
                   </dd>
                 }
@@ -390,7 +457,15 @@
                   <h3>Filter by subject</h3>
                   <ul>
                     @for (subject of questionTags(selected).slice(0, 6); track subject) {
-                      <li><a class="metadata-link subject-pill" data-metadata="subject" routerLink="/search" [queryParams]="subjectFilter(subject)">{{ subject }}</a></li>
+                      <li
+                        ><a
+                          class="metadata-link subject-pill"
+                          data-metadata="subject"
+                          routerLink="/search"
+                          [queryParams]="subjectFilter(subject)"
+                          >{{ subject }}</a
+                        ></li
+                      >
                     }
                   </ul>
                 </section>
@@ -402,7 +477,9 @@
             <p>No results match those filters. Try a broader subject or clear the filters.</p>
             @if (!reviewContext() && selectedFilterCount()) {
               <div class="empty-actions">
-                <button class="clear-filters" type="button" (click)="clearFilters()">Clear filters</button>
+                <button class="clear-filters" type="button" (click)="clearFilters()"
+                  >Clear filters</button
+                >
               </div>
             }
           </div>
@@ -412,8 +489,8 @@
               <p>No results for “{{ query().trim() }}” with the current filters.</p>
             } @else {
               <p>
-                No results for “{{ query().trim() }}”. Check the spelling, or try a shorter or broader
-                word such as a topic name.
+                No results for “{{ query().trim() }}”. Check the spelling, or try a shorter or
+                broader word such as a topic name.
               </p>
             }
             <div class="empty-actions">
@@ -422,7 +499,9 @@
                   Search all content
                 </button>
               }
-              <button class="clear-filters" type="button" (click)="clearFilters()">Clear search</button>
+              <button class="clear-filters" type="button" (click)="clearFilters()"
+                >Clear search</button
+              >
             </div>
           </div>
         }

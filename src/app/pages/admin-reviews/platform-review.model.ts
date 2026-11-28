@@ -50,8 +50,9 @@ export const reviewedPages = [
 ] as const;
 
 /**
- * DLV-971 (owner, 2026-11-06): a learner's support request (Report a problem / Share feedback / Ask a question) is
- * stored as an item of kind "request" beside the reviews; absent or null means a review.
+ * DLV-971 (owner, 2026-11-06): a learner's support request (Report a problem / Share feedback / Ask
+ * a question) is stored as an item of kind "request" beside the reviews; absent or null means a
+ * review.
  */
 export const reviewKinds = ['review', 'request'] as const;
 export type ReviewKind = (typeof reviewKinds)[number];
@@ -68,22 +69,29 @@ export function isRequest(item: { kind?: ReviewKind | null }): boolean {
 }
 
 /**
- * DLV-971 runtime stores (owner, 2026-11-06): once the owner (or an admin, for a learner request) promotes an item, the
- * Domain adds a ticket to the DEV delivery plan and stamps the record with `ticketId`; `ticketStatus` is that ticket's
- * current workflow status, read when the item is listed. Null until promoted.
+ * DLV-971 runtime stores (owner, 2026-11-06): once the owner (or an admin, for a learner request)
+ * promotes an item, the Domain adds a ticket to the DEV delivery plan and stamps the record with
+ * `ticketId`; `ticketStatus` is that ticket's current workflow status, read when the item is
+ * listed. Null until promoted.
  */
 export interface TicketLink {
   ticketId?: string | null;
   ticketStatus?: string | null;
 }
 
-/** The ticket pill text: "DLV-0042 · In progress"; the id alone when the status is not known; empty when not promoted. */
+/**
+ * The ticket pill text: "DLV-0042 · In progress"; the id alone when the status is not known; empty
+ * when not promoted.
+ */
 export function ticketPill(item: TicketLink): string {
   if (!item.ticketId) return '';
   return item.ticketStatus ? `${item.ticketId} · ${item.ticketStatus}` : item.ticketId;
 }
 
-/** DLV-971 (owner, 2026-11-06): the kind marker on every row: "Ticket · Problem" for a learner support ticket, "Feedback" for a staff item. */
+/**
+ * DLV-971 (owner, 2026-11-06): the kind marker on every row: "Ticket · Problem" for a learner
+ * support ticket, "Feedback" for a staff item.
+ */
 export function kindBadge(item: {
   kind?: ReviewKind | null;
   requestType?: RequestType | null;
@@ -193,10 +201,10 @@ export interface PromoteResult {
 export type SweepJob = 'support-requests' | 'delivery-inbox' | 'admissions' | 'all';
 
 /**
- * DLV-971 (owner, 2026-11-06): what one job run did (Domain `RuntimeSweeps.Result`): the job, when it ran, and the
- * requested job's counts, the others null: the support tickets closed; whether the delivery inbox was merged and the
- * plan version it wrote (else the reason it was left alone); the waiting admissions removed (null on a local Domain,
- * which has no cleanup).
+ * DLV-971 (owner, 2026-11-06): what one job run did (Domain `RuntimeSweeps.Result`): the job, when
+ * it ran, and the requested job's counts, the others null: the support tickets closed; whether the
+ * delivery inbox was merged and the plan version it wrote (else the reason it was left alone); the
+ * waiting admissions removed (null on a local Domain, which has no cleanup).
  */
 export interface SweepRunResult {
   job: SweepJob;
@@ -228,13 +236,14 @@ export interface PlatformReviewClient {
   remove(id: string): Promise<void>;
   triage(id: string, status: ReviewStatus, ownerNote: string): Promise<PlatformReviewItem>;
   /**
-   * Adds a ticket to the DEV delivery plan from this item (owner: any item; admin: a learner request). Throws a
-   * `conflict` error when the item already has a ticket.
+   * Adds a ticket to the DEV delivery plan from this item (owner: any item; admin: a learner
+   * request). Throws a `conflict` error when the item already has a ticket.
    */
   promote(id: string): Promise<PromoteResult>;
   /**
-   * DLV-971: runs one of the Domain's 4-hour jobs now, or all three (owner only; anyone else gets a `forbidden`
-   * error; `conflict` when the job does not exist on this environment, the admission cleanup on a local Domain).
+   * DLV-971: runs one of the Domain's 4-hour jobs now, or all three (owner only; anyone else gets a
+   * `forbidden` error; `conflict` when the job does not exist on this environment, the admission
+   * cleanup on a local Domain).
    */
   runSweeps(job: SweepJob): Promise<SweepRunResult>;
   /** A URL the browser can display; revoke it with `releaseAttachmentUrl`. */

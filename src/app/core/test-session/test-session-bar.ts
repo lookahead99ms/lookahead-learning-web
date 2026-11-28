@@ -3,8 +3,9 @@ import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TestSessions, scenarioDetail, scenarioPlan } from './test-sessions';
 
 /**
- * DLV-969 (owner, 2026-11-04): while a test account is in use, a slim bar under the header says which one, with Switch
- * and Back to my account, so nobody forgets they are looking through a test account.
+ * DLV-969 (owner, 2026-11-04): while a test account is in use, a slim bar under the header says
+ * which one, with Switch and Back to my account, so nobody forgets they are looking through a test
+ * account.
  */
 @Component({
   selector: 'app-test-session-bar',
@@ -13,11 +14,25 @@ import { TestSessions, scenarioDetail, scenarioPlan } from './test-sessions';
       <span class="test-bar-mark">Test account</span>
       <p class="test-bar-who">
         <strong>{{ name() }}</strong>
-        @if (described(); as text) {<span class="test-bar-scenario">{{ text }}</span>}
+        @if (described(); as text) {
+          <span class="test-bar-scenario">{{ text }}</span>
+        }
       </p>
       <div class="test-bar-actions">
-        <button type="button" class="test-bar-link" [disabled]="sessions.returning()" (click)="sessions.open()">Switch</button>
-        <button type="button" class="test-bar-back" [disabled]="sessions.returning()" [attr.aria-busy]="sessions.returning()" (click)="sessions.back()">
+        <button
+          type="button"
+          class="test-bar-link"
+          [disabled]="sessions.returning()"
+          (click)="sessions.open()"
+          >Switch</button
+        >
+        <button
+          type="button"
+          class="test-bar-back"
+          [disabled]="sessions.returning()"
+          [attr.aria-busy]="sessions.returning()"
+          (click)="sessions.back()"
+        >
           {{ sessions.returning() ? 'Going back…' : 'Back to my account' }}
         </button>
       </div>
@@ -56,9 +71,16 @@ import { TestSessions, scenarioDetail, scenarioPlan } from './test-sessions';
       min-width: 0;
       margin: 0;
     }
-    .test-bar-who strong { color: var(--text-strong); }
-    .test-bar-scenario { color: var(--text-subtle); }
-    .test-bar-actions { display: flex; gap: 8px; }
+    .test-bar-who strong {
+      color: var(--text-strong);
+    }
+    .test-bar-scenario {
+      color: var(--text-subtle);
+    }
+    .test-bar-actions {
+      display: flex;
+      gap: 8px;
+    }
     .test-bar-link,
     .test-bar-back {
       min-height: 32px;
@@ -83,23 +105,39 @@ import { TestSessions, scenarioDetail, scenarioPlan } from './test-sessions';
       outline: 3px solid var(--accent-focus);
       outline-offset: 2px;
     }
-    .test-bar-error { flex-basis: 100%; margin: 0; color: var(--danger); font-weight: 650; }
+    .test-bar-error {
+      flex-basis: 100%;
+      margin: 0;
+      color: var(--danger);
+      font-weight: 650;
+    }
     @media (max-width: 600px) {
-      .test-bar-actions { flex-basis: 100%; }
-      .test-bar-actions button { flex: 1; }
+      .test-bar-actions {
+        flex-basis: 100%;
+      }
+      .test-bar-actions button {
+        flex: 1;
+      }
     }
   `,
 })
 export class TestSessionBar {
   protected readonly sessions = inject(TestSessions);
   private readonly accounts = inject(StudyPlanAccount);
-  private readonly current = computed(() => this.sessions.current(this.accounts.account()?.accountId));
-  protected readonly name = computed(() => this.current()?.displayName ?? this.accounts.account()?.displayName ?? 'Test account');
+  private readonly current = computed(() =>
+    this.sessions.current(this.accounts.account()?.accountId),
+  );
+  protected readonly name = computed(
+    () => this.current()?.displayName ?? this.accounts.account()?.displayName ?? 'Test account',
+  );
   protected readonly described = computed(() => {
     const account = this.current();
     if (!account) return null;
     const plan = scenarioPlan(account);
-    // A learner reads "Learn · active · …"; a created account without a scenario is simply a learner.
-    return plan ? [plan, scenarioDetail(account)].filter(Boolean).join(' · ') : account.scenario ?? 'Learner';
+    // A learner reads "Learn · active · …"; a created account without a scenario is simply a
+    // learner.
+    return plan
+      ? [plan, scenarioDetail(account)].filter(Boolean).join(' · ')
+      : (account.scenario ?? 'Learner');
   });
 }

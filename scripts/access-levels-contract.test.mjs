@@ -50,14 +50,17 @@ test('rejects unknown units, bad IDs and levels other than open or free', () => 
 test('rejects a wrong schema, default level or units shape', () => {
   assert.equal(accessLevelErrors([], units).length, 1);
   assert.equal(
-    accessLevelErrors({ ...valid, schemaVersion: 'v2', defaultLevel: 'free', units: [] }, units).length,
+    accessLevelErrors({ ...valid, schemaVersion: 'v2', defaultLevel: 'free', units: [] }, units)
+      .length,
     3,
   );
 });
 
 test('collects sub-unit IDs with their parents', () => {
   assert.deepEqual(
-    [...learningUnitIds({ learningUnits: [{ id: 'a', subUnits: [{ id: 'b' }] }, { id: 'c' }] })].sort(),
+    [
+      ...learningUnitIds({ learningUnits: [{ id: 'a', subUnits: [{ id: 'b' }] }, { id: 'c' }] }),
+    ].sort(),
     ['a', 'b', 'c'],
   );
 });

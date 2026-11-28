@@ -6,15 +6,20 @@ const family = (title: string, variation = '', tags: string[] = []) =>
 
 describe('Focus Studio family classification', () => {
   it('matches family words only as whole words', () => {
-    // These titles once matched inside longer words: en-trie-s, s-tree-t, c-heap-est, lexico-graph-ic.
-    expect(family('Count Interesting Modular Subarrays', 'Selected-entries prefix counts', ['Prefix State'])).toBe(
-      'prefix-sum',
-    );
+    // These titles once matched inside longer words: en-trie-s, s-tree-t, c-heap-est,
+    // lexico-graph-ic.
+    expect(
+      family('Count Interesting Modular Subarrays', 'Selected-entries prefix counts', [
+        'Prefix State',
+      ]),
+    ).toBe('prefix-sum');
     expect(family('Street Lamps', 'Lamp counts')).toBe('generic');
-    expect(family('Cheapest Flights Within K Stops', 'Layered Bellman-Ford rounds', ['Advanced Graphs'])).toBe(
-      'graphs',
+    expect(
+      family('Cheapest Flights Within K Stops', 'Layered Bellman-Ford rounds', ['Advanced Graphs']),
+    ).toBe('graphs');
+    expect(family('Next Lexicographic Permutation', 'Pivot, swap, reverse', ['Arrays'])).toBe(
+      'arrays',
     );
-    expect(family('Next Lexicographic Permutation', 'Pivot, swap, reverse', ['Arrays'])).toBe('arrays');
     expect(family('Haystack Search', 'Scan')).toBe('generic');
     expect(family('Bitmap Mapping', 'Bits')).toBe('maps');
   });

@@ -2,13 +2,13 @@
  * Shared text matching for platform Search and the header quick search.
  *
  * The rule a result count describes: every word of the query occurs in the item's text, in any
- * order. A word also matches its singular or plural form (pair/pairs, query/queries), and
- * "two-sum" matches "two sum". Longer words match inside other words (lock in deadlock, script
- * in JavaScript), so a half-typed "kafk" finds Kafka. Words of up to three letters must start a
- * word, so "sum" finds summary but not assume and "go" never finds algorithm; a half-typed "ja"
- * still finds Java, and ranking puts the exact word (Go) first. A spelling fix (jvaa -> java) is only offered when
- * the typed words find nothing, and the page says which words it used, so every count stays
- * exact.
+ * order. A word also matches its singular or plural form (pair/pairs, query/queries), and "two-sum"
+ * matches "two sum". Longer words match inside other words (lock in deadlock, script in
+ * JavaScript), so a half-typed "kafk" finds Kafka. Words of up to three letters must start a word,
+ * so "sum" finds summary but not assume and "go" never finds algorithm; a half-typed "ja" still
+ * finds Java, and ranking puts the exact word (Go) first. A spelling fix (jvaa -> java) is only
+ * offered when the typed words find nothing, and the page says which words it used, so every count
+ * stays exact.
  */
 
 const ENTITIES: Record<string, string> = {
@@ -22,14 +22,15 @@ const ENTITIES: Record<string, string> = {
 
 // Only well-formed tags of the inline HTML authors use, with quoted attribute values. Plain-text
 // comparisons such as "i<j" or "i<b and c>d" are statement text, not markup, and must survive.
-const AUTHORED_TAG =
-  /<\/?(?:a|b|br|code|div|em|h[1-6]|i|kbd|li|mark|ol|p|pre|small|span|strong|sub|sup|u|ul)(?:\s+[a-z-]+="[^"]*")*\s*\/?>/gi;
+const AUTHORED_TAG = new RegExp(
+  '<\\/?(?:a|b|br|code|div|em|h[1-6]|i|kbd|li|mark|ol|p|pre|small|span|strong|sub|sup|u|ul)' +
+    '(?:\\s+[a-z-]+="[^"]*")*\\s*\\/?>',
+  'gi',
+);
 
 /** Plain text from an index preview: authored tags removed, entities decoded, spaces collapsed. */
 export function plainSearchText(value: string): string {
-  return decodeEntities(value.replace(AUTHORED_TAG, ' '))
-    .replace(/\s+/g, ' ')
-    .trim();
+  return decodeEntities(value.replace(AUTHORED_TAG, ' ')).replace(/\s+/g, ' ').trim();
 }
 
 export function decodeEntities(value: string): string {
@@ -88,7 +89,8 @@ export function wordForms(word: string): WordForm[] {
     if (/(?:s|x|z|ch|sh)es$/.test(word)) forms.push({ text: word.slice(0, -2), wholeEnd: true });
   } else if (word.endsWith('s') && !/(?:ss|us|is)$/.test(word)) {
     forms.push({ text: word.slice(0, -1), wholeEnd: false });
-  } else if (/[^aeiou]y$/.test(word)) forms.push({ text: `${word.slice(0, -1)}ies`, wholeEnd: false });
+  } else if (/[^aeiou]y$/.test(word))
+    forms.push({ text: `${word.slice(0, -1)}ies`, wholeEnd: false });
   return forms;
 }
 

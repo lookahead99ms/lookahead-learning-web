@@ -49,21 +49,35 @@ describe('Private author-document boundary', () => {
   it('accepts the 35-section procedures-sized reference while keeping navigation bounded', () => {
     const publication = manifest();
     publication.documents[0].sections = Array.from({ length: 35 }, (_, index) => ({
-      id: `section-${index}`, title: `Section ${index + 1}`, fragment: `#section-${index}`,
+      id: `section-${index}`,
+      title: `Section ${index + 1}`,
+      fragment: `#section-${index}`,
     }));
     expect(parseAuthorDocument(publication, 'operations-reference').sections).toHaveLength(35);
     publication.documents[0].sections = Array.from({ length: 49 }, (_, index) => ({
-      id: `section-${index}`, title: `Section ${index + 1}`, fragment: `#section-${index}`,
+      id: `section-${index}`,
+      title: `Section ${index + 1}`,
+      fragment: `#section-${index}`,
     }));
     expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
   });
   it('accepts long dated headings and rejects oversized or unsafe fragments', () => {
     const publication = manifest();
     const section = publication.documents[0].sections[0];
-    const anchor = 'test-accounts-checkout-and-pages-opened-by-address-fixed-reset-all-waits-for-the-template-pins-dlv-969-november-5-update';
-    section.id = anchor; section.fragment = `#${anchor}`;
-    expect(parseAuthorDocument(publication, 'operations-reference').sections[0].anchor).toBe(anchor);
-    for (const bad of [`#${'a'.repeat(201)}`, '#section/escape', '#section%20escape', '#section<script>']) {
+    const anchor =
+      'test-accounts-checkout-and-pages-opened-by-address-fixed-reset-all-waits-for-the-' +
+      'template-pins-dlv-969-november-5-update';
+    section.id = anchor;
+    section.fragment = `#${anchor}`;
+    expect(parseAuthorDocument(publication, 'operations-reference').sections[0].anchor).toBe(
+      anchor,
+    );
+    for (const bad of [
+      `#${'a'.repeat(201)}`,
+      '#section/escape',
+      '#section%20escape',
+      '#section<script>',
+    ]) {
       section.fragment = bad;
       expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
     }
@@ -71,19 +85,38 @@ describe('Private author-document boundary', () => {
   it('accepts numbered steps and dated record anchors without permitting punctuation', () => {
     const publication = manifest();
     for (const anchor of ['1-sign-in-and-confirm-the-account', '2026-11-07-stop-receipt']) {
-      publication.documents[0].sections = [{id:anchor, fragment:`#${anchor}`, title:'Dated or numbered heading'}];
-      expect(parseAuthorDocument(publication, 'operations-reference').sections[0].anchor).toBe(anchor);
+      publication.documents[0].sections = [
+        { id: anchor, fragment: `#${anchor}`, title: 'Dated or numbered heading' },
+      ];
+      expect(parseAuthorDocument(publication, 'operations-reference').sections[0].anchor).toBe(
+        anchor,
+      );
     }
     publication.documents[0].sections[0].fragment = '#-invalid-leading-hyphen';
     expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
   });
   it('accepts every registered documentation route under both protected roots', () => {
     const template = manifest().documents[0];
-    const ids = [...new Set(['study-plan-review', 'operations-reference', ...Object.values(authorDocumentPages).map(page => page.documentId)])];
-    const publication = {schemaVersion:1, documents:ids.map(id => ({...template, id, content:{...template.content, href:`${root}${id}/${sha}/index.html`}}))};
+    const ids = [
+      ...new Set([
+        'study-plan-review',
+        'operations-reference',
+        ...Object.values(authorDocumentPages).map((page) => page.documentId),
+      ]),
+    ];
+    const publication = {
+      schemaVersion: 1,
+      documents: ids.map((id) => ({
+        ...template,
+        id,
+        content: { ...template.content, href: `${root}${id}/${sha}/index.html` },
+      })),
+    };
     for (const publicationRoot of [root, staffRoot]) {
       for (const id of ids) {
-        expect(parseAuthorDocument(publication, id, publicationRoot).href).toBe(`${publicationRoot}${id}/${sha}/index.html`);
+        expect(parseAuthorDocument(publication, id, publicationRoot).href).toBe(
+          `${publicationRoot}${id}/${sha}/index.html`,
+        );
       }
     }
   });
@@ -126,17 +159,45 @@ describe('Private author-document boundary', () => {
   it('accepts every sub-page document in a manifest larger than the menu groups', () => {
     const publication = manifest();
     const template = publication.documents[0];
-    const ids = ['aws-environment-journey', 'aws-dev-plan', 'aws-dev-decisions', 'aws-dev-operations', 'aws-dev-permissions', 'aws-dev-budget', 'aws-dev-status',
-      'aws-dev-setup', 'aws-dev-workflow', 'aws-dev-procedures', 'aws-dev-records', 'initial-design', 'initial-design-files', 'initial-design-commands',
-      'initial-design-updates', 'authentication-walkthrough', 'support-runbooks', 'sign-in-flows', 'dynamodb-migration', 'aws-dev-certificates'];
-    publication.documents = [template, ...ids.map((id) => ({
-      ...template, id, content: { ...template.content, href: `${root}${id}/${sha}/index.html` },
-    }))];
+    const ids = [
+      'aws-environment-journey',
+      'aws-dev-plan',
+      'aws-dev-decisions',
+      'aws-dev-operations',
+      'aws-dev-permissions',
+      'aws-dev-budget',
+      'aws-dev-status',
+      'aws-dev-setup',
+      'aws-dev-workflow',
+      'aws-dev-procedures',
+      'aws-dev-records',
+      'initial-design',
+      'initial-design-files',
+      'initial-design-commands',
+      'initial-design-updates',
+      'authentication-walkthrough',
+      'support-runbooks',
+      'sign-in-flows',
+      'dynamodb-migration',
+      'aws-dev-certificates',
+    ];
+    publication.documents = [
+      template,
+      ...ids.map((id) => ({
+        ...template,
+        id,
+        content: { ...template.content, href: `${root}${id}/${sha}/index.html` },
+      })),
+    ];
     // 26 documents are published today; pad past the old 20-document ceiling.
     for (let index = 0; publication.documents.length < 27; index++)
       publication.documents.push({ ...template, id: `padding-${index}` });
-    for (const id of ids) expect(parseAuthorDocument(publication, id).href).toBe(`${root}${id}/${sha}/index.html`);
-    publication.documents = Array.from({ length: 41 }, (_, index) => ({ ...template, id: `doc-${index}` }));
+    for (const id of ids)
+      expect(parseAuthorDocument(publication, id).href).toBe(`${root}${id}/${sha}/index.html`);
+    publication.documents = Array.from({ length: 41 }, (_, index) => ({
+      ...template,
+      id: `doc-${index}`,
+    }));
     expect(() => parseAuthorDocument(publication, 'aws-dev-plan')).toThrow();
   });
   it('accepts the immutable Local setup document in the protected manifest', () => {
@@ -207,14 +268,30 @@ describe('Private author-document boundary', () => {
     const file = 'c'.repeat(64);
     const publication = manifest();
     (publication.documents[0] as Record<string, unknown>)['downloads'] = [
-      { label: 'Setup', filename: 'setup.py', href: `${root}downloads/${file}/setup.py`, sha256: file, bytes: 10 },
+      {
+        label: 'Setup',
+        filename: 'setup.py',
+        href: `${root}downloads/${file}/setup.py`,
+        sha256: file,
+        bytes: 10,
+      },
     ];
-    publication.documents[0].links.push({ label: 'Evidence', href: `${staffRoot}evidence/index.html`, external: false });
+    publication.documents[0].links.push({
+      label: 'Evidence',
+      href: `${staffRoot}evidence/index.html`,
+      external: false,
+    });
     const value = parseAuthorDocument(publication, 'operations-reference', staffRoot);
     expect(value.downloads[0].href).toBe(`${staffRoot}downloads/${file}/setup.py`);
     expect(value.references[1].href).toBe(`${staffRoot}evidence/index.html`);
     (publication.documents[0] as Record<string, unknown>)['downloads'] = [
-      { label: 'Setup', filename: 'setup.py', href: `/content/downloads/${file}/setup.py`, sha256: file, bytes: 10 },
+      {
+        label: 'Setup',
+        filename: 'setup.py',
+        href: `/content/downloads/${file}/setup.py`,
+        sha256: file,
+        bytes: 10,
+      },
     ];
     expect(() => parseAuthorDocument(publication, 'operations-reference', staffRoot)).toThrow();
   });
@@ -301,16 +378,19 @@ describe('Author-document transport in the protected build', () => {
     });
   });
   afterEach(() => TestBed.inject(HttpTestingController).verify());
-  it('reads the staff manifest from the Content publication without the local previews base', async () => {
-    const result = TestBed.inject(AuthorDocumentsApi).load('operations-reference');
-    const request = TestBed.inject(HttpTestingController).expectOne(staffRoot + 'manifest.json');
-    expect(request.request.method).toBe('GET');
-    request.flush(manifest());
-    const value = await result;
-    expect(value.id).toBe('operations-reference');
-    expect(value.href).toBe(`${staffRoot}operations-reference/${sha}/index.html`);
-    TestBed.inject(HttpTestingController).expectNone(root + 'manifest.json');
-  });
+  it(
+    'reads the staff manifest from the Content publication without the local previews ' + 'base',
+    async () => {
+      const result = TestBed.inject(AuthorDocumentsApi).load('operations-reference');
+      const request = TestBed.inject(HttpTestingController).expectOne(staffRoot + 'manifest.json');
+      expect(request.request.method).toBe('GET');
+      request.flush(manifest());
+      const value = await result;
+      expect(value.id).toBe('operations-reference');
+      expect(value.href).toBe(`${staffRoot}operations-reference/${sha}/index.html`);
+      TestBed.inject(HttpTestingController).expectNone(root + 'manifest.json');
+    },
+  );
   it.each([null, { accountId: 'learner', permissions: { previewDocuments: false } }])(
     'still makes no request without capability: %s',
     async (value) => {
@@ -343,7 +423,9 @@ describe('Author-document transport in the protected build', () => {
     const result = TestBed.inject(AuthorDocumentsApi).load('operations-reference');
     const value = manifest();
     value.documents[0].content.href = `https://outside.test/operations-reference/${sha}/index.html`;
-    TestBed.inject(HttpTestingController).expectOne(staffRoot + 'manifest.json').flush(value);
+    TestBed.inject(HttpTestingController)
+      .expectOne(staffRoot + 'manifest.json')
+      .flush(value);
     await expect(result).rejects.toMatchObject({ kind: 'invalid' });
   });
 });

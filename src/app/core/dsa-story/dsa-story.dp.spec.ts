@@ -14,7 +14,13 @@ function coinChangeLike(): DsaStoryV1 {
     ...base,
     views: [
       { id: 'coins', kind: 'array', title: 'coins', var: 'coins' },
-      { id: 'dp', kind: 'array', title: 'dp', var: 'dp', pointers: [{ var: 'i' }, { var: 'amount' }] },
+      {
+        id: 'dp',
+        kind: 'array',
+        title: 'dp',
+        var: 'dp',
+        pointers: [{ var: 'i' }, { var: 'amount' }],
+      },
       { id: 'wide', kind: 'array', title: 'words', var: 'words', cell: 64 },
       { id: 'stack', kind: 'stack', title: 'stack', var: 'stack' },
     ],
@@ -45,16 +51,20 @@ function render(story: DsaStoryV1) {
 }
 
 describe('Option B DP tables: a long dp array keeps every cell in view', () => {
-  it('gives each array view its cell count, so a long table asks for the width of all its cells', () => {
-    const { figure } = render(coinChangeLike());
-    expect(figure('coins').style.getPropertyValue('--cells')).toBe('3');
-    expect(figure('dp').style.getPropertyValue('--cells')).toBe('12');
-    // A view with wider cells passes its cell width up, so the requested width uses it too.
-    expect(figure('words').style.getPropertyValue('--cell')).toBe('64px');
-    expect(figure('dp').style.getPropertyValue('--cell')).toBe('');
-    // A stack is drawn top first, one row per item: no row width to ask for.
-    expect(figure('stack').style.getPropertyValue('--cells')).toBe('');
-  });
+  it(
+    'gives each array view its cell count, so a long table asks for the width of all its ' +
+      'cells',
+    () => {
+      const { figure } = render(coinChangeLike());
+      expect(figure('coins').style.getPropertyValue('--cells')).toBe('3');
+      expect(figure('dp').style.getPropertyValue('--cells')).toBe('12');
+      // A view with wider cells passes its cell width up, so the requested width uses it too.
+      expect(figure('words').style.getPropertyValue('--cell')).toBe('64px');
+      expect(figure('dp').style.getPropertyValue('--cell')).toBe('');
+      // A stack is drawn top first, one row per item: no row width to ask for.
+      expect(figure('stack').style.getPropertyValue('--cells')).toBe('');
+    },
+  );
 
   it('draws the target cell and both pointers on it when the loop reaches the answer', () => {
     const { figure } = render(coinChangeLike());

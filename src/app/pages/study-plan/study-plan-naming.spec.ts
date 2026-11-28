@@ -5,8 +5,12 @@ describe('study-plan naming', () => {
       'Study plan #3_29092026_5X90',
     );
   });
-  it('validates blank, overly long and control-character names while accepting a full replacement', () => {
-    for (const name of ['  ', 'a'.repeat(161), 'a\nb']) expect(planNameError(name)).not.toBe('');
-    expect(planNameError('My interview preparation 🌱')).toBe('');
-  });
+  it(
+    'validates blank, overly long and control-character names while accepting a full ' +
+      'replacement',
+    () => {
+      for (const name of ['  ', 'a'.repeat(161), 'a\nb']) expect(planNameError(name)).not.toBe('');
+      expect(planNameError('My interview preparation 🌱')).toBe('');
+    },
+  );
 });

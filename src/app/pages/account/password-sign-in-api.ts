@@ -2,14 +2,16 @@ import { inject, Injectable, signal } from '@angular/core';
 import { ACCOUNT_FETCH } from '../study-plan/study-plan-account';
 
 /**
- * DLV-969: our own email-and-password pages in DEV and PROD. The Gateway calls Cognito's user-pool APIs behind each
- * route (InitiateAuth, RespondToAuthChallenge, SignUp, ConfirmSignUp, ResendConfirmationCode, ForgotPassword,
- * ConfirmForgotPassword) and keeps every token server-side; the browser only sees the next step.
+ * DLV-969: our own email-and-password pages in DEV and PROD. The Gateway calls Cognito's user-pool
+ * APIs behind each route (InitiateAuth, RespondToAuthChallenge, SignUp, ConfirmSignUp,
+ * ResendConfirmationCode, ForgotPassword, ConfirmForgotPassword) and keeps every token server-side;
+ * the browser only sees the next step.
  */
 export type PasswordStep =
   /**
-   * Signed in: leave the page for this same-origin path (the Gateway decides, for example the DEV pending notice).
-   * mergeAvailable (DLV-969 S36.8): another account uses the same verified email; the page offers the merge email first.
+   * Signed in: leave the page for this same-origin path (the Gateway decides, for example the DEV
+   * pending notice). mergeAvailable (DLV-969 S36.8): another account uses the same verified email;
+   * the page offers the merge email first.
    */
   | { kind: 'signed-in'; next: string; mergeAvailable?: true }
   /** Cognito asks an account created by the owner to choose its own password. */
@@ -91,7 +93,10 @@ const PROBLEMS: Record<string, PasswordProblem> = {
 
 /** Only a same-origin path leaves the page; anything else lands on the home page. */
 export function safeNext(value: unknown): string {
-  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
+  return typeof value === 'string' &&
+    value.startsWith('/') &&
+    !value.startsWith('//') &&
+    !value.includes('\\')
     ? value
     : '/';
 }
@@ -102,11 +107,14 @@ export function isMergePath(path: string): boolean {
 }
 
 /**
- * The path a signed-in step goes to when it also offers the merge email (DLV-969 S36.8); otherwise null. Never on the
- * way to the merge page: asking for a new email there would close the link the person is about to open.
+ * The path a signed-in step goes to when it also offers the merge email (DLV-969 S36.8); otherwise
+ * null. Never on the way to the merge page: asking for a new email there would close the link the
+ * person is about to open.
  */
 export function mergeNext(step: PasswordStep): string | null {
-  return step.kind === 'signed-in' && step.mergeAvailable === true && !isMergePath(step.next) ? step.next : null;
+  return step.kind === 'signed-in' && step.mergeAvailable === true && !isMergePath(step.next)
+    ? step.next
+    : null;
 }
 
 export function maskEmail(email: string): string {
@@ -134,7 +142,13 @@ export class PasswordSignInApi {
     return this.post('/challenge', answer);
   }
 
-  signUp(details: { firstName: string; lastName: string; email: string; password: string; returnTo: string }): Promise<PasswordStep> {
+  signUp(details: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    returnTo: string;
+  }): Promise<PasswordStep> {
     this.email.set(details.email.trim());
     return this.post('/sign-up', { ...details, email: details.email.trim() });
   }
@@ -153,7 +167,12 @@ export class PasswordSignInApi {
   }
 
   reset(code: string, newPassword: string, returnTo: string): Promise<PasswordStep> {
-    return this.post('/password/reset', { email: this.email(), code: code.trim(), newPassword, returnTo });
+    return this.post('/password/reset', {
+      email: this.email(),
+      code: code.trim(),
+      newPassword,
+      returnTo,
+    });
   }
 
   private async csrf(): Promise<{ token: string; headerName: string }> {
@@ -164,7 +183,8 @@ export class PasswordSignInApi {
     });
     if (!response.ok) throw new PasswordSignInError('unavailable');
     const data = (await response.json())?.data;
-    if (typeof data?.token !== 'string' || typeof data?.headerName !== 'string') throw new PasswordSignInError('unavailable');
+    if (typeof data?.token !== 'string' || typeof data?.headerName !== 'string')
+      throw new PasswordSignInError('unavailable');
     return data;
   }
 
@@ -192,7 +212,9 @@ export class PasswordSignInApi {
     }
     if (!response.ok) {
       const code = typeof payload?.code === 'string' ? payload.code : '';
-      throw new PasswordSignInError(PROBLEMS[code] ?? (response.status === 429 ? 'too-many' : 'unavailable'));
+      throw new PasswordSignInError(
+        PROBLEMS[code] ?? (response.status === 429 ? 'too-many' : 'unavailable'),
+      );
     }
     return step(payload?.data);
   }
@@ -201,7 +223,11 @@ export class PasswordSignInApi {
 function step(data: any): PasswordStep {
   switch (data?.step) {
     case 'SIGNED_IN':
-      return { kind: 'signed-in', next: safeNext(data.next), ...(data.mergeAvailable === true ? { mergeAvailable: true as const } : {}) };
+      return {
+        kind: 'signed-in',
+        next: safeNext(data.next),
+        ...(data.mergeAvailable === true ? { mergeAvailable: true as const } : {}),
+      };
     case 'NEW_PASSWORD':
       return { kind: 'new-password' };
     case 'APP_CODE':
@@ -209,7 +235,10 @@ function step(data: any): PasswordStep {
     case 'EMAIL_CODE':
       return { kind: 'code', method: 'email' };
     case 'CODE_SENT':
-      return { kind: 'code-sent', destination: typeof data.destination === 'string' ? data.destination : '' };
+      return {
+        kind: 'code-sent',
+        destination: typeof data.destination === 'string' ? data.destination : '',
+      };
     case 'SIGN_IN':
       return { kind: 'sign-in' };
     default:

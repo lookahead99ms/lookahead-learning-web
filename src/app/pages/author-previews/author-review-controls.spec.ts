@@ -114,29 +114,33 @@ describe('Trusted author review controls', () => {
       expect(document.activeElement).toBe(fixture.nativeElement.querySelector('[role="alert"]'));
     },
   );
-  it('records exact artifact/version/hash and displays server attribution only after acknowledgement', async () => {
-    const fixture = await create();
-    choose(fixture, 'approve', 'Ready for the next review.');
-    await submit(fixture);
-    expect(record).toHaveBeenCalledWith(
-      expect.objectContaining({
-        artifactId: packet.id,
-        artifactVersion: packet.version,
-        owningTicket: packet.owningTicket,
-        sourceSha256: packet.sourceSha256,
-        decision: 'approve',
-        comment: 'Ready for the next review.',
-      }),
-    );
-    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
-      'Recorded',
-    );
-    expect(fixture.nativeElement.textContent).toContain('Pending Main reconciliation');
-    expect(fixture.nativeElement.textContent).toContain('Server author');
-    expect(fixture.nativeElement.querySelector('button[type=submit]')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Review a different decision');
-  });
-  it('preserves an uncertain submission and reuses its exact idempotency key on retry', async () => {
+  it(
+    'records exact artifact/version/hash and displays server attribution only after ' +
+      'acknowledgement',
+    async () => {
+      const fixture = await create();
+      choose(fixture, 'approve', 'Ready for the next review.');
+      await submit(fixture);
+      expect(record).toHaveBeenCalledWith(
+        expect.objectContaining({
+          artifactId: packet.id,
+          artifactVersion: packet.version,
+          owningTicket: packet.owningTicket,
+          sourceSha256: packet.sourceSha256,
+          decision: 'approve',
+          comment: 'Ready for the next review.',
+        }),
+      );
+      expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
+        'Recorded',
+      );
+      expect(fixture.nativeElement.textContent).toContain('Pending Main reconciliation');
+      expect(fixture.nativeElement.textContent).toContain('Server author');
+      expect(fixture.nativeElement.querySelector('button[type=submit]')).toBeNull();
+      expect(fixture.nativeElement.textContent).toContain('Review a different decision');
+    },
+  );
+  it('keeps an uncertain submission and reuses its exact idempotency key on retry', async () => {
     record.mockRejectedValueOnce(new Error('Timeout'));
     const fixture = await create();
     choose(fixture, 'need-more', 'Need a recovery example.');
@@ -205,7 +209,7 @@ describe('Trusted author review controls', () => {
     expect(fixture.nativeElement.querySelector('form')).toBeNull();
     expect(record).not.toHaveBeenCalled();
   });
-  it('restores the current server decision and requires an explicit replacement action', async () => {
+  it('restores the current server decision and requires an explicit replacement', async () => {
     const previous = savedReview();
     load.mockResolvedValue({ entries: [previous], nextCursor: null });
     const fixture = await create();
@@ -223,7 +227,7 @@ describe('Trusted author review controls', () => {
       supersedesEventId: previous.recordId,
     });
   });
-  it('blocks recording if history could not be confirmed and supports an explicit reload', async () => {
+  it('blocks recording if history is unconfirmed and supports an explicit reload', async () => {
     load.mockRejectedValueOnce(new AuthorReviewError('unconfirmed'));
     const fixture = await create();
     choose(fixture, 'approve');
@@ -257,7 +261,7 @@ describe('Trusted author review controls', () => {
     });
     expect(record.mock.calls[1][0].idempotencyKey).not.toBe(first.idempotencyKey);
   });
-  it('loads earlier actor-scoped history without changing the newest replacement target', async () => {
+  it('loads earlier actor-scoped history, keeping the newest replacement target', async () => {
     const latest = savedReview();
     load
       .mockResolvedValueOnce({ entries: [latest], nextCursor: 'next-page' })

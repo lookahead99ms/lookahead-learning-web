@@ -1,14 +1,22 @@
 <app-platform-header [hideUtilities]="authenticated()" />
-<main id="main-content" class="account-page" [class.manage-account]="authenticated()" [class.auth-page]="!authenticated()">
+<main
+  id="main-content"
+  class="account-page"
+  [class.manage-account]="authenticated()"
+  [class.auth-page]="!authenticated()"
+>
   @if (authenticated()) {
     @for (account of [store.account()!]; track account.accountId) {
       <div class="account-workspace" [pageSidebarContext]="sidebarContext">
         <div class="account-rail">
           <div class="rail-identity">
-            <span class="account-avatar" aria-hidden="true">{{ initials(account.displayName) }}</span>
+            <span class="account-avatar" aria-hidden="true">{{
+              initials(account.displayName)
+            }}</span>
             <p class="account-identity-meta">
               <span class="account-identity-name">{{ account.displayName }}</span>
-              <!-- DLV-969: a Google account's Cognito name ("google_1176…") is an internal id, not shown. -->
+              <!-- DLV-969: a Google account's Cognito name ("google_1176…") is an internal id, not
+                   shown. -->
               @if (!providerUsername(account.username)) {
                 <span class="account-identity-username">{{ account.username }}</span>
               }
@@ -34,10 +42,16 @@
                           <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" />
                         }
                         @case ('membership') {
-                          <path d="M12 3.5 14.4 8.4l5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z" />
+                          <path
+                            [attr.d]="
+                              'M12 3.5 14.4 8.4l5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 ' +
+                              '2.5.9-5.4-3.9-3.8 5.4-.8z'
+                            "
+                          />
                         }
                         @case ('links') {
-                          <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.2 1.2" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.2-1.2" />
+                          <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.2 1.2" />
+                          <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.2-1.2" />
                         }
                         @case ('security') {
                           <path d="M12 3.5 19 6v5.5c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6z" />
@@ -71,8 +85,8 @@
               <p class="eyebrow">Your learning account</p>
               <h1 id="account-heading">Manage account</h1>
               <p class="hero-greeting">
-                Welcome back, {{ greetingName(account.displayName) }}. Your plans, profile, appearance
-                and sign-ins in one place.
+                Welcome back, {{ greetingName(account.displayName) }}. Your plans, profile,
+                appearance and sign-ins in one place.
               </p>
               <ng-container [ngTemplateOutlet]="learningActions" />
             </div>
@@ -99,227 +113,271 @@
     }
   } @else {
     <!-- data-signature-column: the platform statements after the page line up with this column. -->
-    <section class="account-card auth-split" aria-labelledby="account-heading" data-signature-column>
+    <section
+      class="account-card auth-split"
+      aria-labelledby="account-heading"
+      data-signature-column
+    >
       <app-sign-in-brand class="auth-brand" [variant]="signup() ? 'sign-up' : 'sign-in'" />
       <div class="auth-form">
-      <header class="account-intro">
-        <p class="eyebrow">Your learning account</p>
-        <h1 id="account-heading">{{ signup() ? 'Create your account' : 'Welcome back' }}</h1>
-      </header>
-      @if (store.enabled) {
-        @if (signInCanceled) {
-          <p class="success-status" role="status">
-            Sign-in canceled. Your existing sign-ins are unchanged.
-          </p>
-        }
-        @if (passwordChanged) {
-          <p class="success-status" role="status">
-            Password changed. All sign-ins have ended, including this one. Sign in with your new
-            password.
-          </p>
-        }
-        <p>
-          {{
-            signup()
-              ? 'Create an account to save your plans and learning progress.'
-              : 'Sign in to continue your learning.'
-          }}
-        </p>
-        @if (store.authOptions()?.managedLogin && store.authOptions()?.password) {
-          <app-password-account-form
-            [mode]="signup() ? 'signup' : 'signin'"
-            [returnTo]="returnTo()"
-            [google]="!!store.authOptions()?.google"
-            [googleUrl]="googleLoginUrl()"
-            [initialError]="formError()"
-          />
-        } @else if (store.authOptions()?.managedLogin) {
-          @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
-          @if (store.authOptions()?.google) {
-            <a class="google-action" [href]="googleLoginUrl()">
-              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-              </svg>
-              Continue with Google
-            </a>
-            <div class="auth-divider"><span>or</span></div>
+        <header class="account-intro">
+          <p class="eyebrow">Your learning account</p>
+          <h1 id="account-heading">{{ signup() ? 'Create your account' : 'Welcome back' }}</h1>
+        </header>
+        @if (store.enabled) {
+          @if (signInCanceled) {
+            <p class="success-status" role="status">
+              Sign-in canceled. Your existing sign-ins are unchanged.
+            </p>
           }
-          <a class="primary-action managed-login-action" [href]="passwordLoginUrl()">Sign in with email and password</a>
-          <p class="managed-login-hint">
+          @if (passwordChanged) {
+            <p class="success-status" role="status">
+              Password changed. All sign-ins have ended, including this one. Sign in with your new
+              password.
+            </p>
+          }
+          <p>
             {{
-              store.authOptions()?.google
-                ? 'New to Look Ahead? Continue with Google. The owner approves each new account before it opens.'
-                : 'If you need access, contact your account administrator.'
+              signup()
+                ? 'Create an account to save your plans and learning progress.'
+                : 'Sign in to continue your learning.'
             }}
           </p>
-        } @else {
-        <button type="button" class="google-button" disabled aria-describedby="google-status">
-          {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
-        </button>
-        <p id="google-status" class="field-hint">Google sign-in is not connected yet.</p>
-        <div class="auth-divider">
-          <span>{{ signup() ? 'or use email' : 'or use email or username' }}</span>
-        </div>
-        <form (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="store.busy()">
-          @if (signup()) {
-            <div class="name-fields">
-              <label
-                >First name<input
-                  name="firstName"
-                  autocomplete="given-name"
-                  required
-                  maxlength="79"
-                  [value]="firstName()"
-                  (input)="firstName.set($any($event.target).value)"
-              /></label>
-              <label
-                >Last name<input
-                  name="lastName"
-                  autocomplete="family-name"
-                  required
-                  maxlength="79"
-                  [value]="lastName()"
-                  (input)="lastName.set($any($event.target).value)"
-              /></label>
+          @if (store.authOptions()?.managedLogin && store.authOptions()?.password) {
+            <app-password-account-form
+              [mode]="signup() ? 'signup' : 'signin'"
+              [returnTo]="returnTo()"
+              [google]="!!store.authOptions()?.google"
+              [googleUrl]="googleLoginUrl()"
+              [initialError]="formError()"
+            />
+          } @else if (store.authOptions()?.managedLogin) {
+            @if (formError()) {
+              <p class="form-error" role="alert">{{ formError() }}</p>
+            }
+            @if (store.authOptions()?.google) {
+              <a class="google-action" [href]="googleLoginUrl()">
+                <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                  <path
+                    fill="#EA4335"
+                    [attr.d]="
+                      'M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 ' +
+                      '14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'
+                    "
+                  />
+                  <path
+                    fill="#4285F4"
+                    [attr.d]="
+                      'M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 ' +
+                      '5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'
+                    "
+                  />
+                  <path
+                    fill="#FBBC05"
+                    [attr.d]="
+                      'M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.' +
+                      '92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'
+                    "
+                  />
+                  <path
+                    fill="#34A853"
+                    [attr.d]="
+                      'M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 ' +
+                      '2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'
+                    "
+                  />
+                </svg>
+                Continue with Google
+              </a>
+              <div class="auth-divider"><span>or</span></div>
+            }
+            <a class="primary-action managed-login-action" [href]="passwordLoginUrl()"
+              >Sign in with email and password</a
+            >
+            <p class="managed-login-hint">
+              {{
+                store.authOptions()?.google
+                  ? 'New to Look Ahead? Continue with Google. The owner approves each new ' +
+                    'account before it opens.'
+                  : 'If you need access, contact your account administrator.'
+              }}
+            </p>
+          } @else {
+            <button type="button" class="google-button" disabled aria-describedby="google-status">
+              {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
+            </button>
+            <p id="google-status" class="field-hint">Google sign-in is not connected yet.</p>
+            <div class="auth-divider">
+              <span>{{ signup() ? 'or use email' : 'or use email or username' }}</span>
             </div>
-          }
-          <label
-            >{{ signup() ? 'Email' : 'Email or username'
-            }}<input
-              name="email"
-              [type]="signup() ? 'email' : 'text'"
-              autocomplete="username"
-              required
-              maxlength="254"
-              autocapitalize="none"
-              spellcheck="false"
-              [value]="email()"
-              (input)="email.set($any($event.target).value)"
-          /></label>
-          <div class="password-field">
-            <label for="account-password">Password</label>
-            <div class="password-input">
-              <input
-                id="account-password"
-                name="password"
-                [type]="!signup() && passwordVisible() ? 'text' : 'password'"
-                [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
-                autocapitalize="none"
-                spellcheck="false"
-                required
-                [attr.minlength]="signup() ? 15 : null"
-                [attr.aria-describedby]="signup() ? 'password-hint' : null"
-                [value]="password()"
-                (input)="password.set($any($event.target).value)"
-              />
-              @if (!signup()) {
+            <form (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="store.busy()">
+              @if (signup()) {
+                <div class="name-fields">
+                  <label
+                    >First name<input
+                      name="firstName"
+                      autocomplete="given-name"
+                      required
+                      maxlength="79"
+                      [value]="firstName()"
+                      (input)="firstName.set($any($event.target).value)"
+                  /></label>
+                  <label
+                    >Last name<input
+                      name="lastName"
+                      autocomplete="family-name"
+                      required
+                      maxlength="79"
+                      [value]="lastName()"
+                      (input)="lastName.set($any($event.target).value)"
+                  /></label>
+                </div>
+              }
+              <label
+                >{{ signup() ? 'Email' : 'Email or username'
+                }}<input
+                  name="email"
+                  [type]="signup() ? 'email' : 'text'"
+                  autocomplete="username"
+                  required
+                  maxlength="254"
+                  autocapitalize="none"
+                  spellcheck="false"
+                  [value]="email()"
+                  (input)="email.set($any($event.target).value)"
+              /></label>
+              <div class="password-field">
+                <label for="account-password">Password</label>
+                <div class="password-input">
+                  <input
+                    id="account-password"
+                    name="password"
+                    [type]="!signup() && passwordVisible() ? 'text' : 'password'"
+                    [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    required
+                    [attr.minlength]="signup() ? 15 : null"
+                    [attr.aria-describedby]="signup() ? 'password-hint' : null"
+                    [value]="password()"
+                    (input)="password.set($any($event.target).value)"
+                  />
+                  @if (!signup()) {
+                    <button
+                      type="button"
+                      class="password-visibility"
+                      aria-controls="account-password"
+                      [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'"
+                      (click)="passwordVisible.set(!passwordVisible())"
+                    >
+                      {{ passwordVisible() ? 'Hide' : 'Show' }}
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (signup()) {
+                <p id="password-hint" class="field-hint">
+                  Use 15 to 128 characters. Spaces and password managers are welcome.
+                </p>
+                <label
+                  >Confirm password<input
+                    name="confirmPassword"
+                    type="password"
+                    autocomplete="new-password"
+                    required
+                    minlength="15"
+                    [value]="confirmPassword()"
+                    (input)="confirmPassword.set($any($event.target).value)"
+                /></label>
+                <label
+                  >Country of residence<input
+                    name="country"
+                    list="registration-countries"
+                    autocomplete="country-name"
+                    required
+                    maxlength="100"
+                    placeholder="Search for your country"
+                    aria-describedby="country-hint"
+                    [value]="countryName()"
+                    (input)="countryName.set($any($event.target).value)"
+                /></label>
+                <datalist id="registration-countries">
+                  @for (country of countries; track country.code) {
+                    <option [value]="country.name"></option>
+                  }
+                </datalist>
+                <p id="country-hint" class="field-hint">Choose the country where you live.</p>
+              }
+              @if (store.sessionExpired() && store.pending()) {
+                <p class="field-hint"
+                  >A saved-plan request was interrupted. Discard that pending request before signing
+                  in again; your browser plan stays here.</p
+                >
                 <button
                   type="button"
-                  class="password-visibility"
-                  aria-controls="account-password"
-                  [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'"
-                  (click)="passwordVisible.set(!passwordVisible())"
+                  class="secondary-action"
+                  [disabled]="store.busy()"
+                  (click)="store.discardPending()"
+                  >Discard pending request</button
                 >
-                  {{ passwordVisible() ? 'Hide' : 'Show' }}
-                </button>
               }
-            </div>
-          </div>
-          @if (signup()) {
-            <p id="password-hint" class="field-hint">
-              Use 15 to 128 characters. Spaces and password managers are welcome.
+              @if (formError() || store.error()) {
+                <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
+              }
+              <button
+                [attr.aria-busy]="store.busy()"
+                class="primary-action"
+                type="submit"
+                [disabled]="
+                  store.busy() ||
+                  store.pending() ||
+                  (signup() && store.authOptions()?.registration !== true)
+                "
+              >
+                {{
+                  store.busy()
+                    ? signup()
+                      ? 'Creating account…'
+                      : 'Signing in…'
+                    : signup()
+                      ? 'Create account'
+                      : 'Sign in'
+                }}
+              </button>
+              @if (signup() && store.authOptions()?.registration !== true) {
+                <p class="field-hint" role="status">Registration is unavailable on this service.</p>
+              }
+            </form>
+            <p class="auth-switch">
+              @if (signup()) {
+                Already have an account?
+                <a
+                  routerLink="/sign-in"
+                  [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
+                  >Sign in</a
+                >
+              } @else {
+                Don’t have an account?
+                <a
+                  routerLink="/sign-up"
+                  [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
+                  >Sign up</a
+                >
+              }
             </p>
-            <label
-              >Confirm password<input
-                name="confirmPassword"
-                type="password"
-                autocomplete="new-password"
-                required
-                minlength="15"
-                [value]="confirmPassword()"
-                (input)="confirmPassword.set($any($event.target).value)"
-            /></label>
-            <label
-              >Country of residence<input
-                name="country"
-                list="registration-countries"
-                autocomplete="country-name"
-                required
-                maxlength="100"
-                placeholder="Search for your country"
-                aria-describedby="country-hint"
-                [value]="countryName()"
-                (input)="countryName.set($any($event.target).value)"
-            /></label>
-            <datalist id="registration-countries">
-              @for (country of countries; track country.code) {
-                <option [value]="country.name"></option>
-              }
-            </datalist>
-            <p id="country-hint" class="field-hint">Choose the country where you live.</p>
           }
-          @if (store.sessionExpired() && store.pending()) {
-            <p class="field-hint">A saved-plan request was interrupted. Discard that pending request before signing in again; your browser plan stays here.</p>
-            <button type="button" class="secondary-action" [disabled]="store.busy()" (click)="store.discardPending()">Discard pending request</button>
-          }
-          @if (formError() || store.error()) {
-            <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
-          }
-          <button
-            [attr.aria-busy]="store.busy()"
-            class="primary-action"
-            type="submit"
-            [disabled]="
-              store.busy() ||
-              store.pending() ||
-              (signup() && store.authOptions()?.registration !== true)
-            "
-          >
-            {{
-              store.busy()
-                ? signup()
-                  ? 'Creating account…'
-                  : 'Signing in…'
-                : signup()
-                  ? 'Create account'
-                  : 'Sign in'
-            }}
-          </button>
-          @if (signup() && store.authOptions()?.registration !== true) {
-            <p class="field-hint" role="status">Registration is unavailable on this service.</p>
-          }
-        </form>
-        <p class="auth-switch">
-          @if (signup()) {
-            Already have an account?
-            <a
-              routerLink="/sign-in"
-              [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
-              >Sign in</a
-            >
-          } @else {
-            Don’t have an account?
-            <a
-              routerLink="/sign-up"
-              [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
-              >Sign up</a
-            >
-          }
-        </p>
+        } @else {
+          <p>
+            This standalone demo saves learning plans on this browser. Account sign-in is
+            unavailable.
+          </p>
+          <a class="action-link" routerLink="/study-plan">Open Study Plan</a>
         }
-      } @else {
-        <p>
-          This standalone demo saves learning plans on this browser. Account sign-in is unavailable.
-        </p>
-        <a class="action-link" routerLink="/study-plan">Open Study Plan</a>
-      }
-      @if (!devSession.outsideGate()) {
-        <!-- DLV-969 (owner, 2026-11-03): no way back into learning before the DEV gate admits this browser. -->
-        <ng-container [ngTemplateOutlet]="learningActions" />
-      }
+        @if (!devSession.outsideGate()) {
+          <!-- DLV-969 (owner, 2026-11-03): no way back into learning before the DEV gate admits
+               this browser. -->
+          <ng-container [ngTemplateOutlet]="learningActions" />
+        }
       </div>
     </section>
   }
@@ -328,7 +386,13 @@
 <ng-template #learningActions>
   <nav class="account-footer" aria-label="Learning actions">
     <a class="return-action" [class.primary-action]="authenticated()" [routerLink]="returnUrl()">
-      {{ lessonReturn() ? 'Return to your lesson' : authenticated() ? 'Continue learning' : 'Return to learning' }}
+      {{
+        lessonReturn()
+          ? 'Return to your lesson'
+          : authenticated()
+            ? 'Continue learning'
+            : 'Return to learning'
+      }}
     </a>
     @if (authenticated()) {
       <!-- Study plans have their own section on this page, so no separate Study Plan action. -->

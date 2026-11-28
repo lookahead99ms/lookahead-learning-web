@@ -13,7 +13,10 @@ export interface DirectoryAssignment {
   id: string;
   accountId: string | null;
   pendingEmail: string | null;
-  /** DLV-969: what a non-owner is sent instead of the account and email ("Co-author 2", "Pending invitation"). */
+  /**
+   * DLV-969: what a non-owner is sent instead of the account and email ("Co-author 2", "Pending
+   * invitation").
+   */
   label?: string;
   pending?: boolean;
   roles: string[];
@@ -48,18 +51,34 @@ export interface DirectorySelf {
 
 /** Owner-only Identity directory enriched by Domain with current access. */
 export interface DirectoryAccount {
-  accountId: string; username: string; displayName: string; email: string | null;
-  roles: string[]; testAccount: boolean; fullCurriculum: boolean;
+  accountId: string;
+  username: string;
+  displayName: string;
+  email: string | null;
+  roles: string[];
+  testAccount: boolean;
+  fullCurriculum: boolean;
   access: { label: string; labels: string[]; grantedCourseIds: string[] };
-  canDowngrade?: boolean; canDelete?: boolean;
+  canDowngrade?: boolean;
+  canDelete?: boolean;
   /**
    * DLV-969 (DEV sign-in accounts): whether the account can sign in now, and which of the owner's
    * removal actions apply. Absent from an older Domain, so the buttons stay hidden.
    */
-  signIn?: 'active' | 'disabled'; canDisable?: boolean; canEnable?: boolean; canRemove?: boolean;
-  /** DLV-969 account linking, owner only: every way into the account, and how many other accounts share its verified email. */
-  signInMethods?: AccountSignInMethod[]; sameEmailAccounts?: number;
-  /** DLV-969 (owner, 2026-11-05), owner only: the person's GitHub profile address, null when not given; absent for test accounts. */
+  signIn?: 'active' | 'disabled';
+  canDisable?: boolean;
+  canEnable?: boolean;
+  canRemove?: boolean;
+  /**
+   * DLV-969 account linking, owner only: every way into the account, and how many other accounts
+   * share its verified email.
+   */
+  signInMethods?: AccountSignInMethod[];
+  sameEmailAccounts?: number;
+  /**
+   * DLV-969 (owner, 2026-11-05), owner only: the person's GitHub profile address, null when not
+   * given; absent for test accounts.
+   */
   github?: string | null;
 }
 
@@ -84,18 +103,32 @@ export interface DirectoryRow {
   canDisable?: boolean;
   canEnable?: boolean;
   canRemove?: boolean;
-  /** DLV-969, owner's directory only: "Google", "Email and password". Other operators never get these. */
+  /**
+   * DLV-969, owner's directory only: "Google", "Email and password". Other operators never get
+   * these.
+   */
   signInLabels?: string[];
-  /** DLV-969, owner's directory only: "Same Gmail as 1 other account" when other accounts share the verified email. */
+  /**
+   * DLV-969, owner's directory only: "Same Gmail as 1 other account" when other accounts share the
+   * verified email.
+   */
   sameEmail?: string;
   /**
-   * DLV-969 (owner, 2026-11-05), owner's directory only: the GitHub profile address to add the person to repositories,
-   * null for "Not given". Undefined (not shown) for test accounts, pending rows and an older Domain.
+   * DLV-969 (owner, 2026-11-05), owner's directory only: the GitHub profile address to add the
+   * person to repositories, null for "Not given". Undefined (not shown) for test accounts, pending
+   * rows and an older Domain.
    */
   github?: string | null;
 }
 
-export const ROLE_FILTERS = ['Author (owner)', 'Co-author', 'Admin', 'Reviewer', 'Tester', 'Learner'] as const;
+export const ROLE_FILTERS = [
+  'Author (owner)',
+  'Co-author',
+  'Admin',
+  'Reviewer',
+  'Tester',
+  'Learner',
+] as const;
 
 const CATALOG_NAMES: Readonly<Record<string, string>> = {
   learn: 'Learn',
@@ -106,12 +139,24 @@ const CATALOG_NAMES: Readonly<Record<string, string>> = {
 /** Generic words the server puts before a plan name; the directory shows the plan name only. */
 const PREFIXES = /^(regular|paid|paid membership|membership|promo)$/i;
 
-/** The owner-only directory, every page (`GET /admin/accounts`). Throws on a missing or malformed page. */
-export async function loadDirectory(request: <T>(path: string) => Promise<T>): Promise<DirectoryAccount[]> {
+/**
+ * The owner-only directory, every page (`GET /admin/accounts`). Throws on a missing or malformed
+ * page.
+ */
+export async function loadDirectory(
+  request: <T>(path: string) => Promise<T>,
+): Promise<DirectoryAccount[]> {
   const accounts: DirectoryAccount[] = [];
   for (let page = 0; page <= 100000; page++) {
-    const result = await request<{ accounts: DirectoryAccount[]; page: number; hasNext: boolean }>(`/admin/accounts?query=&page=${page}`);
-    if (!Array.isArray(result.accounts) || result.page !== page || typeof result.hasNext !== 'boolean') throw new Error('Invalid directory');
+    const result = await request<{ accounts: DirectoryAccount[]; page: number; hasNext: boolean }>(
+      `/admin/accounts?query=&page=${page}`,
+    );
+    if (
+      !Array.isArray(result.accounts) ||
+      result.page !== page ||
+      typeof result.hasNext !== 'boolean'
+    )
+      throw new Error('Invalid directory');
     accounts.push(...result.accounts);
     if (!result.hasNext) return accounts;
     if (page === 100000 || !result.accounts.length) throw new Error('Incomplete directory');
@@ -121,23 +166,38 @@ export async function loadDirectory(request: <T>(path: string) => Promise<T>): P
 
 /** An account's username when a list could name it, otherwise a short ID. */
 /**
- * How the owner sees a person (DLV-969, owner 2026-11-03): their name first, then their email (a Google account's Gmail).
- * Cognito's own name for a Google account ("google_1176…") is an internal id and never shown; a readable username
- * (an email or a test login) is used when there is no name.
+ * How the owner sees a person (DLV-969, owner 2026-11-03): their name first, then their email (a
+ * Google account's Gmail). Cognito's own name for a Google account ("google_1176…") is an internal
+ * id and never shown; a readable username (an email or a test login) is used when there is no name.
  */
-export function personLines(account: { username: string; displayName?: string | null; email?: string | null }): { name: string; detail: string | null } {
+export function personLines(account: {
+  username: string;
+  displayName?: string | null;
+  email?: string | null;
+}): { name: string; detail: string | null } {
   const internal = /^google_/i.test(account.username);
-  const display = account.displayName?.trim() && account.displayName !== account.username ? account.displayName.trim() : '';
+  const display =
+    account.displayName?.trim() && account.displayName !== account.username
+      ? account.displayName.trim()
+      : '';
   const name = display || account.email || (internal ? 'Google account' : account.username);
-  const details = [account.email && account.email !== name ? account.email : '',
-    !internal && account.username !== name && account.username !== account.email ? account.username : ''].filter(Boolean);
+  const details = [
+    account.email && account.email !== name ? account.email : '',
+    !internal && account.username !== name && account.username !== account.email
+      ? account.username
+      : '',
+  ].filter(Boolean);
   return { name, detail: details.join(' · ') || null };
 }
 
 /** Short labels for the owner's rows: "Google", "Email and password"; one each, Google first. */
 const METHOD_LABELS: Record<string, string> = { google: 'Google', cognito: 'Email and password' };
 export function signInLabels(methods: unknown): string[] {
-  return [...new Set(readSignInMethods(methods).map((method) => METHOD_LABELS[method.provider] ?? method.provider))];
+  return [
+    ...new Set(
+      readSignInMethods(methods).map((method) => METHOD_LABELS[method.provider] ?? method.provider),
+    ),
+  ];
 }
 
 /** A whole count above zero, or 0 for anything else the server sent. */
@@ -145,7 +205,10 @@ export function sameEmailCount(value: unknown): number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : 0;
 }
 
-/** "Same Gmail as 1 other account"; "Same email as 2 other accounts" when the address is not a Gmail. */
+/**
+ * "Same Gmail as 1 other account"; "Same email as 2 other accounts" when the address is not a
+ * Gmail.
+ */
 export function sameEmailText(count: number, email: string | null | undefined): string {
   const kind = /@(gmail|googlemail)\.com$/i.test(email ?? '') ? 'Gmail' : 'email';
   return `Same ${kind} as ${count} other account${count === 1 ? '' : 's'}`;
@@ -188,7 +251,10 @@ export function plainAccess(
       .map((part) => part.trim())
       .filter((part) => part && !PREFIXES.test(part));
     // Course Pass and course-grant labels are described by the course titles below.
-    if (!parts.length || parts.some((part) => /course pass|course access/i.test(part) || part.includes(':'))) {
+    if (
+      !parts.length ||
+      parts.some((part) => /course pass|course access/i.test(part) || part.includes(':'))
+    ) {
       return [];
     }
     return [parts.at(-1)!];
@@ -205,11 +271,16 @@ function roleNames(codes: readonly string[]): string[] {
   return staff.length ? staff : ['Learner'];
 }
 
-/** Sorted by role (user, 2026-10-16): Author, Co-author, Admin, Reviewer, Tester, Learner, then pending invitations. */
+/**
+ * Sorted by role (user, 2026-10-16): Author, Co-author, Admin, Reviewer, Tester, Learner, then
+ * pending invitations.
+ */
 function roleRank(row: DirectoryRow): number {
   const order: readonly string[] = ROLE_FILTERS;
   if (row.pending) return order.length + 1;
-  return Math.min(...row.roles.map((role) => (order.includes(role) ? order.indexOf(role) : order.length)));
+  return Math.min(
+    ...row.roles.map((role) => (order.includes(role) ? order.indexOf(role) : order.length)),
+  );
 }
 
 function byName(left: DirectoryRow, right: DirectoryRow): number {
@@ -217,7 +288,8 @@ function byName(left: DirectoryRow, right: DirectoryRow): number {
 }
 
 /**
- * One row per account, sorted by role and then by name, with pending invitations last. A test account and a staff assignment for the same account merge into one row.
+ * One row per account, sorted by role and then by name, with pending invitations last. A test
+ * account and a staff assignment for the same account merge into one row.
  */
 export function directoryRows(
   self: DirectorySelf | null,
@@ -226,7 +298,9 @@ export function directoryRows(
   titles: ReadonlyMap<string, string>,
   accounts: readonly DirectoryAccount[] = [],
 ): DirectoryRow[] {
-  const byAccount = new Map(assignments.filter((item) => item.accountId).map((item) => [item.accountId!, item]));
+  const byAccount = new Map(
+    assignments.filter((item) => item.accountId).map((item) => [item.accountId!, item]),
+  );
   const rows: DirectoryRow[] = [];
   const seen = new Set<string>();
 
@@ -265,8 +339,13 @@ export function directoryRows(
     rows.push({
       key: assignment.id,
       accountId: assignment.accountId,
-      // Your own row names you as a person, never by Cognito's internal google_… id (DLV-969, user 2026-11-03).
-      name: isSelf ? personLines(self!).name : (assignment.label ?? assignment.pendingEmail ?? accountName(assignment.accountId!, new Map())),
+      // Your own row names you as a person, never by Cognito's internal google_… id (DLV-969, user
+      // 2026-11-03).
+      name: isSelf
+        ? personLines(self!).name
+        : (assignment.label ??
+          assignment.pendingEmail ??
+          accountName(assignment.accountId!, new Map())),
       detail: pending ? 'Waiting for a verified sign-in' : null,
       roles: roleNames(assignment.roles),
       access: plainAccess([], assignment.topicGrants, titles, full),
@@ -304,13 +383,18 @@ export function directoryRows(
   }
 
   for (const account of accounts) {
-    const existing = rows.find(row => row.accountId === account.accountId);
+    const existing = rows.find((row) => row.accountId === account.accountId);
     const lines = personLines(account);
     const current = {
       name: lines.name,
       detail: lines.detail,
       roles: roleNames(account.roles),
-      access: plainAccess(account.access.labels, account.access.grantedCourseIds, titles, account.fullCurriculum),
+      access: plainAccess(
+        account.access.labels,
+        account.access.grantedCourseIds,
+        titles,
+        account.fullCurriculum,
+      ),
       isTest: account.testAccount,
       canDowngrade: account.canDowngrade,
       canDelete: account.canDelete,
@@ -320,18 +404,31 @@ export function directoryRows(
       canRemove: account.canRemove === true,
       signInLabels: signInLabels(account.signInMethods),
       sameEmail: sameEmailCount(account.sameEmailAccounts)
-        ? sameEmailText(sameEmailCount(account.sameEmailAccounts), account.email) : undefined,
+        ? sameEmailText(sameEmailCount(account.sameEmailAccounts), account.email)
+        : undefined,
       github: githubOf(account),
     };
     if (existing) Object.assign(existing, current);
-    else rows.push({ ...current, key: account.accountId, accountId: account.accountId,
-      isSelf: account.accountId === self?.accountId, pending: false, changedBy: null, changedAt: null, test: null });
+    else
+      rows.push({
+        ...current,
+        key: account.accountId,
+        accountId: account.accountId,
+        isSelf: account.accountId === self?.accountId,
+        pending: false,
+        changedBy: null,
+        changedAt: null,
+        test: null,
+      });
   }
 
   return rows.sort((left, right) => roleRank(left) - roleRank(right) || byName(left, right));
 }
 
-/** The owner's GitHub column: a valid GitHub profile address, null for none, undefined when not reported or a test account. */
+/**
+ * The owner's GitHub column: a valid GitHub profile address, null for none, undefined when not
+ * reported or a test account.
+ */
 function githubOf(account: DirectoryAccount): string | null | undefined {
   if (account.testAccount || !('github' in account)) return undefined;
   return githubDisplay(account.github) ? (account.github as string).trim() : null;

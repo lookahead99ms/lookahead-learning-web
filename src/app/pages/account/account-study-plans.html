@@ -2,7 +2,11 @@
   <div class="summary-heading">
     <h2 id="learning-summary-heading">Study plans</h2>
     @if (!(store.planSummariesState() === 'ready' && plans().length === 0)) {
-      <a class="create-plan-action" routerLink="/study-plan" [queryParams]="{ create: 1 }"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>Create study plan</a>
+      <a class="create-plan-action" routerLink="/study-plan" [queryParams]="{ create: 1 }"
+        ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 5v14M5 12h14" /></svg
+        >Create study plan</a
+      >
     }
   </div>
   @switch (store.planSummariesState()) {
@@ -18,8 +22,18 @@
     @case ('ready') {
       @if (plans().length === 0) {
         <div class="empty-plans">
-          <p>No saved study plans yet. Choose your goals and the time you have, and we’ll lay out a day-by-day plan.</p>
-          <a class="create-plan-action primary" routerLink="/study-plan" [queryParams]="{ create: 1 }"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>Create a study plan</a>
+          <p
+            >No saved study plans yet. Choose your goals and the time you have, and we’ll lay out a
+            day-by-day plan.</p
+          >
+          <a
+            class="create-plan-action primary"
+            routerLink="/study-plan"
+            [queryParams]="{ create: 1 }"
+            ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 5v14M5 12h14" /></svg
+            >Create a study plan</a
+          >
         </div>
       } @else {
         <p>{{ plans().length }} saved study {{ plans().length === 1 ? 'plan' : 'plans' }}</p>
@@ -48,7 +62,12 @@
               [queryParams]="{ plan: plan.planId }"
               [attr.aria-label]="'Open plan: ' + plan.name"
               ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M3 6.5c2.8-1.2 5.8-1 9 1 3.2-2 6.2-2.2 9-1V19c-2.8-1.2-5.8-1-9 1-3.2-2-6.2-2.2-9-1z" />
+                <path
+                  [attr.d]="
+                    'M3 6.5c2.8-1.2 5.8-1 9 1 3.2-2 6.2-2.2 9-1V19c-2.8-1.2-5.8-1-9 ' +
+                    '1-3.2-2-6.2-2.2-9-1z'
+                  "
+                />
                 <path d="M12 7.5V20" /></svg
               >Open plan</a
             >
@@ -59,7 +78,11 @@
               {{ progress.total === 1 ? 'session' : 'sessions' }} completed
             </p>
             <span class="plan-meter" aria-hidden="true">
-              <span [style.inline-size.%]="progress.total ? (progress.completed / progress.total) * 100 : 0"></span>
+              <span
+                [style.inline-size.%]="
+                  progress.total ? (progress.completed / progress.total) * 100 : 0
+                "
+              ></span>
             </span>
           } @else {
             <p class="plan-progress unavailable">Session progress is not available yet.</p>
@@ -68,19 +91,35 @@
             <dl class="plan-details">
               @if (plan.durationDays) {
                 <div>
-                  <dt><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10M7 21h10M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9" /></svg>Duration</dt>
+                  <dt
+                    ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path
+                        d="M7 3h10M7 21h10M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9"
+                      /></svg
+                    >Duration</dt
+                  >
                   <dd>{{ plan.durationDays }} {{ plan.durationDays === 1 ? 'day' : 'days' }}</dd>
                 </div>
               }
               @if (plan.dailyMinutes) {
                 <div>
-                  <dt><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M9.5 2.5h5" /></svg>Daily time</dt>
+                  <dt
+                    ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <circle cx="12" cy="13" r="8" />
+                      <path d="M12 9v4l2.5 2M9.5 2.5h5" /></svg
+                    >Daily time</dt
+                  >
                   <dd>{{ plan.dailyMinutes }} min</dd>
                 </div>
               }
               @if (plan.updatedAt) {
                 <div>
-                  <dt><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Last updated</dt>
+                  <dt
+                    ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                      <path d="M20 4v7h-7" /></svg
+                    >Last updated</dt
+                  >
                   <dd>
                     <time [attr.datetime]="plan.updatedAt">{{
                       plan.updatedAt | date: 'mediumDate'

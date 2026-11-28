@@ -7,7 +7,12 @@ import {
 } from '../../content/content.models';
 import { highlightStudioSource } from '../focus-studio/code-presentation';
 import { TraceSnapshot, traceSnapshot } from '../guided-algorithm-trace/trace-model';
-import { ArrayVisual, ListVisual, stepNarration, traceVisual } from '../guided-algorithm-trace/trace-visual';
+import {
+  ArrayVisual,
+  ListVisual,
+  stepNarration,
+  traceVisual,
+} from '../guided-algorithm-trace/trace-visual';
 
 /**
  * Option B "Code beside" (user-approved redesign, 2026-10-06): one player for the Visual
@@ -56,7 +61,8 @@ export function walkthroughKey(event: KeyboardEvent): WalkthroughKeyAction | nul
   const target = event.target instanceof Element ? event.target : null;
   if (
     target?.closest(
-      'input, select, textarea, pre, [role="tab"], [role="separator"], [contenteditable]:not([contenteditable="false"])',
+      'input, select, textarea, pre, [role="tab"], [role="separator"], ' +
+        '[contenteditable]:not([contenteditable="false"])',
     )
   )
     return null;
@@ -104,7 +110,10 @@ export function pinnedCover(box: Element, pin: number): number {
   const cover = left.getBoundingClientRect();
   const rect = box.getBoundingClientRect();
   // Only a block sitting above the box (stacked layout) covers it; a column beside it does not.
-  return cover.height > 0 && cover.bottom <= rect.bottom && cover.right > rect.left && cover.left < rect.right
+  return cover.height > 0 &&
+    cover.bottom <= rect.bottom &&
+    cover.right > rect.left &&
+    cover.left < rect.right
     ? Math.max(pin, cover.bottom)
     : pin;
 }
@@ -118,7 +127,10 @@ export function codeLines(
 ): WalkthroughCodeLine[] {
   const implementation = problem.implementations.find((item) => item.language === language);
   if (!implementation) return [];
-  const html = highlightStudioSource(implementation.lines.map((line) => line.text).join('\n'), language);
+  const html = highlightStudioSource(
+    implementation.lines.map((line) => line.text).join('\n'),
+    language,
+  );
   const ranSet = new Set(ran);
   return implementation.lines.map((line, index) => ({
     id: line.id,
@@ -204,9 +216,12 @@ export function lineView(
 ): LineView {
   const snapshot = traceSnapshot(problem, fixture.id, language, step);
   const event = snapshot.event;
-  const previous = snapshot.step > 0 ? traceSnapshot(problem, fixture.id, language, snapshot.step - 1) : null;
+  const previous =
+    snapshot.step > 0 ? traceSnapshot(problem, fixture.id, language, snapshot.step - 1) : null;
   const narration = event ? stepNarration(problem, fixture, snapshot, language, previous) : null;
-  const visual = event ? traceVisual(problem, fixture, snapshot, language, previous) : { kind: 'none' as const };
+  const visual = event
+    ? traceVisual(problem, fixture, snapshot, language, previous)
+    : { kind: 'none' as const };
   const rows = snapshot.rows.length
     ? snapshot.rows
     : arrayRows(snapshot, snapshot.step === snapshot.events.length - 1);
@@ -318,7 +333,8 @@ export function compactRecorded(raw: string): string {
       const record = item as Record<string, unknown>;
       const keys = Object.keys(record);
       const own = keys.find((key) => /^(val|value)$/i.test(key));
-      if (own && (keys.some((key) => NODE_LINKS.test(key)) || keys.length === 1)) return `node(${show(record[own])})`;
+      if (own && (keys.some((key) => NODE_LINKS.test(key)) || keys.length === 1))
+        return `node(${show(record[own])})`;
       return `{${keys.map((key) => `${key}: ${show(record[key])}`).join(', ')}}`;
     }
     return typeof item === 'string' ? JSON.stringify(item) : String(item);

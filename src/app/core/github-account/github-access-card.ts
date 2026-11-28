@@ -6,8 +6,9 @@ import { AccountSettingsError } from '../../pages/account/account-settings-clien
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 
 /**
- * DLV-969 (owner, 2026-11-05): asks staff for their GitHub account. Save stores it with the other profile links (the
- * other three stay as they are). Save and Not now report `finished`; what to do next is the dialog's business.
+ * DLV-969 (owner, 2026-11-05): asks staff for their GitHub account. Save stores it with the other
+ * profile links (the other three stay as they are). Save and Not now report `finished`; what to do
+ * next is the dialog's business.
  */
 @Component({
   selector: 'app-github-access-card',
@@ -44,7 +45,8 @@ export class GithubAccessCard {
         error instanceof AccountSettingsError && error.kind === 'invalid-link'
           ? 'Use an https://github.com/… address for GitHub.'
           : error instanceof AccountSettingsError && error.kind === 'session-expired'
-            ? 'Your session expired. Sign in again, then add your GitHub account in Account settings.'
+            ? 'Your session expired. Sign in again, then add your GitHub account in ' +
+              'Account settings.'
             : 'We couldn’t save it just now. Retry, or add it later in Account settings.',
       );
     } finally {

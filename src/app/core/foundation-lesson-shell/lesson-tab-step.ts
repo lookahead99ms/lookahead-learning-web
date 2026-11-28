@@ -1,14 +1,18 @@
 import { Component, input, output } from '@angular/core';
 
-/** One Previous / Next press under tabbed panels: the step (-1 or 1) and the click, for keeping the tab row in view. */
+/**
+ * One Previous / Next press under tabbed panels: the step (-1 or 1) and the click, for keeping the
+ * tab row in view.
+ */
 export interface LessonTabStepEvent {
   delta: number;
   event: Event;
 }
 
 /**
- * Previous / Next under tabbed panels (Variations, Common mistakes), for reading them in order (user review,
- * 2026-10-05). The host is the lesson's `div.tab-step`; the lesson owns which tab is open.
+ * Previous / Next under tabbed panels (Variations, Common mistakes), for reading them in order
+ * (user review, 2026-10-05). The host is the lesson's `div.tab-step`; the lesson owns which tab is
+ * open.
  */
 @Component({
   selector: 'div[appLessonTabStep]',
@@ -17,7 +21,11 @@ export interface LessonTabStepEvent {
       <span aria-hidden="true">‹ </span>Previous
     </button>
     <span class="tab-step-count">{{ at() + 1 }} of {{ count() }}</span>
-    <button type="button" [disabled]="at() === count() - 1" (click)="step.emit({ delta: 1, event: $event })">
+    <button
+      type="button"
+      [disabled]="at() === count() - 1"
+      (click)="step.emit({ delta: 1, event: $event })"
+    >
       Next<span aria-hidden="true"> ›</span>
     </button>
   `,

@@ -43,7 +43,8 @@ async function main() {
   requirePrivateReviewOutput(resolve(physicalParent, relative(dirname(output), output)));
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
   process.stdout.write(
-    `${report.summary.publicEligible}/${report.summary.items} items are publicly eligible; report: ${output}\n`,
+    `${report.summary.publicEligible}/${report.summary.items} items are publicly ` +
+      `eligible; report: ${output}\n`,
   );
   if (options.check && report.summary.blocked > 0) process.exitCode = 1;
 }

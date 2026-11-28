@@ -4,7 +4,13 @@ import { LessonTabItem, LessonTabs } from './lesson-tabs';
 
 @Component({
   imports: [LessonTabs],
-  template: `<app-lesson-tabs [items]="items" [selected]="selected()" idPrefix="demo" ariaLabel="Common mistakes" (select)="selected.set($event)" />`,
+  template: `<app-lesson-tabs
+    [items]="items"
+    [selected]="selected()"
+    idPrefix="demo"
+    ariaLabel="Common mistakes"
+    (select)="selected.set($event)"
+  />`,
 })
 class Host {
   readonly items: LessonTabItem[] = [
@@ -26,9 +32,19 @@ describe('LessonTabs', () => {
 
   it('renders an ARIA tab list wired to its panels', () => {
     const { element, tabs } = render();
-    expect(element.querySelector('[role="tablist"]')?.getAttribute('aria-label')).toBe('Common mistakes');
-    expect(tabs().map((tab) => tab.getAttribute('aria-controls'))).toEqual(['demo-panel-0', 'demo-panel-1', 'demo-panel-2']);
-    expect(tabs().map((tab) => tab.getAttribute('aria-selected'))).toEqual(['true', 'false', 'false']);
+    expect(element.querySelector('[role="tablist"]')?.getAttribute('aria-label')).toBe(
+      'Common mistakes',
+    );
+    expect(tabs().map((tab) => tab.getAttribute('aria-controls'))).toEqual([
+      'demo-panel-0',
+      'demo-panel-1',
+      'demo-panel-2',
+    ]);
+    expect(tabs().map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'true',
+      'false',
+      'false',
+    ]);
     expect(tabs().map((tab) => tab.tabIndex)).toEqual([0, -1, -1]);
     expect(tabs()[0].title).toBe('Counting brackets instead of keeping them');
   });

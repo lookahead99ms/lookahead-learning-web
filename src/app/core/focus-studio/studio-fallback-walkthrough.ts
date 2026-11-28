@@ -139,7 +139,8 @@ export class StudioFallbackWalkthrough {
 
   protected readonly fixture = computed(
     () =>
-      this.problem().fixtures.find((item) => item.id === this.fixtureId()) ?? this.problem().fixtures[0],
+      this.problem().fixtures.find((item) => item.id === this.fixtureId()) ??
+      this.problem().fixtures[0],
   );
   protected readonly examples = computed(() =>
     this.problem().fixtures.map((item) => ({ id: item.id, label: exampleLabel(item) })),
@@ -183,7 +184,11 @@ export class StudioFallbackWalkthrough {
   protected readonly count = computed(() =>
     Math.max(
       1,
-      this.lines() ? this.snapshot().events.length : this.conceptual() ? this.frames().length : this.changes().length,
+      this.lines()
+        ? this.snapshot().events.length
+        : this.conceptual()
+          ? this.frames().length
+          : this.changes().length,
     ),
   );
   protected readonly frame = computed(() => {
@@ -194,7 +199,9 @@ export class StudioFallbackWalkthrough {
       : (this.frames()[this.index()] ?? null);
   });
   private readonly line = computed(() =>
-    this.conceptual() ? null : lineView(this.problem(), this.fixture(), this.language(), this.snapshot().step),
+    this.conceptual()
+      ? null
+      : lineView(this.problem(), this.fixture(), this.language(), this.snapshot().step),
   );
   /** Meeting Rooms explains each recorded instruction with its published runtime wording. */
   private readonly meetingRooms = computed(() => this.problem().id === 'algorithmic-meeting-rooms');
@@ -203,7 +210,9 @@ export class StudioFallbackWalkthrough {
     if (this.conceptual() && frame) return `${frame.phase}. ${frame.why}`;
     return this.line()?.caption ?? '';
   });
-  protected readonly captionLine = computed(() => (this.conceptual() ? null : (this.line()?.line ?? null)));
+  protected readonly captionLine = computed(() =>
+    this.conceptual() ? null : (this.line()?.line ?? null),
+  );
   protected readonly captionDetail = computed(() => {
     if (this.conceptual()) return null;
     const event = this.snapshot().event;
@@ -243,11 +252,14 @@ export class StudioFallbackWalkthrough {
           ];
     return fields.map(([name, value]) => ({
       name,
-      value: value == null ? 'Not yet' : Array.isArray(value) ? `[${value.join(', ')}]` : String(value),
+      value:
+        value == null ? 'Not yet' : Array.isArray(value) ? `[${value.join(', ')}]` : String(value),
     }));
   });
   protected readonly valuesNote = computed(() =>
-    this.conceptual() ? 'Conceptual teaching values. These are not native Java, Python or Go locals.' : null,
+    this.conceptual()
+      ? 'Conceptual teaching values. These are not native Java, Python or Go locals.'
+      : null,
   );
   protected readonly code = computed(() => {
     const line = this.line();
@@ -259,8 +271,9 @@ export class StudioFallbackWalkthrough {
     const canonical = problem.practice.canonicalApproach;
     const { time, space } = problem.complexity;
     const invariant =
-      [problem.trace, ...(problem.fixtureTraces ?? [])].find((item) => item.fixtureId === this.fixture().id)
-        ?.invariant ||
+      [problem.trace, ...(problem.fixtureTraces ?? [])].find(
+        (item) => item.fixtureId === this.fixture().id,
+      )?.invariant ||
       problem.invariantAdaptation ||
       '';
     const fixture = this.fixture();
@@ -273,7 +286,12 @@ export class StudioFallbackWalkthrough {
         { label: 'Cost', text: `Time ${time} · Extra space ${space}` },
         ...(invariant ? [{ label: 'Invariant', text: invariant }] : []),
         ...(fixture.explanation
-          ? [{ label: 'This example', text: `${fixture.input} → ${fixture.expectedOutput}. ${fixture.explanation}` }]
+          ? [
+              {
+                label: 'This example',
+                text: `${fixture.input} → ${fixture.expectedOutput}. ${fixture.explanation}`,
+              },
+            ]
           : []),
       ],
     };
@@ -303,7 +321,10 @@ export class StudioFallbackWalkthrough {
         this.fixture().id,
         Math.max(0, Math.min(this.frames().length - 1, index)),
       );
-    else this.stepChange.emit(this.changes()[Math.max(0, Math.min(this.changes().length - 1, index))] ?? 0);
+    else
+      this.stepChange.emit(
+        this.changes()[Math.max(0, Math.min(this.changes().length - 1, index))] ?? 0,
+      );
   }
   protected choose(id: string): void {
     if (id !== this.fixture().id) this.fixtureChange.emit(id);

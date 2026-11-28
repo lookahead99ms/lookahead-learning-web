@@ -64,7 +64,10 @@ export function conceptualFrames(
         bestRange: bestRange?.slice() ?? null,
         evaluated: false,
         phase: 'Measure the active pair',
-        why: `Pair [${left}, ${right}] has width ${right - left} and limiting height ${Math.min(values[left], values[right])}. Its area is ${total}; best has not been updated yet.`,
+        why:
+          `Pair [${left}, ${right}] has width ${right - left} and limiting ` +
+          `height ${Math.min(values[left], values[right])}. Its area is ${total}; best has ` +
+          `not been updated yet.`,
       });
       if (!bestRange || total > best) {
         best = total;
@@ -77,7 +80,15 @@ export function conceptualFrames(
         bestRange: bestRange.slice(),
         evaluated: true,
         phase: 'Record best, then eliminate',
-        why: `Measured area ${total}; best is ${best}. ${values[left] === values[right] ? 'Either equal-height endpoint is safe; move left.' : `Move the shorter ${moveLeft ? 'left' : 'right'} wall. Keeping it with a narrower partner cannot beat this pair.`} The next area need not improve.`,
+        why:
+          `Measured area ${total}; best ` +
+          `is ${best}. ` +
+          (values[left] === values[right]
+            ? 'Either equal-height endpoint is safe; move left.'
+            : `Move the shorter ${moveLeft ? 'left' : 'right'} wall. Keeping it with a ` +
+              `narrower partner cannot beat this pair.`) +
+          ' ' +
+          `The next area need not improve.`,
       });
       if (moveLeft) left++;
       else right--;
@@ -87,7 +98,9 @@ export function conceptualFrames(
         ...frames[frames.length - 1],
         done: true,
         phase: 'Complete / last evaluated pair',
-        why: `The pointers have met. The diagram retains the last evaluated pair. Maximum area ${best}, best pair [${bestRange}].`,
+        why:
+          `The pointers have met. The diagram retains the last evaluated pair. Maximum ` +
+          `area ${best}, best pair [${bestRange}].`,
       });
     return frames;
   }
@@ -127,7 +140,13 @@ export function conceptualFrames(
     push(
       right,
       right - left + 1 > k ? 'Transient k + 1 accumulation' : 'Accumulate entering value',
-      `Add values[${right}] = ${values[right]}. ${right - left + 1 > k ? 'Remove the expired value before comparing with best.' : right - left + 1 < k ? 'The window is partial; no candidate yet.' : 'The first exact-k sum is ready for evaluation.'}`,
+      `Add values[${right}] ` +
+        `= ${values[right]}. ` +
+        (right - left + 1 > k
+          ? 'Remove the expired value before comparing with best.'
+          : right - left + 1 < k
+            ? 'The window is partial; no candidate yet.'
+            : 'The first exact-k sum is ready for evaluation.'),
       right,
     );
     if (right - left + 1 > k) {
@@ -136,7 +155,8 @@ export function conceptualFrames(
       push(
         right,
         'Remove expired value',
-        `Subtract values[${leaving}] = ${values[leaving]}. Range [${left}, ${right}] has exactly ${k} values.`,
+        `Subtract values[${leaving}] = ${values[leaving]}. Range [${left}, ${right}] ` +
+          `has exactly ${k} values.`,
         right,
         leaving,
       );
@@ -149,7 +169,8 @@ export function conceptualFrames(
       push(
         right,
         'Evaluate the exact-k window',
-        `Window [${left}, ${right}] sums to ${total}. Best valid sum is ${best}; negative results are valid.`,
+        `Window [${left}, ${right}] sums to ${total}. Best valid sum is ${best}; ` +
+          `negative results are valid.`,
         right,
         null,
         true,
@@ -162,7 +183,9 @@ export function conceptualFrames(
     leaving: null,
     done: true,
     phase: 'Complete',
-    why: `Every exact-${k} window has been evaluated. Best valid sum ${best}, window [${bestRange}].`,
+    why:
+      `Every exact-${k} window has been evaluated. Best valid sum ${best}, window ` +
+      `[${bestRange}].`,
   });
   return frames;
 }
@@ -218,7 +241,10 @@ export function linkedWalkthrough(
       best: typeof locals['best'] === 'number' ? locals['best'] : null,
       valid: true,
       phase: 'Current pointers / derived geometry',
-      why: `Current pair [${left}, ${right}]: width ${right - left} × limiting height ${Math.min(values[left], values[right])} = ${total}. Geometry is derived; best is a published local.`,
+      why:
+        `Current pair [${left}, ${right}]: width ${right - left} × limiting ` +
+        `height ${Math.min(values[left], values[right])} = ${total}. Geometry is derived; ` +
+        `best is a published local.`,
     };
   }
   let members: number[] = [],
@@ -258,6 +284,11 @@ export function linkedWalkthrough(
         : members.length < base.k
           ? 'Partial accumulation'
           : 'Exact-k window',
-    why: `Derived membership [${members.join(', ')}] matches the published sum ${total}. ${bestValid ? 'Best is a published value.' : 'Best is still an initialization sentinel, not a valid answer.'}`,
+    why:
+      `Derived membership [${members.join(', ')}] matches the published ` +
+      `sum ${total}. ` +
+      (bestValid
+        ? 'Best is a published value.'
+        : 'Best is still an initialization sentinel, not a valid answer.'),
   };
 }

@@ -38,36 +38,42 @@ describe('Header curriculum navigation', () => {
     };
     return { fixture, http, button };
   }
-  it('before admission a path shows only its tagline: no link, no Explore all, no course request (DLV-969)', () => {
-    const fixture = TestBed.createComponent(HeaderNavigation);
-    fixture.componentRef.setInput('locked', true);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
-    const learn = root.querySelector('#browse-learn') as HTMLButtonElement;
-    expect(learn.tagName).toBe('BUTTON');
-    expect(root.querySelector('a')).toBeNull();
-    learn.click();
-    fixture.detectChanges();
-    const panel = root.querySelector('#navigation-learn') as HTMLElement;
-    expect(learn.getAttribute('aria-expanded')).toBe('true');
-    expect(panel.querySelector('.panel-tagline')?.textContent).toContain('AI');
-    // No Close button (owner, 2026-11-06): Escape, a click outside or the path button itself closes the panel.
-    expect(panel.querySelector('.panel-close')).toBeNull();
-    expect(panel.querySelector('button')).toBeNull();
-    expect(panel.querySelector('.panel-explore')).toBeNull();
-    expect(panel.textContent).not.toContain('temporarily unavailable');
-    expect(panel.textContent).not.toContain('Loading courses');
-    expect(panel.querySelector('.navigation-groups')).toBeNull();
-    // A second click closes it; nothing ever navigates (afterEach also proves no course request was made).
-    learn.click();
-    fixture.detectChanges();
-    expect(root.querySelector('#navigation-learn')).toBeNull();
-    (root.querySelector('#browse-grow') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    expect(root.querySelector('#navigation-grow .panel-tagline')).not.toBeNull();
-    expect(navigate).not.toHaveBeenCalled();
-  });
+  it(
+    'before admission a path shows only its tagline: no link, no Explore all, no course ' +
+      'request (DLV-969)',
+    () => {
+      const fixture = TestBed.createComponent(HeaderNavigation);
+      fixture.componentRef.setInput('locked', true);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+      const learn = root.querySelector('#browse-learn') as HTMLButtonElement;
+      expect(learn.tagName).toBe('BUTTON');
+      expect(root.querySelector('a')).toBeNull();
+      learn.click();
+      fixture.detectChanges();
+      const panel = root.querySelector('#navigation-learn') as HTMLElement;
+      expect(learn.getAttribute('aria-expanded')).toBe('true');
+      expect(panel.querySelector('.panel-tagline')?.textContent).toContain('AI');
+      // No Close button (owner, 2026-11-06): Escape, a click outside or the path button itself
+      // closes the panel.
+      expect(panel.querySelector('.panel-close')).toBeNull();
+      expect(panel.querySelector('button')).toBeNull();
+      expect(panel.querySelector('.panel-explore')).toBeNull();
+      expect(panel.textContent).not.toContain('temporarily unavailable');
+      expect(panel.textContent).not.toContain('Loading courses');
+      expect(panel.querySelector('.navigation-groups')).toBeNull();
+      // A second click closes it; nothing ever navigates (afterEach also proves no course request
+      // was made).
+      learn.click();
+      fixture.detectChanges();
+      expect(root.querySelector('#navigation-learn')).toBeNull();
+      (root.querySelector('#browse-grow') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(root.querySelector('#navigation-grow .panel-tagline')).not.toBeNull();
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
 
   it('leaves hidden Blaze courses out of the menu, including More to explore', () => {
     const { fixture, http, button } = setup();
@@ -209,9 +215,13 @@ describe('Header curriculum navigation', () => {
     fixture.destroy();
   });
   it('marks the path you are in with its own colour anywhere inside it (DLV-803)', () => {
-    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/grow/spring-boot/rest-clients?x=1');
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(
+      '/grow/spring-boot/rest-clients?x=1',
+    );
     const { fixture } = setup();
-    const links = [...fixture.nativeElement.querySelectorAll('.path-entry > a')] as HTMLAnchorElement[];
+    const links = [
+      ...fixture.nativeElement.querySelectorAll('.path-entry > a'),
+    ] as HTMLAnchorElement[];
     expect(links.map((a) => [a.textContent?.trim(), a.getAttribute('aria-current')])).toEqual([
       ['Learn', null],
       ['Grow', 'page'],
@@ -222,16 +232,24 @@ describe('Header curriculum navigation', () => {
       'var(--path-grow)',
       'var(--path-blaze)',
     ]);
-    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
     expect(css).toMatch(
-      /\.path-entry\[[^\]]+\] > a\[aria-current\]\[[^\]]+\] \{ font-weight: 800; text-decoration: underline; text-decoration-color: var\(--entry-path-color, var\(--accent-strong\)\); text-decoration-thickness: 3px;/,
+      new RegExp(
+        '\\.path-entry\\[[^\\]]+\\] > a\\[aria-current\\]\\[[^\\]]+\\] \\{ font-weight: 800; ' +
+          'text-decoration: underline; text-decoration-color: var\\(--entry-path-color, ' +
+          'var\\(--accent-strong\\)\\); text-decoration-thickness: 3px;',
+      ),
     );
     fixture.destroy();
   });
   it('keeps long course names, unassigned destinations and current-location semantics', () => {
     const { fixture, http, button } = setup();
     const longTitle =
-      'Understanding browser lifecycle, rendering, accessibility and exceptionallyLongUnbrokenCourseIdentifiers';
+      'Understanding browser lifecycle, rendering, accessibility and ' +
+      'exceptionallyLongUnbrokenCourseIdentifiers';
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/learn/core-java/lesson');
     expand(button('Browse Learn'));
     http.expectOne('/content/learn/navigation.json').flush({
@@ -324,73 +342,89 @@ describe('Header hover and touch behavior', () => {
     http.expectNone(() => true);
     expect(fixture.nativeElement.querySelector('.navigation-panel')).toBeNull();
   });
-  it('expands on first touch and navigates on second touch, with native modified-click behavior', () => {
-    const { fixture, http, link } = setup();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const tap = () => {
-      link.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }));
-      link.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
-    };
-    tap();
-    http.expectOne('/content/learn/navigation.json').flush({ courses: [] });
-    fixture.detectChanges();
-    expect(navigate).not.toHaveBeenCalled();
-    expect(link.getAttribute('aria-expanded')).toBe('true');
-    tap();
-    expect(navigate).toHaveBeenCalledWith(['/', 'learn']);
-    navigate.mockClear();
-    const modified = new MouseEvent('click', { ctrlKey: true, bubbles: true, cancelable: true });
-    link.dispatchEvent(modified);
-    expect(navigate).not.toHaveBeenCalled();
-    expect(modified.defaultPrevented).toBe(false);
-    expect(link.getAttribute('href')).toBe('/learn');
-  });
-  it.each(['learn', 'grow', 'blaze'])('opens a %s course on the first tap and preserves modified clicks', (path) => {
-    const { fixture, http } = setup();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    expand(fixture.nativeElement.querySelector('#browse-' + path));
-    http.expectOne('/content/' + path + '/navigation.json').flush({
-      courses: [{ id: 'example', title: 'Example course', hasHighlights: true }],
-    });
-    fixture.detectChanges();
-    const course = fixture.nativeElement.querySelector('.course-row a') as HTMLAnchorElement;
-    course.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }));
-    course.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
-    expect(navigate).toHaveBeenCalledTimes(1);
-    expect(TestBed.inject(Router).serializeUrl(navigate.mock.calls[0][0] as any)).toBe('/' + path + '/example');
-    expect(course.hasAttribute('aria-expanded')).toBe(false);
-    http.expectNone(() => true);
-    navigate.mockClear();
-    const modified = new MouseEvent('click', { ctrlKey: true, bubbles: true, cancelable: true });
-    course.dispatchEvent(modified);
-    expect(modified.defaultPrevented).toBe(false);
-    expect(navigate).not.toHaveBeenCalled();
-    fixture.destroy();
-  });
-  it.each(['learn', 'grow', 'blaze'] as const)('shows the %s summary after Explore as plain text, with no Close button', (path) => {
-    const { fixture, http } = setup();
-    expand(fixture.nativeElement.querySelector('#browse-' + path));
-    http.expectOne('/content/' + path + '/navigation.json').flush({ courses: [] });
-    fixture.detectChanges();
-    const heading = fixture.nativeElement.querySelector('.panel-heading') as HTMLElement;
-    const tagline = heading.querySelector('.panel-tagline') as HTMLElement;
-    const kids = [...heading.children];
-    expect(kids.indexOf(tagline)).toBe(1);
-    expect(kids.length).toBe(2);
-    expect(kids[0].classList).toContain('panel-explore');
-    expect(heading.querySelector('.panel-close')).toBeNull();
-    const t = PATH_TAGLINES[path];
-    expect(tagline.querySelector('.panel-tagline-head')?.textContent).toBe(t.headline);
-    const ai = tagline.querySelector('.panel-tagline-ai') as HTMLElement;
-    expect(ai.textContent?.trim()).toBe('AI');
-    expect(ai.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-    expect(ai.querySelector('svg path')?.getAttribute('d')).toBeTruthy();
-    expect(tagline.querySelector('.panel-tagline-chip')).toBeNull();
-    expect(tagline.textContent).not.toContain('✦');
-    expect(tagline.querySelector('.panel-tagline-sub')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      `AI ${t.ai} ${t.you}`,
-    );
-    expect(tagline.querySelector('a, button, [tabindex]')).toBeNull();
-    fixture.destroy();
-  });
+  it(
+    'expands on first touch and navigates on second touch, with native modified-click ' +
+      'behavior',
+    () => {
+      const { fixture, http, link } = setup();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const tap = () => {
+        link.dispatchEvent(
+          new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }),
+        );
+        link.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
+      };
+      tap();
+      http.expectOne('/content/learn/navigation.json').flush({ courses: [] });
+      fixture.detectChanges();
+      expect(navigate).not.toHaveBeenCalled();
+      expect(link.getAttribute('aria-expanded')).toBe('true');
+      tap();
+      expect(navigate).toHaveBeenCalledWith(['/', 'learn']);
+      navigate.mockClear();
+      const modified = new MouseEvent('click', { ctrlKey: true, bubbles: true, cancelable: true });
+      link.dispatchEvent(modified);
+      expect(navigate).not.toHaveBeenCalled();
+      expect(modified.defaultPrevented).toBe(false);
+      expect(link.getAttribute('href')).toBe('/learn');
+    },
+  );
+  it.each(['learn', 'grow', 'blaze'])(
+    'opens a %s course on the first tap and preserves modified clicks',
+    (path) => {
+      const { fixture, http } = setup();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      expand(fixture.nativeElement.querySelector('#browse-' + path));
+      http.expectOne('/content/' + path + '/navigation.json').flush({
+        courses: [{ id: 'example', title: 'Example course', hasHighlights: true }],
+      });
+      fixture.detectChanges();
+      const course = fixture.nativeElement.querySelector('.course-row a') as HTMLAnchorElement;
+      course.dispatchEvent(
+        new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }),
+      );
+      course.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
+      expect(navigate).toHaveBeenCalledTimes(1);
+      expect(TestBed.inject(Router).serializeUrl(navigate.mock.calls[0][0] as any)).toBe(
+        '/' + path + '/example',
+      );
+      expect(course.hasAttribute('aria-expanded')).toBe(false);
+      http.expectNone(() => true);
+      navigate.mockClear();
+      const modified = new MouseEvent('click', { ctrlKey: true, bubbles: true, cancelable: true });
+      course.dispatchEvent(modified);
+      expect(modified.defaultPrevented).toBe(false);
+      expect(navigate).not.toHaveBeenCalled();
+      fixture.destroy();
+    },
+  );
+  it.each(['learn', 'grow', 'blaze'] as const)(
+    'shows the %s summary after Explore as plain text, with no Close button',
+    (path) => {
+      const { fixture, http } = setup();
+      expand(fixture.nativeElement.querySelector('#browse-' + path));
+      http.expectOne('/content/' + path + '/navigation.json').flush({ courses: [] });
+      fixture.detectChanges();
+      const heading = fixture.nativeElement.querySelector('.panel-heading') as HTMLElement;
+      const tagline = heading.querySelector('.panel-tagline') as HTMLElement;
+      const kids = [...heading.children];
+      expect(kids.indexOf(tagline)).toBe(1);
+      expect(kids.length).toBe(2);
+      expect(kids[0].classList).toContain('panel-explore');
+      expect(heading.querySelector('.panel-close')).toBeNull();
+      const t = PATH_TAGLINES[path];
+      expect(tagline.querySelector('.panel-tagline-head')?.textContent).toBe(t.headline);
+      const ai = tagline.querySelector('.panel-tagline-ai') as HTMLElement;
+      expect(ai.textContent?.trim()).toBe('AI');
+      expect(ai.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+      expect(ai.querySelector('svg path')?.getAttribute('d')).toBeTruthy();
+      expect(tagline.querySelector('.panel-tagline-chip')).toBeNull();
+      expect(tagline.textContent).not.toContain('✦');
+      expect(
+        tagline.querySelector('.panel-tagline-sub')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe(`AI ${t.ai} ${t.you}`);
+      expect(tagline.querySelector('a, button, [tabindex]')).toBeNull();
+      fixture.destroy();
+    },
+  );
 });

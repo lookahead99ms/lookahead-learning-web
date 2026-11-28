@@ -1,7 +1,8 @@
 /**
- * A minimal ZIP writer (no compression, "stored" entries) for lesson project downloads (2026-10-05).
- * The Domain API serves protected content as JSON, so a lesson's project arrives as a bundle of text
- * files and is packed here into a standard .zip that IntelliJ IDEA, VS Code and every unzip tool open.
+ * A minimal ZIP writer (no compression, "stored" entries) for lesson project downloads
+ * (2026-10-05). The Domain API serves protected content as JSON, so a lesson's project arrives as a
+ * bundle of text files and is packed here into a standard .zip that IntelliJ IDEA, VS Code and
+ * every unzip tool open.
  */
 export interface ZipEntry {
   path: string;

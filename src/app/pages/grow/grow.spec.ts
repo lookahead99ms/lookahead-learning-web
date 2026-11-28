@@ -171,7 +171,7 @@ describe('Grow catalog', () => {
     expect(harness.routeNativeElement!.querySelectorAll('.catalog-group-heading')).toHaveLength(0);
   });
 
-  it('renders each course as one scene card link with title, description and meta only', async () => {
+  it('renders each course as one scene card link with title, description and meta', async () => {
     const harness = await RouterTestingHarness.create('/grow');
     await ready(
       harness,

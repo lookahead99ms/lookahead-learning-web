@@ -7,6 +7,9 @@ import { Component, Input } from '@angular/core';
   host: { role: 'img', '[attr.aria-label]': "mark ? 'LookAhead ' + mark : 'LookAhead'" },
 })
 export class PlatformBrand {
-  /** A small environment mark after the wordmark, for example "DEV"; null in ordinary delivery (user decision 2026-11-02). */
+  /**
+   * A small environment mark after the wordmark, for example "DEV"; null in ordinary delivery (user
+   * decision 2026-11-02).
+   */
   @Input() mark: string | null = null;
 }

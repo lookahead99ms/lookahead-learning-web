@@ -171,44 +171,47 @@ function twoSumProblem(): PatternProblemV1 {
 }
 
 describe('DsaProblemPilot mode tabs', () => {
-  it('keeps author practice disconnected from execution while retaining drafts and references', async () => {
-    const executionFetch = vi.fn();
-    await TestBed.configureTestingModule({
-      imports: [DsaProblemPilot],
-      providers: [
-        {
-          provide: StudyPlanAccount,
-          useValue: {
-            account: signal({ accountId: 'author-fixture', authorPreview: true }),
-            sessionExpired: signal(false),
+  it(
+    'keeps author practice disconnected from execution while retaining drafts and ' + 'references',
+    async () => {
+      const executionFetch = vi.fn();
+      await TestBed.configureTestingModule({
+        imports: [DsaProblemPilot],
+        providers: [
+          {
+            provide: StudyPlanAccount,
+            useValue: {
+              account: signal({ accountId: 'author-fixture', authorPreview: true }),
+              sessionExpired: signal(false),
+            },
           },
-        },
-        { provide: EXECUTION_FETCH, useValue: executionFetch },
-      ],
-    }).compileComponents();
-    const fixture = TestBed.createComponent(DsaProblemPilot);
-    fixture.componentRef.setInput('problem', { ...twoSumProblem(), id: 'algorithmic-two-sum' });
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const root = fixture.nativeElement as HTMLElement;
-    const editor = root.querySelector('textarea')!;
-    editor.value = 'my local draft';
-    editor.dispatchEvent(new Event('input'));
-    const language = root.querySelector<HTMLSelectElement>('app-coding-solution-tabs select')!;
-    language.value = 'python';
-    language.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    language.value = 'java';
-    language.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect(editor.value).toBe('my local draft');
-    expect(root.querySelector('app-dsa-run-examples')).toBeNull();
-    expect(root.textContent).not.toContain('Run examples');
-    expect(root.textContent).toContain('View solution');
-    expect(root.textContent).toContain('No code runner is enabled');
-    expect(executionFetch).not.toHaveBeenCalled();
-  });
+          { provide: EXECUTION_FETCH, useValue: executionFetch },
+        ],
+      }).compileComponents();
+      const fixture = TestBed.createComponent(DsaProblemPilot);
+      fixture.componentRef.setInput('problem', { ...twoSumProblem(), id: 'algorithmic-two-sum' });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      const editor = root.querySelector('textarea')!;
+      editor.value = 'my local draft';
+      editor.dispatchEvent(new Event('input'));
+      const language = root.querySelector<HTMLSelectElement>('app-coding-solution-tabs select')!;
+      language.value = 'python';
+      language.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      language.value = 'java';
+      language.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(editor.value).toBe('my local draft');
+      expect(root.querySelector('app-dsa-run-examples')).toBeNull();
+      expect(root.textContent).not.toContain('Run examples');
+      expect(root.textContent).toContain('View solution');
+      expect(root.textContent).toContain('No code runner is enabled');
+      expect(executionFetch).not.toHaveBeenCalled();
+    },
+  );
   it('opens Guided practice with the representative late-return fixture', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);
@@ -258,42 +261,54 @@ describe('DsaProblemPilot mode tabs', () => {
     }
   });
 
-  it('keeps the method name, hints and solution out of the page until the learner opens them (no spoilers)', async () => {
-    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
-    const fixture = TestBed.createComponent(DsaProblemPilot);
-    fixture.componentRef.setInput('problem', twoSumProblem());
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const root = fixture.nativeElement as HTMLElement;
-    // First view (practice): no variation, rationale, hint text or reference code anywhere in the markup.
-    expect(root.innerHTML).not.toContain('Complement lookup');
-    expect(root.innerHTML).not.toContain('Remember earlier values');
-    expect(root.innerHTML).not.toContain('Ask what value would complete');
-    expect(root.querySelector('.reasoning-frame')).toBeNull();
-    const [hints, solution] = [...root.querySelectorAll<HTMLDetailsElement>('details.help-panel')];
-    expect(solution.querySelector('app-coding-solution-tabs')).toBeNull();
-    hints.open = true;
-    hints.dispatchEvent(new Event('toggle'));
-    fixture.detectChanges();
-    expect(hints.textContent).toContain('Ask what value would complete');
-    solution.open = true;
-    solution.dispatchEvent(new Event('toggle'));
-    fixture.detectChanges();
-    expect(solution.querySelector('app-coding-solution-tabs')).not.toBeNull();
-    // Opening Guided practice is asking for the reasoning.
-    const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() });
-    try {
-      [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find((tab) => tab.textContent?.includes('Guided'))!.click();
+  it(
+    'keeps the method name, hints and solution out of the page until the learner opens ' +
+      'them (no spoilers)',
+    async () => {
+      await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+      const fixture = TestBed.createComponent(DsaProblemPilot);
+      fixture.componentRef.setInput('problem', twoSumProblem());
       fixture.detectChanges();
-      expect(root.querySelector('.reasoning-frame')?.textContent).toContain('Complement lookup');
-      // Let the tab row's reveal frame run while scrollIntoView exists.
-      await new Promise((resolve) => setTimeout(resolve, 40));
-    } finally {
-      if (descriptor) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', descriptor);
-      else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
-    }
-  });
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      // First view (practice): no variation, rationale, hint text or reference code anywhere in the
+      // markup.
+      expect(root.innerHTML).not.toContain('Complement lookup');
+      expect(root.innerHTML).not.toContain('Remember earlier values');
+      expect(root.innerHTML).not.toContain('Ask what value would complete');
+      expect(root.querySelector('.reasoning-frame')).toBeNull();
+      const [hints, solution] = [
+        ...root.querySelectorAll<HTMLDetailsElement>('details.help-panel'),
+      ];
+      expect(solution.querySelector('app-coding-solution-tabs')).toBeNull();
+      hints.open = true;
+      hints.dispatchEvent(new Event('toggle'));
+      fixture.detectChanges();
+      expect(hints.textContent).toContain('Ask what value would complete');
+      solution.open = true;
+      solution.dispatchEvent(new Event('toggle'));
+      fixture.detectChanges();
+      expect(solution.querySelector('app-coding-solution-tabs')).not.toBeNull();
+      // Opening Guided practice is asking for the reasoning.
+      const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        configurable: true,
+        value: vi.fn(),
+      });
+      try {
+        [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')]
+          .find((tab) => tab.textContent?.includes('Guided'))!
+          .click();
+        fixture.detectChanges();
+        expect(root.querySelector('.reasoning-frame')?.textContent).toContain('Complement lookup');
+        // Let the tab row's reveal frame run while scrollIntoView exists.
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      } finally {
+        if (descriptor) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', descriptor);
+        else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
+      }
+    },
+  );
 
   it('places the invariant and canonical rationale before the expandable debugger', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
@@ -382,7 +397,7 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(root.querySelector('.fixture-note')).toBeNull();
   });
 
-  it('keeps the page still when content is visible and supports roving keyboard focus', async () => {
+  it('keeps the page still when content is visible and supports roving focus', async () => {
     const originalScrollIntoView = Object.getOwnPropertyDescriptor(
       HTMLElement.prototype,
       'scrollIntoView',
@@ -508,7 +523,7 @@ describe('DsaProblemPilot mode tabs', () => {
     }
   });
 
-  it('contains focus in the focused debugger and restores the page when Escape closes it', async () => {
+  it('contains focus in the focused debugger and restores the page on Escape', async () => {
     const frames: FrameRequestCallback[] = [];
     const requestAnimationFrame = vi
       .spyOn(window, 'requestAnimationFrame')
@@ -546,7 +561,8 @@ describe('DsaProblemPilot mode tabs', () => {
       expect(document.activeElement).toBe(exit);
 
       const focusable = dialog.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], ' +
+          '[tabindex]:not([tabindex="-1"])',
       );
       const last = focusable.item(focusable.length - 1);
       // The embedded Expand control remains mounted inside a hidden ancestor.
@@ -587,107 +603,115 @@ describe('DsaProblemPilot mode tabs', () => {
     }
   });
 
-  it('opens the guided debugger in the remembered reference language and remembers a new choice', async () => {
-    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
-    const reference = TestBed.inject(ReferenceLanguageService);
-    reference.selected.set('go');
-    const fixture = TestBed.createComponent(DsaProblemPilot);
-    fixture.componentRef.setInput('problem', twoSumProblem());
-    fixture.componentRef.setInput('entryMode', 'guided');
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('go');
-    root.querySelectorAll<HTMLButtonElement>('.language-tabs button')[1].click();
-    fixture.detectChanges();
-    expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
-    // The DSA core Learn lessons read the same choice.
-    expect(reference.selected()).toBe('python');
-  });
-
-  it('enters and exits Focus without losing debugger state, scrolling the page, or losing focus', async () => {
-    const animationFrames: FrameRequestCallback[] = [];
-    const requestAnimationFrame = vi
-      .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation((callback) => {
-        animationFrames.push(callback);
-        return animationFrames.length;
-      });
-    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
-    const previousBodyOverflow = document.body.style.overflow;
-
-    try {
-      document.body.style.overflow = 'clip';
+  it(
+    'opens the guided debugger in the remembered reference language and remembers a new ' +
+      'choice',
+    async () => {
       await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+      const reference = TestBed.inject(ReferenceLanguageService);
+      reference.selected.set('go');
       const fixture = TestBed.createComponent(DsaProblemPilot);
       fixture.componentRef.setInput('problem', twoSumProblem());
       fixture.componentRef.setInput('entryMode', 'guided');
       fixture.detectChanges();
       await fixture.whenStable();
+      fixture.detectChanges();
 
       const root = fixture.nativeElement as HTMLElement;
-      const trace = root.querySelector('app-guided-algorithm-trace')!;
-      const fixtureSelector = root.querySelector<HTMLSelectElement>(
-        '[aria-label="Guided trace input"]',
-      )!;
-      fixtureSelector.value = '1';
-      fixtureSelector.dispatchEvent(new Event('change'));
-      fixture.detectChanges();
-      await fixture.whenStable();
-      fixture.detectChanges();
-
+      expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('go');
       root.querySelectorAll<HTMLButtonElement>('.language-tabs button')[1].click();
       fixture.detectChanges();
-      const focusEntry = root.querySelector<HTMLButtonElement>('.focus-entry')!;
-      focusEntry.focus();
-      focusEntry.click();
-      fixture.detectChanges();
-      animationFrames.splice(0).forEach((callback) => callback(0));
-
-      const focusedStage = root.querySelector<HTMLElement>('.guided-trace-stage.focused')!;
-      expect(focusedStage.getAttribute('role')).toBe('dialog');
-      expect(focusedStage.getAttribute('aria-modal')).toBe('true');
-      expect(document.body.style.overflow).toBe('hidden');
-      expect(document.activeElement).toBe(root.querySelector('.focus-exit'));
-      expect(focusEntry.getAttribute('aria-expanded')).toBe('true');
-      expect(root.querySelector('.focus-exit')?.textContent).toContain('Exit expanded view');
-      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
       expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
-      expect(root.querySelector('.focus-state-dock')).not.toBeNull();
-      expect(root.querySelector('.focus-terminal')?.textContent).toContain('Select Next');
+      // The DSA core Learn lessons read the same choice.
+      expect(reference.selected()).toBe('python');
+    },
+  );
 
-      root.querySelector<HTMLButtonElement>('.trace-controls .primary')!.click();
-      fixture.detectChanges();
-      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
-      expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');
-      expect(root.querySelector('.focus-output')?.textContent).toContain('[0, 1]');
-      expect(root.querySelector('.focus-terminal')?.textContent).toContain(
-        'successful return terminated execution',
-      );
-      expect(scrollTo).not.toHaveBeenCalled();
+  it(
+    'enters and exits Focus without losing debugger state, scrolling the page, or losing ' +
+      'focus',
+    async () => {
+      const animationFrames: FrameRequestCallback[] = [];
+      const requestAnimationFrame = vi
+        .spyOn(window, 'requestAnimationFrame')
+        .mockImplementation((callback) => {
+          animationFrames.push(callback);
+          return animationFrames.length;
+        });
+      const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+      const previousBodyOverflow = document.body.style.overflow;
 
-      root
-        .querySelector<HTMLElement>('.guided-trace')!
-        .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      fixture.detectChanges();
-      animationFrames.splice(0).forEach((callback) => callback(0));
+      try {
+        document.body.style.overflow = 'clip';
+        await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+        const fixture = TestBed.createComponent(DsaProblemPilot);
+        fixture.componentRef.setInput('problem', twoSumProblem());
+        fixture.componentRef.setInput('entryMode', 'guided');
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-      expect(root.querySelector('.guided-trace-stage.focused')).toBeNull();
-      expect(document.body.style.overflow).toBe('clip');
-      expect(document.activeElement).toBe(focusEntry);
-      expect(focusEntry.getAttribute('aria-expanded')).toBe('false');
-      expect(scrollTo).toHaveBeenCalledOnce();
-      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
-      expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');
-      expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
-    } finally {
-      document.body.style.overflow = previousBodyOverflow;
-      requestAnimationFrame.mockRestore();
-      scrollTo.mockRestore();
-    }
-  });
+        const root = fixture.nativeElement as HTMLElement;
+        const trace = root.querySelector('app-guided-algorithm-trace')!;
+        const fixtureSelector = root.querySelector<HTMLSelectElement>(
+          '[aria-label="Guided trace input"]',
+        )!;
+        fixtureSelector.value = '1';
+        fixtureSelector.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        root.querySelectorAll<HTMLButtonElement>('.language-tabs button')[1].click();
+        fixture.detectChanges();
+        const focusEntry = root.querySelector<HTMLButtonElement>('.focus-entry')!;
+        focusEntry.focus();
+        focusEntry.click();
+        fixture.detectChanges();
+        animationFrames.splice(0).forEach((callback) => callback(0));
+
+        const focusedStage = root.querySelector<HTMLElement>('.guided-trace-stage.focused')!;
+        expect(focusedStage.getAttribute('role')).toBe('dialog');
+        expect(focusedStage.getAttribute('aria-modal')).toBe('true');
+        expect(document.body.style.overflow).toBe('hidden');
+        expect(document.activeElement).toBe(root.querySelector('.focus-exit'));
+        expect(focusEntry.getAttribute('aria-expanded')).toBe('true');
+        expect(root.querySelector('.focus-exit')?.textContent).toContain('Exit expanded view');
+        expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+        expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+        expect(root.querySelector('.focus-state-dock')).not.toBeNull();
+        expect(root.querySelector('.focus-terminal')?.textContent).toContain('Select Next');
+
+        root.querySelector<HTMLButtonElement>('.trace-controls .primary')!.click();
+        fixture.detectChanges();
+        expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+        expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');
+        expect(root.querySelector('.focus-output')?.textContent).toContain('[0, 1]');
+        expect(root.querySelector('.focus-terminal')?.textContent).toContain(
+          'successful return terminated execution',
+        );
+        expect(scrollTo).not.toHaveBeenCalled();
+
+        root
+          .querySelector<HTMLElement>('.guided-trace')!
+          .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        fixture.detectChanges();
+        animationFrames.splice(0).forEach((callback) => callback(0));
+
+        expect(root.querySelector('.guided-trace-stage.focused')).toBeNull();
+        expect(document.body.style.overflow).toBe('clip');
+        expect(document.activeElement).toBe(focusEntry);
+        expect(focusEntry.getAttribute('aria-expanded')).toBe('false');
+        expect(scrollTo).toHaveBeenCalledOnce();
+        expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+        expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');
+        expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+      } finally {
+        document.body.style.overflow = previousBodyOverflow;
+        requestAnimationFrame.mockRestore();
+        scrollTo.mockRestore();
+      }
+    },
+  );
 });
 
 describe('Focus Studio state retention', () => {
@@ -701,126 +725,145 @@ describe('Focus Studio state retention', () => {
     return fixture;
   }
 
-  it('keeps the same editor, draft, selection and language while the brief is hidden and restored', async () => {
-    const fixture = await studio();
-    const root = fixture.nativeElement as HTMLElement;
-    const brief = root.querySelector<HTMLElement>('.contract')!;
-    const toggle = root.querySelector<HTMLButtonElement>('.brief-toggle')!;
-    const language = root.querySelector<HTMLSelectElement>('app-coding-solution-tabs select')!;
-    language.value = 'go';
-    language.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const editor = root.querySelector<HTMLElement>('.cm-editor')!;
-    const view = EditorView.findFromDOM(editor)!;
-    view.dispatch({
-      changes: { from: 0, to: view.state.doc.length, insert: 'func retainedDraft() {}' },
-      selection: { anchor: 5, head: 13 },
-    });
-    fixture.detectChanges();
-    expect(brief.hidden).toBe(false);
-    for (const hidden of [true, false]) {
-      toggle.click();
+  it(
+    'keeps the same editor, draft, selection and language while the brief is hidden and ' +
+      'restored',
+    async () => {
+      const fixture = await studio();
+      const root = fixture.nativeElement as HTMLElement;
+      const brief = root.querySelector<HTMLElement>('.contract')!;
+      const toggle = root.querySelector<HTMLButtonElement>('.brief-toggle')!;
+      const language = root.querySelector<HTMLSelectElement>('app-coding-solution-tabs select')!;
+      language.value = 'go';
+      language.dispatchEvent(new Event('change'));
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(brief.hidden).toBe(hidden);
-      expect(toggle.getAttribute('aria-expanded')).toBe(String(!hidden));
-      expect(toggle.getAttribute('aria-controls')).toBe(brief.id);
-      expect(document.activeElement).toBe(toggle);
-      expect(root.querySelector('.cm-editor')).toBe(editor);
-      expect(EditorView.findFromDOM(editor)).toBe(view);
-      expect(view.state.doc.toString()).toBe('func retainedDraft() {}');
-      expect([view.state.selection.main.from, view.state.selection.main.to]).toEqual([5, 13]);
-      expect(language.value).toBe('go');
-    }
-    expect(root.querySelector('app-editor-tutor')).toBeNull();
-    expect(root.querySelector('app-dsa-run-examples')).toBeNull();
-  });
+      const editor = root.querySelector<HTMLElement>('.cm-editor')!;
+      const view = EditorView.findFromDOM(editor)!;
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: 'func retainedDraft() {}' },
+        selection: { anchor: 5, head: 13 },
+      });
+      fixture.detectChanges();
+      expect(brief.hidden).toBe(false);
+      for (const hidden of [true, false]) {
+        toggle.click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(brief.hidden).toBe(hidden);
+        expect(toggle.getAttribute('aria-expanded')).toBe(String(!hidden));
+        expect(toggle.getAttribute('aria-controls')).toBe(brief.id);
+        expect(document.activeElement).toBe(toggle);
+        expect(root.querySelector('.cm-editor')).toBe(editor);
+        expect(EditorView.findFromDOM(editor)).toBe(view);
+        expect(view.state.doc.toString()).toBe('func retainedDraft() {}');
+        expect([view.state.selection.main.from, view.state.selection.main.to]).toEqual([5, 13]);
+        expect(language.value).toBe('go');
+      }
+      expect(root.querySelector('app-editor-tutor')).toBeNull();
+      expect(root.querySelector('app-dsa-run-examples')).toBeNull();
+    },
+  );
 
-  it('preserves the chosen canonical fixture, source step and trace language through focus and modes', async () => {
-    const fixture = await studio();
-    const root = fixture.nativeElement as HTMLElement;
-    const example = root.querySelector<HTMLSelectElement>('.brief-fixture-picker select')!;
-    example.value = 'duplicate';
-    example.dispatchEvent(new Event('change'));
-    root.querySelector<HTMLButtonElement>('[data-mode="guided"]')!.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const trace = root.querySelector<HTMLElement>('app-guided-algorithm-trace')!;
-    const python = [
-      ...trace.querySelectorAll<HTMLButtonElement>('[aria-label="Trace language"] button'),
-    ].find((e) => e.textContent.trim() === 'python')!;
-    python.click();
-    fixture.detectChanges();
-    const next = [...trace.querySelectorAll<HTMLButtonElement>('button')].find(
-      (e) => e.textContent.trim() === 'Next',
-    )!;
-    next.click();
-    fixture.detectChanges();
-    const anchor = trace.querySelector('[aria-current="step"]')?.textContent;
-    const status = trace.querySelector('.step-status')?.textContent;
-    root.querySelector<HTMLButtonElement>('.brief-toggle')!.click();
-    root.querySelector<HTMLButtonElement>('[data-mode="recall"]')!.click();
-    fixture.detectChanges();
-    expect(root.querySelector<HTMLElement>('.recall-pane')!.hidden).toBe(false);
-    expect(root.querySelector('.recall-pane')?.textContent).toContain(
-      'Why do we check before inserting?',
-    );
-    root.querySelector<HTMLButtonElement>('[data-mode="guided"]')!.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
-    expect(trace.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
-    expect(trace.querySelector('[aria-current="step"]')?.textContent).toBe(anchor);
-    expect(trace.querySelector('.step-status')?.textContent).toBe(status);
-    expect(example.value).toBe('duplicate');
-    expect(trace.querySelector<HTMLSelectElement>('[aria-label="Guided trace input"]')?.value).toBe(
-      '1',
-    );
-    expect(root.querySelector('.reasoning-invariant')?.textContent).toContain(
-      'only earlier indices',
-    );
-  });
+  it(
+    'preserves the chosen canonical fixture, source step and trace language through focus ' +
+      'and modes',
+    async () => {
+      const fixture = await studio();
+      const root = fixture.nativeElement as HTMLElement;
+      const example = root.querySelector<HTMLSelectElement>('.brief-fixture-picker select')!;
+      example.value = 'duplicate';
+      example.dispatchEvent(new Event('change'));
+      root.querySelector<HTMLButtonElement>('[data-mode="guided"]')!.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const trace = root.querySelector<HTMLElement>('app-guided-algorithm-trace')!;
+      const python = [
+        ...trace.querySelectorAll<HTMLButtonElement>('[aria-label="Trace language"] button'),
+      ].find((e) => e.textContent.trim() === 'python')!;
+      python.click();
+      fixture.detectChanges();
+      const next = [...trace.querySelectorAll<HTMLButtonElement>('button')].find(
+        (e) => e.textContent.trim() === 'Next',
+      )!;
+      next.click();
+      fixture.detectChanges();
+      const anchor = trace.querySelector('[aria-current="step"]')?.textContent;
+      const status = trace.querySelector('.step-status')?.textContent;
+      root.querySelector<HTMLButtonElement>('.brief-toggle')!.click();
+      root.querySelector<HTMLButtonElement>('[data-mode="recall"]')!.click();
+      fixture.detectChanges();
+      expect(root.querySelector<HTMLElement>('.recall-pane')!.hidden).toBe(false);
+      expect(root.querySelector('.recall-pane')?.textContent).toContain(
+        'Why do we check before inserting?',
+      );
+      root.querySelector<HTMLButtonElement>('[data-mode="guided"]')!.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+      expect(trace.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+      expect(trace.querySelector('[aria-current="step"]')?.textContent).toBe(anchor);
+      expect(trace.querySelector('.step-status')?.textContent).toBe(status);
+      expect(example.value).toBe('duplicate');
+      expect(
+        trace.querySelector<HTMLSelectElement>('[aria-label="Guided trace input"]')?.value,
+      ).toBe('1');
+      expect(root.querySelector('.reasoning-invariant')?.textContent).toContain(
+        'only earlier indices',
+      );
+    },
+  );
 
-  it('uses one three-mode navigator with roving focus and no automatic mode-change scrolling', async () => {
-    const fixture = await studio();
-    const root = fixture.nativeElement as HTMLElement;
-    const scroll = vi.fn();
-    root.querySelector<HTMLElement>('.mode-tabs')!.scrollIntoView = scroll;
-    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.mode-tabs [role="tab"]')];
-    expect(tabs.map((tab) => tab.textContent.trim())).toEqual([
-      'Try it yourself',
-      'Guided walkthrough',
-      'Recall',
-    ]);
-    tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
-    fixture.detectChanges();
-    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
-    expect(document.activeElement).toBe(tabs[2]);
-    tabs[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    fixture.detectChanges();
-    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
-    expect(tabs.filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
-    expect(scroll).not.toHaveBeenCalled();
-    fixture.componentRef.setInput('focusStudio', false);
-    fixture.detectChanges();
-    expect(root.querySelector('.brief-toggle')).toBeNull();
-    expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(2);
-  });
+  it(
+    'uses one three-mode navigator with roving focus and no automatic mode-change ' + 'scrolling',
+    async () => {
+      const fixture = await studio();
+      const root = fixture.nativeElement as HTMLElement;
+      const scroll = vi.fn();
+      root.querySelector<HTMLElement>('.mode-tabs')!.scrollIntoView = scroll;
+      const tabs = [...root.querySelectorAll<HTMLButtonElement>('.mode-tabs [role="tab"]')];
+      expect(tabs.map((tab) => tab.textContent.trim())).toEqual([
+        'Try it yourself',
+        'Guided walkthrough',
+        'Recall',
+      ]);
+      tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+      fixture.detectChanges();
+      expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+      expect(document.activeElement).toBe(tabs[2]);
+      tabs[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      fixture.detectChanges();
+      expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+      expect(tabs.filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
+      expect(scroll).not.toHaveBeenCalled();
+      fixture.componentRef.setInput('focusStudio', false);
+      fixture.detectChanges();
+      expect(root.querySelector('.brief-toggle')).toBeNull();
+      expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(2);
+    },
+  );
 
-  it('keeps a rem base in the selected problem title, so browser zoom enlarges it (DLV-803)', async () => {
-    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
-    const fixture = TestBed.createComponent(DsaProblemPilot);
-    fixture.componentRef.setInput('problem', twoSumProblem());
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const css = [...document.querySelectorAll('style')]
-      .map((style) => style.textContent ?? '')
-      .join('\n')
-      .replace(/\s+/g, ' ');
-    expect(css).toMatch(/h3\[[^\]]+\] \{ margin: 5px 0 10px; font-size: clamp\(1\.45rem, 1\.2rem \+ 0\.6vw, 1\.8rem\); \}/);
-    // A bare viewport middle term barely grows with zoom: the viewport shrinks as the zoom rises.
-    expect(css).not.toContain('clamp(1.45rem, 2.5vw, 1.8rem)');
-    fixture.destroy();
-  });
+  it(
+    'keeps a rem base in the selected problem title, so browser zoom enlarges it ' + '(DLV-803)',
+    async () => {
+      await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+      const fixture = TestBed.createComponent(DsaProblemPilot);
+      fixture.componentRef.setInput('problem', twoSumProblem());
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const css = [...document.querySelectorAll('style')]
+        .map((style) => style.textContent ?? '')
+        .join('\n')
+        .replace(/\s+/g, ' ');
+      expect(css).toMatch(
+        new RegExp(
+          'h3\\[[^\\]]+\\] \\{ margin: 5px 0 10px; font-size: clamp\\(1\\.45rem, 1\\.2rem ' +
+            '\\+ 0\\.6vw, 1\\.8rem\\); \\}',
+        ),
+      );
+      // A bare viewport middle term barely grows with zoom: the viewport shrinks as the zoom rises.
+      expect(css).not.toContain('clamp(1.45rem, 2.5vw, 1.8rem)');
+      fixture.destroy();
+    },
+  );
 });

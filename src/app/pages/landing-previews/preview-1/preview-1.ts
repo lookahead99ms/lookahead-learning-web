@@ -30,11 +30,23 @@ type PathScene = (typeof PATH_SCENES)[number];
 
 @Component({
   selector: 'app-landing-preview-1',
-  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene],
+  imports: [
+    LearningPrompt,
+    PlatformSignature,
+    PlatformHeader,
+    RouterLink,
+    EngineeringChallenge,
+    PlatformBrandIllustration,
+    PlatformBrand,
+    CardScene,
+  ],
   templateUrl: './preview-1.html',
   styleUrl: './preview-1.css',
 })
-/** DLV-937 landing preview 1: a redesign candidate on /preview/landing/1; the live home page is unchanged. */
+/**
+ * DLV-937 landing preview 1: a redesign candidate on /preview/landing/1; the live home page is
+ * unchanged.
+ */
 export class LandingPreview1 {
   protected readonly tagline = (id: PathTaglineId): string => pathTaglineText(id);
   private readonly document = inject(DOCUMENT);
@@ -42,7 +54,9 @@ export class LandingPreview1 {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private animations: Animation[] = [];
   private transitionId = 0;
-  /** Why the slideshow is paused: keyboard focus inside it resumes on leaving; the button does not. */
+  /**
+   * Why the slideshow is paused: keyboard focus inside it resumes on leaving; the button does not.
+   */
   private pausedBy: 'focus' | 'user' | null = null;
   @ViewChild('heroSlides') private heroSlides?: ElementRef<HTMLElement>;
   protected readonly activeSlide = signal(0);
@@ -64,7 +78,8 @@ export class LandingPreview1 {
       eyebrow: 'For the engineer deciding where to begin',
       lines: ['Become the engineer', 'you can explain.'],
       description:
-        'Move from understanding a concept to applying it, defending a decision, and knowing what to practice next.',
+        'Move from understanding a concept to applying it, defending a decision, and ' +
+        'knowing what to practice next.',
       action: 'Choose a learning path',
       route: '/',
       fragment: 'paths',
@@ -75,7 +90,8 @@ export class LandingPreview1 {
       eyebrow: 'For the conversations that raise the bar',
       lines: ['Practice the decisions', 'behind the title.'],
       description:
-        'Go beyond recalling answers. Rehearse production judgment, explain system-design trade-offs, and connect technical choices to leadership.',
+        'Go beyond recalling answers. Rehearse production judgment, explain ' +
+        'system-design trade-offs, and connect technical choices to leadership.',
       action: 'Find a scenario to practice',
       route: '/search',
       fragment: undefined,
@@ -86,7 +102,8 @@ export class LandingPreview1 {
       eyebrow: 'Follow a better question',
       lines: ['Good answers', 'begin with', 'better thinking.'],
       description:
-        'A field guide to the models, failures, and trade-offs behind confident engineering. Read deeply. Try the idea. Explain what changed.',
+        'A field guide to the models, failures, and trade-offs behind confident ' +
+        'engineering. Read deeply. Try the idea. Explain what changed.',
       action: 'Find a question worth exploring',
       route: '/search',
       fragment: undefined,
@@ -97,7 +114,8 @@ export class LandingPreview1 {
       eyebrow: 'For engineers who learn by doing',
       lines: ['Read the idea.', 'Run the system.', 'Own the decision.'],
       description:
-        'Practice in code, inspect execution, and build complete AI applications. Then connect the implementation to the judgment behind it.',
+        'Practice in code, inspect execution, and build complete AI applications. Then ' +
+        'connect the implementation to the judgment behind it.',
       action: 'Explore hands-on practice',
       route: '/learn/hands-on-dsa',
       fragment: undefined,
@@ -108,7 +126,8 @@ export class LandingPreview1 {
       eyebrow: 'Ambition, with room for real life',
       lines: ['A clear route through', 'everything you want', 'to become.'],
       description:
-        'Turn broad ambition into a workable week. Bring foundations, production practice, design, and leadership into one learning plan.',
+        'Turn broad ambition into a workable week. Bring foundations, production ' +
+        'practice, design, and leadership into one learning plan.',
       action: 'Shape my study plan',
       route: '/study-plan',
       fragment: undefined,
@@ -116,7 +135,8 @@ export class LandingPreview1 {
     },
   ];
   protected readonly windowExample =
-    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    while window_is_invalid():\n        left += 1';
+    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    ' +
+    'while window_is_invalid():\n        left += 1';
 
   constructor() {
     afterNextRender(() => {
@@ -195,7 +215,10 @@ export class LandingPreview1 {
       const observer = new View(
         (entries) => {
           for (const entry of entries)
-            timeline.setStopped('offscreen', !entry.isIntersecting || entry.intersectionRatio < 0.3);
+            timeline.setStopped(
+              'offscreen',
+              !entry.isIntersecting || entry.intersectionRatio < 0.3,
+            );
         },
         { threshold: [0, 0.3] },
       );

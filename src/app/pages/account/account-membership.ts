@@ -113,9 +113,9 @@ export function accessRecordView(record: AccessRecord): AccessRecordView | null 
   const ends = date(record.endsAt);
   const renewal = renewalLabel(plan.renewal);
   const active = record.status === 'active' && !record.supersededAt;
-  const endsLine =
-    record.supersededAt ? `Replaced ${date(record.supersededAt)} · History retained` :
-    record.status === 'scheduled'
+  const endsLine = record.supersededAt
+    ? `Replaced ${date(record.supersededAt)} · History retained`
+    : record.status === 'scheduled'
       ? `Starts ${date(record.startsAt)}`
       : ends
         ? `${active ? 'Expires' : 'Expired'} ${ends} · ${renewal}`
@@ -159,7 +159,9 @@ export function accountMembership(
   const views = records
     .map(accessRecordView)
     .filter((view): view is AccessRecordView => view !== null);
-  const activePlans = records.filter((record) => record.status === 'active' && !record.supersededAt);
+  const activePlans = records.filter(
+    (record) => record.status === 'active' && !record.supersededAt,
+  );
   const level: MembershipLevel = account.authorPreview
     ? 'Author'
     : activePlans.some((record) => record.planId !== 'course-pass')
@@ -178,23 +180,41 @@ export function accountMembership(
 
 /** "Learn, Grow and Blaze" */
 export function joinPaths(paths: readonly string[]): string {
-  return paths.length < 2 ? (paths[0] ?? '') : `${paths.slice(0, -1).join(', ')} and ${paths.at(-1)}`;
+  return paths.length < 2
+    ? (paths[0] ?? '')
+    : `${paths.slice(0, -1).join(', ')} and ${paths.at(-1)}`;
 }
 
 /** Human-facing role names; purchase access remains a separate derived label. */
 export function accountRoleLabel(role?: string): string {
-  return ({ user: 'Learner', owner: 'Author (owner)', author: 'Author (owner)', 'co-author': 'Co-author', admin: 'Admin', reviewer: 'Reviewer', tester: 'Tester' } as Record<string, string>)[role ?? 'user'] ?? 'Learner';
+  return (
+    (
+      {
+        user: 'Learner',
+        owner: 'Author (owner)',
+        author: 'Author (owner)',
+        'co-author': 'Co-author',
+        admin: 'Admin',
+        reviewer: 'Reviewer',
+        tester: 'Tester',
+      } as Record<string, string>
+    )[role ?? 'user'] ?? 'Learner'
+  );
 }
 
 /** Current purchased plan names, without generic paid/regular prefixes. */
-export function membershipName(account: Pick<StudyAccount, 'topicGrants' | 'authorPreview'>, records: readonly AccessRecord[] = []): string {
+export function membershipName(
+  account: Pick<StudyAccount, 'topicGrants' | 'authorPreview'>,
+  records: readonly AccessRecord[] = [],
+): string {
   if (account.authorPreview) return 'Author';
-  const names = records.filter(record => record.status === 'active' && !record.supersededAt)
-    .flatMap(record => {
+  const names = records
+    .filter((record) => record.status === 'active' && !record.supersededAt)
+    .flatMap((record) => {
       const plan = planById(record.planId);
       if (!plan || plan.id === 'free') return [];
       return plan.id === 'course-pass' && record.courses.length
-        ? record.courses.map(course => course.title)
+        ? record.courses.map((course) => course.title)
         : [plan.name];
     });
   return [...new Set(names)].join(' + ') || accountMembership(account, records).level;

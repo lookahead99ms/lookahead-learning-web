@@ -8,7 +8,9 @@ import { Component, input } from '@angular/core';
   host: { '[class.active]': 'active()' },
 })
 export class LandingHeroVisual {
-  readonly visual = input.required<'choose' | 'plan' | 'reason' | 'design' | 'build' | 'diagnose'>();
+  readonly visual = input.required<
+    'choose' | 'plan' | 'reason' | 'design' | 'build' | 'diagnose'
+  >();
   readonly active = input(false);
   readonly reducedMotion = input(false);
   /** The Build slide's project tiles: a few examples; the catalog grows, so no count is shown. */
@@ -28,11 +30,15 @@ export class LandingHeroVisual {
   ];
   /** Hero slides in journey order: Choose, Plan, Reason, Design, Build, Diagnose. */
   protected readonly windowExample =
-    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    while window_is_invalid():\n        left += 1';
+    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    ' +
+    'while window_is_invalid():\n        left += 1';
   /** The window example, one line per row; the invariant line is highlighted in the hero card. */
   protected readonly windowLines = this.windowExample.split('\n');
   protected readonly invariantLine = 2;
-  /** The Reason slide's sketch: a sliding window over example values, between the left and right pointers. */
+  /**
+   * The Reason slide's sketch: a sliding window over example values, between the left and right
+   * pointers.
+   */
   protected readonly windowCells = [3, 1, 4, 1, 5, 9, 2, 6];
   protected readonly windowLeft = 2;
   protected readonly windowRight = 5;
@@ -44,5 +50,4 @@ export class LandingHeroVisual {
     { day: 'Thu', task: 'Quiz', kind: 'quiz' },
     { day: 'Fri', task: 'Review', kind: 'study' },
   ];
-
 }

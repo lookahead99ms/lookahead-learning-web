@@ -16,31 +16,35 @@ describe('Blaze course placement', () => {
     expect(ladder.description.trim().length).toBeGreaterThan(0);
   });
 
-  it('groups the rest into frontend design, operating systems, leading and communicating, and AI', () => {
-    expect(BLAZE_COURSE_GROUPS.map((group) => [group.id, group.title])).toEqual([
-      ['design-ladder', 'System Design Ladder'],
-      ['frontend-design', 'Frontend Design'],
-      ['architecture-production', 'Production and Cloud'],
-      ['lead-communicate', 'Lead and Communicate'],
-      ['ai', 'AI'],
-    ]);
-    const byId = new Map(BLAZE_COURSE_GROUPS.map((group) => [group.id, group]));
-    expect(byId.get('frontend-design')?.courseIds).toEqual(['frontend-system-design']);
-    expect(byId.get('architecture-production')?.courseIds).toEqual([
-      'resilience-production',
-      'cloud-architecture',
-    ]);
-    expect(byId.get('architecture-production')?.featuredCourseId).toBeUndefined();
-    expect(byId.get('lead-communicate')?.courseIds).toEqual([
-      'technical-leadership',
-      'behavioral-carl',
-      'project-recruiter',
-    ]);
-    expect(byId.get('ai')?.courseIds).toEqual(['ai-systems-architecture', 'ai-collaborators']);
-    for (const group of BLAZE_COURSE_GROUPS) {
-      expect(group.description.trim().length).toBeGreaterThan(0);
-    }
-  });
+  it(
+    'groups the rest into frontend design, operating systems, leading and communicating, ' +
+      'and AI',
+    () => {
+      expect(BLAZE_COURSE_GROUPS.map((group) => [group.id, group.title])).toEqual([
+        ['design-ladder', 'System Design Ladder'],
+        ['frontend-design', 'Frontend Design'],
+        ['architecture-production', 'Production and Cloud'],
+        ['lead-communicate', 'Lead and Communicate'],
+        ['ai', 'AI'],
+      ]);
+      const byId = new Map(BLAZE_COURSE_GROUPS.map((group) => [group.id, group]));
+      expect(byId.get('frontend-design')?.courseIds).toEqual(['frontend-system-design']);
+      expect(byId.get('architecture-production')?.courseIds).toEqual([
+        'resilience-production',
+        'cloud-architecture',
+      ]);
+      expect(byId.get('architecture-production')?.featuredCourseId).toBeUndefined();
+      expect(byId.get('lead-communicate')?.courseIds).toEqual([
+        'technical-leadership',
+        'behavioral-carl',
+        'project-recruiter',
+      ]);
+      expect(byId.get('ai')?.courseIds).toEqual(['ai-systems-architecture', 'ai-collaborators']);
+      for (const group of BLAZE_COURSE_GROUPS) {
+        expect(group.description.trim().length).toBeGreaterThan(0);
+      }
+    },
+  );
 
   it('assigns each course to one group and features a course from its own group', () => {
     const ids = BLAZE_COURSE_GROUPS.flatMap((group) => group.courseIds);

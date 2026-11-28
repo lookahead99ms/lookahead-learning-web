@@ -80,7 +80,14 @@ interface StoryPanel {
 }
 let nextStoryId = 0;
 /** Views drawn as a row (or column) of cells. */
-const SEQUENCE_VIEWS = new Set<StoryView['kind']>(['array', 'stack', 'queue', 'string', 'number-line', 'bits']);
+const SEQUENCE_VIEWS = new Set<StoryView['kind']>([
+  'array',
+  'stack',
+  'queue',
+  'string',
+  'number-line',
+  'bits',
+]);
 /**
  * Views that are the focal drawing when the story has other views beside them. A linked list is
  * not one: it is a long row, so it takes the whole width of the stage (review, 2026-10-06).
@@ -220,7 +227,9 @@ export class DsaStory {
   private readonly traced = computed(() => {
     const problem = this.problem();
     return new Set(
-      [problem.trace, ...(problem.fixtureTraces ?? [])].filter(Boolean).map((trace) => trace.fixtureId),
+      [problem.trace, ...(problem.fixtureTraces ?? [])]
+        .filter(Boolean)
+        .map((trace) => trace.fixtureId),
     );
   });
   protected readonly examples = computed<WalkthroughExample[]>(() => {
@@ -257,7 +266,8 @@ export class DsaStory {
     const story = this.storyFixture();
     const explanation = this.fixture().explanation?.trim();
     return (
-      `Steps animate ${story?.input ?? 'the first example'}. This example runs line by line with its recorded values.` +
+      `Steps animate ${story?.input ?? 'the first example'}. This example runs line by ` +
+      `line with its recorded values.` +
       (explanation ? ` ${explanation}` : '')
     );
   });
@@ -277,7 +287,12 @@ export class DsaStory {
         { label: 'Cost', text: `Time ${time} · Extra space ${space}` },
         ...(invariant ? [{ label: 'Invariant', text: invariant }] : []),
         ...(fixture.explanation
-          ? [{ label: 'This example', text: `${fixture.input} → ${fixture.expectedOutput}. ${fixture.explanation}` }]
+          ? [
+              {
+                label: 'This example',
+                text: `${fixture.input} → ${fixture.expectedOutput}. ${fixture.explanation}`,
+              },
+            ]
           : []),
       ],
     };
@@ -343,7 +358,13 @@ export class DsaStory {
         grid: view.kind === 'grid' ? gridModel(view, step, language) : null,
         calls:
           view.kind === 'calls'
-            ? callsModel(view, step, language, callTimeline(story)[index], sentinelNames(story, step, language))
+            ? callsModel(
+                view,
+                step,
+                language,
+                callTimeline(story)[index],
+                sentinelNames(story, step, language),
+              )
             : null,
         diagram,
         frame: diagram && !diagram.missing ? diagramFrame(diagram) : null,
@@ -369,7 +390,9 @@ export class DsaStory {
     Math.min(this.linePlayer.index(), Math.max(0, this.lineCount() - 1)),
   );
   protected readonly line = computed(() =>
-    this.lineMode() ? lineView(this.problem(), this.fixture(), this.language(), this.lineIndex()) : null,
+    this.lineMode()
+      ? lineView(this.problem(), this.fixture(), this.language(), this.lineIndex())
+      : null,
   );
   /**
    * Every line draws the recorded state with the story's own cells and nodes, so the drawing keeps
@@ -380,7 +403,8 @@ export class DsaStory {
     const line = this.line();
     if (!line?.snapshot.event) return [];
     if (line.visual === 'array') return line.arrays.map((array, index) => arrayPanel(array, index));
-    if (line.visual === 'list' && line.list) return [listPanel(line.list, line.label, this.noneText())];
+    if (line.visual === 'list' && line.list)
+      return [listPanel(line.list, line.label, this.noneText())];
     return line.rows.map((row, index) =>
       sequencePanel(
         `row-${index}`,
@@ -399,14 +423,18 @@ export class DsaStory {
   });
 
   // ---------------------------------------------------------------- what the player shows
-  protected readonly shownIndex = computed(() => (this.lineMode() ? this.lineIndex() : this.index()));
+  protected readonly shownIndex = computed(() =>
+    this.lineMode() ? this.lineIndex() : this.index(),
+  );
   protected readonly shownCount = computed(() =>
     this.lineMode() ? Math.max(1, this.lineCount()) : this.count(),
   );
   protected readonly playing = computed(() =>
     this.lineMode() ? this.linePlayer.playing() : this.player.playing(),
   );
-  protected readonly caption = computed(() => this.line()?.caption ?? fillSay(this.step(), this.language()));
+  protected readonly caption = computed(
+    () => this.line()?.caption ?? fillSay(this.step(), this.language()),
+  );
   protected readonly values = computed(() => this.line()?.values ?? this.storyValues());
   protected readonly code = computed(() => {
     const line = this.line();
@@ -482,7 +510,9 @@ export class DsaStory {
     for (const drawing of stage.querySelectorAll<HTMLElement>('.drawing')) {
       if (drawing.scrollWidth <= drawing.clientWidth + 1) continue;
       const marks = marked(drawing);
-      const targets = marks.length ? marks : [...drawing.querySelectorAll('.pointer-label, .pointer:not(.past)')];
+      const targets = marks.length
+        ? marks
+        : [...drawing.querySelectorAll('.pointer-label, .pointer:not(.past)')];
       if (!targets.length) continue;
       const box = drawing.getBoundingClientRect();
       const rects = targets.map((item) => item.getBoundingClientRect());
@@ -490,7 +520,10 @@ export class DsaStory {
       const right = Math.max(...rects.map((rect) => rect.right));
       if (left >= box.left && right <= box.right) continue;
       const centre = (left + right) / 2 - box.left + drawing.scrollLeft;
-      const target = right - left > box.width ? left - box.left + drawing.scrollLeft - 16 : centre - box.width / 2;
+      const target =
+        right - left > box.width
+          ? left - box.left + drawing.scrollLeft - 16
+          : centre - box.width / 2;
       drawing.scrollTo({ left: Math.max(0, target), behavior: smooth });
     }
     if (stage.scrollHeight <= stage.clientHeight + 1) return;
@@ -540,7 +573,11 @@ export class DsaStory {
     return tones.map((tone) => `tone-${tone}`).join(' ');
   }
   private kindLabel(view: StoryView): string {
-    return view.kind === 'calls' ? 'call stack' : view.kind === 'bits' ? 'binary' : view.kind.replace('-', ' ');
+    return view.kind === 'calls'
+      ? 'call stack'
+      : view.kind === 'bits'
+        ? 'binary'
+        : view.kind.replace('-', ' ');
   }
   protected reversed<T>(items: T[]): T[] {
     return [...items].reverse();
@@ -560,14 +597,18 @@ function sequencePanel(
   missing = false,
 ): StoryPanel {
   const fit = cellFit(cells.map((cell) => cell.text));
-  const pointed = pointers.map((pointer) => `${pointer.label} ${pointer.past ? 'at the end' : `at index ${pointer.index}`}`);
+  const pointed = pointers.map(
+    (pointer) => `${pointer.label} ${pointer.past ? 'at the end' : `at index ${pointer.index}`}`,
+  );
   return {
     view: { id, kind: 'array', title },
     kindLabel: 'recorded',
     focal: false,
     summary: missing
       ? `${title}: no recorded value at this line.`
-      : `${title}: ${cells.map((cell) => cell.text).join(', ') || 'empty'}.${pointed.length ? ` ${pointed.join(', ')}.` : ''}`,
+      : `${title}: ` +
+        `${cells.map((cell) => cell.text).join(', ') || 'empty'}.` +
+        `${pointed.length ? ` ${pointed.join(', ')}.` : ''}`,
     missingText: 'no recorded value at this line',
     sequence: { kind: 'array', missing, cells, pointers },
     cell: null,
@@ -605,7 +646,8 @@ function listPanel(list: ListVisual, label: string, none: string): StoryPanel {
   const y = 70;
   const radius = 22;
   const x = (slot: number) => 40 + slot * gap;
-  const names = (slot: number) => list.pointers.filter((pointer) => pointer.index === slot).map((pointer) => pointer.name);
+  const names = (slot: number) =>
+    list.pointers.filter((pointer) => pointer.index === slot).map((pointer) => pointer.name);
   const nodes = list.nodes.map((node, slot) => ({
     id: `n${slot}`,
     x: x(slot),
@@ -626,11 +668,26 @@ function listPanel(list: ListVisual, label: string, none: string): StoryPanel {
   if (last && target) {
     const path =
       target === last
-        ? `M${last.x - 10} ${y + radius - 2}C${last.x - 34} ${y + 64} ${last.x + 34} ${y + 64} ${last.x + 10} ${y + radius + 3}`
-        : `M${last.x} ${y + radius}C${last.x} ${y + 68} ${target.x} ${y + 68} ${target.x} ${y + radius + 4}`;
-    edges.push({ id: `${last.id}-cycle`, from: last.id, to: target.id, path, directed: true, tone: 'compare' });
+        ? `M${last.x - 10} ${y + radius - 2}C${last.x - 34} ${y + 64} ${last.x + 34} ` +
+          `${y + 64} ${last.x + 10} ${y + radius + 3}`
+        : `M${last.x} ${y + radius}C${last.x} ${y + 68} ${target.x} ${y + 68} ${target.x} ` +
+          `${y + radius + 4}`;
+    edges.push({
+      id: `${last.id}-cycle`,
+      from: last.id,
+      to: target.id,
+      path,
+      directed: true,
+      tone: 'compare',
+    });
   } else if (last) {
-    edges.push({ id: `${last.id}-null`, from: last.id, to: 'null', path: `M${last.x} ${y + radius}v16h-10m10 0h10`, directed: false });
+    edges.push({
+      id: `${last.id}-null`,
+      from: last.id,
+      to: 'null',
+      path: `M${last.x} ${y + radius}v16h-10m10 0h10`,
+      directed: false,
+    });
   }
   const diagram: NodeDiagram = {
     missing: !nodes.length,
@@ -646,7 +703,9 @@ function listPanel(list: ListVisual, label: string, none: string): StoryPanel {
     view: { id: 'list', kind: 'linked-list', title: 'Linked list' },
     kindLabel: target ? 'recorded · cycle' : 'recorded',
     focal: false,
-    summary: `${label || `Linked list: ${nodes.map((node) => node.text).join(' → ')} → ${none}.`}${cycle}`,
+    summary:
+      `${label || `Linked list: ${nodes.map((node) => node.text).join(' → ')} → ${none}.`}` +
+      `${cycle}`,
     missingText: 'no recorded value at this line',
     sequence: null,
     cell: null,

@@ -7,7 +7,14 @@ import { Routes, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
-import { authorGuard, accessGuard, staffGuard, deliveryGuard, previewsGuard, documentationGuard } from './core/author-access';
+import {
+  authorGuard,
+  accessGuard,
+  staffGuard,
+  deliveryGuard,
+  previewsGuard,
+  documentationGuard,
+} from './core/author-access';
 import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
 import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
@@ -16,18 +23,38 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
-  // Owner, 2026-11-07: Clean up admissions on Review requests runs the Domain's admissions job through the review client.
+  // Owner, 2026-11-07: Clean up admissions on Review requests runs the Domain's admissions job
+  // through the review client.
   {
     path: 'admin/access',
     canActivate: [accessGuard],
     providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
-    loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage),
+    loadComponent: () =>
+      import('./pages/admin-access/admin-access').then((page) => page.AdminAccessPage),
   },
   // DLV-209: plan catalog and purchase flow reference for authors and admins (staff).
-  { path: 'admin/plans', canActivate: [staffGuard], loadComponent: () => import('./pages/admin-plans/admin-plans').then(page => page.AdminPlansPage) },
-  // DLV-209: sale and price previews for authors and admins (this browser only; no server support yet).
-  { path: 'admin/sales', canActivate: [staffGuard], loadComponent: () => import('./pages/admin-sales/admin-sales').then(page => page.AdminSalesPage) },
-  { path: 'admin/content-access', canActivate: [staffGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
+  {
+    path: 'admin/plans',
+    canActivate: [staffGuard],
+    loadComponent: () =>
+      import('./pages/admin-plans/admin-plans').then((page) => page.AdminPlansPage),
+  },
+  // DLV-209: sale and price previews for authors and admins (this browser only; no server support
+  // yet).
+  {
+    path: 'admin/sales',
+    canActivate: [staffGuard],
+    loadComponent: () =>
+      import('./pages/admin-sales/admin-sales').then((page) => page.AdminSalesPage),
+  },
+  {
+    path: 'admin/content-access',
+    canActivate: [staffGuard],
+    loadComponent: () =>
+      import('./pages/author-content-access/author-content-access').then(
+        (page) => page.AuthorContentAccess,
+      ),
+  },
   {
     path: 'admin/operations',
     canActivate: [staffGuard, documentationGuard],
@@ -38,7 +65,15 @@ export const routes: Routes = [
       ),
   },
   // Historical documentation links used the published document id as the route.
-  { path: 'admin/reviewer-guide', pathMatch: 'full', redirectTo: ({queryParams, fragment}) => inject(Router).createUrlTree(['/admin/review-guide'], {queryParams, fragment: fragment ?? undefined}) },
+  {
+    path: 'admin/reviewer-guide',
+    pathMatch: 'full',
+    redirectTo: ({ queryParams, fragment }) =>
+      inject(Router).createUrlTree(['/admin/review-guide'], {
+        queryParams,
+        fragment: fragment ?? undefined,
+      }),
+  },
   // DLV-926: each documentation route names one published private document.
   ...(
     [
@@ -83,8 +118,8 @@ export const routes: Routes = [
         (page) => page.AuthorOperationsPage,
       ),
   })),
-  // DLV-971 (owner, 2026-11-06): Support tickets and feedback, the former Team Reviews tab of Support; the older
-  // /admin/reviews address opens it.
+  // DLV-971 (owner, 2026-11-06): Support tickets and feedback, the former Team Reviews tab of
+  // Support; the older /admin/reviews address opens it.
   { path: 'admin/reviews', redirectTo: 'admin/feedback' },
   {
     path: 'admin/feedback',
@@ -93,13 +128,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-feedback/admin-feedback').then((page) => page.AdminFeedbackPage),
   },
-  // The item's own page (the ↗ on a backlog row, "Open in new tab" in the dialog); a deep link works on reload.
+  // The item's own page (the ↗ on a backlog row, "Open in new tab" in the dialog); a deep link
+  // works on reload.
   {
     path: 'admin/feedback/:id',
     canActivate: [staffGuard],
     providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
     loadComponent: () =>
-      import('./pages/admin-feedback/admin-feedback-item').then((page) => page.AdminFeedbackItemPage),
+      import('./pages/admin-feedback/admin-feedback-item').then(
+        (page) => page.AdminFeedbackItemPage,
+      ),
   },
   {
     path: 'admin/docs',
@@ -145,23 +183,26 @@ export const routes: Routes = [
     data: { localApiGuide: true },
     loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
   },
-  // DLV-926: the admin area lives under /admin. DLV-969 (2026-11-04): /admin opens Documentation, which every staff role
-  // can read; Previews is the owner's and co-authors' only.
+  // DLV-926: the admin area lives under /admin. DLV-969 (2026-11-04): /admin opens Documentation,
+  // which every staff role can read; Previews is the owner's and co-authors' only.
   { path: 'admin', pathMatch: 'full', redirectTo: 'admin/docs' },
   // Former /author addresses keep working (bookmarks, evidence, gateway sign-in return).
   { path: 'author', pathMatch: 'full', redirectTo: 'admin/docs' },
   { path: 'author/previews/study-plan', redirectTo: 'admin/previews/study-plan' },
   { path: 'author/:page', redirectTo: 'admin/:page' },
-  // DLV-969: the steps of our own email-and-password sign-in and sign-up (shown when the Gateway offers them).
+  // DLV-969: the steps of our own email-and-password sign-in and sign-up (shown when the Gateway
+  // offers them).
   ...(['forgot', 'reset', 'new-password', 'code'] as const).map((step) => ({
     path: 'sign-in/' + step,
     data: { passwordStep: step },
-    loadComponent: () => import('./pages/account/password-step').then((page) => page.PasswordStepPage),
+    loadComponent: () =>
+      import('./pages/account/password-step').then((page) => page.PasswordStepPage),
   })),
   {
     path: 'sign-up/confirm',
     data: { passwordStep: 'confirm' },
-    loadComponent: () => import('./pages/account/password-step').then((page) => page.PasswordStepPage),
+    loadComponent: () =>
+      import('./pages/account/password-step').then((page) => page.PasswordStepPage),
   },
   {
     path: 'sign-in',
@@ -182,20 +223,23 @@ export const routes: Routes = [
   // DLV-969 S36.8: the link in the merge email; choose the account to keep.
   {
     path: 'account/merge',
-    loadComponent: () => import('./pages/account/account-merge').then((page) => page.AccountMergePage),
+    loadComponent: () =>
+      import('./pages/account/account-merge').then((page) => page.AccountMergePage),
   },
   {
     path: 'account',
     loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),
   },
   // DLV-209: sample pricing (design only; checkout is not connected and nothing is charged).
-  // Everyone can see prices; buying needs an account, so Choose asks signed-out visitors to sign in.
+  // Everyone can see prices; buying needs an account, so Choose asks signed-out visitors to sign
+  // in.
   {
     path: 'pricing',
     title: 'Pricing | LookAhead',
     loadComponent: () => import('./pages/pricing/pricing').then((page) => page.PricingPage),
   },
-  // DLV-937: the landing redesign candidates, kept for comparison; the home page below now uses preview 7.
+  // DLV-937: the landing redesign candidates, kept for comparison; the home page below now uses
+  // preview 7.
   {
     path: 'preview/landing/1',
     loadComponent: () =>
@@ -269,8 +313,7 @@ export const routes: Routes = [
   // DLV-942: every open and free unit, linked from the catalogs.
   {
     path: 'start-free',
-    loadComponent: () =>
-      import('./pages/start-free/start-free').then((page) => page.StartFreePage),
+    loadComponent: () => import('./pages/start-free/start-free').then((page) => page.StartFreePage),
   },
   { path: 'learn', loadComponent: () => import('./pages/learn/learn').then((page) => page.Learn) },
   { path: 'grow', loadComponent: () => import('./pages/grow/grow').then((page) => page.Grow) },
@@ -322,7 +365,8 @@ export const routes: Routes = [
     data: { pathId: 'grow' },
     loadComponent: () => import('./pages/course/course').then((page) => page.Course),
   },
-  // Blaze catalog. Old /look-ahead/... links open here through CatalogUrlSerializer (core/catalog-url.ts).
+  // Blaze catalog. Old /look-ahead/... links open here through CatalogUrlSerializer
+  // (core/catalog-url.ts).
   {
     path: 'blaze',
     loadComponent: () => import('./pages/blaze/blaze').then((page) => page.Blaze),

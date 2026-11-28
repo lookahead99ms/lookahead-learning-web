@@ -30,9 +30,7 @@ export interface PageMeta {
 
 /** `Lesson | Course | LookAhead`: the most specific part first, empty parts skipped. */
 export function pageTitle(...parts: (string | undefined)[]): string {
-  return [...parts.map((part) => metaText(part ?? '', 120)).filter(Boolean), SITE_NAME].join(
-    ' | ',
-  );
+  return [...parts.map((part) => metaText(part ?? '', 120)).filter(Boolean), SITE_NAME].join(' | ');
 }
 
 /** Plain text for a meta tag: authored HTML removed, whitespace collapsed, cut at a word. */
@@ -62,8 +60,7 @@ export class PageMetaService {
     const title = metaText(page.title, 200) || HOME_TITLE;
     const description = metaText(page.description) || DEFAULT_DESCRIPTION;
     const canonical = canonicalUrl(origin, url);
-    const image =
-      page.image && isSceneAssetPath(page.image) ? `${origin}${page.image}` : undefined;
+    const image = page.image && isSceneAssetPath(page.image) ? `${origin}${page.image}` : undefined;
 
     this.title.setTitle(title);
     this.setName('description', description);

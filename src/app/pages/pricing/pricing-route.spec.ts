@@ -21,7 +21,7 @@ describe('/pricing route (DLV-209)', () => {
     vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
   });
 
-  it('opens for signed-out visitors too: everyone can see prices, buying needs an account', async () => {
+  it('opens for signed-out visitors too: all see prices, buying needs an account', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/pricing', PricingPage);
     expect(TestBed.inject(Router).url).toBe('/pricing');
@@ -30,24 +30,28 @@ describe('/pricing route (DLV-209)', () => {
     );
   });
 
-  it('opens the sample pricing page for a signed-in learner, with the shared header and a page title', async () => {
-    TestBed.inject(StudyPlanAccount).account.set({
-      accountId: 'learner',
-      username: 'learner@example.test',
-      displayName: 'Learner',
-      topicGrants: [],
-    });
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/pricing', PricingPage);
-    expect(TestBed.inject(Router).url).toBe('/pricing');
-    const page = harness.routeNativeElement!;
-    expect(page.querySelector('app-platform-header')).not.toBeNull();
-    expect(page.querySelector('main#main-content')).not.toBeNull();
-    expect(page.querySelector('h1')?.textContent?.trim()).toBe(
-      'Start free. Pay for the catalogs you need.',
-    );
-    expect(document.title).toContain('Pricing');
-  });
+  it(
+    'opens the sample pricing page for a signed-in learner, with the shared header and a ' +
+      'page title',
+    async () => {
+      TestBed.inject(StudyPlanAccount).account.set({
+        accountId: 'learner',
+        username: 'learner@example.test',
+        displayName: 'Learner',
+        topicGrants: [],
+      });
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/pricing', PricingPage);
+      expect(TestBed.inject(Router).url).toBe('/pricing');
+      const page = harness.routeNativeElement!;
+      expect(page.querySelector('app-platform-header')).not.toBeNull();
+      expect(page.querySelector('main#main-content')).not.toBeNull();
+      expect(page.querySelector('h1')?.textContent?.trim()).toBe(
+        'Start free. Pay for the catalogs you need.',
+      );
+      expect(document.title).toContain('Pricing');
+    },
+  );
 
   it('links Start free to a route the app has', () => {
     expect(routes.some((route) => `/${route.path}` === START_FREE_ROUTE)).toBe(true);

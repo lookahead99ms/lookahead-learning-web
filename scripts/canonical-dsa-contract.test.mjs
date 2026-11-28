@@ -156,12 +156,16 @@ function family() {
   const second = familyMember('pair-approach-2', 'Pair (Approach-2)', 2, []);
   first.approachFamily.siblings = [siblingOf(second)];
   second.approachFamily.siblings = [siblingOf(first)];
-  return new Map([[first.id, first], [second.id, second]]);
+  return new Map([
+    [first.id, first],
+    [second.id, second],
+  ]);
 }
 
 test('approach families accept a consistent pair and ignore problems without one (DLV-965)', () => {
   const problems = family();
-  for (const member of problems.values()) assert.deepEqual(approachFamilyErrors(member, problems), []);
+  for (const member of problems.values())
+    assert.deepEqual(approachFamilyErrors(member, problems), []);
   assert.deepEqual(approachFamilyErrors(problem('solo'), new Map([['solo', problem('solo')]])), []);
 });
 
@@ -170,21 +174,38 @@ test('approach families reject stale copies, wrong names and unequal bounds', ()
   const first = problems.get('pair');
   first.approachFamily.siblings[0].title = 'Old';
   first.approachFamily.siblings[0].questionId = 'moved';
-  assert.match(approachFamilyErrors(first, problems).join('; '), /title is stale.*route is not its practice placement/);
+  assert.match(
+    approachFamilyErrors(first, problems).join('; '),
+    /title is stale.*route is not its practice placement/,
+  );
   const renamed = family();
   renamed.get('pair-approach-2').title = 'Pair, second way';
   renamed.get('pair').approachFamily.siblings[0].title = 'Pair, second way';
-  assert.match(approachFamilyErrors(renamed.get('pair-approach-2'), renamed).join('; '), /title must be "Pair \(Approach-2\)"/);
+  assert.match(
+    approachFamilyErrors(renamed.get('pair-approach-2'), renamed).join('; '),
+    /title must be "Pair \(Approach-2\)"/,
+  );
   const slower = family();
   slower.get('pair-approach-2').complexity = { time: 'O(n log n)', space: 'O(1)' };
   slower.get('pair').approachFamily.siblings[0].complexity = { time: 'O(n log n)', space: 'O(1)' };
-  assert.match(approachFamilyErrors(slower.get('pair-approach-2'), slower).join('; '), /best approach's time and space/);
+  assert.match(
+    approachFamilyErrors(slower.get('pair-approach-2'), slower).join('; '),
+    /best approach's time and space/,
+  );
   const unnumbered = family();
   unnumbered.get('pair').title = 'Pair';
   unnumbered.get('pair-approach-2').approachFamily.siblings[0].title = 'Pair';
-  assert.match(approachFamilyErrors(unnumbered.get('pair'), unnumbered).join('; '), /must be titled "Pair \(Approach-1\)"/);
-  const orphan = new Map([['pair', problem('pair')], ['pair-approach-2', problem('pair-approach-2')]]);
-  assert.deepEqual(approachFamilyErrors(orphan.get('pair-approach-2'), orphan), ['an Approach-N problem must carry approachFamily']);
+  assert.match(
+    approachFamilyErrors(unnumbered.get('pair'), unnumbered).join('; '),
+    /must be titled "Pair \(Approach-1\)"/,
+  );
+  const orphan = new Map([
+    ['pair', problem('pair')],
+    ['pair-approach-2', problem('pair-approach-2')],
+  ]);
+  assert.deepEqual(approachFamilyErrors(orphan.get('pair-approach-2'), orphan), [
+    'an Approach-N problem must carry approachFamily',
+  ]);
   const gap = family();
   gap.get('pair-approach-2').approachFamily.approach = 3;
   gap.get('pair').approachFamily.siblings[0].approach = 3;
@@ -196,7 +217,10 @@ test('approach families compare the stated bound term, not its wording (DLV-965 
   problems.get('pair').complexity = { time: 'O(26n) = O(n)', space: 'O(R × C)' };
   problems.get('pair-approach-2').complexity = { time: 'O(n)', space: 'O(R x C)' };
   problems.get('pair').approachFamily.siblings[0].complexity = { time: 'O(n)', space: 'O(R x C)' };
-  problems.get('pair-approach-2').approachFamily.siblings[0].complexity = { time: 'O(26n) = O(n)', space: 'O(R × C)' };
+  problems.get('pair-approach-2').approachFamily.siblings[0].complexity = {
+    time: 'O(26n) = O(n)',
+    space: 'O(R × C)',
+  };
   assert.deepEqual(approachFamilyErrors(problems.get('pair-approach-2'), problems), []);
   assert.deepEqual(approachFamilyErrors(problems.get('pair'), problems), []);
 });

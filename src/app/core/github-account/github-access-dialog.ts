@@ -4,8 +4,9 @@ import { GithubPrompt } from './github-account';
 import { GithubAccessCard } from './github-access-card';
 
 /**
- * DLV-969 (owner, 2026-11-06): the GitHub question as a dialog over whatever page a staff member opened after signing
- * in. Save closes it; Not now (or Escape) closes it for this sign-in. The prompt service decides when it opens.
+ * DLV-969 (owner, 2026-11-06): the GitHub question as a dialog over whatever page a staff member
+ * opened after signing in. Save closes it; Not now (or Escape) closes it for this sign-in. The
+ * prompt service decides when it opens.
  */
 @Component({
   selector: 'app-github-access-dialog',

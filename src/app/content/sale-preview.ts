@@ -20,7 +20,12 @@ export const SALE_TEMPLATES: readonly SaleTemplate[] = [
   { id: 'holiday', name: 'Holiday sale', greeting: 'Happy holidays', emoji: '🎄' },
   { id: 'spring', name: 'Spring sale', greeting: 'Happy spring', emoji: '🌸' },
   { id: 'graduation', name: 'Graduation sale', greeting: 'Happy graduation', emoji: '🎓' },
-  { id: 'engineers-day', name: 'Engineer’s Day sale', greeting: 'Happy Engineer’s Day', emoji: '🛠️' },
+  {
+    id: 'engineers-day',
+    name: 'Engineer’s Day sale',
+    greeting: 'Happy Engineer’s Day',
+    emoji: '🛠️',
+  },
 ];
 
 /** The promo plans a sale can offer. */
@@ -49,22 +54,63 @@ export class SalePreview {
   readonly activeSale = signal<ActiveSale | null>(null);
   readonly plans = this.api.plans;
   readonly priceOverrides = signal<Partial<Record<PlanId, number>>>({});
-  readonly isStaff = computed(() => this.accounts.account()?.permissions?.manageAccess === true || this.accounts.account()?.authorPreview === true);
+  readonly isStaff = computed(
+    () =>
+      this.accounts.account()?.permissions?.manageAccess === true ||
+      this.accounts.account()?.authorPreview === true,
+  );
   private saleId: string | null = null;
-  constructor(){void this.reload();}
-  async reload(){
+  constructor() {
+    void this.reload();
+  }
+  async reload() {
     try {
-      const sale=await this.api.request<{id:string;template:SaleTemplateId;greeting:string;planIds:PlanId[]} | null>('/sales/active');
-      this.saleId=sale?.id??null;
-      const template=SALE_TEMPLATES.find(t=>t.id===sale?.template);
-      this.activeSale.set(sale&&template?{template,greeting:sale.greeting,planIds:sale.planIds,preview:false}:null);
-    } catch {this.activeSale.set(null);}
+      const sale = await this.api.request<{
+        id: string;
+        template: SaleTemplateId;
+        greeting: string;
+        planIds: PlanId[];
+      } | null>('/sales/active');
+      this.saleId = sale?.id ?? null;
+      const template = SALE_TEMPLATES.find((t) => t.id === sale?.template);
+      this.activeSale.set(
+        sale && template
+          ? { template, greeting: sale.greeting, planIds: sale.planIds, preview: false }
+          : null,
+      );
+    } catch {
+      this.activeSale.set(null);
+    }
   }
-  async startSale(templateId:SaleTemplateId,greeting:string,planIds:PlanId[],startsAt?:string,endsAt?:string){
-    if(!startsAt||!endsAt)throw new Error('Choose the sale start and end dates.');
-    await this.api.request('/admin/sales',{template:templateId,greeting,planIds,startsAt:new Date(startsAt).toISOString(),endsAt:new Date(endsAt).toISOString()});await this.reload();
+  async startSale(
+    templateId: SaleTemplateId,
+    greeting: string,
+    planIds: PlanId[],
+    startsAt?: string,
+    endsAt?: string,
+  ) {
+    if (!startsAt || !endsAt) throw new Error('Choose the sale start and end dates.');
+    await this.api.request('/admin/sales', {
+      template: templateId,
+      greeting,
+      planIds,
+      startsAt: new Date(startsAt).toISOString(),
+      endsAt: new Date(endsAt).toISOString(),
+    });
+    await this.reload();
   }
-  async stopSale(){if(!this.saleId)throw new Error('No active sale.');await this.api.request('/admin/sales/'+this.saleId+'/stop',{});await this.reload();}
-  async setPrice(planId:PlanId,cents:number|null){if(cents===null||!Number.isInteger(cents)||cents<1)throw new Error('Enter a positive price in cents.');await this.api.request('/admin/membership/plans/'+planId+'/price',{priceCents:cents});await this.api.refresh();}
-  async resetPrices(){throw new Error('Set each price explicitly; purchase history is never reset.');}
+  async stopSale() {
+    if (!this.saleId) throw new Error('No active sale.');
+    await this.api.request('/admin/sales/' + this.saleId + '/stop', {});
+    await this.reload();
+  }
+  async setPrice(planId: PlanId, cents: number | null) {
+    if (cents === null || !Number.isInteger(cents) || cents < 1)
+      throw new Error('Enter a positive price in cents.');
+    await this.api.request('/admin/membership/plans/' + planId + '/price', { priceCents: cents });
+    await this.api.refresh();
+  }
+  async resetPrices() {
+    throw new Error('Set each price explicitly; purchase history is never reset.');
+  }
 }

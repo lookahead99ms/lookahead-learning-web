@@ -10,10 +10,13 @@ describe('zipStore', () => {
   });
 
   it('writes local headers, a central directory and an end record that point at each other', () => {
-    const zip = zipStore([
-      { path: 'pom.xml', content: '<project/>' },
-      { path: 'src/main/java/App.java', content: 'class App {}' },
-    ], 'demo');
+    const zip = zipStore(
+      [
+        { path: 'pom.xml', content: '<project/>' },
+        { path: 'src/main/java/App.java', content: 'class App {}' },
+      ],
+      'demo',
+    );
     const view = new DataView(zip.buffer);
     const end = zip.length - 22;
     expect(view.getUint32(end, true)).toBe(0x06054b50);

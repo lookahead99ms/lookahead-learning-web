@@ -34,9 +34,9 @@ const EMPTY: RecallCheck = { open: [], grades: {}, total: 0 };
 const GRADE_IDS = new Set<string>(RECALL_GRADES.map((grade) => grade.id));
 
 /**
- * Any Missed suggests "Needed the solution" and a review in 3 days; any Partly suggests "Solved with
- * hints" and a review in 1 week; every card Got it suggests "Solved on my own" with no review. A
- * partial pass with only Got it has nothing to suggest yet.
+ * Any Missed suggests "Needed the solution" and a review in 3 days; any Partly suggests "Solved
+ * with hints" and a review in 1 week; every card Got it suggests "Solved on my own" with no review.
+ * A partial pass with only Got it has nothing to suggest yet.
  */
 export function recallSuggestion(check: RecallCheck | undefined): RecallSuggestion | null {
   const grades = Object.values(check?.grades ?? {});
@@ -96,7 +96,11 @@ export class RecallCheckStore {
   }
 
   setAllOpen(problemId: string, cardIds: readonly string[], open: boolean): void {
-    this.commit(problemId, { ...this.check(problemId), total: cardIds.length, open: open ? [...cardIds] : [] });
+    this.commit(problemId, {
+      ...this.check(problemId),
+      total: cardIds.length,
+      open: open ? [...cardIds] : [],
+    });
   }
 
   /** Pressing the grade a card already has takes it back. */

@@ -5,7 +5,8 @@
     (pointerleave)="leaveSurface($event)"
   >
     @if (locked()) {
-      <!-- DLV-969 (owner, 2026-11-03): before admission a path is a word that shows its tagline, never a way in. -->
+      <!-- DLV-969 (owner, 2026-11-03): before admission a path is a word that shows its tagline,
+           never a way in. -->
       <button
         type="button"
         class="path-locked"
@@ -15,21 +16,22 @@
         [attr.aria-controls]="'navigation-' + path.id"
         (pointerdown)="rememberPointer($event)"
         (click)="togglePath(path.id)"
-      >{{ path.label }}</button>
+        >{{ path.label }}</button
+      >
     } @else {
-    <a
-      [href]="'/' + path.id"
-      [id]="'browse-' + path.id"
-      [attr.aria-current]="currentPath(path.id) ? 'page' : null"
-      [style.--entry-path-color]="'var(--path-' + path.id + ')'"
-      [attr.aria-expanded]="activePath() === path.id"
-      [attr.aria-controls]="'navigation-' + path.id"
-      aria-describedby="navigation-help"
-      (pointerdown)="rememberPointer($event)"
-      (click)="activateLink($event, path.id)"
-      (keydown)="openWithKeyboard($event, path.id)"
-      >{{ path.label }}</a
-    >
+      <a
+        [href]="'/' + path.id"
+        [id]="'browse-' + path.id"
+        [attr.aria-current]="currentPath(path.id) ? 'page' : null"
+        [style.--entry-path-color]="'var(--path-' + path.id + ')'"
+        [attr.aria-expanded]="activePath() === path.id"
+        [attr.aria-controls]="'navigation-' + path.id"
+        aria-describedby="navigation-help"
+        (pointerdown)="rememberPointer($event)"
+        (click)="activateLink($event, path.id)"
+        (keydown)="openWithKeyboard($event, path.id)"
+        >{{ path.label }}</a
+      >
     }
   </span>
   @if (activePath() === path.id) {
@@ -73,44 +75,44 @@
       @if (locked()) {
         <!-- Only the tagline before admission: the course list is behind the gate. -->
       } @else {
-      @if (loading()) {
-        <p role="status">Loading courses…</p>
-      }
-      @if (error()) {
-        <p class="navigation-error" role="status">Course list is temporarily unavailable.</p>
-      }
-      @if (groups().length) {
-        <div class="navigation-groups">
-          @for (group of groups(); track group.id) {
-            <section class="navigation-group">
-              <h2>
-                <a
-                  [routerLink]="'/' + path.id"
-                  [queryParams]="group.id ? { group: group.id } : {}"
-                  >{{ group.title }}</a
-                >
-              </h2>
-              <ul>
-                @for (course of group.courses; track course.id) {
-                  <li>
-                    <div class="course-row">
-                      <a
-                        [routerLink]="'/' + path.id + '/' + course.id"
-                        [attr.aria-current]="currentCourse(path.id, course.id) ? 'page' : null"
-                        ><span class="course-title">{{ course.title }}</span></a
-                      >
-                    </div>
-                  </li>
-                }
-              </ul>
-            </section>
-          }
-        </div>
-      } @else if (!loading() && !error()) {
-        <p role="status">
-          No courses are available here yet. Explore the path overview to continue.
-        </p>
-      }
+        @if (loading()) {
+          <p role="status">Loading courses…</p>
+        }
+        @if (error()) {
+          <p class="navigation-error" role="status">Course list is temporarily unavailable.</p>
+        }
+        @if (groups().length) {
+          <div class="navigation-groups">
+            @for (group of groups(); track group.id) {
+              <section class="navigation-group">
+                <h2>
+                  <a
+                    [routerLink]="'/' + path.id"
+                    [queryParams]="group.id ? { group: group.id } : {}"
+                    >{{ group.title }}</a
+                  >
+                </h2>
+                <ul>
+                  @for (course of group.courses; track course.id) {
+                    <li>
+                      <div class="course-row">
+                        <a
+                          [routerLink]="'/' + path.id + '/' + course.id"
+                          [attr.aria-current]="currentCourse(path.id, course.id) ? 'page' : null"
+                          ><span class="course-title">{{ course.title }}</span></a
+                        >
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+          </div>
+        } @else if (!loading() && !error()) {
+          <p role="status">
+            No courses are available here yet. Explore the path overview to continue.
+          </p>
+        }
       }
     </section>
   }

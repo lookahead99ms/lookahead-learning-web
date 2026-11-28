@@ -68,24 +68,32 @@ export interface TheoryVisual {
 }
 
 /**
- * A scripted animation (algo-pattern-v1 and the DSA concept courses): an SVG drawn in its last frame plus frames.
- * The lesson page (LessonStoryboard) inlines a sanitized copy (allowlisted SVG elements and attributes only; no
- * script, style, event handler, image or link) and plays it when it scrolls into view, holds the last frame,
- * loops, and pauses off screen; under reduced motion it shows the last frame. Elements opt in with data attributes:
- *   data-sb-show="2" | "2-5" | "2-" | "0,4-6"  visible only on those frames ("2-" = to the end; fades in and out);
- *   data-sb-text="start|step 1|…"               one text per frame;
- *   data-sb-at="n10 n20 …"                      a mover: the id of the element it stands on, per frame;
- *   data-sb-route="#pathId"                     optional: the mover travels along that path between frames;
- *   data-sb-stops="0 0.1 …"                     instead of data-sb-at: a fraction of the route's length per frame.
- * Colors come from the app theme through fixed class names (node, val, edge, edge-back, label, box, entry, hit,
- * result, counter, ring inside a slow, fast, p or walker mover, …); see storyboard-player.ts.
+ * A scripted animation (algo-pattern-v1 and the DSA concept courses): an SVG drawn in its last
+ * frame plus frames. The lesson page (LessonStoryboard) inlines a sanitized copy (allowlisted SVG
+ * elements and attributes only; no script, style, event handler, image or link) and plays it when
+ * it scrolls into view, holds the last frame, loops, and pauses off screen; under reduced motion it
+ * shows the last frame. Elements opt in with data attributes:
+ *   data-sb-show="2" | "2-5" | "2-" | "0,4-6": visible only on those frames ("2-" = to the end;
+ *     fades in and out);
+ *   data-sb-text="start|step 1|…": one text per frame;
+ *   data-sb-at="n10 n20 …": a mover: the id of the element it stands on, per frame;
+ *   data-sb-route="#pathId": optional: the mover travels along that path between frames;
+ *   data-sb-stops="0 0.1 …": instead of data-sb-at: a fraction of the route's length per frame.
+ * Colors come from the app theme through fixed class names (node, val, edge, edge-back, label, box,
+ * entry, hit, result, counter, ring inside a slow, fast, p or walker mover, …); see
+ * storyboard-player.ts.
  */
 export interface TheoryStoryboard {
-  /** One entry per frame. ms: travel time into this frame; wait: pause after it (default 300 ms). */
+  /**
+   * One entry per frame. ms: travel time into this frame; wait: pause after it (default 300 ms).
+   */
   frames: { ms: number; wait?: number }[];
   /** Pause on the final frame before the loop starts again (default 5000 ms). */
   holdMs?: number;
-  /** Optional drawing for narrow columns (same frames and data attributes), used below narrowBelow px of drawing width. */
+  /**
+   * Optional drawing for narrow columns (same frames and data attributes), used below narrowBelow
+   * px of drawing width.
+   */
   narrowAssetPath?: string;
   narrowBelow?: number;
   /** Status line beside the Pause/Play toggle: while playing, and on the final frame. */
@@ -95,7 +103,10 @@ export interface TheoryStoryboard {
   legend?: { mark: 'slow' | 'fast' | 'p' | 'walker' | 'none'; text: string }[];
 }
 
-/** algo-pattern-v1 Problem first: the problem the lesson opens with, shown as a card above the drawing. */
+/**
+ * algo-pattern-v1 Problem first: the problem the lesson opens with, shown as a card above the
+ * drawing.
+ */
 export interface TheoryProblemCard {
   title: string;
   /** Easy, Medium or Hard (shown in capitals). */
@@ -131,7 +142,10 @@ export interface TheorySection {
   sidebar?: boolean;
   /** A small comparison table (cells allow inline HTML), shown after body[afterParagraph]. */
   table?: TheoryTable;
-  /** System lessons: index of the body paragraph the code (and its console) follows; default 0, the lead-in. */
+  /**
+   * System lessons: index of the body paragraph the code (and its console) follows; default 0, the
+   * lead-in.
+   */
   codeAfterParagraph?: number;
   /** System lessons: what the code printed, shown as a run console under the code. */
   output?: TheoryOutput;
@@ -145,23 +159,44 @@ export interface TheorySection {
   practiceTimer?: { seconds: number; prompt?: string };
   /** System lessons: Quick revision as numbered cheat-sheet tiles plus exact facts. */
   cheatSheet?: TheoryCheatSheet;
-  /** 2-4 small titled cards after the body, e.g. "Functional requirements" | "Non-functional requirements". */
+  /**
+   * 2-4 small titled cards after the body, e.g. "Functional requirements" | "Non-functional
+   * requirements".
+   */
   cards?: TheorySectionCard[];
   /** algo-pattern-v1: show the table and the visual side by side (a trace beside its animation). */
   tableBesideVisual?: boolean;
-  /** algo-pattern-v1 Problems stage: practice problems from easy to hard, each linked to its problem page. */
+  /**
+   * algo-pattern-v1 Problems stage: practice problems from easy to hard, each linked to its problem
+   * page.
+   */
   ladder?: TheoryLadderStep[];
-  /** algo-pattern-v1 Spot the pattern stage: one-line problems; the learner picks a pattern, then sees why. */
+  /**
+   * algo-pattern-v1 Spot the pattern stage: one-line problems; the learner picks a pattern, then
+   * sees why.
+   */
   spot?: TheorySpotDrill;
-  /** Recognize the Pattern: draw this section's table (#, Unit, Signal, What you remember) as the pattern explorer. */
+  /**
+   * Recognize the Pattern: draw this section's table (#, Unit, Signal, What you remember) as the
+   * pattern explorer.
+   */
   patternMap?: TheoryPatternMap;
-  /** algo-pattern-v1 Problem first: the problem card; the body explains the first approach beside the storyboard. */
+  /**
+   * algo-pattern-v1 Problem first: the problem card; the body explains the first approach beside
+   * the storyboard.
+   */
   problem?: TheoryProblemCard;
   /** Problem first: one cost line under the explanation (inline HTML). */
   cost?: string;
-  /** A storyboard visual with the body beside it (stacked in a narrow column); code and tables follow below. */
+  /**
+   * A storyboard visual with the body beside it (stacked in a narrow column); code and tables
+   * follow below.
+   */
   visualBeside?: boolean;
-  /** Guided project build step (DLV-935): the body reads full width above its Java | Python code and console. */
+  /**
+   * Guided project build step (DLV-935): the body reads full width above its Java | Python code and
+   * console.
+   */
   guidedStep?: boolean;
 }
 
@@ -199,19 +234,28 @@ export interface QuestionWalkthroughStep {
   body: string[];
   visual?: TheoryVisual;
   visualTranscript?: string[];
-  /** A small comparison table, same shape as a lesson section table; follows body[afterParagraph] (default: the end). */
+  /**
+   * A small comparison table, same shape as a lesson section table; follows body[afterParagraph]
+   * (default: the end).
+   */
   table?: TheoryTable;
   /** 2-4 small titled cards after the step body, same shape and rules as lesson section cards. */
   cards?: TheorySectionCard[];
 }
 
-/** Short title for side navigation, module lists and sticky navigation; the page heading keeps the full title. */
+/**
+ * Short title for side navigation, module lists and sticky navigation; the page heading keeps the
+ * full title.
+ */
 export function navTitle(item: { title: string; navTitle?: string }): string {
   return item.navTitle?.trim() || item.title;
 }
 
 export interface TheoryCheatSheet {
-  /** DSA core courses: the template as Java | Python | Go tabs (lines of the Walkthrough program, no console). */
+  /**
+   * DSA core courses: the template as Java | Python | Go tabs (lines of the Walkthrough program, no
+   * console).
+   */
   codeTabs?: Omit<TheoryCodeTab, 'body' | 'output'>[];
   tiles: { title: string; points: string[] }[];
   facts: string[];
@@ -239,13 +283,20 @@ export interface TheoryPairSide {
   codeTabs?: Omit<TheoryCodeTab, 'body'>[];
   /** Absent for plain-text pairs (for example a weak and a strong interview answer). */
   output?: TheoryOutput;
-  /** A small comparison table shown where the run console would be (same shape as a section table). */
+  /**
+   * A small comparison table shown where the run console would be (same shape as a section table).
+   */
   table?: TheoryTable;
-  /** Fixed side only: names of broken-side files the fix deletes. A file left out without being named here is unchanged. */
+  /**
+   * Fixed side only: names of broken-side files the fix deletes. A file left out without being
+   * named here is unchanged.
+   */
   deletedFiles?: string[];
 }
 
-/** DLV-408 Common mistakes stage: one common mistake, with the broken and fixed code side by side. */
+/**
+ * DLV-408 Common mistakes stage: one common mistake, with the broken and fixed code side by side.
+ */
 export interface TheoryPair {
   n: number;
   title: string;
@@ -267,7 +318,10 @@ export interface TheoryCodeTab {
   output?: TheoryOutput;
 }
 
-/** One signal in the pattern explorer: what it narrows, which units fit and when, and what to check first. */
+/**
+ * One signal in the pattern explorer: what it narrows, which units fit and when, and what to check
+ * first.
+ */
 export interface TheoryPatternSignal {
   key: string;
   /** Words a learner might type for this signal (matched as whole words). */
@@ -296,8 +350,8 @@ export interface LessonRunLocally {
   /** The project bundle (JSON) that the page packs into a .zip. */
   download?: { href: string; label?: string };
   /**
-   * DLV-935: one complete project per language instead of `download`. The page shows the entry for the
-   * page-wide reference language, with that language's requirements and run steps.
+   * DLV-935: one complete project per language instead of `download`. The page shows the entry for
+   * the page-wide reference language, with that language's requirements and run steps.
    */
   downloads?: LessonLanguageDownload[];
 }
@@ -373,7 +427,13 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
     ],
-    slots: { scenario: 'brief', mistakes: 'debug', interview: 'interview', prove: 'interview', keep: 'keep' },
+    slots: {
+      scenario: 'brief',
+      mistakes: 'debug',
+      interview: 'interview',
+      prove: 'interview',
+      keep: 'keep',
+    },
     alwaysRendered: ['brief', 'debug', 'interview', 'keep'],
   },
   'pattern-v1': {
@@ -388,7 +448,13 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
     ],
-    slots: { scenario: 'brief', mistakes: 'debug', interview: 'interview', prove: 'interview', keep: 'keep' },
+    slots: {
+      scenario: 'brief',
+      mistakes: 'debug',
+      interview: 'interview',
+      prove: 'interview',
+      keep: 'keep',
+    },
     alwaysRendered: ['brief', 'debug', 'interview', 'keep'],
   },
   'design-v1': {
@@ -403,7 +469,13 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
     ],
-    slots: { scenario: 'brief', mistakes: 'debug', interview: 'interview', prove: 'interview', keep: 'keep' },
+    slots: {
+      scenario: 'brief',
+      mistakes: 'debug',
+      interview: 'interview',
+      prove: 'interview',
+      keep: 'keep',
+    },
     alwaysRendered: ['brief', 'debug', 'interview', 'keep'],
   },
   'leadership-v1': {
@@ -416,7 +488,13 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
     ],
-    slots: { scenario: 'situation', mistakes: 'debug', interview: 'interview', prove: 'interview', keep: 'keep' },
+    slots: {
+      scenario: 'situation',
+      mistakes: 'debug',
+      interview: 'interview',
+      prove: 'interview',
+      keep: 'keep',
+    },
     alwaysRendered: ['situation', 'debug', 'interview', 'keep'],
   },
   'story-v1': {
@@ -429,13 +507,19 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'practice', label: 'Practice' },
       { id: 'keep', label: 'Keep' },
     ],
-    slots: { scenario: 'question', mistakes: 'debug', interview: 'practice', prove: 'practice', keep: 'keep' },
+    slots: {
+      scenario: 'question',
+      mistakes: 'debug',
+      interview: 'practice',
+      prove: 'practice',
+      keep: 'keep',
+    },
     alwaysRendered: ['question', 'debug', 'practice', 'keep'],
   },
   /**
-   * Learn → Algorithmic Patterns, problem first (pilot 2026-10-01). Authored sections carry every stage;
-   * only the checks and Try it yourself block is fixed (in Spot the pattern). Must match PATTERN_STAGES in
-   * the content repository's apply_system_lessons.py.
+   * Learn → Algorithmic Patterns, problem first (pilot 2026-10-01). Authored sections carry every
+   * stage; only the checks and Try it yourself block is fixed (in Spot the pattern). Must match
+   * PATTERN_STAGES in the content repository's apply_system_lessons.py.
    */
   'algo-pattern-v1': {
     stages: [
@@ -454,10 +538,10 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
     alwaysRendered: ['spot'],
   },
   /**
-   * Learn → Core Data Structures, Big O, Sorting and Searching: a concept, not a problem (pilot 2026-10-02,
-   * Hash Tables). Concept is a storyboard story on a real system; Check yourself holds the fixed checks and
-   * Try it yourself block, so it needs no authored section. Must match PATTERN_STAGES in the content
-   * repository's apply_system_lessons.py.
+   * Learn → Core Data Structures, Big O, Sorting and Searching: a concept, not a problem (pilot
+   * 2026-10-02, Hash Tables). Concept is a storyboard story on a real system; Check yourself holds
+   * the fixed checks and Try it yourself block, so it needs no authored section. Must match
+   * PATTERN_STAGES in the content repository's apply_system_lessons.py.
    */
   'concept-v1': {
     stages: [
@@ -486,7 +570,10 @@ export interface LearningScenario {
   brands: string[];
   /** How this lesson uses the scenario ("This lesson: <focus> in <system>"). */
   why: string;
-  /** The lesson's subject, e.g. "Spring Boot" (2026-10-05): headings read "Why Spring Boot?" and "Why Spring Boot matters". */
+  /**
+   * The lesson's subject, e.g. "Spring Boot" (2026-10-05): headings read "Why Spring Boot?" and
+   * "Why Spring Boot matters".
+   */
   subject?: string;
   /** "Why <subject>?": what the subject is for and its main parts (inline HTML). */
   whySubject?: string;
@@ -622,7 +709,9 @@ export interface InterviewQuestion {
   contentType?: ContentType;
   /** Learner action represented by this item; independent from its technical subject. */
   practiceFormat?: PracticeFormat;
-  /** Optional curated projection metadata. Ordinary answers receive a deterministic derived deck. */
+  /**
+   * Optional curated projection metadata. Ordinary answers receive a deterministic derived deck.
+   */
   answerSlides?: AnswerSlidePlanV1;
   access?: ContentAccess;
   accessPlaceholder?: AccessPlaceholder;
@@ -843,15 +932,12 @@ export interface DsaTeachingV1 {
   recall?: DsaTeachingRecall[];
 }
 
-/** What a rewritten recall question tests; template questions published before the rewrite have none. */
+/**
+ * What a rewritten recall question tests; template questions published before the rewrite have
+ * none.
+ */
 export type DsaRecallKind =
-  | 'concept'
-  | 'state'
-  | 'correctness'
-  | 'complexity'
-  | 'trap'
-  | 'boundary'
-  | 'transfer';
+  'concept' | 'state' | 'correctness' | 'complexity' | 'trap' | 'boundary' | 'transfer';
 
 export interface DsaTeachingRecall {
   id: string;
@@ -898,7 +984,10 @@ export interface DsaProblemV2 extends Omit<
   practiceQuestionId?: string;
 }
 
-/** One other member of an approach family: a link plus what the learner needs to choose between them. */
+/**
+ * One other member of an approach family: a link plus what the learner needs to choose between
+ * them.
+ */
 export interface DsaApproachSibling extends DsaProblemNavigationLink {
   /** 1 is the original and best approach; 2, 3, ... are the Approach-N problems. */
   approach: number;
@@ -1108,7 +1197,9 @@ export function isFoundationLessonV1(item: InterviewQuestion): item is Foundatio
 }
 
 /** A staged lesson: system-v1 (Learn and Grow) or one of the Blaze family patterns. */
-export function lessonPatternDefinition(lesson: { lessonPattern?: string }): LessonPatternDefinition | null {
+export function lessonPatternDefinition(lesson: {
+  lessonPattern?: string;
+}): LessonPatternDefinition | null {
   return (lesson.lessonPattern && LESSON_PATTERNS[lesson.lessonPattern]) || null;
 }
 
@@ -1119,10 +1210,12 @@ export function isSystemLesson(item: InterviewQuestion): item is FoundationLesso
 /** Stages with fixed blocks always render; the others render only when authored sections exist. */
 export function systemLessonStages(lesson: FoundationLessonV1) {
   const pattern = lessonPatternDefinition(lesson) ?? LESSON_PATTERNS['system-v1'];
-  return pattern.stages.map((stage) => ({
-    ...stage,
-    sections: lesson.sections.filter((section) => section.stage === stage.id),
-  })).filter((stage) => stage.sections.length > 0 || pattern.alwaysRendered.includes(stage.id));
+  return pattern.stages
+    .map((stage) => ({
+      ...stage,
+      sections: lesson.sections.filter((section) => section.stage === stage.id),
+    }))
+    .filter((stage) => stage.sections.length > 0 || pattern.alwaysRendered.includes(stage.id));
 }
 
 export interface ContentDetailReference {
@@ -1160,7 +1253,9 @@ export interface AnswerSlideDeckV1 {
 
 export type DiscoveryKind = 'course' | 'topic' | 'lesson' | 'practice' | 'tool';
 
-/** Navigation metadata only; full answers, lesson bodies, code, and traces live in detail assets. */
+/**
+ * Navigation metadata only; full answers, lesson bodies, code, and traces live in detail assets.
+ */
 export interface ContentItemSummary {
   id: string;
   moduleId: string;
@@ -1282,7 +1377,9 @@ export interface CourseLearningUnit {
   planned?: boolean;
   questionModuleId?: string;
   practiceModuleId?: string;
-  /** Selects the shared practice surface; Learn defaults to Hands-On DSA for legacy pattern units. */
+  /**
+   * Selects the shared practice surface; Learn defaults to Hands-On DSA for legacy pattern units.
+   */
   practiceExperience?: 'handsOnDsa' | 'questionBank';
   /** Related techniques can sit beneath one learner-facing concept family. */
   subUnits?: CourseLearningUnit[];
@@ -1379,11 +1476,16 @@ export interface CourseOutline extends CourseManifest {
 /** Glossary (2026-10-22): a term a lesson may use before the lesson that teaches it.
  * The lesson page shows the definition on hover and lists the lessons on click. */
 export interface GlossaryLessonLink {
-  /** Catalog path of the lesson when it is not the glossary's own path (a Grow term taught in Blaze). */
+  /**
+   * Catalog path of the lesson when it is not the glossary's own path (a Grow term taught in
+   * Blaze).
+   */
   path?: string;
   courseId: string;
   lessonId: string;
-  /** The lesson title as the course manifest publishes it; the content validator keeps it in step. */
+  /**
+   * The lesson title as the course manifest publishes it; the content validator keeps it in step.
+   */
   title: string;
 }
 
@@ -1391,12 +1493,17 @@ export interface GlossaryTerm {
   id: string;
   /** Label shown in the tooltip and dialog, e.g. "Shard". */
   term: string;
-  /** Word forms to mark in lesson text. A form written in capitals (CDN) matches only in capitals. */
+  /**
+   * Word forms to mark in lesson text. A form written in capitals (CDN) matches only in capitals.
+   */
   match: string[];
   /** Plain text, no HTML. */
   definition: string;
   lessons: GlossaryLessonLink[];
-  /** Lessons where the word means something else (a Raft log "index"), so the term is never marked there. */
+  /**
+   * Lessons where the word means something else (a Raft log "index"), so the term is never marked
+   * there.
+   */
   skipLessons?: string[];
 }
 

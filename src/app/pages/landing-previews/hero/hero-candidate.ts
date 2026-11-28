@@ -110,43 +110,54 @@ export const HERO_PREVIEW_VARIANTS: readonly HeroPreviewVariant[] = [
     id: 1,
     name: 'Calm editorial',
     summary:
-      'No slideshow. One headline, one sentence, two buttons, the Choose card at half size and the six directions as a quiet link row.',
+      'No slideshow. One headline, one sentence, two buttons, the Choose card at half ' +
+      'size and the six directions as a quiet link row.',
     palette: 'Current teal; more white space, thinner rules.',
   },
   {
     id: 2,
     name: 'Accent panel',
     summary:
-      'The hero sits on one soft indigo-to-teal panel. Six chips switch the slide by hand; nothing moves on its own.',
+      'The hero sits on one soft indigo-to-teal panel. Six chips switch the slide by ' +
+      'hand; nothing moves on its own.',
     palette: 'Adds an indigo accent next to the brand teal.',
   },
   {
     id: 3,
     name: 'Centered focus',
     summary:
-      'A centered two-line headline, one sentence and one button. The six directions become small cards; no hero card at all.',
+      'A centered two-line headline, one sentence and one button. The six directions ' +
+      'become small cards; no hero card at all.',
     palette: 'Current teal on paper; one warm amber highlight.',
   },
   {
     id: 4,
     name: 'Carousel, trimmed',
     summary:
-      'Keeps the rotating slides, but the title is about half its current size, the eyebrow is gone, the lead is one sentence and the card is narrower.',
+      'Keeps the rotating slides, but the title is about half its current size, the ' +
+      'eyebrow is gone, the lead is one sentence and the card is narrower.',
     palette: 'Current palette, unchanged.',
   },
   {
     id: 5,
     name: 'Night statement',
     summary:
-      'A dark navy hero with a short headline, one sentence, two buttons and three proof points in a glass strip. Chips switch the card.',
+      'A dark navy hero with a short headline, one sentence, two buttons and three ' +
+      'proof points in a glass strip. Chips switch the card.',
     palette: 'Navy canvas with teal and mint highlights.',
   },
 ];
 
-/** What the home page shows: a candidate preview, the previous carousel ('classic', at /preview/hero/0), or null for the served hero. */
+/**
+ * What the home page shows: a candidate preview, the previous carousel ('classic', at
+ * /preview/hero/0), or null for the served hero.
+ */
 export type HeroSelection = HeroVariantId | 'classic' | null;
 
-/** Parses a route parameter: 1 to 5 preview a candidate, 0 keeps the previous carousel, anything else is the served hero. */
+/**
+ * Parses a route parameter: 1 to 5 preview a candidate, 0 keeps the previous carousel, anything
+ * else is the served hero.
+ */
 export function heroVariantFrom(value: string | null): HeroSelection {
   if (value === '0') return 'classic';
   const id = Number(value);
@@ -181,7 +192,9 @@ export class HeroCandidate {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly variants = HERO_PREVIEW_VARIANTS;
   protected readonly slides = HERO_PREVIEW_SLIDES;
-  protected readonly info = computed(() => this.variants.find((item) => item.id === this.variant())!);
+  protected readonly info = computed(() =>
+    this.variants.find((item) => item.id === this.variant())!,
+  );
   protected readonly active = signal(0);
   protected readonly current = computed(() => this.slides[this.active()]);
   protected readonly reducedMotion = signal(false);
@@ -189,9 +202,13 @@ export class HeroCandidate {
   protected readonly held = signal(false);
   protected readonly pausedByButton = signal(false);
   protected readonly proofPoints = ['Six directions', 'Java, Python and Go', 'Plans by the week'];
-  /** Candidates 4 and 5 rotate on their own (user, 2026-10-29: the night statement should play too). */
+  /**
+   * Candidates 4 and 5 rotate on their own (user, 2026-10-29: the night statement should play too).
+   */
   protected readonly rotates = computed(() => this.variant() === 4 || this.variant() === 5);
-  /** The fill animation is the six-second timer; it stands still while the hero is held or paused. */
+  /**
+   * The fill animation is the six-second timer; it stands still while the hero is held or paused.
+   */
   protected readonly heldAttr = computed(() => (this.held() || this.pausedByButton() ? '' : null));
 
   constructor() {

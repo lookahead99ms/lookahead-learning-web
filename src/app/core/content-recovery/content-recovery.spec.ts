@@ -14,58 +14,73 @@ describe('Content recovery', () => {
   });
   it('preserves query and fragment on the previous in-app destination', () => {
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'currentNavigation').mockReturnValue({previousNavigation: {finalUrl: router.parseUrl('/search?q=queues#results')}} as never);
+    vi.spyOn(router, 'currentNavigation').mockReturnValue({
+      previousNavigation: { finalUrl: router.parseUrl('/search?q=queues#results') },
+    } as never);
     const fixture = TestBed.createComponent(ContentRecovery);
     fixture.detectChanges();
-    const back = Array.from(fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>).find(link => link.textContent === 'Go back');
+    const back = Array.from(
+      fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>,
+    ).find((link) => link.textContent === 'Go back');
     expect(back?.getAttribute('href')).toBe('/search?q=queues#results');
   });
-  it('uses status and announced metadata without guessing commercial or publication reasons', () => {
-    expect(recoveryKind({ status: 401 })).toBe('sign-in');
-    expect(recoveryKind({ status: 403 })).toBe('locked');
-    expect(recoveryKind({ status: 404 })).toBe('missing');
-    expect(recoveryKind({ status: 404 }, { planned: true })).toBe('planned');
-    for (const error of [{ status: 0 }, { status: 500 }, new Error('Pro required')])
-      expect(recoveryKind(error)).toBe('temporary');
-  });
-  it('renders only metadata and decorative placeholders, with safe account return and dismiss/reopen', async () => {
-    const f = TestBed.createComponent(ContentRecovery);
-    f.componentRef.setInput('kind', 'locked');
-    f.componentRef.setInput('preview', { title: 'Public lesson title', premium: true });
-    f.componentRef.setInput('destination', '/grow/sample/lesson?mode=review#example');
-    f.detectChanges();
-    await f.whenStable();
-    const root = f.nativeElement as HTMLElement;
-    expect(root.textContent).toContain('Subscribe to read this');
-    expect(root.textContent).toContain('Subscribe to a plan that includes it');
-    expect(root.textContent).not.toContain('owner');
-    expect(root.textContent).not.toContain('Pro access');
-    // DLV-969 (owner, 2026-11-04): the Essence plays where the blurred placeholder was; nothing of the lesson is drawn.
-    expect(root.querySelector('.locked-preview')).toBeNull();
-    expect(root.querySelector('.recovery.with-essence > section.home-essence app-wordmark-key')).not.toBeNull();
-    // DLV-969 (owner, 2026-11-04): the way in is a subscription, so the dialog's one action is See plans.
-    const link = root.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
-    expect(link.textContent?.trim()).toBe('See plans');
-    expect(link.getAttribute('href')).toBe('/pricing');
-    expect(root.querySelector('dialog a[href^="/account"]')).toBeNull();
-    // The options dialog opens only when asked, so the Essence is not covered on arrival.
-    const dialog = root.querySelector('dialog')!;
-    expect(dialog.open).toBe(false);
-    root.querySelector<HTMLButtonElement>('.locked-note button')!.click();
-    f.detectChanges();
-    expect(dialog.open).toBe(true);
-    root.querySelector<HTMLButtonElement>('.close-action')!.click();
-    f.detectChanges();
-    expect(dialog.open).toBe(false);
-    root.querySelector<HTMLButtonElement>('.locked-note button')!.click();
-    f.detectChanges();
-    expect(dialog.open).toBe(true);
-    const escape = new Event('cancel', { cancelable: true });
-    dialog.dispatchEvent(escape);
-    f.detectChanges();
-    expect(dialog.open).toBe(false);
-    expect(escape.defaultPrevented).toBe(true);
-  });
+  it(
+    'uses status and announced metadata without guessing commercial or publication ' + 'reasons',
+    () => {
+      expect(recoveryKind({ status: 401 })).toBe('sign-in');
+      expect(recoveryKind({ status: 403 })).toBe('locked');
+      expect(recoveryKind({ status: 404 })).toBe('missing');
+      expect(recoveryKind({ status: 404 }, { planned: true })).toBe('planned');
+      for (const error of [{ status: 0 }, { status: 500 }, new Error('Pro required')])
+        expect(recoveryKind(error)).toBe('temporary');
+    },
+  );
+  it(
+    'renders only metadata and decorative placeholders, with safe account return and ' +
+      'dismiss/reopen',
+    async () => {
+      const f = TestBed.createComponent(ContentRecovery);
+      f.componentRef.setInput('kind', 'locked');
+      f.componentRef.setInput('preview', { title: 'Public lesson title', premium: true });
+      f.componentRef.setInput('destination', '/grow/sample/lesson?mode=review#example');
+      f.detectChanges();
+      await f.whenStable();
+      const root = f.nativeElement as HTMLElement;
+      expect(root.textContent).toContain('Subscribe to read this');
+      expect(root.textContent).toContain('Subscribe to a plan that includes it');
+      expect(root.textContent).not.toContain('owner');
+      expect(root.textContent).not.toContain('Pro access');
+      // DLV-969 (owner, 2026-11-04): the Essence plays where the blurred placeholder was; nothing
+      // of the lesson is drawn.
+      expect(root.querySelector('.locked-preview')).toBeNull();
+      expect(
+        root.querySelector('.recovery.with-essence > section.home-essence app-wordmark-key'),
+      ).not.toBeNull();
+      // DLV-969 (owner, 2026-11-04): the way in is a subscription, so the dialog's one action is
+      // See plans.
+      const link = root.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
+      expect(link.textContent?.trim()).toBe('See plans');
+      expect(link.getAttribute('href')).toBe('/pricing');
+      expect(root.querySelector('dialog a[href^="/account"]')).toBeNull();
+      // The options dialog opens only when asked, so the Essence is not covered on arrival.
+      const dialog = root.querySelector('dialog')!;
+      expect(dialog.open).toBe(false);
+      root.querySelector<HTMLButtonElement>('.locked-note button')!.click();
+      f.detectChanges();
+      expect(dialog.open).toBe(true);
+      root.querySelector<HTMLButtonElement>('.close-action')!.click();
+      f.detectChanges();
+      expect(dialog.open).toBe(false);
+      root.querySelector<HTMLButtonElement>('.locked-note button')!.click();
+      f.detectChanges();
+      expect(dialog.open).toBe(true);
+      const escape = new Event('cancel', { cancelable: true });
+      dialog.dispatchEvent(escape);
+      f.detectChanges();
+      expect(dialog.open).toBe(false);
+      expect(escape.defaultPrevented).toBe(true);
+    },
+  );
   it('keeps generic denials neutral and prevents external return destinations', async () => {
     const f = TestBed.createComponent(ContentRecovery);
     f.componentRef.setInput('kind', 'locked');
@@ -74,10 +89,14 @@ describe('Content recovery', () => {
     await f.whenStable();
     expect(f.nativeElement.textContent).toContain('Your plan doesn’t include this lesson');
     expect(f.nativeElement.textContent).not.toContain('premium');
-    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe('/pricing');
+    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe(
+      '/pricing',
+    );
     f.componentRef.setInput('kind', 'sign-in');
     f.detectChanges();
-    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe('/sign-in?returnTo=%2F');
+    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe(
+      '/sign-in?returnTo=%2F',
+    );
     expect(f.nativeElement.querySelector('a[href="/pricing"]')).toBeNull();
   });
   it('offers a signed-out visitor the home page plans next to Sign in (DLV-209)', async () => {
@@ -123,7 +142,7 @@ describe('Content recovery', () => {
     expect(navs[0].closest('dialog')).toBeNull();
     expect(navs[1].closest('dialog')).not.toBeNull();
   });
-  it('tells a signed-in learner without access which plans include the lesson (DLV-209)', async () => {
+  it('tells a signed-in learner without access which plans have the lesson (DLV-209)', async () => {
     const f = TestBed.createComponent(ContentRecovery);
     f.componentRef.setInput('kind', 'locked');
     f.componentRef.setInput('preview', { premium: true, title: 'Streams' });

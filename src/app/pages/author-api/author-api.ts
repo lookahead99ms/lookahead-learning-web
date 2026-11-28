@@ -15,7 +15,14 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { firstValueFrom, timeout } from 'rxjs';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PlatformThemeService } from '../../core/platform-theme';
-import { apiEndpointAnchor, embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from '../../core/author-embedded-anchor';
+import {
+  apiEndpointAnchor,
+  embeddedAnchor,
+  embeddedAnchorPosition,
+  embeddedChildNavigation,
+  requestEmbeddedAnchor,
+  scrollToEmbeddedAnchor,
+} from '../../core/author-embedded-anchor';
 import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
@@ -99,12 +106,24 @@ export class AuthorApiPage {
   private endpointSettleTimer: number | undefined;
   private pendingAnchor = this.hostDocument.defaultView?.location.hash ?? '';
   private readonly embeddedSections = [
-    'reference-content', 'start-testing', 'credentials', 'flows', 'identity',
-    'gateway-bff', 'domain-api', 'inventory', 'schemas', 'capabilities',
-    'access-model', 'downloads',
+    'reference-content',
+    'start-testing',
+    'credentials',
+    'flows',
+    'identity',
+    'gateway-bff',
+    'domain-api',
+    'inventory',
+    'schemas',
+    'capabilities',
+    'access-model',
+    'downloads',
   ];
   protected readonly authorized = computed(
-    () => (this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
+    () =>
+      (this.accounts.account()?.permissions?.previewDocuments ??
+        this.accounts.account()?.authorPreview === true) &&
+      !this.accounts.sessionExpired(),
   );
   protected readonly state = signal<'disabled' | 'loading' | 'ready' | 'error'>('disabled');
   protected readonly documentHeight = signal<number | null>(null);
@@ -127,7 +146,9 @@ export class AuthorApiPage {
     const url = new URL(href, 'https://preview.invalid');
     url.searchParams.set('layout', 'shared');
     // Select the route's initial panel before the sandbox reports tabs-ready.
-    url.hash = this.hostDocument.defaultView?.location.hash || (this.localGuide ? '#start-testing' : '#inventory');
+    url.hash =
+      this.hostDocument.defaultView?.location.hash ||
+      (this.localGuide ? '#start-testing' : '#inventory');
     return `${url.pathname}${url.search}${url.hash}`;
   });
   protected readonly documentUrl = computed(() => {
@@ -139,9 +160,21 @@ export class AuthorApiPage {
     const href = this.documentFrameHref();
     if (!href) return [];
     const sections = this.localGuide
-      ? [['Start testing','start-testing'],['Credentials','credentials'],['Workflow','flows']]
-      : [['All endpoints','inventory'],['Schemas','schemas'],['Capabilities','capabilities'],['Access model','access-model']];
-    const documentSections: AuthorOutlineItem[] = sections.map(([label, anchor]) => ({ label, href: `${this.pageRoute}#${anchor}` }));
+      ? [
+          ['Start testing', 'start-testing'],
+          ['Credentials', 'credentials'],
+          ['Workflow', 'flows'],
+        ]
+      : [
+          ['All endpoints', 'inventory'],
+          ['Schemas', 'schemas'],
+          ['Capabilities', 'capabilities'],
+          ['Access model', 'access-model'],
+        ];
+    const documentSections: AuthorOutlineItem[] = sections.map(([label, anchor]) => ({
+      label,
+      href: `${this.pageRoute}#${anchor}`,
+    }));
     return [
       ...documentSections,
       { label: 'Files and downloads', href: `${this.pageRoute}#api-downloads` },
@@ -153,8 +186,12 @@ export class AuthorApiPage {
   protected onNavigationHashChange(): void {
     this.navigationHash.set(this.hostDocument.defaultView?.location.hash ?? '');
     const path = apiGuidePath(this.navigationHash());
-    if (this.navigationHash() && this.navigationHash() !== '#api-downloads' && path !== this.pageRoute) {
-      void this.router.navigateByUrl(path + this.navigationHash(), {replaceUrl:true});
+    if (
+      this.navigationHash() &&
+      this.navigationHash() !== '#api-downloads' &&
+      path !== this.pageRoute
+    ) {
+      void this.router.navigateByUrl(path + this.navigationHash(), { replaceUrl: true });
       return;
     }
     this.onEmbeddedSectionSelected(this.navigationHash());
@@ -164,11 +201,24 @@ export class AuthorApiPage {
     const section = embeddedAnchor(hash, this.embeddedSections);
     if (section) {
       this.pendingAnchor = '';
-      this.documentFrame()?.nativeElement.contentWindow?.postMessage({type: 'lookahead:author-document:tab-request', version: 1, documentId: 'api-reference', anchor: section}, '*');
+      this.documentFrame()?.nativeElement.contentWindow?.postMessage(
+        {
+          type: 'lookahead:author-document:tab-request',
+          version: 1,
+          documentId: 'api-reference',
+          anchor: section,
+        },
+        '*',
+      );
       return;
     }
     this.pendingAnchor = hash;
-    requestEmbeddedAnchor(this.documentFrame()?.nativeElement, 'api-reference', (apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ?? embeddedAnchor(this.pendingAnchor, this.embeddedSections)));
+    requestEmbeddedAnchor(
+      this.documentFrame()?.nativeElement,
+      'api-reference',
+      apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ??
+        embeddedAnchor(this.pendingAnchor, this.embeddedSections),
+    );
   }
 
   @HostListener('window:wheel')
@@ -204,14 +254,24 @@ export class AuthorApiPage {
       this.onEmbeddedSectionSelected(hash);
       return;
     }
-    const anchor = (apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ?? embeddedAnchor(this.pendingAnchor, this.embeddedSections));
-    const position = embeddedAnchorPosition(data, 'api-reference', anchor, this.documentHeight() ?? 50_000);
+    const anchor =
+      apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ??
+      embeddedAnchor(this.pendingAnchor, this.embeddedSections);
+    const position = embeddedAnchorPosition(
+      data,
+      'api-reference',
+      anchor,
+      this.documentHeight() ?? 50_000,
+    );
     if (position !== null) {
       const hostWindow = this.hostDocument.defaultView;
-      if (hostWindow) hostWindow.requestAnimationFrame(() => {
-        // Allow the expanded iframe height to render before scrolling the parent.
-        hostWindow.requestAnimationFrame(() => scrollToEmbeddedAnchor(frame, position, hostWindow));
-      });
+      if (hostWindow)
+        hostWindow.requestAnimationFrame(() => {
+          // Allow the expanded iframe height to render before scrolling the parent.
+          hostWindow.requestAnimationFrame(() =>
+            scrollToEmbeddedAnchor(frame, position, hostWindow),
+          );
+        });
       this.pendingAnchor = '';
       return;
     }
@@ -249,10 +309,13 @@ export class AuthorApiPage {
     if (!links.length) return [];
     const directory = apiReferencePreviewUrl(this.base)!.replace(/index\.html$/, '');
     return downloadSections
-      .map(section => ({...section, files: section.files.filter(file => {
-        const localFile = section.id === 'start' || file === 'credentials.md';
-        return this.localGuide ? localFile : !localFile;
-      })}))
+      .map((section) => ({
+        ...section,
+        files: section.files.filter((file) => {
+          const localFile = section.id === 'start' || file === 'credentials.md';
+          return this.localGuide ? localFile : !localFile;
+        }),
+      }))
       .map((section) => ({
         id: section.id,
         title: section.title,

@@ -40,10 +40,15 @@ export interface PageSidebarContextValue {
   groupLabel?: string;
   recall?: readonly SidebarRecall[];
   lessonNav?: SidebarLessonNav;
-  groups?: readonly { id: string; sectionId?: string; title: string; courses: readonly { id: string; title: string; url: string }[] }[];
+  groups?: readonly {
+    id: string;
+    sectionId?: string;
+    title: string;
+    courses: readonly { id: string; title: string; url: string }[];
+  }[];
   /**
-   * Page-level option for wide working surfaces (the Hands-On DSA catalog): below this viewport width
-   * the docked left navigation starts collapsed and the page takes its column (main gets
+   * Page-level option for wide working surfaces (the Hands-On DSA catalog): below this viewport
+   * width the docked left navigation starts collapsed and the page takes its column (main gets
    * `data-sidebar-left-collapsed`; the page's own CSS decides how much). Opening it docks it again,
    * and the learner's choice is kept while they stay on the page, query changes included.
    */

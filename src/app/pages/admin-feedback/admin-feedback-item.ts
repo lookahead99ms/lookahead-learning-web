@@ -7,10 +7,11 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { FeedbackItemView } from './feedback-item';
 
 /**
- * DLV-971 (owner, 2026-11-06): one ticket or feedback item on its own page, /admin/feedback/:id (the ↗ on a backlog
- * row and "Open in new tab" in the dialog), with a breadcrumb back to the backlog. The content is the same two-column
- * view the dialog shows; a key that does not exist says so with a link back. Like the backlog, the page has no side
- * outline: the shared Admin rail carries the links and the item fills the content area.
+ * DLV-971 (owner, 2026-11-06): one ticket or feedback item on its own page, /admin/feedback/:id
+ * (the ↗ on a backlog row and "Open in new tab" in the dialog), with a breadcrumb back to the
+ * backlog. The content is the same two-column view the dialog shows; a key that does not exist says
+ * so with a link back. Like the backlog, the page has no side outline: the shared Admin rail
+ * carries the links and the item fills the content area.
  */
 @Component({
   host: { class: 'admin-surface' },
@@ -21,6 +22,11 @@ import { FeedbackItemView } from './feedback-item';
 })
 export class AdminFeedbackItemPage {
   private readonly route = inject(ActivatedRoute);
-  protected readonly itemId = toSignal(this.route.paramMap.pipe(map((params) => params.get('id') ?? '')), { initialValue: this.route.snapshot.paramMap.get('id') ?? '' });
-  protected readonly kind = computed(() => (this.itemId().startsWith('SUP-') ? 'Ticket' : 'Feedback'));
+  protected readonly itemId = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('id') ?? '')),
+    { initialValue: this.route.snapshot.paramMap.get('id') ?? '' },
+  );
+  protected readonly kind = computed(() =>
+    this.itemId().startsWith('SUP-') ? 'Ticket' : 'Feedback',
+  );
 }

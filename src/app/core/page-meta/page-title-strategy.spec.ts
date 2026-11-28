@@ -100,14 +100,15 @@ describe('PageTitleStrategy', () => {
 
     expect(document.title).toBe('How Java runs your code | Java Foundations | LookAhead');
     expect(description()).toBe(
-      'Lesson from Java Foundations: How Java runs your code. How a Java file becomes a running program.',
+      'Lesson from Java Foundations: How Java runs your code. How a Java file becomes a ' +
+        'running program.',
     );
-    expect(
-      document.head.querySelector('meta[property="og:type"]')?.getAttribute('content'),
-    ).toBe('article');
-    expect(
-      document.head.querySelector('meta[property="og:image"]')?.getAttribute('content'),
-    ).toBe(`${document.location.origin}/assets/scenes/units/learn/core-java/java-platform.svg`);
+    expect(document.head.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe(
+      'article',
+    );
+    expect(document.head.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
+      `${document.location.origin}/assets/scenes/units/learn/core-java/java-platform.svg`,
+    );
 
     // The lesson page then loads its protected body with a grant; the meta tags do not change.
     const before = head(document);
@@ -131,7 +132,9 @@ describe('PageTitleStrategy', () => {
     expect(document.title).toBe('Java Foundations | Learn | LookAhead');
     await router.navigateByUrl('/learn/core-java/compiled-or-interpreted');
     await vi.waitFor(() =>
-      expect(document.title).toBe('Is Java compiled or interpreted? | Java Foundations | LookAhead'),
+      expect(document.title).toBe(
+        'Is Java compiled or interpreted? | Java Foundations | LookAhead',
+      ),
     );
     http.expectNone(LOCATOR);
     expect(head(document)).not.toContain(protectedBodyFixture);
@@ -146,7 +149,7 @@ describe('PageTitleStrategy', () => {
     expect(robots()).toBe('noindex');
   });
 
-  it('keeps the catalog meta when public metadata fails, and retries on the next visit', async () => {
+  it('keeps the catalog meta when public metadata fails, retrying on the next visit', async () => {
     await router.navigateByUrl('/learn/core-java');
     const [failed] = await pendingRequests();
     expect(failed.request.url).toBe(LOCATOR);

@@ -117,7 +117,8 @@ export async function profileCourses(loadBytes, coursePaths = dsaCourses) {
   return {
     schemaVersion: 'dsa-loading-profile/v1',
     interpretation:
-      'Source-derived hydration model. Serialized bytes and object counts are not measured browser heap. Gzip is an offline estimate, not observed transfer.',
+      'Source-derived hydration model. Serialized bytes and object counts are not ' +
+      'measured browser heap. Gzip is an offline estimate, not observed transfer.',
     fingerprint: hash(
       files
         .map((file) => `${file.path}\0${file.sha256}\n`)
@@ -186,7 +187,9 @@ export async function profileIndexedCanonicalRoute(loadBytes, requestedProblemId
   return {
     schemaVersion: 'indexed-canonical-route-profile/v1',
     interpretation:
-      'Source-derived model of the compact Hands-On index plus one selected canonical detail. Bytes and object counts are not measured browser heap or observed transfer.',
+      'Source-derived model of the compact Hands-On index plus one selected canonical ' +
+      'detail. Bytes and object counts are not measured browser heap or observed ' +
+      'transfer.',
     problemId: summary.id,
     contentVersion: summary.version,
     totals: {
@@ -205,7 +208,9 @@ export function compareLoadingProfiles(baseline, indexedRoute) {
   const sourceByteReduction = baseline.totals.sourceBytes - indexedRoute.totals.sourceBytes;
   return {
     interpretation:
-      'A source-derived comparison of application payload bodies. It is not a browser waterfall, heap snapshot, latency measurement, or compressed transfer observation.',
+      'A source-derived comparison of application payload bodies. It is not a browser ' +
+      'waterfall, heap snapshot, latency measurement, or compressed transfer ' +
+      'observation.',
     requestReduction: baseline.totals.requests - indexedRoute.totals.requests,
     sourceByteReduction,
     sourceByteReductionPercent: Number(

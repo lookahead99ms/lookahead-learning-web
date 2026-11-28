@@ -2,9 +2,10 @@ import type { StudyAccount } from '../../pages/study-plan/study-plan-account';
 export const authorDocumentationHome = '/admin/docs';
 
 /**
- * The admin menu in the owner's order (2026-11-06): Documentation, Delivery Plan, Tickets & feedback (the page "Support
- * tickets and feedback"), People & Access (admins and co-authors see it as Test Accounts; the page opens on that tab for
- * them), and Previews last, for the owner and co-authors only.
+ * The admin menu in the owner's order (2026-11-06): Documentation, Delivery Plan, Tickets &
+ * feedback (the page "Support tickets and feedback"), People & Access (admins and co-authors see it
+ * as Test Accounts; the page opens on that tab for them), and Previews last, for the owner and
+ * co-authors only.
  */
 export const authorWorkspaceLinks = [
   { id: 'docs', label: 'Documentation', href: authorDocumentationHome, icon: '📚' },
@@ -16,11 +17,21 @@ export const authorWorkspaceLinks = [
 ] as const;
 
 /** The access entry as admins and co-authors see it: the test-account roster, not people. */
-export const testAccountsLink = { id: 'access', label: 'Test Accounts', href: '/admin/access', icon: '🧪' } as const;
+export const testAccountsLink = {
+  id: 'access',
+  label: 'Test Accounts',
+  href: '/admin/access',
+  icon: '🧪',
+} as const;
 
-/** What the access page is called for this account: People & Access for whoever manages access, Test Accounts for admins and co-authors. */
+/**
+ * What the access page is called for this account: People & Access for whoever manages access, Test
+ * Accounts for admins and co-authors.
+ */
 export function accessPageLabel(account: StudyAccount | null): string {
-  return account?.permissions && !account.permissions.manageAccess ? testAccountsLink.label : 'People & Access';
+  return account?.permissions && !account.permissions.manageAccess
+    ? testAccountsLink.label
+    : 'People & Access';
 }
 
 export interface AuthorDocumentationPage {
@@ -105,28 +116,47 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
         href: '/admin/architecture',
         description: 'Repositories, applications, request journeys and the data model.',
         icon: '🏗️',
-        children: [{id: 'dynamodb-migration', label: 'DynamoDB migration design', href: '/admin/dynamodb-migration', description: 'Proposed migration design and local verification boundaries.', icon: '🗄️'}],
+        children: [
+          {
+            id: 'dynamodb-migration',
+            label: 'DynamoDB migration design',
+            href: '/admin/dynamodb-migration',
+            description: 'Proposed migration design and local verification boundaries.',
+            icon: '🗄️',
+          },
+        ],
       },
       {
         id: 'contracts',
         label: 'Contracts',
         href: '/admin/contracts',
-        description: 'The contract files the repositories keep in step: registry, content paths, release layout, Domain API.',
+        description:
+          'The contract files the repositories keep in step: registry, content paths, ' +
+          'release layout, Domain API.',
         icon: '🤝',
       },
       {
         id: 'authentication',
         label: 'Sign-in & authentication',
         href: '/admin/authentication',
-        description: 'The OIDC and PKCE sign-in flow: the parts, the sequence and what to keep apart.',
+        description:
+          'The OIDC and PKCE sign-in flow: the parts, the sequence and what to keep apart.',
         icon: '🔑',
         children: [
-          {id: 'sign-in-flows', label: 'Sign-in flows', href: '/admin/sign-in-flows', description: 'Authentication journeys and their current implementation boundaries.', icon: '🔑'},
+          {
+            id: 'sign-in-flows',
+            label: 'Sign-in flows',
+            href: '/admin/sign-in-flows',
+            description: 'Authentication journeys and their current implementation boundaries.',
+            icon: '🔑',
+          },
           {
             id: 'authentication-walkthrough',
             label: 'Sign-in walkthrough',
             href: '/admin/authentication-walkthrough',
-            description: 'Sign in to Identity, then the gateway, then read protected content, one request at a time.',
+            description:
+              'Sign in to Identity, then the gateway, then read protected content, one ' +
+              'request at a time.',
             icon: '👣',
           },
         ],
@@ -165,7 +195,8 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
         id: 'aws-deployment',
         label: 'AWS deployment',
         href: '/admin/aws-deployment',
-        description: 'The DEV plan, its decisions, what is built and verified, and the initial design.',
+        description:
+          'The DEV plan, its decisions, what is built and verified, and the initial design.',
         icon: '☁️',
         children: [
           {
@@ -179,25 +210,32 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
             id: 'aws-dev-plan',
             label: 'DEV plan',
             href: '/admin/aws-dev-plan',
-            description: 'What runs where in DEV, the network boundary and how to read each statement.',
+            description:
+              'What runs where in DEV, the network boundary and how to read each statement.',
             icon: '📐',
           },
           {
             id: 'aws-dev-decisions',
             label: 'DEV decisions',
             href: '/admin/aws-dev-decisions',
-            description: 'All 36 accepted decisions and later refinements: options, choice and why.',
+            description:
+              'All 36 accepted decisions and later refinements: options, choice and why.',
             icon: '⚖️',
           },
           {
             id: 'aws-dev-operations',
             label: 'How DEV runs',
             href: '/admin/aws-dev-operations',
-            description: 'DEV runtime ownership, service start and stop, and certificate boundaries.',
+            description:
+              'DEV runtime ownership, service start and stop, and certificate boundaries.',
             icon: '🔄',
           },
           {
-            id: 'aws-dev-certificates', label: 'DEV certificates', href: '/admin/aws-dev-certificates', description: 'Certificate ownership, renewal and verification evidence.', icon: '🔒',
+            id: 'aws-dev-certificates',
+            label: 'DEV certificates',
+            href: '/admin/aws-dev-certificates',
+            description: 'Certificate ownership, renewal and verification evidence.',
+            icon: '🔒',
           },
           {
             id: 'aws-dev-permissions',
@@ -238,7 +276,9 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
             id: 'aws-dev-procedures',
             label: 'DEV procedures',
             href: '/admin/aws-dev-procedures',
-            description: 'Who runs AWS changes, and repeatable steps for budget, stacks, upload, audit and cleanup.',
+            description:
+              'Who runs AWS changes, and repeatable steps for budget, stacks, upload, ' +
+              'audit and cleanup.',
             icon: '📋',
           },
           {
@@ -252,28 +292,32 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
             id: 'initial-design',
             label: 'Initial design',
             href: '/admin/initial-design',
-            description: 'The initial design: content delivery, auth, creation order and direction.',
+            description:
+              'The initial design: content delivery, auth, creation order and direction.',
             icon: '📦',
           },
           {
             id: 'initial-design-files',
             label: 'Initial design files and IAM',
             href: '/admin/initial-design-files',
-            description: 'Where the initial design files live, task and JVM settings, and IAM roles.',
+            description:
+              'Where the initial design files live, task and JVM settings, and IAM roles.',
             icon: '🗂️',
           },
           {
             id: 'initial-design-commands',
             label: 'Initial design commands',
             href: '/admin/initial-design-commands',
-            description: 'Validation, create, shutdown and rollback procedures of the initial design.',
+            description:
+              'Validation, create, shutdown and rollback procedures of the initial design.',
             icon: '⌨️',
           },
           {
             id: 'initial-design-updates',
             label: 'Initial design updates',
             href: '/admin/initial-design-updates',
-            description: 'Dated 2026-10-09 additions: encryption, endpoints, logging, database jobs.',
+            description:
+              'Dated 2026-10-09 additions: encryption, endpoints, logging, database jobs.',
             icon: '🗓️',
           },
         ],
@@ -286,12 +330,15 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
         icon: '🛠️',
         children: [
           {
-            // DLV-971 (owner, 2026-11-06): the assets bucket as the runtime stores: one live tar, the Delivery Plan,
-            // reviews and learner requests, the 4-hour sweeps, the cutover and recovery steps.
+            // DLV-971 (owner, 2026-11-06): the assets bucket as the runtime stores: one live tar,
+            // the Delivery Plan, reviews and learner requests, the 4-hour sweeps, the cutover and
+            // recovery steps.
             id: 'runtime-stores',
             label: 'Runtime stores',
             href: '/admin/runtime-stores',
-            description: 'The assets bucket: one live tar, the Delivery Plan store, reviews and requests, the sweeps.',
+            description:
+              'The assets bucket: one live tar, the Delivery Plan store, reviews and ' +
+              'requests, the sweeps.',
             icon: '🗄️',
           },
         ],
@@ -317,29 +364,81 @@ const documentationPageCatalog: readonly AuthorDocumentationGroup[] = [
 ];
 
 /** One canonical home for each documentation page; existing page addresses are preserved. */
-const documentationPages = documentationPageCatalog.flatMap(group => group.pages);
-const pageById = (id: string): AuthorDocumentationPage => documentationPages.find(page => page.id === id)!;
+const documentationPages = documentationPageCatalog.flatMap((group) => group.pages);
+const pageById = (id: string): AuthorDocumentationPage =>
+  documentationPages.find((page) => page.id === id)!;
 const localApiPage: AuthorDocumentationPage = {
-  id: 'local-api', label: 'API client setup', href: '/admin/local-api', icon: '🔌',
+  id: 'local-api',
+  label: 'API client setup',
+  href: '/admin/local-api',
+  icon: '🔌',
   description: 'Prepare a local HTTP client, credentials and an authenticated request workflow.',
 };
 export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
-  {id:'overview', label:'Overview', reader:'Orientation and product review', icon:'🧭', accent:'var(--accent-strong)',
-    pages:['screen-names','access-checks','plans','reviewer-guide'].map(pageById)},
-  {id:'architecture', label:'Architecture & Design', reader:'System structure and design decisions', icon:'🏗️', accent:'var(--accent-strong)',
-    pages:['architecture','authentication'].map(pageById)},
-  {id:'api', label:'API Reference', reader:'Endpoint and schema contracts', icon:'🔌', accent:'var(--accent-strong)',
-    pages:[{...pageById('api'),description:'Endpoints, request and response schemas, capabilities and contract downloads.'}]},
-  {id:'local', label:'Local Development', reader:'Set up, run and verify locally', icon:'💻', accent:'var(--accent-strong)',
-    pages:[pageById('local-development'),localApiPage]},
-  {id:'release', label:'Build & Release', reader:'Build contracts, validation and deployment', icon:'🚀', accent:'var(--accent-strong)',
-    pages:['contracts','release-gates','aws-deployment'].map(pageById)},
-  {id:'operations', label:'Operations & Support', reader:'Runtime ownership, diagnosis and recovery', icon:'🛠️', accent:'var(--accent-strong)',
-    pages:['operations','production-support'].map(pageById)},
+  {
+    id: 'overview',
+    label: 'Overview',
+    reader: 'Orientation and product review',
+    icon: '🧭',
+    accent: 'var(--accent-strong)',
+    pages: ['screen-names', 'access-checks', 'plans', 'reviewer-guide'].map(pageById),
+  },
+  {
+    id: 'architecture',
+    label: 'Architecture & Design',
+    reader: 'System structure and design decisions',
+    icon: '🏗️',
+    accent: 'var(--accent-strong)',
+    pages: ['architecture', 'authentication'].map(pageById),
+  },
+  {
+    id: 'api',
+    label: 'API Reference',
+    reader: 'Endpoint and schema contracts',
+    icon: '🔌',
+    accent: 'var(--accent-strong)',
+    pages: [
+      {
+        ...pageById('api'),
+        description:
+          'Endpoints, request and response schemas, capabilities and contract downloads.',
+      },
+    ],
+  },
+  {
+    id: 'local',
+    label: 'Local Development',
+    reader: 'Set up, run and verify locally',
+    icon: '💻',
+    accent: 'var(--accent-strong)',
+    pages: [pageById('local-development'), localApiPage],
+  },
+  {
+    id: 'release',
+    label: 'Build & Release',
+    reader: 'Build contracts, validation and deployment',
+    icon: '🚀',
+    accent: 'var(--accent-strong)',
+    pages: ['contracts', 'release-gates', 'aws-deployment'].map(pageById),
+  },
+  {
+    id: 'operations',
+    label: 'Operations & Support',
+    reader: 'Runtime ownership, diagnosis and recovery',
+    icon: '🛠️',
+    accent: 'var(--accent-strong)',
+    pages: ['operations', 'production-support'].map(pageById),
+  },
 ];
 
-export function authorDocumentationGroup(pageId: string | null | undefined): AuthorDocumentationGroup | undefined {
-  return authorDocumentationGroups.find(group => group.pages.some(page => page.id === pageId || page.children?.some(child => child.id === pageId)));
+export function authorDocumentationGroup(
+  pageId: string | null | undefined,
+): AuthorDocumentationGroup | undefined {
+  return authorDocumentationGroups.find((group) =>
+    group.pages.some(
+      (page) => page.id === pageId || page.children?.some((child) => child.id === pageId),
+    ),
+  );
 }
 
 /** Old Documentation landing hashes remain usable bookmarks. */
@@ -349,8 +448,12 @@ export function documentationGroupHref(id: string): string {
 
 export function documentationLandingGroup(search: string, hash = ''): string | null {
   const requested = new URLSearchParams(search).get('group');
-  if (authorDocumentationGroups.some(group => group.id === requested)) return requested!;
-  const legacy: Record<string,string> = {'docs-review':'overview','docs-system':'architecture','docs-admin':'release'};
+  if (authorDocumentationGroups.some((group) => group.id === requested)) return requested!;
+  const legacy: Record<string, string> = {
+    'docs-review': 'overview',
+    'docs-system': 'architecture',
+    'docs-admin': 'release',
+  };
   return legacy[hash.replace(/^#/, '')] ?? null;
 }
 
@@ -393,7 +496,8 @@ export type AuthorWorkspacePageId =
 export const authorDocumentPages = {
   'dynamodb-migration': {
     documentId: 'dynamodb-migration',
-    summary: 'Read-only design · Proposed migration and local verification, not a production cutover.',
+    summary:
+      'Read-only design · Proposed migration and local verification, not a production cutover.',
     frameTitle: 'DynamoDB migration design and verification boundaries',
   },
   'sign-in-flows': {
@@ -518,7 +622,8 @@ export const authorDocumentPages = {
   },
   'initial-design-files': {
     documentId: 'initial-design-files',
-    summary: 'Read-only reference · Initial design, historical; not current deployment instructions.',
+    summary:
+      'Read-only reference · Initial design, historical; not current deployment instructions.',
     frameTitle: 'Initial design files, task settings and IAM roles',
   },
   'initial-design-commands': {
@@ -567,11 +672,13 @@ export function isAuthorDocumentationPage(pageId: string | null | undefined): bo
 }
 
 /**
- * DLV-969 (owner, 2026-11-04): Previews and Architecture are for the owner and co-authors only. Admins, reviewers and
- * testers never see them in a menu or list, and the route sends them to Documentation.
+ * DLV-969 (owner, 2026-11-04): Previews and Architecture are for the owner and co-authors only.
+ * Admins, reviewers and testers never see them in a menu or list, and the route sends them to
+ * Documentation.
  */
 export function canSeePreviews(account: StudyAccount | null): boolean {
-  // The server's staff permissions decide when present (the owner manages access); older answers carry only the flag.
+  // The server's staff permissions decide when present (the owner manages access); older answers
+  // carry only the flag.
   const permissions = account?.permissions;
   if (permissions) return permissions.manageAccess || permissions.feedbackRole === 'co-author';
   return account?.authorPreview === true;
@@ -582,35 +689,51 @@ const previewOnlyPages: ReadonlySet<string> = new Set(['architecture']);
 
 /** The documentation groups this account may open; a page it cannot open is not listed at all. */
 /**
- * Owner, 2026-11-09: each role sees only the documentation about what it can use. The owner reads everything; a
- * co-author (who reviews the platform and sees Previews and Architecture) reads Overview, Architecture & Design, API
- * Reference and Local Development; an admin (test accounts, tickets) reads Overview and Local Development; reviewers
- * and testers read Overview. Build & Release and Operations & Support describe owner-run work and stay with the owner.
+ * Owner, 2026-11-09: each role sees only the documentation about what it can use. The owner reads
+ * everything; a co-author (who reviews the platform and sees Previews and Architecture) reads
+ * Overview, Architecture & Design, API Reference and Local Development; an admin (test accounts,
+ * tickets) reads Overview and Local Development; reviewers and testers read Overview. Build &
+ * Release and Operations & Support describe owner-run work and stay with the owner.
  */
 export function documentationGroupIdsFor(account: StudyAccount | null): ReadonlySet<string> {
   const permissions = account?.permissions;
-  if (!permissions) return new Set(account?.authorPreview ? authorDocumentationGroups.map((group) => group.id) : []);
+  if (!permissions)
+    return new Set(
+      account?.authorPreview ? authorDocumentationGroups.map((group) => group.id) : [],
+    );
   if (permissions.manageAccess) return new Set(authorDocumentationGroups.map((group) => group.id));
-  if (permissions.feedbackRole === 'co-author') return new Set(['overview', 'architecture', 'api', 'local']);
+  if (permissions.feedbackRole === 'co-author')
+    return new Set(['overview', 'architecture', 'api', 'local']);
   if (permissions.triageFeedback) return new Set(['overview', 'local']);
   return new Set(['overview']);
 }
 
-export function visibleDocumentationGroups(account: StudyAccount | null): readonly AuthorDocumentationGroup[] {
+export function visibleDocumentationGroups(
+  account: StudyAccount | null,
+): readonly AuthorDocumentationGroup[] {
   const ids = documentationGroupIdsFor(account);
   const groups = authorDocumentationGroups.filter((group) => ids.has(group.id));
   if (canSeePreviews(account)) return groups;
   return groups
-    .map((group) => ({ ...group, pages: group.pages.filter((page) => !previewOnlyPages.has(page.id)) }))
+    .map((group) => ({
+      ...group,
+      pages: group.pages.filter((page) => !previewOnlyPages.has(page.id)),
+    }))
     .filter((group) => group.pages.length > 0);
 }
 
-/** Whether this account may open the documentation page at this path; a sub-page counts with its parent's group. */
+/**
+ * Whether this account may open the documentation page at this path; a sub-page counts with its
+ * parent's group.
+ */
 export function canOpenDocumentationPath(account: StudyAccount | null, path: string): boolean {
   const clean = path.split(/[?#]/, 1)[0].replace(/\/$/, '');
   if (clean === authorDocumentationHome) return true;
   for (const group of authorDocumentationGroups) {
-    const page = group.pages.find((candidate) => candidate.href === clean || candidate.children?.some((child) => child.href === clean));
+    const page = group.pages.find(
+      (candidate) =>
+        candidate.href === clean || candidate.children?.some((child) => child.href === clean),
+    );
     if (!page) continue;
     if (previewOnlyPages.has(page.id) && !canSeePreviews(account)) return false;
     return documentationGroupIdsFor(account).has(group.id);
@@ -620,13 +743,26 @@ export function canOpenDocumentationPath(account: StudyAccount | null, path: str
 
 export function visibleAdminLinks(account: StudyAccount | null): readonly AuthorWorkspaceLink[] {
   return authorWorkspaceLinks
-    .filter(page => {
+    .filter((page) => {
       if (page.id === 'previews') return canSeePreviews(account);
-      if (page.id === 'access' && (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')) return true;
-      const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
+      if (
+        page.id === 'access' &&
+        (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')
+      )
+        return true;
+      const permission =
+        page.id === 'access'
+          ? 'manageAccess'
+          : page.id === 'delivery'
+            ? 'deliveryRead'
+            : 'previewDocuments';
       return account?.permissions?.[permission] ?? account?.authorPreview === true;
     })
-    .map(page => (page.id === 'access' && accessPageLabel(account) === testAccountsLink.label ? testAccountsLink : page));
+    .map((page) =>
+      page.id === 'access' && accessPageLabel(account) === testAccountsLink.label
+        ? testAccountsLink
+        : page,
+    );
 }
 
 export type AuthorWorkspaceLink = (typeof authorWorkspaceLinks)[number] | typeof testAccountsLink;

@@ -1,26 +1,35 @@
 @if (pageId === 'docs' || isDocumentationPage(pageId)) {
   <app-author-documentation-tabs [pageId]="pageId" />
 }
-<!-- Owner, 2026-11-09: when the documentation strip already names the open page, the heading stays for assistive
-     technology only; nothing on screen repeats the tab. -->
+<!-- Owner, 2026-11-09: when the documentation strip already names the open page, the heading stays
+     for assistive technology only; nothing on screen repeats the tab. -->
 <div class="sidebar-header" [class.visually-hidden]="docTabs()?.namesCurrentPage()">
   <div class="workspace-heading">
-    @if (eyebrow) { <p class="eyebrow">{{ eyebrow }}</p> }
+    @if (eyebrow) {
+      <p class="eyebrow">{{ eyebrow }}</p>
+    }
     @if (headingLevel === 1) {
       <h1>{{ pageTitle }}</h1>
     } @else {
       <h2>{{ pageTitle }}</h2>
     }
   </div>
-
 </div>
 <div class="author-sidebar-content">
   <ng-content select="[description]"></ng-content>
   <ng-content select="[beforeSections]"></ng-content>
-  @if (embeddedIntroduction()) { <p class="embedded-introduction">{{ embeddedIntroduction() }}</p> }
+  @if (embeddedIntroduction()) {
+    <p class="embedded-introduction">{{ embeddedIntroduction() }}</p>
+  }
   @if (outline.length) {
-    @if (tabbed) { <span class="tab-position" aria-hidden="true"></span> }
-    <nav class="heading-outline shared-sidebar-outline" [attr.role]="tabbed ? 'tablist' : null" [attr.aria-label]="pageTitle + (tabbed ? ' sections' : ' outline')">
+    @if (tabbed) {
+      <span class="tab-position" aria-hidden="true"></span>
+    }
+    <nav
+      class="heading-outline shared-sidebar-outline"
+      [attr.role]="tabbed ? 'tablist' : null"
+      [attr.aria-label]="pageTitle + (tabbed ? ' sections' : ' outline')"
+    >
       @for (item of outline; track item.href) {
         <a
           [href]="linkHref(item.href)"

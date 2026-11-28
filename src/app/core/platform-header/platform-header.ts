@@ -664,7 +664,11 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         background: transparent;
         color: var(--text-subtle);
         cursor: pointer;
-        font: 700 11px/1 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+        font:
+          700 11px/1 'Avenir Next',
+          'Segoe UI',
+          system-ui,
+          sans-serif;
         letter-spacing: 0.12em;
       }
       .dev-environment-trigger:hover,
@@ -972,18 +976,21 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   ],
 })
 export class PlatformHeader implements AfterViewInit, OnDestroy {
-  protected readonly authorWorkspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
+  protected readonly authorWorkspaceLinks = computed(() =>
+    visibleAdminLinks(this.accounts.account()),
+  );
   protected readonly accounts = inject(StudyPlanAccount);
   protected readonly devSession = inject(DevSession);
   protected readonly testSessions = inject(TestSessions);
   /**
-   * DLV-969 (owner, 2026-11-04): Switch to a test account, for every signed-in account inside DEV (learners too) and for
-   * anyone already using a test account. Which accounts each person may use is the Domain's rule (owner: all; co-author:
-   * all but the owner; admin: test admins and learners; everyone else: test learners), so Web never filters by role.
+   * DLV-969 (owner, 2026-11-04): Switch to a test account, for every signed-in account inside DEV
+   * (learners too) and for anyone already using a test account. Which accounts each person may use
+   * is the Domain's rule (owner: all; co-author: all but the owner; admin: test admins and
+   * learners; everyone else: test learners), so Web never filters by role.
    */
   /**
-   * DLV-969 (owner, 2026-11-04): the owner, co-authors and admins switch; learners, reviewers and testers never do.
-   * The Domain decides which test accounts each may use.
+   * DLV-969 (owner, 2026-11-04): the owner, co-authors and admins switch; learners, reviewers and
+   * testers never do. The Domain decides which test accounts each may use.
    */
   protected readonly canSwitchAccount = computed(() => {
     if (!this.devSession.status()) return false;
@@ -991,19 +998,28 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const account = this.accounts.account();
     const permissions = account?.permissions;
     if (!permissions) return !!account?.authorPreview;
-    return ['owner', 'co-author', 'admin'].includes(permissions.feedbackRole ?? '') || permissions.manageAccess;
+    return (
+      ['owner', 'co-author', 'admin'].includes(permissions.feedbackRole ?? '') ||
+      permissions.manageAccess
+    );
   });
   private readonly testSessionCheck = effect(() => {
-    // Once per signed-in account inside DEV: is this a test session, and whose sign-in waits behind it.
+    // Once per signed-in account inside DEV: is this a test session, and whose sign-in waits behind
+    // it.
     const accountId = this.accounts.account()?.accountId;
-    // DLV-971 (owner, 2026-11-06): any answer from the gate counts, a 503 too; before, a real test session was shown as a
-    // real account (no test bar, Sign out instead of Back to my account) whenever /dev/session was not a 200.
-    if ((this.devSession.status() || this.devSession.gated()) && accountId) untracked(() => void this.testSessions.refresh());
+    // DLV-971 (owner, 2026-11-06): any answer from the gate counts, a 503 too; before, a real test
+    // session was shown as a real account (no test bar, Sign out instead of Back to my account)
+    // whenever /dev/session was not a 200.
+    if ((this.devSession.status() || this.devSession.gated()) && accountId)
+      untracked(() => void this.testSessions.refresh());
   });
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),
   );
-  /** DLV-969 S37: the name this browser last showed, while the identity check runs; null without a signed-in hint. */
+  /**
+   * DLV-969 S37: the name this browser last showed, while the identity check runs; null without a
+   * signed-in hint.
+   */
   protected readonly rememberedLabel = computed(() => {
     const hint = this.accounts.headerHint();
     return hint?.signedIn ? accountTriggerLabel(hint.displayName) : null;
@@ -1013,25 +1029,33 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     () => [...(this.accounts.account()?.displayName?.trim() ?? '')][0]?.toUpperCase() ?? '👤',
   );
   /**
-   * DLV-969 (owner, 2026-11-03): a DEV visitor not admitted yet, on a page they can open (sign-in and its steps,
-   * sign-up, /welcome). The logo and Learn/Grow/Blaze lead nowhere, Search, Study Plan and the search shortcut
-   * are gone, and a signed-in visitor's account menu holds only Sign out; only the theme stays.
+   * DLV-969 (owner, 2026-11-03): a DEV visitor not admitted yet, on a page they can open (sign-in
+   * and its steps, sign-up, /welcome). The logo and Learn/Grow/Blaze lead nowhere, Search, Study
+   * Plan and the search shortcut are gone, and a signed-in visitor's account menu holds only Sign
+   * out; only the theme stays.
    */
   protected beforeAdmission(): boolean {
     return onGatePage(this.router.url) && this.devSession.outsideGate();
   }
   /**
-   * DLV-971 (owner, 2026-11-06): on the Welcome page while a sign-in waits for the owner, before admission (the gate
-   * answered, no DEV session): an Exit DEV button where Sign in would be, so nobody has to sit there waiting.
+   * DLV-971 (owner, 2026-11-06): on the Welcome page while a sign-in waits for the owner, before
+   * admission (the gate answered, no DEV session): an Exit DEV button where Sign in would be, so
+   * nobody has to sit there waiting.
    */
   protected exitDevOffered(): boolean {
     const url = this.router.parseUrl(this.router.url);
     const route = this.router.url.split(/[?#]/, 1)[0];
-    return route === '/welcome' && url.queryParams['access'] === 'pending' && this.devSession.gated() && !this.devSession.status();
+    return (
+      route === '/welcome' &&
+      url.queryParams['access'] === 'pending' &&
+      this.devSession.gated() &&
+      !this.devSession.status()
+    );
   }
   /**
-   * Pages without the header's Sign in: the sign-in and sign-up pages with every one of their steps (choose, forgot,
-   * reset, new password, code, confirm your email), and /welcome, where a person waits for approval (DLV-969).
+   * Pages without the header's Sign in: the sign-in and sign-up pages with every one of their steps
+   * (choose, forgot, reset, new password, code, confirm your email), and /welcome, where a person
+   * waits for approval (DLV-969).
    */
   protected onAuthenticationPage(): boolean {
     const route = this.router.url.split(/[?#]/, 1)[0];
@@ -1060,7 +1084,8 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const updateHeight = () => {
       const height = header.getBoundingClientRect().height;
       const sticky = view?.getComputedStyle(this.elementRef.nativeElement).position !== 'relative';
-      if (height > 0) page.style.setProperty('--platform-header-height', `${sticky ? height : 0}px`);
+      if (height > 0)
+        page.style.setProperty('--platform-header-height', `${sticky ? height : 0}px`);
     };
     updateHeight();
     if (typeof ResizeObserver !== 'undefined') {
@@ -1256,7 +1281,8 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     if (
       !this.paletteOpen() &&
       target?.closest(
-        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]',
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), ' +
+          '[role="textbox"]',
       )
     )
       return;
@@ -1297,8 +1323,9 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.loadSearchIndex();
     this.paletteOpen.set(true);
     this.suggestionsOpen.set(true);
-    // DLV-969 (2026-11-02): the input sits in the sticky header, so a plain focus() scrolls the window to the
-    // header's static position (the page jumped on ⌘K from the Study Plan review step). Keep the page where it is.
+    // DLV-969 (2026-11-02): the input sits in the sticky header, so a plain focus() scrolls the
+    // window to the header's static position (the page jumped on ⌘K from the Study Plan review
+    // step). Keep the page where it is.
     requestAnimationFrame(() =>
       this.elementRef.nativeElement
         .querySelector<HTMLInputElement>('.header-search-input')
@@ -1444,7 +1471,8 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
       suggestion.type === 'Course' ? 'course' : suggestion.type === 'Topic' ? 'topic' : undefined;
     const rank = suggestion.rank ?? searchRank({ title: suggestion.label, kind }, words);
     // A subject of a matching item that does not itself hold the words ranks last.
-    return suggestion.type === 'Topic' && !matchesSearchWords(foldSearchText(suggestion.label), words)
+    return suggestion.type === 'Topic' &&
+      !matchesSearchWords(foldSearchText(suggestion.label), words)
       ? Math.min(rank, 0.5)
       : rank;
   }
@@ -1521,7 +1549,11 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.devPanelOpen.set(false);
     if (restoreDevFocus)
       requestAnimationFrame(() =>
-        (this.elementRef.nativeElement.querySelector('.dev-environment-trigger') as HTMLButtonElement | null)?.focus(),
+        (
+          this.elementRef.nativeElement.querySelector(
+            '.dev-environment-trigger',
+          ) as HTMLButtonElement | null
+        )?.focus(),
       );
     this.closeSearchPalette();
     if (restoreAccountFocus) {
@@ -1550,7 +1582,8 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     if (this.profileMenuOpen() && profileContainer && !path.includes(profileContainer))
       this.profileMenuOpen.set(false);
     const devEnvironment = this.elementRef.nativeElement.querySelector('.dev-environment');
-    if (this.devPanelOpen() && devEnvironment && !path.includes(devEnvironment)) this.devPanelOpen.set(false);
+    if (this.devPanelOpen() && devEnvironment && !path.includes(devEnvironment))
+      this.devPanelOpen.set(false);
     if (this.suggestionsOpen() && searchForm && !path.includes(searchForm)) {
       if (!this.showSearch) this.closeSearchPalette();
       else this.closeInlineSearch();

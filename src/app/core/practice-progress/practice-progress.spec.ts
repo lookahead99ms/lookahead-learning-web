@@ -19,7 +19,9 @@ describe('PracticeProgressService', () => {
     Object.defineProperty(window, 'localStorage', { configurable: true, get: () => storage });
   const saved = () => JSON.parse(values.get(PRACTICE_PROGRESS_KEY) ?? 'null');
   const service = () => {
-    TestBed.configureTestingModule({ providers: [{ provide: PRACTICE_CLOCK, useValue: () => now }] });
+    TestBed.configureTestingModule({
+      providers: [{ provide: PRACTICE_CLOCK, useValue: () => now }],
+    });
     return TestBed.inject(PracticeProgressService);
   };
   const record = (patch: Partial<PracticeRecord> = {}): PracticeRecord => ({
@@ -51,16 +53,25 @@ describe('PracticeProgressService', () => {
   it('marks a problem started once and never downgrades a solve', () => {
     const progress = service();
     progress.markStarted('two-sum');
-    expect(progress.record('two-sum')).toMatchObject({ status: 'started', rating: null, notes: '' });
+    expect(progress.record('two-sum')).toMatchObject({
+      status: 'started',
+      rating: null,
+      notes: '',
+    });
     expect(saved().problems['two-sum'].status).toBe('started');
 
     progress.rate('two-sum', 'Solved with hints');
     progress.markStarted('two-sum');
-    expect(progress.record('two-sum')).toMatchObject({ status: 'solved', rating: 'Solved with hints' });
+    expect(progress.record('two-sum')).toMatchObject({
+      status: 'solved',
+      rating: 'Solved with hints',
+    });
     expect(progress.solvedIds().has('two-sum')).toBe(true);
     expect(saved()).toEqual({
       schemaVersion: 'dsa-practice-local/v1',
-      problems: { 'two-sum': expect.objectContaining({ status: 'solved', updatedAt: now.toISOString() }) },
+      problems: {
+        'two-sum': expect.objectContaining({ status: 'solved', updatedAt: now.toISOString() }),
+      },
     });
   });
 
@@ -137,19 +148,28 @@ describe('PracticeProgressService', () => {
     const merged = { 'old-problem': 'kept-problem', 'old-approach-2': 'kept-approach-2' };
 
     it('reads progress saved under a retired id as progress on the kept problem', () => {
-      const followed = followMergedProblems({ 'old-problem': record({ status: 'solved' }) }, merged);
+      const followed = followMergedProblems(
+        { 'old-problem': record({ status: 'solved' }) },
+        merged,
+      );
       expect(followed['kept-problem']?.status).toBe('solved');
       expect(followed).not.toHaveProperty('old-problem');
     });
 
-    it('keeps the record the learner already has on the kept problem and drops the retired key', () => {
-      const followed = followMergedProblems(
-        { 'old-problem': record({ status: 'solved' }), 'kept-problem': record({ status: 'started' }) },
-        merged,
-      );
-      expect(followed['kept-problem']?.status).toBe('started');
-      expect(Object.keys(followed)).toEqual(['kept-problem']);
-    });
+    it(
+      'keeps the record the learner already has on the kept problem and drops the retired ' + 'key',
+      () => {
+        const followed = followMergedProblems(
+          {
+            'old-problem': record({ status: 'solved' }),
+            'kept-problem': record({ status: 'started' }),
+          },
+          merged,
+        );
+        expect(followed['kept-problem']?.status).toBe('started');
+        expect(Object.keys(followed)).toEqual(['kept-problem']);
+      },
+    );
 
     it('leaves progress alone when no retired id is present', () => {
       const records = { 'two-sum': record() };
@@ -173,7 +193,9 @@ describe('PracticeProgressService', () => {
 
   it('ignores malformed saved progress and keeps only valid records', () => {
     expect(parsePracticeProgress('{not json')).toEqual({});
-    expect(parsePracticeProgress(JSON.stringify({ schemaVersion: 'other', problems: {} }))).toEqual({});
+    expect(parsePracticeProgress(JSON.stringify({ schemaVersion: 'other', problems: {} }))).toEqual(
+      {},
+    );
     expect(
       Object.keys(
         parsePracticeProgress(
@@ -198,7 +220,9 @@ describe('PracticeProgressService', () => {
     );
     expect(progress.solvedIds().has('two-sum')).toBe(true);
 
-    window.dispatchEvent(new StorageEvent('storage', { key: 'another-key', newValue: payload({}) }));
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: 'another-key', newValue: payload({}) }),
+    );
     expect(progress.solvedIds().has('two-sum')).toBe(true);
 
     // Clearing site data in another tab arrives with a null key.

@@ -2,14 +2,22 @@
 <main id="main-content" class="admin-workspace plans-page">
   <app-author-admin-menu pageId="plans" />
   <div class="workspace-content">
-<aside class="workspace-sidebar">
-    <app-author-workspace-nav [tabbed]="true" pageTitle="Plans and purchases" pageId="plans" [outline]="outline">
-      <p description>Reference · The agreed plan catalog and where learners buy. Local mock payments only.</p></app-author-workspace-nav>
-  </aside>
-
+    <aside class="workspace-sidebar">
+      <app-author-workspace-nav
+        [tabbed]="true"
+        pageTitle="Plans and purchases"
+        pageId="plans"
+        [outline]="outline"
+      >
+        <p description
+          >Reference · The agreed plan catalog and where learners buy. Local mock payments only.</p
+        ></app-author-workspace-nav
+      >
+    </aside>
 
     <p class="status-note" role="note">
-      <strong>Local mock payments.</strong> The server stores purchases and catalog access. No money is charged. Existing course grants remain separate.
+      <strong>Local mock payments.</strong> The server stores purchases and catalog access. No money
+      is charged. Existing course grants remain separate.
     </p>
 
     <section class="doc-section" id="how-to-review" aria-labelledby="how-to-review-heading">
@@ -22,8 +30,9 @@
           <strong>Choose a plan</strong> in Manage account. The header has no pricing link.
         </li>
         <li>
-          Start a sale on <a routerLink="/admin/sales">Sales and prices</a>, then open
-          Pricing: the sale is on top and the regular plans are read-only. The server publishes it during its configured dates.
+          Start a sale on <a routerLink="/admin/sales">Sales and prices</a>, then open Pricing: the
+          sale is on top and the regular plans are read-only. The server publishes it during its
+          configured dates.
         </li>
         <li>
           Open <a routerLink="/pricing">Pricing</a> and select a <strong>Choose …</strong> button to
@@ -31,15 +40,20 @@
         </li>
         <li>
           Open <a routerLink="/account" fragment="membership">Manage account → Membership</a>. The
-          <a routerLink="/admin/plans" fragment="buyer-preview">sample below</a> shows what a buyer would see.
+          <a routerLink="/admin/plans" fragment="buyer-preview">sample below</a> shows what a buyer
+          would see.
         </li>
         <li>
           Compare viewers. Your staff account sees everything: every plan, including sale plans
-          (marked staff-only), and the full Start free page. A signed-in learner sees only what fits:
-          "Your plan", "Upgrade to …", and smaller plans "available from" the last 7 days of their
-          plan.
+          (marked staff-only), and the full Start free page. A signed-in learner sees only what
+          fits: "Your plan", "Upgrade to …", and smaller plans "available from" the last 7 days of
+          their plan.
         </li>
-        <li>Check the <a routerLink="/admin/plans" fragment="configured-plans">configured plans</a> and the change rules.</li>
+        <li
+          >Check the
+          <a routerLink="/admin/plans" fragment="configured-plans">configured plans</a> and the
+          change rules.</li
+        >
       </ol>
     </section>
 
@@ -67,8 +81,7 @@
       <h2 id="buyer-preview-heading">What a buyer sees in Manage account</h2>
       <p class="section-lede">
         <strong>Sample data, not a real account.</strong> The Membership section of Manage account
-        renders these rows from server purchase records. Renew and Upgrade lead
-        to Pricing.
+        renders these rows from server purchase records. Renew and Upgrade lead to Pricing.
       </p>
       <div class="preview-frame">
         <p class="preview-label">Preview · Membership · Paid membership</p>
@@ -77,12 +90,17 @@
     </section>
 
     <section class="doc-section" id="configured-plans" aria-labelledby="configured-plans-heading">
-      <h2 id="configured-plans-heading">Configured plans</h2><p role="status">{{api.error()}}</p>
+      <h2 id="configured-plans-heading">Configured plans</h2><p role="status">{{ api.error() }}</p>
       <p class="section-lede">
-        The one catalog Pricing, Manage account and People & Access read. These are definitions,
-        not purchases or access grants.
+        The one catalog Pricing, Manage account and People & Access read. These are definitions, not
+        purchases or access grants.
       </p>
-      <div class="plan-table-wrap" tabindex="0" role="region" aria-labelledby="configured-plans-heading">
+      <div
+        class="plan-table-wrap"
+        tabindex="0"
+        role="region"
+        aria-labelledby="configured-plans-heading"
+      >
         <table class="plan-table">
           <thead>
             <tr>
@@ -127,10 +145,12 @@
     <section class="doc-section" id="not-built" aria-labelledby="not-built-heading">
       <h2 id="not-built-heading">Not built yet</h2>
       <ul class="gaps">
-
         <li><strong>Real payments.</strong> Only the local mock provider is enabled.</li>
         <li><strong>Course Pass course picker.</strong> Waits for the Course Pass length.</li>
-        <li><strong>Discount eligibility.</strong> Student and regional verification rules await a decision.</li>
+        <li
+          ><strong>Discount eligibility.</strong> Student and regional verification rules await a
+          decision.</li
+        >
         <li><strong>Expiry reminders.</strong> Schedule and channel (DLV-717).</li>
       </ul>
     </section>

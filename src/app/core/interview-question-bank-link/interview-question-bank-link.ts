@@ -14,7 +14,12 @@ import {
         class="question-bank-link"
         [class.compact]="variant() === 'compact'"
         routerLink="/interview-questions"
-        [queryParams]="{ path: pathId(), course: courseId(), module: moduleId(), unit: returnUnit() || null }"
+        [queryParams]="{
+          path: pathId(),
+          course: courseId(),
+          module: moduleId(),
+          unit: returnUnit() || null,
+        }"
         [attr.aria-label]="accessibleLabel()"
       >
         @if (variant() === 'compact') {

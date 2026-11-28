@@ -31,7 +31,8 @@ p {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-/* Not positioned: the sentence and the play controls keep the card's corners and its bottom padding as their place. */
+/* Not positioned: the sentence and the play controls keep the card's corners and its bottom padding
+   as their place. */
 .essence-stage {
   display: grid;
   justify-items: center;

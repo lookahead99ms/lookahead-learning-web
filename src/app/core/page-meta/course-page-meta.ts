@@ -53,10 +53,7 @@ function contentKind(contentType: string): string {
 }
 
 /** Meta for a course, module, section or lesson page from public course metadata. */
-export function dynamicPageMeta(
-  target: DynamicPageTarget,
-  course: PublicCourseMetadata,
-): PageMeta {
+export function dynamicPageMeta(target: DynamicPageTarget, course: PublicCourseMetadata): PageMeta {
   const pathLabel = CATALOG_LABELS[target.path];
   const coursePage: PageMeta = {
     title: pageTitle(course.title, pathLabel),

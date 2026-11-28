@@ -168,7 +168,8 @@ export class EditorTutor {
     } catch {
       if (generation === this.generation)
         this.error.set(
-          'The tutor could not respond. Your question and editor are unchanged. Submit again to retry, or use the authored hints and guided explanation.',
+          'The tutor could not respond. Your question and editor are unchanged. Submit ' +
+            'again to retry, or use the authored hints and guided explanation.',
         );
     } finally {
       if (timer !== undefined) clearTimeout(timer);

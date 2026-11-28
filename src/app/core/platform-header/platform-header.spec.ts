@@ -28,20 +28,26 @@ describe('PlatformHeader account disclosure', () => {
     TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
   });
 
-  it('keeps statements out of the header: everything in the bar goes somewhere (user, 2026-10-17)', () => {
-    const url = vi.spyOn(TestBed.inject(Router), 'url', 'get');
-    for (const path of ['/', '/grow/spring-boot?tab=x', '/start-free', '/admin/access']) {
-      url.mockReturnValue(path);
-      const fixture = TestBed.createComponent(PlatformHeader);
-      fixture.detectChanges();
-      const header = fixture.nativeElement.querySelector('.platform-header') as HTMLElement;
-      expect(header.querySelector('app-reasoning-prompt, app-learning-prompt, .header-statement')).toBeNull();
-      expect(header.classList.contains('with-statements')).toBe(false);
-      expect(header.textContent).not.toContain('Understand the obstacle');
-      expect(header.textContent).not.toContain('Know why it works');
-      fixture.destroy();
-    }
-  });
+  it(
+    'keeps statements out of the header: everything in the bar goes somewhere (user, ' +
+      '2026-10-17)',
+    () => {
+      const url = vi.spyOn(TestBed.inject(Router), 'url', 'get');
+      for (const path of ['/', '/grow/spring-boot?tab=x', '/start-free', '/admin/access']) {
+        url.mockReturnValue(path);
+        const fixture = TestBed.createComponent(PlatformHeader);
+        fixture.detectChanges();
+        const header = fixture.nativeElement.querySelector('.platform-header') as HTMLElement;
+        expect(
+          header.querySelector('app-reasoning-prompt, app-learning-prompt, .header-statement'),
+        ).toBeNull();
+        expect(header.classList.contains('with-statements')).toBe(false);
+        expect(header.textContent).not.toContain('Understand the obstacle');
+        expect(header.textContent).not.toContain('Know why it works');
+        fixture.destroy();
+      }
+    },
+  );
 
   it('keeps the component wrapper sticky so it can follow the full page', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
@@ -52,101 +58,133 @@ describe('PlatformHeader account disclosure', () => {
     expect(style.display).toBe('block');
   });
 
-  it('leaves Search, Study Plan and the theme switch to the page when asked (Manage account)', () => {
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.header-search-trigger')).not.toBeNull();
-    expect(element.querySelector('.theme-switch')).not.toBeNull();
-    fixture.componentRef.setInput('hideUtilities', true);
-    fixture.detectChanges();
-    expect(element.querySelector('.header-search-trigger')).toBeNull();
-    expect(element.querySelector('a.navigation-utility[href^="/study-plan"]')).toBeNull();
-    expect(element.querySelector('.theme-switch')).toBeNull();
-    expect(element.querySelector('.platform-navigation')).not.toBeNull();
-  });
+  it(
+    'leaves Search, Study Plan and the theme switch to the page when asked (Manage ' + 'account)',
+    () => {
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const element: HTMLElement = fixture.nativeElement;
+      expect(element.querySelector('.header-search-trigger')).not.toBeNull();
+      expect(element.querySelector('.theme-switch')).not.toBeNull();
+      fixture.componentRef.setInput('hideUtilities', true);
+      fixture.detectChanges();
+      expect(element.querySelector('.header-search-trigger')).toBeNull();
+      expect(element.querySelector('a.navigation-utility[href^="/study-plan"]')).toBeNull();
+      expect(element.querySelector('.theme-switch')).toBeNull();
+      expect(element.querySelector('.platform-navigation')).not.toBeNull();
+    },
+  );
 
-  it('holds an invisible Sign in slot until the identity check answers, then shows the real state (DLV-969)', () => {
-    const store = TestBed.inject(StudyPlanAccount);
-    store.sessionKnown.set(false);
-    // No hint from a previous visit (DLV-969 S37): with one, the header shows it instead of the invisible slot.
-    store.headerHint.set(null);
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const pending = fixture.nativeElement.querySelector('.sign-in-button.session-pending');
-    expect(pending).not.toBeNull();
-    expect(pending.tagName).toBe('SPAN');
-    expect(pending.getAttribute('aria-hidden')).toBe('true');
-    expect(fixture.nativeElement.querySelector('a.sign-in-button')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
-    store.sessionKnown.set(true);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.session-pending')).toBeNull();
-    expect(fixture.nativeElement.querySelector('a.sign-in-button')).not.toBeNull();
-  });
+  it(
+    'holds an invisible Sign in slot until the identity check answers, then shows the ' +
+      'real state (DLV-969)',
+    () => {
+      const store = TestBed.inject(StudyPlanAccount);
+      store.sessionKnown.set(false);
+      // No hint from a previous visit (DLV-969 S37): with one, the header shows it instead of the
+      // invisible slot.
+      store.headerHint.set(null);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const pending = fixture.nativeElement.querySelector('.sign-in-button.session-pending');
+      expect(pending).not.toBeNull();
+      expect(pending.tagName).toBe('SPAN');
+      expect(pending.getAttribute('aria-hidden')).toBe('true');
+      expect(fixture.nativeElement.querySelector('a.sign-in-button')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+      store.sessionKnown.set(true);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.session-pending')).toBeNull();
+      expect(fixture.nativeElement.querySelector('a.sign-in-button')).not.toBeNull();
+    },
+  );
 
-  it('shows what this browser last knew while the identity check runs, then the real state (DLV-969 S37)', () => {
-    const store = TestBed.inject(StudyPlanAccount);
-    store.sessionKnown.set(false);
-    store.headerHint.set({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const remembered = root.querySelector('.session-remembered')!;
-    expect(remembered.querySelector('.account-trigger-name')?.textContent).toBe('Mohiddin');
-    expect(remembered.getAttribute('aria-hidden')).toBe('true');
-    expect(root.querySelector('a.sign-in-button')).toBeNull();
-    // The check answers: the real account control replaces the remembered name.
-    store.account.set({ accountId: 'a', username: 'google_1', displayName: 'Mohiddin Shaik', topicGrants: [] });
-    store.sessionKnown.set(true);
-    fixture.detectChanges();
-    expect(root.querySelector('.session-remembered')).toBeNull();
-    expect(root.querySelector('button.avatar-trigger-btn .account-trigger-name')?.textContent).toBe('Mohiddin');
-  });
+  it(
+    'shows what this browser last knew while the identity check runs, then the real state ' +
+      '(DLV-969 S37)',
+    () => {
+      const store = TestBed.inject(StudyPlanAccount);
+      store.sessionKnown.set(false);
+      store.headerHint.set({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const remembered = root.querySelector('.session-remembered')!;
+      expect(remembered.querySelector('.account-trigger-name')?.textContent).toBe('Mohiddin');
+      expect(remembered.getAttribute('aria-hidden')).toBe('true');
+      expect(root.querySelector('a.sign-in-button')).toBeNull();
+      // The check answers: the real account control replaces the remembered name.
+      store.account.set({
+        accountId: 'a',
+        username: 'google_1',
+        displayName: 'Mohiddin Shaik',
+        topicGrants: [],
+      });
+      store.sessionKnown.set(true);
+      fixture.detectChanges();
+      expect(root.querySelector('.session-remembered')).toBeNull();
+      expect(
+        root.querySelector('button.avatar-trigger-btn .account-trigger-name')?.textContent,
+      ).toBe('Mohiddin');
+    },
+  );
 
-  it('shows Sign in at once when this browser last saw a signed-out visitor, and corrects it if they are signed in', () => {
-    const store = TestBed.inject(StudyPlanAccount);
-    store.sessionKnown.set(false);
-    store.headerHint.set({ signedIn: false, gateway: true });
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('a.sign-in-button')?.getAttribute('href')).toContain('/sign-in');
-    expect(root.querySelector('.session-pending')).toBeNull();
-    store.account.set({ accountId: 'a', username: 'learner', displayName: 'Priya Raman', topicGrants: [] });
-    store.sessionKnown.set(true);
-    fixture.detectChanges();
-    expect(root.querySelector('a.sign-in-button')).toBeNull();
-    expect(root.querySelector('button.avatar-trigger-btn')).not.toBeNull();
-  });
+  it(
+    'shows Sign in at once when this browser last saw a signed-out visitor, and corrects ' +
+      'it if they are signed in',
+    () => {
+      const store = TestBed.inject(StudyPlanAccount);
+      store.sessionKnown.set(false);
+      store.headerHint.set({ signedIn: false, gateway: true });
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('a.sign-in-button')?.getAttribute('href')).toContain('/sign-in');
+      expect(root.querySelector('.session-pending')).toBeNull();
+      store.account.set({
+        accountId: 'a',
+        username: 'learner',
+        displayName: 'Priya Raman',
+        topicGrants: [],
+      });
+      store.sessionKnown.set(true);
+      fixture.detectChanges();
+      expect(root.querySelector('a.sign-in-button')).toBeNull();
+      expect(root.querySelector('button.avatar-trigger-btn')).not.toBeNull();
+    },
+  );
 
-  it('shows only Sign in when signed out or expired and only the account control when authenticated', () => {
-    const store = TestBed.inject(StudyPlanAccount);
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
-    // DLV-209: plans are not in the header (user, 2026-10-15).
-    expect(fixture.nativeElement.querySelector('a[href="/pricing"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.sign-in-button').textContent.trim()).toBe(
-      'Sign in',
-    );
-    expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toContain(
-      '/sign-in',
-    );
-    store.account.set({
-      accountId: 'test',
-      username: 'test@example.test',
-      displayName: 'Test Learner',
-      topicGrants: [],
-    });
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).not.toBeNull();
-    store.sessionExpired.set(true);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.sign-in-button')).not.toBeNull();
-  });
+  it(
+    'shows only Sign in when signed out or expired and only the account control when ' +
+      'authenticated',
+    () => {
+      const store = TestBed.inject(StudyPlanAccount);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+      // DLV-209: plans are not in the header (user, 2026-10-15).
+      expect(fixture.nativeElement.querySelector('a[href="/pricing"]')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.sign-in-button').textContent.trim()).toBe(
+        'Sign in',
+      );
+      expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toContain(
+        '/sign-in',
+      );
+      store.account.set({
+        accountId: 'test',
+        username: 'test@example.test',
+        displayName: 'Test Learner',
+        topicGrants: [],
+      });
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).not.toBeNull();
+      store.sessionExpired.set(true);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.sign-in-button')).not.toBeNull();
+    },
+  );
 
   it('does not repeat Sign in on authentication pages, including while restoring a session', () => {
     const router = TestBed.inject(Router);
@@ -177,15 +215,12 @@ describe('PlatformHeader account disclosure', () => {
     '/sign-in/code',
     '/welcome',
     '/welcome?access=pending',
-  ])(
-    'does not repeat authentication actions in the header on %s',
-    (url) => {
-      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
-      const fixture = TestBed.createComponent(PlatformHeader);
-      fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
-    },
-  );
+  ])('does not repeat authentication actions in the header on %s', (url) => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
+  });
 
   it('preserves a protected return path when the header Sign in link appears elsewhere', () => {
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/account?returnTo=%2Fauthor');
@@ -221,12 +256,20 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
-  /** DLV-971 (owner, 2026-11-06, audit finding 1): any gate answer counts, a 503 too, so a test session is never shown as a real account. */
+  /**
+   * DLV-971 (owner, 2026-11-06, audit finding 1): any gate answer counts, a 503 too, so a test
+   * session is never shown as a real account.
+   */
   it('asks the Gateway whether this is a test session on any gate answer, not only a 200', () => {
     const refresh = vi.spyOn(TestBed.inject(TestSessions), 'refresh').mockResolvedValue();
     const store = TestBed.inject(StudyPlanAccount);
     const dev = TestBed.inject(DevSession);
-    store.account.set({ accountId: 'learner', username: 'learner@example.test', displayName: 'Priya Raman', topicGrants: [] });
+    store.account.set({
+      accountId: 'learner',
+      username: 'learner@example.test',
+      displayName: 'Priya Raman',
+      topicGrants: [],
+    });
     dev.gated.set(true);
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
@@ -234,99 +277,152 @@ describe('PlatformHeader account disclosure', () => {
   });
 
   /**
-   * DLV-969 (owner, 2026-11-04): anyone signed in to DEV switches to a test account from this menu, and comes back
-   * from it. Owner decision 2026-11-04: the owner, co-authors and admins switch; learners, reviewers and testers never do.
+   * DLV-969 (owner, 2026-11-04): anyone signed in to DEV switches to a test account from this menu,
+   * and comes back from it. Owner decision 2026-11-04: the owner, co-authors and admins switch;
+   * learners, reviewers and testers never do.
    */
-  it('offers Switch to a test account to the owner, co-authors and admins inside DEV, never to learners, reviewers or testers', () => {
-    const sessions = TestBed.inject(TestSessions);
-    const refresh = vi.spyOn(sessions, 'refresh').mockResolvedValue();
-    const open = vi.spyOn(sessions, 'open').mockResolvedValue();
-    const back = vi.spyOn(sessions, 'back').mockResolvedValue();
-    const store = TestBed.inject(StudyPlanAccount);
-    const dev = TestBed.inject(DevSession);
-    store.account.set({ accountId: 'learner', username: 'learner@example.test', displayName: 'Priya Raman', topicGrants: [] });
-    const fixture = TestBed.createComponent(PlatformHeader);
-    const root = fixture.nativeElement as HTMLElement;
-    const menu = () => {
+  it(
+    'offers Switch to a test account to the owner, co-authors and admins inside DEV, ' +
+      'never to learners, reviewers or testers',
+    () => {
+      const sessions = TestBed.inject(TestSessions);
+      const refresh = vi.spyOn(sessions, 'refresh').mockResolvedValue();
+      const open = vi.spyOn(sessions, 'open').mockResolvedValue();
+      const back = vi.spyOn(sessions, 'back').mockResolvedValue();
+      const store = TestBed.inject(StudyPlanAccount);
+      const dev = TestBed.inject(DevSession);
+      store.account.set({
+        accountId: 'learner',
+        username: 'learner@example.test',
+        displayName: 'Priya Raman',
+        topicGrants: [],
+      });
+      const fixture = TestBed.createComponent(PlatformHeader);
+      const root = fixture.nativeElement as HTMLElement;
+      const menu = () => {
+        (root.querySelector('.avatar-trigger-btn') as HTMLButtonElement).click();
+        fixture.detectChanges();
+        return root.querySelector('#account-menu') as HTMLElement;
+      };
+      fixture.detectChanges();
+      // Outside DEV: nothing to switch to, and nobody asks the Gateway.
+      expect(menu().textContent).not.toContain('test account');
+      expect(root.querySelector('.test-switch')).toBeNull();
+      expect(refresh).not.toHaveBeenCalled();
+      // A learner inside DEV never gets it; neither does a reviewer or a tester.
+      dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+      fixture.detectChanges();
+      expect(root.querySelector('#account-menu .test-switch')).toBeNull();
+      expect(refresh).toHaveBeenCalledTimes(1);
+      store.account.set({
+        accountId: 'reviewer',
+        username: 'r@example.test',
+        displayName: 'R',
+        topicGrants: [],
+        permissions: { feedbackRole: 'reviewer', previewDocuments: true },
+      } as never);
+      fixture.detectChanges();
+      expect(root.querySelector('#account-menu .test-switch')).toBeNull();
+      store.account.set({
+        accountId: 'tester',
+        username: 't@example.test',
+        displayName: 'T',
+        topicGrants: [],
+        permissions: { feedbackRole: 'tester', fullCurriculum: true },
+      } as never);
+      fixture.detectChanges();
+      expect(root.querySelector('#account-menu .test-switch')).toBeNull();
+      refresh.mockClear();
+      refresh.mockResolvedValue();
+      // The owner inside DEV.
+      store.account.set({
+        accountId: 'owner',
+        username: 'author@example.test',
+        displayName: 'Author',
+        topicGrants: [],
+        authorPreview: true,
+      });
+      fixture.detectChanges();
+      expect(refresh).toHaveBeenCalledTimes(1);
+      const item = root.querySelector('.test-switch') as HTMLButtonElement;
+      expect(item.textContent).toContain('Switch to a test account');
+      expect(root.querySelector('.account-sign-out')?.textContent).toContain('Sign out');
+      item.click();
+      fixture.detectChanges();
+      expect(open).toHaveBeenCalled();
+      expect(root.querySelector('#account-menu')).toBeNull();
+      // A co-author or admin sees it too.
+      store.account.set({
+        accountId: 'admin',
+        username: 'admin@example.test',
+        displayName: 'Admin One',
+        topicGrants: [],
+        permissions: { feedbackRole: 'admin' },
+      } as never);
+      fixture.detectChanges();
+      expect(menu().querySelector('.test-switch')).not.toBeNull();
+      // Using a test account: who you are, Switch test account, and Back to my account in place of
+      // Sign out.
+      sessions.status.set({ active: true, canReturn: true, holderName: 'Author' });
+      store.account.set({
+        accountId: 'id-learner05',
+        username: 'learner05@lookahead.dev',
+        displayName: 'Learner05',
+        topicGrants: [],
+      });
+      fixture.detectChanges();
+      const using = root.querySelector('#account-menu') as HTMLElement;
+      expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe(
+        'Test account · you are Author',
+      );
+      expect(using.querySelector('.test-switch')?.textContent).toContain('Switch test account');
+      expect(using.textContent).not.toContain('Sign out');
+      (using.querySelector('.account-back') as HTMLButtonElement).click();
+      expect(back).toHaveBeenCalled();
+      sessions.returning.set(true);
+      fixture.detectChanges();
+      expect(using.querySelector('.account-back')?.textContent).toContain('Going back…');
+      sessions.status.set({ active: true, canReturn: false, holderName: null });
+      fixture.detectChanges();
+      expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe('Test account');
+      expect(dev.status()).not.toBeNull();
+    },
+  );
+
+  it(
+    'hides Switch to a test account when signed out in DEV and once DEV status goes away ' +
+      '(DLV-969)',
+    () => {
+      vi.spyOn(TestBed.inject(TestSessions), 'refresh').mockResolvedValue();
+      const store = TestBed.inject(StudyPlanAccount);
+      const dev = TestBed.inject(DevSession);
+      dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+      store.account.set(null);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      // Signed out: no account menu to hold it, and no switcher either.
+      expect(root.querySelector('.test-switch')).toBeNull();
+      expect(root.querySelector('app-test-account-switcher')).toBeNull();
+      expect(root.textContent).not.toContain('Switch to a test account');
+      // An admin signed in to DEV has it (a learner never does); when DEV status goes away it goes
+      // too.
+      store.account.set({
+        accountId: 'admin',
+        username: 'admin@example.test',
+        displayName: 'Admin One',
+        topicGrants: [],
+        permissions: { feedbackRole: 'admin' },
+      } as never);
+      fixture.detectChanges();
       (root.querySelector('.avatar-trigger-btn') as HTMLButtonElement).click();
       fixture.detectChanges();
-      return root.querySelector('#account-menu') as HTMLElement;
-    };
-    fixture.detectChanges();
-    // Outside DEV: nothing to switch to, and nobody asks the Gateway.
-    expect(menu().textContent).not.toContain('test account');
-    expect(root.querySelector('.test-switch')).toBeNull();
-    expect(refresh).not.toHaveBeenCalled();
-    // A learner inside DEV never gets it; neither does a reviewer or a tester.
-    dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
-    fixture.detectChanges();
-    expect(root.querySelector('#account-menu .test-switch')).toBeNull();
-    expect(refresh).toHaveBeenCalledTimes(1);
-    store.account.set({ accountId: 'reviewer', username: 'r@example.test', displayName: 'R', topicGrants: [], permissions: { feedbackRole: 'reviewer', previewDocuments: true } } as never);
-    fixture.detectChanges();
-    expect(root.querySelector('#account-menu .test-switch')).toBeNull();
-    store.account.set({ accountId: 'tester', username: 't@example.test', displayName: 'T', topicGrants: [], permissions: { feedbackRole: 'tester', fullCurriculum: true } } as never);
-    fixture.detectChanges();
-    expect(root.querySelector('#account-menu .test-switch')).toBeNull();
-    refresh.mockClear();
-    refresh.mockResolvedValue();
-    // The owner inside DEV.
-    store.account.set({ accountId: 'owner', username: 'author@example.test', displayName: 'Author', topicGrants: [], authorPreview: true });
-    fixture.detectChanges();
-    expect(refresh).toHaveBeenCalledTimes(1);
-    const item = root.querySelector('.test-switch') as HTMLButtonElement;
-    expect(item.textContent).toContain('Switch to a test account');
-    expect(root.querySelector('.account-sign-out')?.textContent).toContain('Sign out');
-    item.click();
-    fixture.detectChanges();
-    expect(open).toHaveBeenCalled();
-    expect(root.querySelector('#account-menu')).toBeNull();
-    // A co-author or admin sees it too.
-    store.account.set({ accountId: 'admin', username: 'admin@example.test', displayName: 'Admin One', topicGrants: [], permissions: { feedbackRole: 'admin' } } as never);
-    fixture.detectChanges();
-    expect(menu().querySelector('.test-switch')).not.toBeNull();
-    // Using a test account: who you are, Switch test account, and Back to my account in place of Sign out.
-    sessions.status.set({ active: true, canReturn: true, holderName: 'Author' });
-    store.account.set({ accountId: 'id-learner05', username: 'learner05@lookahead.dev', displayName: 'Learner05', topicGrants: [] });
-    fixture.detectChanges();
-    const using = root.querySelector('#account-menu') as HTMLElement;
-    expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe('Test account · you are Author');
-    expect(using.querySelector('.test-switch')?.textContent).toContain('Switch test account');
-    expect(using.textContent).not.toContain('Sign out');
-    (using.querySelector('.account-back') as HTMLButtonElement).click();
-    expect(back).toHaveBeenCalled();
-    sessions.returning.set(true);
-    fixture.detectChanges();
-    expect(using.querySelector('.account-back')?.textContent).toContain('Going back…');
-    sessions.status.set({ active: true, canReturn: false, holderName: null });
-    fixture.detectChanges();
-    expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe('Test account');
-    expect(dev.status()).not.toBeNull();
-  });
-
-  it('hides Switch to a test account when signed out in DEV and once DEV status goes away (DLV-969)', () => {
-    vi.spyOn(TestBed.inject(TestSessions), 'refresh').mockResolvedValue();
-    const store = TestBed.inject(StudyPlanAccount);
-    const dev = TestBed.inject(DevSession);
-    dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
-    store.account.set(null);
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    // Signed out: no account menu to hold it, and no switcher either.
-    expect(root.querySelector('.test-switch')).toBeNull();
-    expect(root.querySelector('app-test-account-switcher')).toBeNull();
-    expect(root.textContent).not.toContain('Switch to a test account');
-    // An admin signed in to DEV has it (a learner never does); when DEV status goes away it goes too.
-    store.account.set({ accountId: 'admin', username: 'admin@example.test', displayName: 'Admin One', topicGrants: [], permissions: { feedbackRole: 'admin' } } as never);
-    fixture.detectChanges();
-    (root.querySelector('.avatar-trigger-btn') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    expect(root.querySelector('#account-menu .test-switch')).not.toBeNull();
-    dev.status.set(null);
-    fixture.detectChanges();
-    expect(root.querySelector('.test-switch')).toBeNull();
-  });
+      expect(root.querySelector('#account-menu .test-switch')).not.toBeNull();
+      dev.status.set(null);
+      fixture.detectChanges();
+      expect(root.querySelector('.test-switch')).toBeNull();
+    },
+  );
 
   it('routes both Study Plan entry points to the saved-plan chooser', () => {
     const { fixture } = signedInHeader();
@@ -460,7 +556,9 @@ describe('PlatformHeader account disclosure', () => {
     fixture.nativeElement.querySelector('.avatar-trigger-btn').click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
-    expect(fixture.nativeElement.querySelector('#account-menu a[href="/admin/previews"]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('#account-menu a[href="/admin/previews"]'),
+    ).toBeNull();
     accounts.account.update((account) => ({ ...account!, authorPreview: true }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')?.textContent).toContain(
@@ -471,36 +569,41 @@ describe('PlatformHeader account disclosure', () => {
     ).not.toBeNull();
   });
 
-  it('uses the display name without granting author access and keeps learner actions ordered', () => {
-    const { store, fixture } = signedInHeader();
-    store.account.update((account) => ({
-      ...account!,
-      displayName: 'Author',
-      authorPreview: false,
-    }));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe('Author');
-    expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/delivery-plan"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/admin/api"]')).toBeNull();
-    const actions = [
-      ...fixture.nativeElement.querySelector('[aria-label="Account links"]').children,
-    ].map((item: any) => item.querySelector('.item-label').textContent.trim());
-    expect(actions).toEqual(['View study plan', 'Manage account', 'Support and feedback']);
-    expect(
-      fixture.nativeElement
-        .querySelector('#account-menu')
-        .lastElementChild.classList.contains('account-session-actions'),
-    ).toBe(true);
-    store.account.update((account) => ({ ...account!, displayName: '   ' }));
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe(
-      'Account',
-    );
-    expect(
-      fixture.nativeElement.querySelector('.avatar-trigger-btn').getAttribute('aria-label'),
-    ).toBe('Account menu');
-  });
+  it(
+    'uses the display name without granting author access and keeps learner actions ' + 'ordered',
+    () => {
+      const { store, fixture } = signedInHeader();
+      store.account.update((account) => ({
+        ...account!,
+        displayName: 'Author',
+        authorPreview: false,
+      }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe(
+        'Author',
+      );
+      expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
+      expect(fixture.nativeElement.querySelector('a[href="/delivery-plan"]')).toBeNull();
+      expect(fixture.nativeElement.querySelector('a[href="/admin/api"]')).toBeNull();
+      const actions = [
+        ...fixture.nativeElement.querySelector('[aria-label="Account links"]').children,
+      ].map((item: any) => item.querySelector('.item-label').textContent.trim());
+      expect(actions).toEqual(['View study plan', 'Manage account', 'Support and feedback']);
+      expect(
+        fixture.nativeElement
+          .querySelector('#account-menu')
+          .lastElementChild.classList.contains('account-session-actions'),
+      ).toBe(true);
+      store.account.update((account) => ({ ...account!, displayName: '   ' }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe(
+        'Account',
+      );
+      expect(
+        fixture.nativeElement.querySelector('.avatar-trigger-btn').getAttribute('aria-label'),
+      ).toBe('Account menu');
+    },
+  );
 
   it('places capability-gated author tools after learner actions and before Sign out', () => {
     const { store, fixture } = signedInHeader();
@@ -676,19 +779,25 @@ describe('PlatformHeader account disclosure', () => {
     expect(document.activeElement).toBe(trigger);
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
   });
-  it('focuses the palette input without scrolling the page (DLV-969, ⌘K from the Study Plan review step)', async () => {
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
-    fixture.detectChanges();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
-    expect(input).not.toBeNull();
-    const call = focus.mock.calls.find((_, index) => focus.mock.instances[index] === input);
-    expect(call?.[0]).toEqual({ preventScroll: true });
-    focus.mockRestore();
-  });
+  it(
+    'focuses the palette input without scrolling the page (DLV-969, ⌘K from the Study ' +
+      'Plan review step)',
+    async () => {
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }),
+      );
+      fixture.detectChanges();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
+      expect(input).not.toBeNull();
+      const call = focus.mock.calls.find((_, index) => focus.mock.instances[index] === input);
+      expect(call?.[0]).toEqual({ preventScroll: true });
+      focus.mockRestore();
+    },
+  );
 
   it.each([{ metaKey: true }, { ctrlKey: true }])(
     'uses the same quick search for shortcut %s',
@@ -732,7 +841,7 @@ describe('PlatformHeader account disclosure', () => {
     },
   );
 
-  it('keeps keyboard focus inside quick search after removing the redundant footer link', async () => {
+  it('keeps keyboard focus in quick search after removing the redundant footer link', async () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('.header-search-trigger') as HTMLButtonElement).click();
@@ -871,7 +980,9 @@ describe('PlatformHeader account disclosure', () => {
       fixture.detectChanges();
       const rows = () =>
         [
-          ...fixture.nativeElement.querySelectorAll('.dynamic-suggestions .header-search-suggestion'),
+          ...fixture.nativeElement.querySelectorAll(
+            '.dynamic-suggestions .header-search-suggestion',
+          ),
         ] as HTMLElement[];
       const labels = () =>
         rows().map((row) => row.querySelector('.suggestion-label')?.textContent?.trim());
@@ -909,7 +1020,12 @@ describe('PlatformHeader account disclosure', () => {
     it('moves between the search box and the suggestion rows with the arrow keys', async () => {
       const { fixture, input, rows } = await quickSearch(graphIndex, 'graphs');
       const press = (key: string, target: HTMLElement, init: KeyboardEventInit = {}) => {
-        const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+        const event = new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          cancelable: true,
+          ...init,
+        });
         target.dispatchEvent(event);
         return event;
       };
@@ -946,14 +1062,16 @@ describe('PlatformHeader account disclosure', () => {
       expect(labels()[0]).toBe('Graphs');
     });
 
-    it('leaves arrow keys alone when nothing is suggested and retries a failed index load', async () => {
+    it('leaves arrow keys alone with no suggestion and retries a failed index load', async () => {
       const getSearchIndex = vi
         .spyOn(TestBed.inject(ContentService), 'getSearchIndex')
         .mockReturnValueOnce(throwError(() => new Error('offline')))
         .mockReturnValue(of([]));
       const fixture = TestBed.createComponent(PlatformHeader);
       fixture.detectChanges();
-      const trigger = fixture.nativeElement.querySelector('.header-search-trigger') as HTMLButtonElement;
+      const trigger = fixture.nativeElement.querySelector(
+        '.header-search-trigger',
+      ) as HTMLButtonElement;
       trigger.click();
       fixture.detectChanges();
       const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
@@ -961,7 +1079,11 @@ describe('PlatformHeader account disclosure', () => {
       input.dispatchEvent(new Event('input'));
       fixture.detectChanges();
       input.focus();
-      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+      });
       input.dispatchEvent(event);
       expect(event.defaultPrevented).toBe(false);
       expect(fixture.nativeElement.querySelector('.header-search-empty')?.textContent).toContain(
@@ -973,105 +1095,129 @@ describe('PlatformHeader account disclosure', () => {
 });
 
 describe('PlatformHeader sticky context sizing', () => {
-  it('updates breadcrumb offset after responsive header resizing and disconnects on teardown', async () => {
-    let resize: () => void = () => {};
-    let height = 76;
-    const disconnect = vi.fn();
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(callback: () => void) {
-          resize = callback;
-        }
-        observe() {}
-        disconnect = disconnect;
-      },
-    );
-    const measure = vi
-      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-      .mockImplementation(() => ({ height }) as DOMRect);
-    try {
-      await TestBed.configureTestingModule({
-        imports: [PlatformHeader],
-        providers: [
-          provideRouter([]),
-          provideHttpClient(),
-          { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
-        ],
-      }).compileComponents();
-      vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
-      TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
-      const fixture = TestBed.createComponent(PlatformHeader);
-      fixture.detectChanges();
-      const page = fixture.nativeElement.parentElement as HTMLElement;
-      expect(page.style.getPropertyValue('--platform-header-height')).toBe('76px');
-      height = 140;
-      resize();
-      expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
-      fixture.destroy();
-      expect(disconnect).toHaveBeenCalledOnce();
-    } finally {
-      measure.mockRestore();
-      vi.unstubAllGlobals();
-    }
-  });
+  it(
+    'updates breadcrumb offset after responsive header resizing and disconnects on ' + 'teardown',
+    async () => {
+      let resize: () => void = () => {};
+      let height = 76;
+      const disconnect = vi.fn();
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(callback: () => void) {
+            resize = callback;
+          }
+          observe() {}
+          disconnect = disconnect;
+        },
+      );
+      const measure = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(() => ({ height }) as DOMRect);
+      try {
+        await TestBed.configureTestingModule({
+          imports: [PlatformHeader],
+          providers: [
+            provideRouter([]),
+            provideHttpClient(),
+            { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+          ],
+        }).compileComponents();
+        vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+        TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
+        const fixture = TestBed.createComponent(PlatformHeader);
+        fixture.detectChanges();
+        const page = fixture.nativeElement.parentElement as HTMLElement;
+        expect(page.style.getPropertyValue('--platform-header-height')).toBe('76px');
+        height = 140;
+        resize();
+        expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
+        fixture.destroy();
+        expect(disconnect).toHaveBeenCalledOnce();
+      } finally {
+        measure.mockRestore();
+        vi.unstubAllGlobals();
+      }
+    },
+  );
 
-  it('gives sticky bars a zero offset while a short window lets the header scroll away (DLV-803)', async () => {
-    const listeners = new Set<() => void>();
-    const shortWindow = {
-      matches: false,
-      addEventListener: (_: string, fn: () => void) => listeners.add(fn),
-      removeEventListener: (_: string, fn: () => void) => listeners.delete(fn),
-    };
-    // Other services may watch other queries; only the short-window query gets these listeners.
-    const otherQuery = { matches: false, addEventListener: () => {}, removeEventListener: () => {} };
-    const matchMedia = vi.fn((query: string) =>
-      (query === '(max-height: 32.5rem)' ? shortWindow : otherQuery) as unknown as MediaQueryList,
-    );
-    vi.stubGlobal('matchMedia', matchMedia);
-    const measure = vi
-      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-      .mockImplementation(() => ({ height: 140 }) as DOMRect);
-    try {
-      await TestBed.configureTestingModule({
-        imports: [PlatformHeader],
-        providers: [
-          provideRouter([]),
-          provideHttpClient(),
-          { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
-        ],
-      }).compileComponents();
-      vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
-      TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
-      const fixture = TestBed.createComponent(PlatformHeader);
-      fixture.detectChanges();
-      const page = fixture.nativeElement.parentElement as HTMLElement;
-      const host = fixture.nativeElement as HTMLElement;
-      expect(matchMedia).toHaveBeenCalledWith('(max-height: 32.5rem)');
-      expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
-      // The short-window media rule makes the host relative; the offset follows it.
-      host.style.position = 'relative';
-      listeners.forEach((fn) => fn());
-      expect(page.style.getPropertyValue('--platform-header-height')).toBe('0px');
-      host.style.position = '';
-      listeners.forEach((fn) => fn());
-      expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
-      fixture.destroy();
-      expect(listeners.size).toBe(0);
-    } finally {
-      measure.mockRestore();
-      vi.unstubAllGlobals();
-    }
-  });
+  it(
+    'gives sticky bars a zero offset while a short window lets the header scroll away ' +
+      '(DLV-803)',
+    async () => {
+      const listeners = new Set<() => void>();
+      const shortWindow = {
+        matches: false,
+        addEventListener: (_: string, fn: () => void) => listeners.add(fn),
+        removeEventListener: (_: string, fn: () => void) => listeners.delete(fn),
+      };
+      // Other services may watch other queries; only the short-window query gets these listeners.
+      const otherQuery = {
+        matches: false,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      };
+      const matchMedia = vi.fn(
+        (query: string) =>
+          (query === '(max-height: 32.5rem)'
+            ? shortWindow
+            : otherQuery) as unknown as MediaQueryList,
+      );
+      vi.stubGlobal('matchMedia', matchMedia);
+      const measure = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(() => ({ height: 140 }) as DOMRect);
+      try {
+        await TestBed.configureTestingModule({
+          imports: [PlatformHeader],
+          providers: [
+            provideRouter([]),
+            provideHttpClient(),
+            { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+          ],
+        }).compileComponents();
+        vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+        TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
+        const fixture = TestBed.createComponent(PlatformHeader);
+        fixture.detectChanges();
+        const page = fixture.nativeElement.parentElement as HTMLElement;
+        const host = fixture.nativeElement as HTMLElement;
+        expect(matchMedia).toHaveBeenCalledWith('(max-height: 32.5rem)');
+        expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
+        // The short-window media rule makes the host relative; the offset follows it.
+        host.style.position = 'relative';
+        listeners.forEach((fn) => fn());
+        expect(page.style.getPropertyValue('--platform-header-height')).toBe('0px');
+        host.style.position = '';
+        listeners.forEach((fn) => fn());
+        expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
+        fixture.destroy();
+        expect(listeners.size).toBe(0);
+      } finally {
+        measure.mockRestore();
+        vi.unstubAllGlobals();
+      }
+    },
+  );
 
-  it('lets the header scroll with the page in a short window and lines its row up with the site frame', () => {
-    const styles = (PlatformHeader as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles.join('\n').replace(/\s+/g, ' ');
-    expect(styles).toMatch(/@media \(max-height: 32\.5rem\) \{ \[_nghost-%COMP%\] \{ position: relative; \} \}/);
-    expect(styles).toContain('padding: 12px max(4%, (100% - var(--%NS%site-frame-max, 100rem)) / 2);');
-    // At 400% zoom (a 180px-tall window) the search palette still leaves room for suggestions.
-    expect(styles).toContain('top: min(88px, 12dvh);');
-    expect(styles).toContain('max-height: calc(100dvh - min(88px, 12dvh) - 66px);');
-  });
+  it(
+    'lets the header scroll with the page in a short window and lines its row up with the ' +
+      'site frame',
+    () => {
+      const styles = (PlatformHeader as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles
+        .join('\n')
+        .replace(/\s+/g, ' ');
+      expect(styles).toMatch(
+        /@media \(max-height: 32\.5rem\) \{ \[_nghost-%COMP%\] \{ position: relative; \} \}/,
+      );
+      expect(styles).toContain(
+        'padding: 12px max(4%, (100% - var(--%NS%site-frame-max, 100rem)) / 2);',
+      );
+      // At 400% zoom (a 180px-tall window) the search palette still leaves room for suggestions.
+      expect(styles).toContain('top: min(88px, 12dvh);');
+      expect(styles).toContain('max-height: calc(100dvh - min(88px, 12dvh) - 66px);');
+    },
+  );
 });
 
 it.each([
@@ -1118,24 +1264,28 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
     return hint!;
   }
 
-  it('describes Search, Study Plan and both theme buttons with a hidden hint next to each item', () => {
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const element: HTMLElement = fixture.nativeElement;
-    const [light, dark] = Array.from(element.querySelectorAll('.theme-switch button'));
-    expect(hintFor(element, element.querySelector('.header-search-trigger')).textContent).toContain(
-      'Search lessons, problems and plans.',
-    );
-    expect(
-      hintFor(element, element.querySelector('a.navigation-utility[href^="/study-plan"]')).textContent,
-    ).toBe('Your schedule and progress across courses.');
-    expect(hintFor(element, light).textContent).toBe('Light colors.');
-    expect(hintFor(element, dark).textContent).toBe('Dark colors.');
-    for (const hint of Array.from(element.querySelectorAll('.header-hint'))) {
-      expect(hint.classList.contains('is-visible')).toBe(false);
-    }
-    expect(element.querySelectorAll('.header-hint').length).toBe(5);
-  });
+  it(
+    'describes Search, Study Plan and both theme buttons with a hidden hint next to each ' + 'item',
+    () => {
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const element: HTMLElement = fixture.nativeElement;
+      const [light, dark] = Array.from(element.querySelectorAll('.theme-switch button'));
+      expect(
+        hintFor(element, element.querySelector('.header-search-trigger')).textContent,
+      ).toContain('Search lessons, problems and plans.');
+      expect(
+        hintFor(element, element.querySelector('a.navigation-utility[href^="/study-plan"]'))
+          .textContent,
+      ).toBe('Your schedule and progress across courses.');
+      expect(hintFor(element, light).textContent).toBe('Light colors.');
+      expect(hintFor(element, dark).textContent).toBe('Dark colors.');
+      for (const hint of Array.from(element.querySelectorAll('.header-hint'))) {
+        expect(hint.classList.contains('is-visible')).toBe(false);
+      }
+      expect(element.querySelectorAll('.header-hint').length).toBe(5);
+    },
+  );
 
   it('names the keyboard shortcut shown in the Search button inside its hint', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
@@ -1177,7 +1327,9 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     const element: HTMLElement = fixture.nativeElement;
-    const link = element.querySelector('a.navigation-utility[href^="/study-plan"]') as HTMLAnchorElement;
+    const link = element.querySelector(
+      'a.navigation-utility[href^="/study-plan"]',
+    ) as HTMLAnchorElement;
     const hint = hintFor(element, link);
     vi.spyOn(link, 'matches').mockImplementation((selector) => selector === ':focus-visible');
 
@@ -1210,7 +1362,9 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     const element: HTMLElement = fixture.nativeElement;
-    const [light] = Array.from(element.querySelectorAll('.theme-switch button')) as HTMLButtonElement[];
+    const [light] = Array.from(
+      element.querySelectorAll('.theme-switch button'),
+    ) as HTMLButtonElement[];
     const hint = hintFor(element, light);
     vi.spyOn(light, 'matches').mockReturnValue(false);
     light.dispatchEvent(new Event('focusin'));
@@ -1218,8 +1372,14 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
   });
 
   it('does not hover-open on a touch-only device and keeps taps unblocked', () => {
-    const matchMedia = vi.fn((query: string) => ({ matches: false, media: query }) as MediaQueryList);
-    Object.defineProperty(window, 'matchMedia', { value: matchMedia, configurable: true, writable: true });
+    const matchMedia = vi.fn(
+      (query: string) => ({ matches: false, media: query }) as MediaQueryList,
+    );
+    Object.defineProperty(window, 'matchMedia', {
+      value: matchMedia,
+      configurable: true,
+      writable: true,
+    });
     try {
       const fixture = TestBed.createComponent(PlatformHeader);
       fixture.detectChanges();
@@ -1236,34 +1396,39 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
     }
   });
 
-  it('places the hint under the item and pulls it back inside the viewport near the right edge', () => {
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const element: HTMLElement = fixture.nativeElement;
-    const link = element.querySelector('a.navigation-utility[href^="/study-plan"]') as HTMLAnchorElement;
-    const hint = hintFor(element, link);
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
-    vi.spyOn(link, 'getBoundingClientRect').mockReturnValue(rect(100, 10, 80, 44));
-    vi.spyOn(hint, 'getBoundingClientRect').mockReturnValue(rect(20, 30, 200, 40));
-    const clientWidth = vi.spyOn(document.documentElement, 'clientWidth', 'get');
+  it(
+    'places the hint under the item and pulls it back inside the viewport near the right ' + 'edge',
+    () => {
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const element: HTMLElement = fixture.nativeElement;
+      const link = element.querySelector(
+        'a.navigation-utility[href^="/study-plan"]',
+      ) as HTMLAnchorElement;
+      const hint = hintFor(element, link);
+      const rect = (left: number, top: number, width: number, height: number) =>
+        ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+      vi.spyOn(link, 'getBoundingClientRect').mockReturnValue(rect(100, 10, 80, 44));
+      vi.spyOn(hint, 'getBoundingClientRect').mockReturnValue(rect(20, 30, 200, 40));
+      const clientWidth = vi.spyOn(document.documentElement, 'clientWidth', 'get');
 
-    clientWidth.mockReturnValue(1200);
-    link.dispatchEvent(new Event('mouseenter'));
-    expect(hint.style.left).toBe('80px');
-    expect(hint.style.top).toBe('30px');
-    link.dispatchEvent(new Event('mouseleave'));
+      clientWidth.mockReturnValue(1200);
+      link.dispatchEvent(new Event('mouseenter'));
+      expect(hint.style.left).toBe('80px');
+      expect(hint.style.top).toBe('30px');
+      link.dispatchEvent(new Event('mouseleave'));
 
-    clientWidth.mockReturnValue(240);
-    link.dispatchEvent(new Event('mouseenter'));
-    // 240 - 8 - 200 = 32 for the item's left edge, minus the hint's own origin (20).
-    expect(hint.style.left).toBe('12px');
-    link.dispatchEvent(new Event('mouseleave'));
+      clientWidth.mockReturnValue(240);
+      link.dispatchEvent(new Event('mouseenter'));
+      // 240 - 8 - 200 = 32 for the item's left edge, minus the hint's own origin (20).
+      expect(hint.style.left).toBe('12px');
+      link.dispatchEvent(new Event('mouseleave'));
 
-    clientWidth.mockReturnValue(0);
-    link.dispatchEvent(new Event('mouseenter'));
-    expect(hint.style.left).toBe('80px');
-  });
+      clientWidth.mockReturnValue(0);
+      link.dispatchEvent(new Event('mouseenter'));
+      expect(hint.style.left).toBe('80px');
+    },
+  );
 
   it('removes each hint with its item instead of leaving it in the header', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
@@ -1297,7 +1462,8 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
   });
 
   it.each(['/sign-in', '/sign-up/confirm', '/sign-in/forgot', '/welcome?access=pending'])(
-    'before admission on %s, the logo and paths lead nowhere and only the theme stays (owner, 2026-11-03)',
+    'before admission on %s, the logo and paths lead nowhere and only the theme stays ' +
+      '(owner, 2026-11-03)',
     (url) => {
       vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
       TestBed.inject(DevSession).gated.set(true);
@@ -1311,103 +1477,133 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
       expect(root.querySelector('.header-search-trigger')).toBeNull();
       expect(root.querySelector('a[href^="/study-plan"]')).toBeNull();
       expect(root.querySelector('.theme-switch')).not.toBeNull();
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }),
+      );
       fixture.detectChanges();
       expect(root.querySelector('.search-palette')).toBeNull();
     },
   );
 
-  it('offers Exit DEV in the header only on the Welcome page while a sign-in waits before admission (DLV-971)', () => {
-    const urlSpy = vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
-    const session = TestBed.inject(DevSession);
-    session.gated.set(true);
-    const leave = vi.spyOn(session, 'leave').mockResolvedValue();
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const exit = root.querySelector('.dev-exit-inline-button') as HTMLButtonElement;
-    expect(exit.textContent?.trim()).toBe('Exit DEV');
-    expect(root.querySelector('.sign-in-button:not(.dev-exit-inline-button)')).toBeNull();
-    expect(root.querySelector('#' + exit.getAttribute('aria-describedby'))?.textContent).toBe(
-      'Signs you out of DEV and returns you to its gate. Sign in again once the owner has approved you.',
-    );
-    exit.click();
-    expect(leave).toHaveBeenCalledTimes(1);
-    session.leaving.set(true);
-    fixture.detectChanges();
-    expect(exit.textContent?.trim()).toBe('Exiting…');
-    expect(exit.disabled).toBe(true);
-    session.leaving.set(false);
-    session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
-    fixture.detectChanges();
-    expect(root.querySelector('.dev-exit-inline-error')?.textContent).toBe('Unable to confirm leaving DEV. Retry Exit DEV environment.');
-    // Inside DEV the DEV mark's own menu carries the exit; on other gate pages there is nothing to exit yet.
-    session.error.set('');
-    session.status.set({ dev: true, deadline: '2026-11-05T00:00:00Z', warning: false, maintenance: false });
-    fixture.detectChanges();
-    expect(root.querySelector('.dev-exit-inline-button')).toBeNull();
-    session.status.set(null);
-    for (const url of ['/welcome', '/sign-in', '/sign-up/confirm', '/?access=pending']) {
-      urlSpy.mockReturnValue(url);
+  it(
+    'offers Exit DEV in the header only on the Welcome page while a sign-in waits before ' +
+      'admission (DLV-971)',
+    () => {
+      const urlSpy = vi
+        .spyOn(TestBed.inject(Router), 'url', 'get')
+        .mockReturnValue('/welcome?access=pending');
+      const session = TestBed.inject(DevSession);
+      session.gated.set(true);
+      const leave = vi.spyOn(session, 'leave').mockResolvedValue();
+      const fixture = TestBed.createComponent(PlatformHeader);
       fixture.detectChanges();
-      expect(root.querySelector('.dev-exit-inline-button'), url).toBeNull();
-    }
-  });
+      const root = fixture.nativeElement as HTMLElement;
+      const exit = root.querySelector('.dev-exit-inline-button') as HTMLButtonElement;
+      expect(exit.textContent?.trim()).toBe('Exit DEV');
+      expect(root.querySelector('.sign-in-button:not(.dev-exit-inline-button)')).toBeNull();
+      expect(root.querySelector('#' + exit.getAttribute('aria-describedby'))?.textContent).toBe(
+        'Signs you out of DEV and returns you to its gate. Sign in again once the owner ' +
+          'has approved you.',
+      );
+      exit.click();
+      expect(leave).toHaveBeenCalledTimes(1);
+      session.leaving.set(true);
+      fixture.detectChanges();
+      expect(exit.textContent?.trim()).toBe('Exiting…');
+      expect(exit.disabled).toBe(true);
+      session.leaving.set(false);
+      session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+      fixture.detectChanges();
+      expect(root.querySelector('.dev-exit-inline-error')?.textContent).toBe(
+        'Unable to confirm leaving DEV. Retry Exit DEV environment.',
+      );
+      // Inside DEV the DEV mark's own menu carries the exit; on other gate pages there is nothing
+      // to exit yet.
+      session.error.set('');
+      session.status.set({
+        dev: true,
+        deadline: '2026-11-05T00:00:00Z',
+        warning: false,
+        maintenance: false,
+      });
+      fixture.detectChanges();
+      expect(root.querySelector('.dev-exit-inline-button')).toBeNull();
+      session.status.set(null);
+      for (const url of ['/welcome', '/sign-in', '/sign-up/confirm', '/?access=pending']) {
+        urlSpy.mockReturnValue(url);
+        fixture.detectChanges();
+        expect(root.querySelector('.dev-exit-inline-button'), url).toBeNull();
+      }
+    },
+  );
 
-  it('before admission, a signed-in visitor’s account menu holds only Sign out; after admission it has every link', () => {
-    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
-    const session = TestBed.inject(DevSession);
-    session.gated.set(true);
-    TestBed.inject(StudyPlanAccount).account.set({
-      accountId: 'waiting',
-      username: 'google_1137',
-      displayName: 'Waiting Person',
-      topicGrants: [],
-      authorPreview: true,
-    });
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const trigger = root.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
-    expect(root.querySelector('#' + trigger.getAttribute('aria-describedby'))?.textContent).toBe(
-      'Your account: sign out to use a different account.',
-    );
-    trigger.click();
-    fixture.detectChanges();
-    const menu = root.querySelector('#account-menu') as HTMLElement;
-    expect(menu.querySelector('a')).toBeNull();
-    expect(menu.querySelector('.user-display-email')?.textContent?.trim()).toBe(
-      'Sign out to use a different account.',
-    );
-    expect(menu.querySelector('.account-sign-out')).not.toBeNull();
+  it(
+    'before admission, a signed-in visitor’s account menu holds only Sign out; after ' +
+      'admission it has every link',
+    () => {
+      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
+      const session = TestBed.inject(DevSession);
+      session.gated.set(true);
+      TestBed.inject(StudyPlanAccount).account.set({
+        accountId: 'waiting',
+        username: 'google_1137',
+        displayName: 'Waiting Person',
+        topicGrants: [],
+        authorPreview: true,
+      });
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const trigger = root.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
+      expect(root.querySelector('#' + trigger.getAttribute('aria-describedby'))?.textContent).toBe(
+        'Your account: sign out to use a different account.',
+      );
+      trigger.click();
+      fixture.detectChanges();
+      const menu = root.querySelector('#account-menu') as HTMLElement;
+      expect(menu.querySelector('a')).toBeNull();
+      expect(menu.querySelector('.user-display-email')?.textContent?.trim()).toBe(
+        'Sign out to use a different account.',
+      );
+      expect(menu.querySelector('.account-sign-out')).not.toBeNull();
 
-    session.status.set({ dev: true, deadline: '2026-11-05T00:00:00Z', warning: false, maintenance: false });
-    fixture.detectChanges();
-    expect(menu.querySelector('a[href="/account"]')).not.toBeNull();
-    expect(menu.querySelector('a[href="/support"]')).not.toBeNull();
-    expect(menu.querySelector('.author-account-links')).not.toBeNull();
-  });
+      session.status.set({
+        dev: true,
+        deadline: '2026-11-05T00:00:00Z',
+        warning: false,
+        maintenance: false,
+      });
+      fixture.detectChanges();
+      expect(menu.querySelector('a[href="/account"]')).not.toBeNull();
+      expect(menu.querySelector('a[href="/support"]')).not.toBeNull();
+      expect(menu.querySelector('.author-account-links')).not.toBeNull();
+    },
+  );
 
-  it('starts restricted on a gate page until the DEV gate first answers, then follows admission', () => {
-    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/sign-in');
-    const session = TestBed.inject(DevSession);
-    session.known.set(false);
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('a.brand')).toBeNull();
-    // Ordinary delivery (no DEV gate): the full header.
-    session.known.set(true);
-    fixture.detectChanges();
-    expect(root.querySelector('a.brand')?.getAttribute('href')).toBe('/');
-    expect(root.querySelector('.header-search-trigger')).not.toBeNull();
-    // Admitted in DEV: the full header too.
-    session.gated.set(true);
-    session.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
-    fixture.detectChanges();
-    expect(root.querySelector('a.brand')).not.toBeNull();
-    expect(root.querySelector('app-header-navigation a[href="/learn"]')).not.toBeNull();
-  });
+  it(
+    'starts restricted on a gate page until the DEV gate first answers, then follows ' +
+      'admission',
+    () => {
+      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/sign-in');
+      const session = TestBed.inject(DevSession);
+      session.known.set(false);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('a.brand')).toBeNull();
+      // Ordinary delivery (no DEV gate): the full header.
+      session.known.set(true);
+      fixture.detectChanges();
+      expect(root.querySelector('a.brand')?.getAttribute('href')).toBe('/');
+      expect(root.querySelector('.header-search-trigger')).not.toBeNull();
+      // Admitted in DEV: the full header too.
+      session.gated.set(true);
+      session.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+      fixture.detectChanges();
+      expect(root.querySelector('a.brand')).not.toBeNull();
+      expect(root.querySelector('app-header-navigation a[href="/learn"]')).not.toBeNull();
+    },
+  );
 
   it('keeps the full header off the gate pages, where only admitted visitors arrive', () => {
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/learn');
@@ -1422,58 +1618,94 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.identity-mark')).toBeNull();
     expect(fixture.nativeElement.querySelector('.dev-environment')).toBeNull();
-    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead');
+    expect(
+      fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label'),
+    ).toBe('LookAhead');
   });
 
-  it('marks the brand "DEV" for a visitor the DEV gate has not admitted yet, with nothing to exit (DLV-969)', () => {
-    TestBed.inject(DevSession).gated.set(true);
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead DEV');
-    expect(fixture.nativeElement.querySelector('.identity-mark')?.textContent?.trim()).toBe('DEV');
-    expect(fixture.nativeElement.querySelector('.dev-environment')).toBeNull();
-  });
+  it(
+    'marks the brand "DEV" for a visitor the DEV gate has not admitted yet, with nothing ' +
+      'to exit (DLV-969)',
+    () => {
+      TestBed.inject(DevSession).gated.set(true);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label'),
+      ).toBe('LookAhead DEV');
+      expect(fixture.nativeElement.querySelector('.identity-mark')?.textContent?.trim()).toBe(
+        'DEV',
+      );
+      expect(fixture.nativeElement.querySelector('.dev-environment')).toBeNull();
+    },
+  );
 
-  it('opens Exit DEV environment from the DEV mark beside the brand while the DEV session is admitted (user, 2026-11-03)', async () => {
-    const session = TestBed.inject(DevSession);
-    session.status.set({ dev: true, deadline: '2026-11-06T04:00:00Z', warning: false, maintenance: false });
-    const fixture = TestBed.createComponent(PlatformHeader);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    // The control sits beside the home link, never inside it, and Leave DEV is no longer a header button.
-    const trigger = root.querySelector('.brand-area > .dev-environment > .dev-environment-trigger') as HTMLButtonElement;
-    expect(trigger.textContent?.replace(/\s+/g, '')).toBe('DEV▾');
-    expect(trigger.getAttribute('aria-label')).toBe('DEV environment');
-    expect(root.querySelector('.brand .dev-environment-trigger')).toBeNull();
-    expect(root.querySelector('.leave-dev-button')).toBeNull();
-    expect(root.querySelector('.identity-mark')).toBeNull();
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    trigger.click(); fixture.detectChanges();
-    expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    const panel = root.querySelector('#dev-environment-panel') as HTMLElement;
-    expect(panel.querySelector('.dev-environment-title')?.textContent).toBe('Look Ahead DEV');
-    const exit = panel.querySelector('.dev-exit-button') as HTMLButtonElement;
-    expect(exit.textContent?.trim()).toBe('Exit DEV environment');
-    expect(document.getElementById(exit.getAttribute('aria-describedby')!)?.textContent).toContain('To see DEV as a test account, use Switch to a test account in your account menu.');
-    const leave = vi.spyOn(session, 'leave').mockResolvedValue();
-    exit.click();
-    expect(leave).toHaveBeenCalledOnce();
-    session.leaving.set(true);
-    session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
-    fixture.detectChanges(); await fixture.whenStable();
-    expect((root.querySelector('.dev-exit-button') as HTMLButtonElement).disabled).toBe(true);
-    expect(root.querySelector('.dev-exit-button')?.textContent?.trim()).toBe('Exiting…');
-    expect(root.querySelector('.dev-environment-error')?.textContent).toContain('Retry Exit DEV environment');
-    // A click inside keeps it open; outside, Escape or opening the account menu closes it.
-    panel.click(); fixture.detectChanges();
-    expect(root.querySelector('#dev-environment-panel')).not.toBeNull();
-    document.body.click(); fixture.detectChanges();
-    expect(root.querySelector('#dev-environment-panel')).toBeNull();
-    trigger.click(); fixture.detectChanges();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); fixture.detectChanges();
-    expect(root.querySelector('#dev-environment-panel')).toBeNull();
-    trigger.click(); fixture.detectChanges();
-    trigger.click(); fixture.detectChanges();
-    expect(root.querySelector('#dev-environment-panel')).toBeNull();
-  });
+  it(
+    'opens Exit DEV environment from the DEV mark beside the brand while the DEV session ' +
+      'is admitted (user, 2026-11-03)',
+    async () => {
+      const session = TestBed.inject(DevSession);
+      session.status.set({
+        dev: true,
+        deadline: '2026-11-06T04:00:00Z',
+        warning: false,
+        maintenance: false,
+      });
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      // The control sits beside the home link, never inside it, and Leave DEV is no longer a header
+      // button.
+      const trigger = root.querySelector(
+        '.brand-area > .dev-environment > .dev-environment-trigger',
+      ) as HTMLButtonElement;
+      expect(trigger.textContent?.replace(/\s+/g, '')).toBe('DEV▾');
+      expect(trigger.getAttribute('aria-label')).toBe('DEV environment');
+      expect(root.querySelector('.brand .dev-environment-trigger')).toBeNull();
+      expect(root.querySelector('.leave-dev-button')).toBeNull();
+      expect(root.querySelector('.identity-mark')).toBeNull();
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      trigger.click();
+      fixture.detectChanges();
+      expect(trigger.getAttribute('aria-expanded')).toBe('true');
+      const panel = root.querySelector('#dev-environment-panel') as HTMLElement;
+      expect(panel.querySelector('.dev-environment-title')?.textContent).toBe('Look Ahead DEV');
+      const exit = panel.querySelector('.dev-exit-button') as HTMLButtonElement;
+      expect(exit.textContent?.trim()).toBe('Exit DEV environment');
+      expect(
+        document.getElementById(exit.getAttribute('aria-describedby')!)?.textContent,
+      ).toContain(
+        'To see DEV as a test account, use Switch to a test account in your account menu.',
+      );
+      const leave = vi.spyOn(session, 'leave').mockResolvedValue();
+      exit.click();
+      expect(leave).toHaveBeenCalledOnce();
+      session.leaving.set(true);
+      session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect((root.querySelector('.dev-exit-button') as HTMLButtonElement).disabled).toBe(true);
+      expect(root.querySelector('.dev-exit-button')?.textContent?.trim()).toBe('Exiting…');
+      expect(root.querySelector('.dev-environment-error')?.textContent).toContain(
+        'Retry Exit DEV environment',
+      );
+      // A click inside keeps it open; outside, Escape or opening the account menu closes it.
+      panel.click();
+      fixture.detectChanges();
+      expect(root.querySelector('#dev-environment-panel')).not.toBeNull();
+      document.body.click();
+      fixture.detectChanges();
+      expect(root.querySelector('#dev-environment-panel')).toBeNull();
+      trigger.click();
+      fixture.detectChanges();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+      expect(root.querySelector('#dev-environment-panel')).toBeNull();
+      trigger.click();
+      fixture.detectChanges();
+      trigger.click();
+      fixture.detectChanges();
+      expect(root.querySelector('#dev-environment-panel')).toBeNull();
+    },
+  );
 });

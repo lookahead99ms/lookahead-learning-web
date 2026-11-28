@@ -126,12 +126,18 @@ export function cardSceneValueMaxSize(width) {
   return (cardSceneValueScale * width) / 320;
 }
 
-/** Declarations from the drawing's own <style>, keyed by the class a rule's last compound targets. */
+/**
+ * Declarations from the drawing's own <style>, keyed by the class a rule's last compound targets.
+ */
 function cardSceneClassRules(svg) {
   const byClass = new Map();
   for (const [, selectors, body] of svg.matchAll(/([^{}<>]+)\{([^{}]*)\}/g)) {
     for (const selector of selectors.split(',')) {
-      const last = selector.trim().split(/[\s>+~]+/).pop() ?? '';
+      const last =
+        selector
+          .trim()
+          .split(/[\s>+~]+/)
+          .pop() ?? '';
       if (!/^(?:\.[\w-]+)+$/.test(last)) continue;
       for (const name of last.slice(1).split('.')) {
         byClass.set(name, [...(byClass.get(name) ?? []), body]);
@@ -166,14 +172,18 @@ export function cardSceneTextErrors(svg, sceneLabel) {
   const rules = cardSceneClassRules(svg);
   for (const [, body] of svg.matchAll(/\{([^{}]*)\}/g)) {
     if (/(?:^|;|\s)(?:fill|font[\w-]*)\s*:[^;]*!important/.test(body)) {
-      errors.push(`${sceneLabel} sets a font or fill with !important; leave text to the card styling`);
+      errors.push(
+        `${sceneLabel} sets a font or fill with !important; leave text to the card styling`,
+      );
       break;
     }
   }
   for (const [, attributes] of svg.matchAll(/<(?:text|tspan|g)\b([^>]*)>/g)) {
     const style = /\sstyle="([^"]*)"/.exec(attributes)?.[1] ?? '';
     if (/(?:fill|font[\w-]*)\s*:[^;]*!important/.test(style)) {
-      errors.push(`${sceneLabel} sets a font or fill with !important; leave text to the card styling`);
+      errors.push(
+        `${sceneLabel} sets a font or fill with !important; leave text to the card styling`,
+      );
       break;
     }
   }
@@ -206,7 +216,8 @@ export function cardSceneTextErrors(svg, sceneLabel) {
     const max = valueLike ? cardSceneValueMaxSize(width) : cardSceneWordMaxSize(width);
     if (size > max + 1e-9) {
       errors.push(
-        `${sceneLabel} text "${text}" is at headline scale (${size} > ${Math.round(max * 100) / 100})`,
+        `${sceneLabel} text "${text}" is at headline scale (${size} ` +
+          `> ${Math.round(max * 100) / 100})`,
       );
     }
   }

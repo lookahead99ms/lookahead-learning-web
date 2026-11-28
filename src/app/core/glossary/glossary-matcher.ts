@@ -9,7 +9,10 @@ export interface GlossaryMatch {
 
 interface MatchKey {
   term: GlossaryTerm;
-  /** The form as authored when it is written in capitals (CDN, TTL): the text must then match it exactly. */
+  /**
+   * The form as authored when it is written in capitals (CDN, TTL): the text must then match it
+   * exactly.
+   */
   exact: string | null;
 }
 
@@ -23,7 +26,10 @@ export const GLOSSARY_TERM_ATTRIBUTE = 'data-glossary-term';
 /** The first mark of a term on the page: the only one with a visible cue at rest. */
 export const GLOSSARY_FIRST_CLASS = 'glossary-term-first';
 
-/** Elements whose text is never marked: links and controls, code, headings, and terms already marked. */
+/**
+ * Elements whose text is never marked: links and controls, code, headings, and terms already
+ * marked.
+ */
 const SKIP_SELECTOR = [
   'a',
   'button',
@@ -61,16 +67,21 @@ export function isCapitalsOnly(text: string): boolean {
 
 /**
  * One regular expression for every word form of every term, longest form first so "inverted index"
- * wins over "index" at the same position. Terms taught by `excludeLessonId`, and terms that list it in
- * `skipLessons`, are left out: a lesson never marks the terms it defines itself or uses in another sense.
+ * wins over "index" at the same position. Terms taught by `excludeLessonId`, and terms that list it
+ * in `skipLessons`, are left out: a lesson never marks the terms it defines itself or uses in
+ * another sense.
  */
-export function buildGlossaryMatcher(terms: GlossaryTerm[], excludeLessonId = ''): GlossaryMatcher | null {
+export function buildGlossaryMatcher(
+  terms: GlossaryTerm[],
+  excludeLessonId = '',
+): GlossaryMatcher | null {
   const keys = new Map<string, MatchKey>();
   const forms: string[] = [];
   for (const term of terms) {
     if (
       excludeLessonId &&
-      (term.lessons.some((lesson) => lesson.lessonId === excludeLessonId) || term.skipLessons?.includes(excludeLessonId))
+      (term.lessons.some((lesson) => lesson.lessonId === excludeLessonId) ||
+        term.skipLessons?.includes(excludeLessonId))
     )
       continue;
     for (const raw of term.match) {
@@ -105,10 +116,11 @@ function scopeOf(node: Node, root: Element): Element {
 }
 
 /**
- * Wrap the first mention of each term in each section of `root` in a button that carries the term id.
- * The first mark of a term on the whole page also gets GLOSSARY_FIRST_CLASS, so only one mention per
- * term shows a cue at rest while every mark still answers hover and click. Running it again changes
- * nothing: marked text is skipped and counts as already seen. Returns how many terms were newly marked.
+ * Wrap the first mention of each term in each section of `root` in a button that carries the term
+ * id. The first mark of a term on the whole page also gets GLOSSARY_FIRST_CLASS, so only one
+ * mention per term shows a cue at rest while every mark still answers hover and click. Running it
+ * again changes nothing: marked text is skipped and counts as already seen. Returns how many terms
+ * were newly marked.
  */
 export function markGlossaryTerms(root: Element, matcher: GlossaryMatcher): number {
   const document = root.ownerDocument;

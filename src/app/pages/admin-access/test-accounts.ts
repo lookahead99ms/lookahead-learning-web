@@ -7,7 +7,13 @@ import { ContentService } from '../../content/content.service';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { AccessRecord, AccessRecordView, accessRecordView } from '../account/account-membership';
-import { approvedLine, canResetOf, resetReserved, upgradeLine, upgradeMarkerOf } from '../../content/upgrade-markers';
+import {
+  approvedLine,
+  canResetOf,
+  resetReserved,
+  upgradeLine,
+  upgradeMarkerOf,
+} from '../../content/upgrade-markers';
 import { PendingPurchase, pendingPurchaseOf } from '../../content/purchase-requests';
 import { canDecidePurchases, viewerRole } from './purchase-requests-panel';
 import { githubDisplay } from '../../core/github-account/github-account';
@@ -22,17 +28,26 @@ import {
   matchesFilter,
 } from './user-directory';
 
-/** GET /admin/test-accounts/allowance; DLV-969 S35 adds the scenarios and, for the owner in DEV, the roster. */
+/**
+ * GET /admin/test-accounts/allowance; DLV-969 S35 adds the scenarios and, for the owner in DEV, the
+ * roster.
+ */
 export interface TestAccountAllowance {
   limit: number;
   used: number;
   remaining: number;
   /**
-   * withoutPlan (DLV-969 S37): ready learners whose scenario has a study plan they don't have yet. changed (owner,
-   * 2026-11-04): ready roster accounts that differ from their scenario, so Reset all has something to do; absent from an
-   * older Domain, which keeps Reset all available.
+   * withoutPlan (DLV-969 S37): ready learners whose scenario has a study plan they don't have yet.
+   * changed (owner, 2026-11-04): ready roster accounts that differ from their scenario, so Reset
+   * all has something to do; absent from an older Domain, which keeps Reset all available.
    */
-  roster?: { total: number; ready: number; deleted: number; withoutPlan?: number; changed?: number } | null;
+  roster?: {
+    total: number;
+    ready: number;
+    deleted: number;
+    withoutPlan?: number;
+    changed?: number;
+  } | null;
   scenarios?: { id: string; label: string; roles: string[] }[] | null;
 }
 
@@ -45,19 +60,32 @@ export interface TestAccountRow {
   lastChangedBy: string;
   lastChangedAt: string;
   legacyPresetAvailable: boolean;
-  /** 'created' for a single created account; a roster account carries its preset ('scenario' in DEV). */
+  /**
+   * 'created' for a single created account; a roster account carries its preset ('scenario' in
+   * DEV).
+   */
   initialization?: string;
   creatorId?: string;
   canDelete?: boolean;
-  /** DLV-969 (owner, 2026-11-04): a DEV purchase waiting for approval; sent to the owner and admins only. */
+  /**
+   * DLV-969 (owner, 2026-11-04): a DEV purchase waiting for approval; sent to the owner and admins
+   * only.
+   */
   pendingPurchase?: PendingPurchase | null;
-  /** DLV-969 (owner, 2026-11-04): who upgraded it through an approved request (read by upgradeMarkerOf). */
+  /**
+   * DLV-969 (owner, 2026-11-04): who upgraded it through an approved request (read by
+   * upgradeMarkerOf).
+   */
   upgradedBy?: unknown;
-  /** Whether this viewer may reset it (the upgrade marker reserves Reset); absent from an older Domain. */
+  /**
+   * Whether this viewer may reset it (the upgrade marker reserves Reset); absent from an older
+   * Domain.
+   */
   canReset?: boolean;
 }
 
-type History = { state: 'loading' } | { state: 'error' } | { state: 'ready'; items: AccessRecordView[] };
+type History =
+  { state: 'loading' } | { state: 'error' } | { state: 'ready'; items: AccessRecordView[] };
 
 const changedFormat = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
@@ -91,7 +119,10 @@ export class TestAccounts implements OnInit {
   readonly view = input<'test' | 'people'>('people');
   /** Manage access on a row (owner, 2026-11-08): the parent opens that person's panel. */
   readonly giveAccess = output<DirectoryRow>();
-  /** Add by email on People: the address the owner typed; the parent opens the panel for prepared access. */
+  /**
+   * Add by email on People: the address the owner typed; the parent opens the panel for prepared
+   * access.
+   */
   readonly prepareAccess = output<string>();
   /** The Add by email form under the People heading. */
   readonly addingEmail = signal(false);
@@ -101,16 +132,24 @@ export class TestAccounts implements OnInit {
     this.closeConfirmations();
     this.addingEmail.set(true);
   }
-  cancelAddByEmail() { this.addingEmail.set(false); this.newEmail = ''; }
+  cancelAddByEmail() {
+    this.addingEmail.set(false);
+    this.newEmail = '';
+  }
   /** Continue hands the address to the parent; an empty one is refused here. */
   submitAddByEmail() {
     const email = this.newEmail.trim();
-    if (!email) { this.panelError.set('Enter the email address they will sign in with.'); return; }
+    if (!email) {
+      this.panelError.set('Enter the email address they will sign in with.');
+      return;
+    }
     this.prepareAccess.emit(email);
     this.cancelAddByEmail();
   }
   readonly canGive = computed(
-    () => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true,
+    () =>
+      this.accounts.account()?.permissions?.manageAccess ??
+      this.accounts.account()?.authorPreview === true,
   );
   readonly canReset = computed(
     () =>
@@ -120,63 +159,89 @@ export class TestAccounts implements OnInit {
   /** DLV-969 (owner, 2026-11-04): Restore and Reset all are the owner's alone. */
   readonly isOwner = computed(() => viewerRole(this.accounts.account()) === 'owner');
   /**
-   * DLV-969 (owner, 2026-11-04): the owner and admins see which test accounts have a purchase request waiting (the
-   * requests themselves are on Review requests → Purchase requests); co-authors and everyone else see nothing of them.
+   * DLV-969 (owner, 2026-11-04): the owner and admins see which test accounts have a purchase
+   * request waiting (the requests themselves are on Review requests → Purchase requests);
+   * co-authors and everyone else see nothing of them.
    */
   readonly canDecide = computed(() => canDecidePurchases(this.accounts.account()));
-  readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(viewerRole(this.accounts.account())));
-  readonly allowance = signal<TestAccountAllowance|null>(null);
+  readonly canCreate = computed(() =>
+    ['owner', 'co-author', 'admin'].includes(viewerRole(this.accounts.account())),
+  );
+  readonly allowance = signal<TestAccountAllowance | null>(null);
   private readonly devSession = inject(DevSession);
-  /** DLV-969 S35: DEV test accounts have no sign-in of their own; staff use them from the sign-in page. */
+  /**
+   * DLV-969 S35: DEV test accounts have no sign-in of their own; staff use them from the sign-in
+   * page.
+   */
   readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
-  /** The scenario a new test account starts from (DLV-969 S35); the first is a free learner without a plan. */
+  /**
+   * The scenario a new test account starts from (DLV-969 S35); the first is a free learner without
+   * a plan.
+   */
   createScenario = 'learner01';
   /**
-   * DLV-969 (owner, 2026-11-04): Create test account makes learners only, for every role, the owner included. Staff test
-   * accounts come from the fixed roster, so scenarios with a staff role are never offered (the Domain refuses them too).
+   * DLV-969 (owner, 2026-11-04): Create test account makes learners only, for every role, the owner
+   * included. Staff test accounts come from the fixed roster, so scenarios with a staff role are
+   * never offered (the Domain refuses them too).
    */
   readonly learnerScenarios = computed(() =>
-    (this.allowance()?.scenarios ?? []).filter((scenario) => !scenario.roles.some((role) => STAFF_ROLES.includes(role))),
+    (this.allowance()?.scenarios ?? []).filter(
+      (scenario) => !scenario.roles.some((role) => STAFF_ROLES.includes(role)),
+    ),
   );
   /** The owner's DEV roster progress while it is being created. */
   readonly rosterBusy = signal(false);
   readonly roster = computed(() => {
     const status = this.allowance()?.roster;
-    return status ? { ...status, remaining: Math.max(0, status.total - status.ready - status.deleted) } : null;
+    return status
+      ? { ...status, remaining: Math.max(0, status.total - status.ready - status.deleted) }
+      : null;
   });
   /** DLV-969 (owner, 2026-11-04): Reset all, typed once; done counts the resets sent so far. */
   readonly rosterReset = signal<{ open: boolean; done: number; total: number } | null>(null);
   rosterResetConfirmation = '';
-  /** DLV-969 (owner, 2026-11-04): Restore brings deleted roster accounts back with their scenarios, typed once. */
+  /**
+   * DLV-969 (owner, 2026-11-04): Restore brings deleted roster accounts back with their scenarios,
+   * typed once.
+   */
   readonly rosterRestore = signal<{ total: number } | null>(null);
   rosterRestoreConfirmation = '';
   /** Deleted roster accounts the owner can bring back; 0 for anyone else. */
-  readonly restorable = computed(() => (this.isOwner() ? this.roster()?.deleted ?? 0 : 0));
+  readonly restorable = computed(() => (this.isOwner() ? (this.roster()?.deleted ?? 0) : 0));
   /** The owner's Restore and Reset all, in DEV with the roster status (owner, 2026-11-04). */
   readonly ownerRoster = computed(() => this.isOwner() && this.dev() && !!this.roster());
   /**
-   * Reset all has something to do: roster accounts listed, and the Domain's `changed` count is not 0. An older Domain
-   * without `changed` keeps it available.
+   * Reset all has something to do: roster accounts listed, and the Domain's `changed` count is not
+   * 0. An older Domain without `changed` keeps it available.
    */
-  readonly resettable = computed(() => this.rosterRows().length > 0 && this.roster()?.changed !== 0);
+  readonly resettable = computed(
+    () => this.rosterRows().length > 0 && this.roster()?.changed !== 0,
+  );
   /**
-   * Why Reset all is greyed out, as a line under its own line and as its hover text (owner, 2026-11-04). Restore is not
-   * shown at all when nothing is deleted: the status line says so.
+   * Why Reset all is greyed out, as a line under its own line and as its hover text (owner,
+   * 2026-11-04). Restore is not shown at all when nothing is deleted: the status line says so.
    */
   readonly rosterHints = computed(() => {
     if (!this.ownerRoster() || this.resettable()) return { reset: '' };
-    return { reset: this.rosterRows().length ? 'Nothing to reset: every roster account is at its scenario' : 'Nothing to reset' };
+    return {
+      reset: this.rosterRows().length
+        ? 'Nothing to reset: every roster account is at its scenario'
+        : 'Nothing to reset',
+    };
   });
   /**
-   * DLV-969 (owner, DEV test 2026-11-04): why the open confirmation's action failed, shown inside that panel. One panel is
-   * open at a time, so one message serves them all; opening or closing a panel clears it.
+   * DLV-969 (owner, DEV test 2026-11-04): why the open confirmation's action failed, shown inside
+   * that panel. One panel is open at a time, so one message serves them all; opening or closing a
+   * panel clears it.
    */
   readonly panelError = signal('');
   /** The DEV roster's accounts in the list: every test account except single created ones. */
-  readonly rosterRows = computed(() => this.rows().filter((row) => !!row.creatorId && row.initialization !== 'created'));
+  readonly rosterRows = computed(() =>
+    this.rows().filter((row) => !!row.creatorId && row.initialization !== 'created'),
+  );
   readonly creating = signal(false);
-  readonly createKey = signal<string|null>(null);
-  readonly deleting = signal<TestAccountRow|null>(null);
+  readonly createKey = signal<string | null>(null);
+  readonly deleting = signal<TestAccountRow | null>(null);
   createPassword = '';
   deleteConfirmation = '';
   readonly rows = signal<TestAccountRow[]>([]);
@@ -213,22 +278,37 @@ export class TestAccounts implements OnInit {
           fullCurriculum: account.permissions?.fullCurriculum,
         }
       : null;
-    return directoryRows(self, this.assignments(), this.rows(), this.titles(), this.directoryAccounts());
+    return directoryRows(
+      self,
+      this.assignments(),
+      this.rows(),
+      this.titles(),
+      this.directoryAccounts(),
+    );
   });
   /**
-   * Test accounts on the Test accounts tab; everyone else on People. Owner, 2026-11-08: the owner's prepared access
-   * (an email, no account yet) is listed under Review requests, not among People.
+   * Test accounts on the Test accounts tab; everyone else on People. Owner, 2026-11-08: the owner's
+   * prepared access (an email, no account yet) is listed under Review requests, not among People.
    */
-  readonly inView = computed(() => this.people().filter((row) => row.isTest === (this.view() === 'test') && !(this.canGive() && row.pending)));
+  readonly inView = computed(() =>
+    this.people().filter(
+      (row) => row.isTest === (this.view() === 'test') && !(this.canGive() && row.pending),
+    ),
+  );
   /** Only the roles somebody in this list has (People's Role menu). */
   readonly roleFilters = computed(() =>
     ROLE_FILTERS.filter((name) => this.inView().some((row) => row.roles.includes(name))),
   );
-  // Since 2026-11-06 (owner) every test account is a learner: the Learners / Co-authors / Admins tabs are gone.
+  // Since 2026-11-06 (owner) every test account is a learner: the Learners / Co-authors / Admins
+  // tabs are gone.
   readonly visible = computed(() =>
-    this.inView().filter((row) => matchesFilter(row, this.query(), this.view() === 'test' ? '' : this.role())),
+    this.inView().filter((row) =>
+      matchesFilter(row, this.query(), this.view() === 'test' ? '' : this.role()),
+    ),
   );
-  readonly selectedRow = computed(() => this.visible().find((row) => row.key === this.selectedKey()) ?? null);
+  readonly selectedRow = computed(
+    () => this.visible().find((row) => row.key === this.selectedKey()) ?? null,
+  );
 
   ngOnInit() {
     void this.load();
@@ -236,7 +316,7 @@ export class TestAccounts implements OnInit {
   }
 
   actorName(id: string) {
-    if(this.accounts.account()?.accountId===id)return 'You';
+    if (this.accounts.account()?.accountId === id) return 'You';
     return this.rows().find((row) => row.accountId === id)?.username ?? id;
   }
 
@@ -250,17 +330,28 @@ export class TestAccounts implements OnInit {
   }
 
   /**
-   * DLV-969 (owner, 2026-11-04): the row says whether this viewer may reset it (the upgrade marker reserves it for the
-   * owner and the person who upgraded it); an older Domain without `canReset` keeps today's rule.
+   * DLV-969 (owner, 2026-11-04): the row says whether this viewer may reset it (the upgrade marker
+   * reserves it for the owner and the person who upgraded it); an older Domain without `canReset`
+   * keeps today's rule.
    */
   mayReset(row: TestAccountRow | null | undefined): boolean {
     return !!row && (canResetOf(row) ?? this.canReset());
   }
 
-  /** "Upgraded by Admin 2 · Grow · 4 Nov" and, when someone else approved it, "approved by Admin 3"; null without a marker. */
-  upgradeOf(row: TestAccountRow | null | undefined): { line: string; approved: string | null } | null {
+  /**
+   * "Upgraded by Admin 2 · Grow · 4 Nov" and, when someone else approved it, "approved by Admin 3";
+   * null without a marker.
+   */
+  upgradeOf(
+    row: TestAccountRow | null | undefined,
+  ): { line: string; approved: string | null } | null {
     const marker = row ? upgradeMarkerOf(row) : null;
-    return marker ? { line: upgradeLine(marker, this.isOwner()), approved: approvedLine(marker, this.isOwner()) } : null;
+    return marker
+      ? {
+          line: upgradeLine(marker, this.isOwner()),
+          approved: approvedLine(marker, this.isOwner()),
+        }
+      : null;
   }
 
   select(row: TestAccountRow) {
@@ -318,21 +409,35 @@ export class TestAccounts implements OnInit {
     this.selectedKey.set(null);
     this.notice.set('');
     try {
-      // Test accounts and the owner's People directory load independently (DLV-969, 2026-11-03): in DEV test accounts
-      // stay switched off until their IAM grant (S28), and that must not hide the directory's names or Disable/Delete.
+      // Test accounts and the owner's People directory load independently (DLV-969, 2026-11-03): in
+      // DEV test accounts stay switched off until their IAM grant (S28), and that must not hide the
+      // directory's names or Disable/Delete.
       try {
-        this.rows.set(await this.shared.read('/admin/test-accounts', path => this.api.request<TestAccountRow[]>(path)));
-        if(this.view()==='test' && this.canCreate())this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
+        this.rows.set(
+          await this.shared.read('/admin/test-accounts', (path) =>
+            this.api.request<TestAccountRow[]>(path),
+          ),
+        );
+        if (this.view() === 'test' && this.canCreate())
+          this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
       } catch {
         this.rows.set([]);
-        if (this.view() === 'test') this.notice.set('Test account maintenance is unavailable in this environment.');
+        if (this.view() === 'test')
+          this.notice.set('Test account maintenance is unavailable in this environment.');
       }
       this.directoryAccounts.set([]);
       if (this.accounts.account()?.permissions?.manageAccess) {
         try {
-          this.directoryAccounts.set(await loadDirectory((path) => this.shared.read(path, (shared) => this.api.request(shared))));
+          this.directoryAccounts.set(
+            await loadDirectory((path) =>
+              this.shared.read(path, (shared) => this.api.request(shared)),
+            ),
+          );
         } catch {
-          this.notice.set('The full People directory could not be loaded. Only existing assignments and test accounts are shown. Refresh to retry.');
+          this.notice.set(
+            'The full People directory could not be loaded. Only existing assignments ' +
+              'and test accounts are shown. Refresh to retry.',
+          );
         }
       }
     } finally {
@@ -341,59 +446,102 @@ export class TestAccounts implements OnInit {
     }
   }
 
-
   mayDelete(row: TestAccountRow): boolean {
     return row.canDelete === true;
   }
 
-  /** DEV needs no password (the account never signs in); Local still sets one for the Local Identity service. */
+  /**
+   * DEV needs no password (the account never signs in); Local still sets one for the Local Identity
+   * service.
+   */
   mayCreate(): boolean {
     const scenarios = this.allowance()?.scenarios;
-    const learner = !scenarios?.length || this.learnerScenarios().some((scenario) => scenario.id === this.createScenario);
-    return this.canCreate() && !this.busy() && !!this.createScenario && learner && (this.dev() || this.createPassword.length >= 15);
+    const learner =
+      !scenarios?.length ||
+      this.learnerScenarios().some((scenario) => scenario.id === this.createScenario);
+    return (
+      this.canCreate() &&
+      !this.busy() &&
+      !!this.createScenario &&
+      learner &&
+      (this.dev() || this.createPassword.length >= 15)
+    );
   }
 
   async create() {
-    if(!this.mayCreate())return;
-    const key=this.createKey()??crypto.randomUUID();this.createKey.set(key);this.busy.set(true);
-    const dev=this.dev();this.panelError.set('');
+    if (!this.mayCreate()) return;
+    const key = this.createKey() ?? crypto.randomUUID();
+    this.createKey.set(key);
+    this.busy.set(true);
+    const dev = this.dev();
+    this.panelError.set('');
     try {
-      const created=await this.api.request<{username:string}>('/admin/test-accounts',dev?{key,scenario:this.createScenario}:{key,password:this.createPassword,scenario:this.createScenario});
-      this.createKey.set(null);this.createPassword='';this.creating.set(false);
-      this.busy.set(false);await this.load();
-      this.notice.set(dev
-        ? `${created.username} created. To use it, choose Switch to a test account in your account menu.`
-        : `${created.username} created. Share its password through your local test setup.`);
+      const created = await this.api.request<{ username: string }>(
+        '/admin/test-accounts',
+        dev
+          ? { key, scenario: this.createScenario }
+          : { key, password: this.createPassword, scenario: this.createScenario },
+      );
+      this.createKey.set(null);
+      this.createPassword = '';
+      this.creating.set(false);
+      this.busy.set(false);
+      await this.load();
+      this.notice.set(
+        dev
+          ? `${created.username} created. To use it, choose Switch to a test account in ` +
+              `your account menu.`
+          : `${created.username} created. Share its password through your local test setup.`,
+      );
     } catch (failure) {
-      // The panel stays open with the reason inside it. A refusal (403, for example a creation limit reached) is said in
-      // the server's words, and the next try is a new request.
+      // The panel stays open with the reason inside it. A refusal (403, for example a creation
+      // limit reached) is said in the server's words, and the next try is a new request.
       if (failure instanceof MembershipRequestError && failure.status === 403) {
         this.createKey.set(null);
         this.panelError.set(failure.message);
       } else {
-        this.panelError.set(reason(failure) + (dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.'));
+        this.panelError.set(
+          reason(failure) +
+            (dev
+              ? 'Creation was not confirmed. Retry; the same request key is reused.'
+              : 'Creation was not confirmed. Retry with the same password and request key.'),
+        );
       }
-    } finally {this.busy.set(false);}
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   /**
-   * DLV-969 S35 (owner, DEV): creates Local's 35-account roster, a few accounts per call, until every one exists.
-   * A failed call stops with a message; Create again continues where it stopped.
+   * DLV-969 S35 (owner, DEV): creates Local's 35-account roster, a few accounts per call, until
+   * every one exists. A failed call stops with a message; Create again continues where it stopped.
    */
   async createRoster() {
-    if(!this.dev()||!this.roster()||this.busy()||this.rosterBusy())return;
-    this.rosterBusy.set(true);this.notice.set('');
+    if (!this.dev() || !this.roster() || this.busy() || this.rosterBusy()) return;
+    this.rosterBusy.set(true);
+    this.notice.set('');
     try {
-      for(let calls=0;calls<20;calls++){
-        const status=await this.api.request<{total:number;ready:number;deleted:number;withoutPlan?:number}>('/admin/test-accounts',{roster:true});
-        this.allowance.update((quota)=>quota?{...quota,roster:status}:quota);
-        if(status.total-status.ready-status.deleted<=0)break;
+      for (let calls = 0; calls < 20; calls++) {
+        const status = await this.api.request<{
+          total: number;
+          ready: number;
+          deleted: number;
+          withoutPlan?: number;
+        }>('/admin/test-accounts', { roster: true });
+        this.allowance.update((quota) => (quota ? { ...quota, roster: status } : quota));
+        if (status.total - status.ready - status.deleted <= 0) break;
       }
-      this.rosterBusy.set(false);await this.load();
-      this.notice.set('The test roster is ready. To use an account, choose Switch to a test account in your account menu.');
-    } catch(failure) {
-      this.notice.set(reason(failure)+'The roster stopped part way. Create again to continue.');
-    } finally {this.rosterBusy.set(false);}
+      this.rosterBusy.set(false);
+      await this.load();
+      this.notice.set(
+        'The test roster is ready. To use an account, choose Switch to a test account ' +
+          'in your account menu.',
+      );
+    } catch (failure) {
+      this.notice.set(reason(failure) + 'The roster stopped part way. Create again to continue.');
+    } finally {
+      this.rosterBusy.set(false);
+    }
   }
 
   openRosterReset() {
@@ -404,12 +552,20 @@ export class TestAccounts implements OnInit {
   }
 
   /**
-   * DLV-969 (owner, 2026-11-04): every roster account back to its scenario, one reset request each, so learners
-   * created before the study plans were published get theirs. A refusal is named and the rest carry on.
+   * DLV-969 (owner, 2026-11-04): every roster account back to its scenario, one reset request each,
+   * so learners created before the study plans were published get theirs. A refusal is named and
+   * the rest carry on.
    */
   async resetRoster() {
     const rows = this.rosterRows();
-    if (!this.dev() || !this.roster() || this.busy() || !rows.length || this.rosterResetConfirmation !== 'RESET ALL') return;
+    if (
+      !this.dev() ||
+      !this.roster() ||
+      this.busy() ||
+      !rows.length ||
+      this.rosterResetConfirmation !== 'RESET ALL'
+    )
+      return;
     this.busy.set(true);
     this.notice.set('');
     this.panelError.set('');
@@ -442,7 +598,8 @@ export class TestAccounts implements OnInit {
     this.history.set({});
     this.notice.set(
       refused.length
-        ? `${rows.length - refused.length} of ${rows.length} reset. Not reset: ${refused.join(', ')}. Reset all again to retry.`
+        ? `${rows.length - refused.length} of ${rows.length} reset. Not ` +
+            `reset: ${refused.join(', ')}. Reset all again to retry.`
         : `All ${rows.length} roster accounts are back to their scenarios.`,
     );
   }
@@ -454,18 +611,30 @@ export class TestAccounts implements OnInit {
   }
 
   /**
-   * DLV-969 (owner, 2026-11-04): one request brings every deleted roster account back with its scenario. The Domain
-   * checks the typed word and the owner again; an older Domain without the endpoint answers 404.
+   * DLV-969 (owner, 2026-11-04): one request brings every deleted roster account back with its
+   * scenario. The Domain checks the typed word and the owner again; an older Domain without the
+   * endpoint answers 404.
    */
   async restoreRoster() {
     const pending = this.rosterRestore();
-    if (!pending || !this.dev() || !this.restorable() || this.busy() || this.rosterRestoreConfirmation !== 'RESTORE') return;
+    if (
+      !pending ||
+      !this.dev() ||
+      !this.restorable() ||
+      this.busy() ||
+      this.rosterRestoreConfirmation !== 'RESTORE'
+    )
+      return;
     this.busy.set(true);
     this.notice.set('');
     this.panelError.set('');
     try {
-      // The route the Gateway already forwards (its allowlist is in a pinned file), as roster creation does with roster: true.
-      const result = await this.api.request<{ restored?: number } | null>('/admin/test-accounts', { restoreRoster: true, confirm: 'RESTORE' });
+      // The route the Gateway already forwards (its allowlist is in a pinned file), as roster
+      // creation does with roster: true.
+      const result = await this.api.request<{ restored?: number } | null>('/admin/test-accounts', {
+        restoreRoster: true,
+        confirm: 'RESTORE',
+      });
       const restored = typeof result?.restored === 'number' ? result.restored : pending.total;
       this.rosterRestore.set(null);
       this.rosterRestoreConfirmation = '';
@@ -486,28 +655,47 @@ export class TestAccounts implements OnInit {
   }
 
   async deleteAccount() {
-    const row=this.deleting();
-    if(!row||!this.mayDelete(row)||this.busy()||this.deleteConfirmation!==row.username)return;
-    this.busy.set(true);this.panelError.set('');
+    const row = this.deleting();
+    if (!row || !this.mayDelete(row) || this.busy() || this.deleteConfirmation !== row.username)
+      return;
+    this.busy.set(true);
+    this.panelError.set('');
     try {
       await this.api.remove(`/admin/test-accounts/${row.accountId}`);
-      this.deleting.set(null);this.deleteConfirmation='';this.busy.set(false);await this.load();
-      this.notice.set(`${row.username} deleted. Its login and test data are gone; the creator's lifetime count remains.`);
-    } catch (failure) {this.panelError.set(reason(failure)+'Deletion was not confirmed. Retry the same account.');}
-    finally {this.busy.set(false);}
+      this.deleting.set(null);
+      this.deleteConfirmation = '';
+      this.busy.set(false);
+      await this.load();
+      this.notice.set(
+        `${row.username} deleted. Its login and test data are gone; the creator's ` +
+          `lifetime count remains.`,
+      );
+    } catch (failure) {
+      this.panelError.set(reason(failure) + 'Deletion was not confirmed. Retry the same account.');
+    } finally {
+      this.busy.set(false);
+    }
   }
 
-  /** DLV-969 (owner, 2026-11-05): the row whose GitHub address was just copied, for a short "Copied" on its button. */
+  /**
+   * DLV-969 (owner, 2026-11-05): the row whose GitHub address was just copied, for a short "Copied"
+   * on its button.
+   */
   readonly copiedGithub = signal<string | null>(null);
   protected readonly githubLabel = githubDisplay;
 
-  /** Copies the person's GitHub address for the repository invitation. The clipboard may be refused; then the link stays to select. */
+  /**
+   * Copies the person's GitHub address for the repository invitation. The clipboard may be refused;
+   * then the link stays to select.
+   */
   async copyGithub(row: DirectoryRow): Promise<void> {
     if (!row.github) return;
     try {
       await navigator.clipboard.writeText(row.github);
       this.copiedGithub.set(row.key);
-      setTimeout(() => { if (this.copiedGithub() === row.key) this.copiedGithub.set(null); }, 2000);
+      setTimeout(() => {
+        if (this.copiedGithub() === row.key) this.copiedGithub.set(null);
+      }, 2000);
     } catch {
       this.copiedGithub.set(null);
     }
@@ -546,8 +734,12 @@ export class TestAccounts implements OnInit {
     if (this.history()[id]?.state === 'ready') return;
     this.history.update((all) => ({ ...all, [id]: { state: 'loading' } }));
     try {
-      const records = await this.api.request<AccessRecord[]>(`/admin/accounts/${id}/access-records`);
-      const items = records.map(accessRecordView).filter((view): view is AccessRecordView => view !== null);
+      const records = await this.api.request<AccessRecord[]>(
+        `/admin/accounts/${id}/access-records`,
+      );
+      const items = records
+        .map(accessRecordView)
+        .filter((view): view is AccessRecordView => view !== null);
       this.history.update((all) => ({ ...all, [id]: { state: 'ready', items } }));
     } catch {
       this.history.update((all) => ({ ...all, [id]: { state: 'error' } }));
@@ -568,7 +760,8 @@ export class TestAccounts implements OnInit {
       preset: this.preset,
     };
     this.pending.set(request);
-    this.busy.set(true);this.panelError.set('');
+    this.busy.set(true);
+    this.panelError.set('');
     try {
       await this.api.request('/admin/test-accounts/' + row.accountId + '/reset', request);
       this.cancel();
@@ -581,14 +774,17 @@ export class TestAccounts implements OnInit {
       });
       this.notice.set(row.username + ' reset.');
     } catch (failure) {
-      // 403 RESET_RESERVED: "Only the owner or Admin 2, who upgraded this account, can reset it." Retrying cannot help, so
-      // the same reset is not offered again; the panel stays with the reason inside it.
+      // 403 RESET_RESERVED: "Only the owner or Admin 2, who upgraded this account, can reset it."
+      // Retrying cannot help, so the same reset is not offered again; the panel stays with the
+      // reason inside it.
       if (resetReserved(failure)) {
         this.pending.set(null);
         this.panelError.set((failure as Error).message);
       } else {
         this.panelError.set(
-          reason(failure) + 'Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.',
+          reason(failure) +
+            'Reset was not confirmed. Retry the same reset, or cancel and refresh ' +
+            'before another change.',
         );
       }
     } finally {
@@ -597,10 +793,16 @@ export class TestAccounts implements OnInit {
   }
 }
 
-/** Roles that make a scenario a staff one; Create test account never offers those (DLV-969, owner 2026-11-04). */
+/**
+ * Roles that make a scenario a staff one; Create test account never offers those (DLV-969, owner
+ * 2026-11-04).
+ */
 const STAFF_ROLES: readonly string[] = ['owner', 'co-author', 'admin', 'reviewer', 'tester'];
 
-/** DLV-969: the server's own reason ("Confirm the exact test username…") leads the notice, so a refusal says why. */
+/**
+ * DLV-969: the server's own reason ("Confirm the exact test username…") leads the notice, so a
+ * refusal says why.
+ */
 function reason(failure: unknown): string {
   return failure instanceof Error && failure.message ? failure.message + ' ' : '';
 }

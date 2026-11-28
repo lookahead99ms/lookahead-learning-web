@@ -1,5 +1,14 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -19,7 +28,15 @@ import {
 } from '../admin-reviews/platform-review.model';
 import { FeedbackItemView } from './feedback-item';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
-import { kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
+import {
+  kindLabel,
+  matchesSearch,
+  sortNewest,
+  statusLabel,
+  statusTone,
+  typeLabel,
+  updatedLabel,
+} from './feedback-backlog';
 
 /** The html class that stops the page behind the dialog from scrolling. */
 export const DIALOG_OPEN_CLASS = 'feedback-dialog-open';
@@ -27,15 +44,16 @@ export const DIALOG_OPEN_CLASS = 'feedback-dialog-open';
 export const TICKET_TYPE_PREFIX = 'ticket:';
 
 /**
- * DLV-971 (owner, 2026-11-06): Support tickets and feedback, the backlog: one table row per item (key, summary, from,
- * type, page, status, Delivery Plan ticket, last update), newest update first, with the pills All / Support tickets /
- * Feedback / Mine, the search and the filters. A row opens the item in a dialog on top of the list (the page behind it
- * stops scrolling); the ↗ opens the item's own page. The older /admin/reviews address and the former Team Reviews tab
- * of Support both arrive here. A reviewer sees only their own feedback; the owner and admins see everything.
+ * DLV-971 (owner, 2026-11-06): Support tickets and feedback, the backlog: one table row per item
+ * (key, summary, from, type, page, status, Delivery Plan ticket, last update), newest update first,
+ * with the pills All / Support tickets / Feedback / Mine, the search and the filters. A row opens
+ * the item in a dialog on top of the list (the page behind it stops scrolling); the ↗ opens the
+ * item's own page. The older /admin/reviews address and the former Team Reviews tab of Support both
+ * arrive here. A reviewer sees only their own feedback; the owner and admins see everything.
  *
- * The shared left Admin rail carries the admin links, and the single
- * content column gives the backlog table the whole width (owner, 2026-11-06). The ID column sticks on the left and
- * Ticket, Updated and the ↗ on the right while the table scrolls sideways.
+ * The shared left Admin rail carries the admin links, and the single content column gives the
+ * backlog table the whole width (owner, 2026-11-06). The ID column sticks on the left and Ticket,
+ * Updated and the ↗ on the right while the table scrolls sideways.
  */
 @Component({
   host: { class: 'admin-surface' },
@@ -60,14 +78,23 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly statusTone = statusTone;
   protected readonly isRequest = isRequest;
 
-  protected readonly signedIn = computed(() => !!this.accounts.account() && !this.accounts.sessionExpired());
-  protected readonly state = signal<'loading' | 'ready' | 'denied' | 'signed-out' | 'error'>('loading');
+  protected readonly signedIn = computed(
+    () => !!this.accounts.account() && !this.accounts.sessionExpired(),
+  );
+  protected readonly state = signal<'loading' | 'ready' | 'denied' | 'signed-out' | 'error'>(
+    'loading',
+  );
   protected readonly viewer = signal<PlatformReviewViewer | null>(null);
   protected readonly items = signal<PlatformReviewSummary[]>([]);
   protected readonly nextBefore = signal<string | null>(null);
   protected readonly loadingOlder = signal(false);
-  protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
-  /** The owner alone (the same role check as the triage of a review) has the Jobs strip: Close idle tickets. */
+  protected readonly seesAll = computed(
+    () => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin',
+  );
+  /**
+   * The owner alone (the same role check as the triage of a review) has the Jobs strip: Close idle
+   * tickets.
+   */
   protected readonly isOwner = computed(() => this.viewer()?.role === 'owner');
   private readonly devSession = inject(DevSession);
 
@@ -79,12 +106,18 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly statusFilter = signal('');
   protected readonly typeFilter = signal('');
   protected readonly ticketItems = computed(() => this.items().filter(isRequest));
-  protected readonly feedbackItems = computed(() => this.items().filter((item) => !isRequest(item)));
-  protected readonly ownItems = computed(() => this.items().filter((item) => item.reviewerId === this.viewer()?.reviewerId));
+  protected readonly feedbackItems = computed(() =>
+    this.items().filter((item) => !isRequest(item)),
+  );
+  protected readonly ownItems = computed(() =>
+    this.items().filter((item) => item.reviewerId === this.viewer()?.reviewerId),
+  );
   protected readonly senders = computed(() => {
     const byId = new Map<string, string>();
     for (const item of this.items()) byId.set(item.reviewerId, item.reviewerName);
-    return [...byId.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+    return [...byId.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   });
   /** Sorted by last update, newest first, after the pills, the search and the filters. */
   protected readonly rows = computed(() =>
@@ -128,12 +161,15 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
       this.nextBefore.set(page.nextBefore);
       this.now.set(new Date());
       this.state.set('ready');
-      // A ticket's "From review" link on the Delivery Plan opens /admin/feedback#<id>: that item opens in the dialog.
+      // A ticket's "From review" link on the Delivery Plan opens /admin/feedback#<id>: that item
+      // opens in the dialog.
       const requested = this.route.snapshot.fragment;
       if (requested && page.items.some((item) => item.id === requested)) this.open(requested);
     } catch (error) {
       const kind = error instanceof PlatformReviewError ? error.kind : 'unavailable';
-      this.state.set(kind === 'forbidden' ? 'denied' : kind === 'unauthorized' ? 'signed-out' : 'error');
+      this.state.set(
+        kind === 'forbidden' ? 'denied' : kind === 'unauthorized' ? 'signed-out' : 'error',
+      );
     }
   }
 
@@ -155,7 +191,8 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   private matchesType(item: PlatformReviewSummary): boolean {
     const filter = this.typeFilter();
     if (!filter) return true;
-    if (filter.startsWith(TICKET_TYPE_PREFIX)) return isRequest(item) && item.requestType === filter.slice(TICKET_TYPE_PREFIX.length);
+    if (filter.startsWith(TICKET_TYPE_PREFIX))
+      return isRequest(item) && item.requestType === filter.slice(TICKET_TYPE_PREFIX.length);
     return !isRequest(item) && item.category === filter;
   }
 
@@ -248,7 +285,13 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
     const rows = [...(row.parentElement?.querySelectorAll<HTMLElement>('tr[tabindex]') ?? [])];
     const index = rows.indexOf(row);
     const next =
-      event.key === 'Home' ? 0 : event.key === 'End' ? rows.length - 1 : event.key === 'ArrowDown' ? Math.min(rows.length - 1, index + 1) : Math.max(0, index - 1);
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? rows.length - 1
+          : event.key === 'ArrowDown'
+            ? Math.min(rows.length - 1, index + 1)
+            : Math.max(0, index - 1);
     rows[next]?.focus();
   }
 }

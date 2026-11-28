@@ -1,39 +1,39 @@
 <div class="reviews-panel">
   @if (!compact()) {
-  <header>
-    @if (section() === 'submit') {
-      <p class="eyebrow">Feedback</p>
-    }
-    <h2 class="intro-heading">
-      @if (section() === 'submitted' && !seesAll()) {
-        Your feedback, and where each item stands.
-      } @else if (showAll() && section() !== 'submit') {
-        See what reviewers want to change.
-      } @else {
-        Tell us what should change.
+    <header>
+      @if (section() === 'submit') {
+        <p class="eyebrow">Feedback</p>
       }
-    </h2>
-    <p class="lede">
-      @if (section() === 'submitted' && !seesAll()) {
-        Each item shows the status the owner set. Add new feedback under Give feedback on Support.
-      } @else if (showAll() && section() !== 'submit' && !isOwner()) {
-        Every reviewer's feedback and every learner support ticket, newest day first. Open one to
-        read it and see its images. You set the status of learner support tickets; the owner sets the
-        status and note on feedback.
-      } @else if (showAll() && section() !== 'submit') {
-        Each reviewer sees only their own feedback. You see all of it and every learner support
-        ticket, newest day first. Open one to read it, see its images and set a status the sender
-        will see.
-      } @else if (seesAll()) {
-        This is the view every reviewer gets. Feedback you give here also appears under Support
-        tickets and feedback with your name.
-      } @else {
-        One item for each problem, change or idea on the platform. Attach screenshots when they
-        help. Other reviewers cannot see your items; the owner sets a status on each one under
-        Support tickets and feedback.
-      }
-    </p>
-  </header>
+      <h2 class="intro-heading">
+        @if (section() === 'submitted' && !seesAll()) {
+          Your feedback, and where each item stands.
+        } @else if (showAll() && section() !== 'submit') {
+          See what reviewers want to change.
+        } @else {
+          Tell us what should change.
+        }
+      </h2>
+      <p class="lede">
+        @if (section() === 'submitted' && !seesAll()) {
+          Each item shows the status the owner set. Add new feedback under Give feedback on Support.
+        } @else if (showAll() && section() !== 'submit' && !isOwner()) {
+          Every reviewer's feedback and every learner support ticket, newest day first. Open one to
+          read it and see its images. You set the status of learner support tickets; the owner sets
+          the status and note on feedback.
+        } @else if (showAll() && section() !== 'submit') {
+          Each reviewer sees only their own feedback. You see all of it and every learner support
+          ticket, newest day first. Open one to read it, see its images and set a status the sender
+          will see.
+        } @else if (seesAll()) {
+          This is the view every reviewer gets. Feedback you give here also appears under Support
+          tickets and feedback with your name.
+        } @else {
+          One item for each problem, change or idea on the platform. Attach screenshots when they
+          help. Other reviewers cannot see your items; the owner sets a status on each one under
+          Support tickets and feedback.
+        }
+      </p>
+    </header>
   }
 
   @if (state() === 'loading' && !viewer()) {
@@ -56,22 +56,40 @@
     </section>
   } @else {
     @if (section() === 'submit' && !compact()) {
-      <!-- DLV-971 (owner, 2026-11-06): the same tips a learner sees, inside the review card above the form. -->
+      <!-- DLV-971 (owner, 2026-11-06): the same tips a learner sees, inside the review card above
+           the form. -->
       <app-report-tips class="report-tips" />
     }
     @if (seesAll() && section() !== 'submit') {
-      <!-- DLV-971 (owner, 2026-11-06): All, the two kinds, and Mine (the reviewer view of your own feedback). -->
+      <!-- DLV-971 (owner, 2026-11-06): All, the two kinds, and Mine (the reviewer view of your own
+           feedback). -->
       <div class="view-tabs" role="group" aria-label="View">
-        <button type="button" [attr.aria-pressed]="ownerView() === 'all' && !kindFilter()" (click)="showOwnerView('all')">
+        <button
+          type="button"
+          [attr.aria-pressed]="ownerView() === 'all' && !kindFilter()"
+          (click)="showOwnerView('all')"
+        >
           All <span class="tab-count">{{ items().length }}</span>
         </button>
-        <button type="button" [attr.aria-pressed]="ownerView() === 'all' && kindFilter() === 'ticket'" (click)="showOwnerView('all', 'ticket')">
+        <button
+          type="button"
+          [attr.aria-pressed]="ownerView() === 'all' && kindFilter() === 'ticket'"
+          (click)="showOwnerView('all', 'ticket')"
+        >
           Support tickets <span class="tab-count">{{ ticketItems().length }}</span>
         </button>
-        <button type="button" [attr.aria-pressed]="ownerView() === 'all' && kindFilter() === 'feedback'" (click)="showOwnerView('all', 'feedback')">
+        <button
+          type="button"
+          [attr.aria-pressed]="ownerView() === 'all' && kindFilter() === 'feedback'"
+          (click)="showOwnerView('all', 'feedback')"
+        >
           Feedback <span class="tab-count">{{ feedbackItems().length }}</span>
         </button>
-        <button type="button" [attr.aria-pressed]="ownerView() === 'mine'" (click)="showOwnerView('mine')">
+        <button
+          type="button"
+          [attr.aria-pressed]="ownerView() === 'mine'"
+          (click)="showOwnerView('mine')"
+        >
           Mine <span class="tab-count">{{ ownItems().length }}</span>
         </button>
       </div>
@@ -166,7 +184,9 @@
                   <option [value]="category.id">{{ category.label }}</option>
                 }
                 @for (type of requestTypes; track type.id) {
-                  <option [value]="requestFilterPrefix + type.id">Support ticket: {{ type.label }}</option>
+                  <option [value]="requestFilterPrefix + type.id"
+                    >Support ticket: {{ type.label }}</option
+                  >
                 }
               </select>
             </label>
@@ -177,151 +197,176 @@
           <ng-container
             *ngTemplateOutlet="
               dayList;
-              context: { $implicit: allDays(), showReviewer: true, empty: 'No items match these filters.' }
+              context: {
+                $implicit: allDays(),
+                showReviewer: true,
+                empty: 'No items match these filters.',
+              }
             "
           />
         </section>
       } @else {
         @if (section() !== 'submitted') {
-        <section aria-labelledby="review-form" class="form-section">
-          <h2 id="review-form" tabindex="-1" #formHeading [class.visually-hidden]="compact() && !editingId()">
-            {{ editingId() ? 'Edit your feedback' : 'New feedback' }}
-          </h2>
-          <form (ngSubmit)="submit()" (paste)="onPaste($event)" novalidate>
-            <!-- DLV-971 (owner, 2026-11-06): the type is a row of cards like the ticket kinds; there is no importance field
-                 on the page (the record keeps its priority field with the default the Web always sent). -->
-            @if (!category$()) {
-            <fieldset class="type-picker">
-              <legend>Type</legend>
-              <div class="type-options">
-                @for (option of categoryCards; track option.id) {
-                  <label class="type-option" [class.selected]="category === option.id">
-                    <input type="radio" name="category" [value]="option.id" [attr.value]="option.id" [(ngModel)]="category" />
-                    <span class="type-icon" aria-hidden="true">{{ option.icon }}</span>
-                    <strong>{{ option.label }}</strong>
-                    <small>{{ option.hint }}</small>
-                  </label>
-                }
-              </div>
-            </fieldset>
-            }
-            <div class="form-grid">
-              <label
-                >Page
-                <select name="page" [(ngModel)]="page">
-                  @for (option of pages; track option) {
-                    <option [value]="option">{{ option }}</option>
-                  }
-                </select>
-              </label>
-              <label
-                >Page address <span class="optional">(optional)</span>
-                <input
-                  name="pageUrl"
-                  [(ngModel)]="pageUrl"
-                  placeholder="/learn/core-java"
-                  autocomplete="off"
-                />
-              </label>
-            </div>
-            <label
-              >Title
-              <input name="title" [(ngModel)]="title" [maxlength]="limits.titleLength" required />
-            </label>
-            <label
-              >What you saw and what should change
-              <textarea
-                name="details"
-                rows="7"
-                [(ngModel)]="detailsText"
-                [maxlength]="limits.detailsLength"
-                required
-              ></textarea>
-              <span class="hint"
-                >{{ detailsText.length }} of {{ limits.detailsLength }} characters</span
-              >
-            </label>
-            <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits and the paste path stay as they were. -->
-            <fieldset class="attachments-field">
-              <legend class="visually-hidden">Screenshots and images</legend>
-              <div class="attach">
-                <label class="file-picker"
-                  ><span aria-hidden="true">📎</span> Add screenshots<input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    multiple
-                    (change)="onFileInput($event)"
+          <section aria-labelledby="review-form" class="form-section">
+            <h2
+              id="review-form"
+              tabindex="-1"
+              #formHeading
+              [class.visually-hidden]="compact() && !editingId()"
+            >
+              {{ editingId() ? 'Edit your feedback' : 'New feedback' }}
+            </h2>
+            <form (ngSubmit)="submit()" (paste)="onPaste($event)" novalidate>
+              <!-- DLV-971 (owner, 2026-11-06): the type is a row of cards like the ticket kinds;
+                 there is no importance field on the page (the record keeps its priority field with
+                 the default the Web always sent). -->
+              @if (!category$()) {
+                <fieldset class="type-picker">
+                  <legend>Type</legend>
+                  <div class="type-options">
+                    @for (option of categoryCards; track option.id) {
+                      <label class="type-option" [class.selected]="category === option.id">
+                        <input
+                          type="radio"
+                          name="category"
+                          [value]="option.id"
+                          [attr.value]="option.id"
+                          [(ngModel)]="category"
+                        />
+                        <span class="type-icon" aria-hidden="true">{{ option.icon }}</span>
+                        <strong>{{ option.label }}</strong>
+                        <small>{{ option.hint }}</small>
+                      </label>
+                    }
+                  </div>
+                </fieldset>
+              }
+              <div class="form-grid">
+                <label
+                  >Page
+                  <select name="page" [(ngModel)]="page">
+                    @for (option of pages; track option) {
+                      <option [value]="option">{{ option }}</option>
+                    }
+                  </select>
+                </label>
+                <label
+                  >Page address <span class="optional">(optional)</span>
+                  <input
+                    name="pageUrl"
+                    [(ngModel)]="pageUrl"
+                    placeholder="/learn/core-java"
+                    autocomplete="off"
                   />
                 </label>
-                <p class="hint">
-                  Up to {{ limits.attachmentsPerItem }} images, 5 MB each; or paste one into the form.
-                </p>
               </div>
-              @if (keptAttachments().length || pendingFiles().length) {
-                <ul class="thumbnails" aria-label="Images on this item">
-                  @for (file of keptAttachments(); track file.id) {
-                    <li>
-                      @if (attachmentUrls()[file.id]; as url) {
-                        <img [src]="url" [alt]="file.name" />
-                      }
-                      <span>{{ file.name }}</span>
-                      <button type="button" class="link-button" (click)="removeKept(file.id)">
-                        Remove<span class="visually-hidden"> {{ file.name }}</span>
-                      </button>
-                    </li>
-                  }
-                  @for (pending of pendingFiles(); track pending.url; let index = $index) {
-                    <li>
-                      <img [src]="pending.url" [alt]="pending.file.name" />
-                      <span>{{ pending.file.name }} · {{ size(pending.file.size) }}</span>
-                      <button type="button" class="link-button" (click)="removePending(index)">
-                        Remove<span class="visually-hidden"> {{ pending.file.name }}</span>
-                      </button>
-                    </li>
-                  }
-                </ul>
+              <label
+                >Title
+                <input name="title" [(ngModel)]="title" [maxlength]="limits.titleLength" required />
+              </label>
+              <label
+                >What you saw and what should change
+                <textarea
+                  name="details"
+                  rows="7"
+                  [(ngModel)]="detailsText"
+                  [maxlength]="limits.detailsLength"
+                  required
+                ></textarea>
+                <span class="hint"
+                  >{{ detailsText.length }} of {{ limits.detailsLength }} characters</span
+                >
+              </label>
+              <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits and the paste path stay as
+                   they were. -->
+              <fieldset class="attachments-field">
+                <legend class="visually-hidden">Screenshots and images</legend>
+                <div class="attach">
+                  <label class="file-picker"
+                    ><span aria-hidden="true">📎</span> Add screenshots<input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      multiple
+                      (change)="onFileInput($event)"
+                    />
+                  </label>
+                  <p class="hint">
+                    Up to {{ limits.attachmentsPerItem }} images, 5 MB each; or paste one into the
+                    form.
+                  </p>
+                </div>
+                @if (keptAttachments().length || pendingFiles().length) {
+                  <ul class="thumbnails" aria-label="Images on this item">
+                    @for (file of keptAttachments(); track file.id) {
+                      <li>
+                        @if (attachmentUrls()[file.id]; as url) {
+                          <img [src]="url" [alt]="file.name" />
+                        }
+                        <span>{{ file.name }}</span>
+                        <button type="button" class="link-button" (click)="removeKept(file.id)">
+                          Remove<span class="visually-hidden"> {{ file.name }}</span>
+                        </button>
+                      </li>
+                    }
+                    @for (pending of pendingFiles(); track pending.url; let index = $index) {
+                      <li>
+                        <img [src]="pending.url" [alt]="pending.file.name" />
+                        <span>{{ pending.file.name }} · {{ size(pending.file.size) }}</span>
+                        <button type="button" class="link-button" (click)="removePending(index)">
+                          Remove<span class="visually-hidden"> {{ pending.file.name }}</span>
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+              </fieldset>
+              @if (formError()) {
+                <p class="form-error" role="alert">{{ formError() }}</p>
               }
-            </fieldset>
-            @if (formError()) {
-              <p class="form-error" role="alert">{{ formError() }}</p>
-            }
-            <div class="form-actions">
-              <button type="submit" class="primary" [disabled]="saving()">
-                {{ saving() ? 'Sending…' : editingId() ? 'Save changes' : compact() ? 'Send' : 'Send feedback' }}
-              </button>
-              @if (editingId()) {
-                <button type="button" class="secondary" (click)="resetForm()">
-                  Cancel editing
+              <div class="form-actions">
+                <button type="submit" class="primary" [disabled]="saving()">
+                  {{
+                    saving()
+                      ? 'Sending…'
+                      : editingId()
+                        ? 'Save changes'
+                        : compact()
+                          ? 'Send'
+                          : 'Send feedback'
+                  }}
                 </button>
-              } @else if (compact()) {
-                <button type="button" class="secondary" (click)="resetForm()">Clear</button>
-              }
-              <span role="status" class="form-status">{{ formStatus() }}</span>
-            </div>
-          </form>
-        </section>
+                @if (editingId()) {
+                  <button type="button" class="secondary" (click)="resetForm()">
+                    Cancel editing
+                  </button>
+                } @else if (compact()) {
+                  <button type="button" class="secondary" (click)="resetForm()">Clear</button>
+                }
+                <span role="status" class="form-status">{{ formStatus() }}</span>
+              </div>
+            </form>
+          </section>
         }
 
         @if (section() !== 'submit') {
-        <section aria-labelledby="review-items">
-          <h2 id="review-items">Your feedback</h2>
-          <ng-container
-            *ngTemplateOutlet="
-              dayList;
-              context: { $implicit: ownDays(), showReviewer: false, empty: 'Nothing submitted yet.' }
-            "
-          />
-        </section>
+          <section aria-labelledby="review-items">
+            <h2 id="review-items">Your feedback</h2>
+            <ng-container
+              *ngTemplateOutlet="
+                dayList;
+                context: {
+                  $implicit: ownDays(),
+                  showReviewer: false,
+                  empty: 'Nothing submitted yet.',
+                }
+              "
+            />
+          </section>
         }
       }
       @if (nextBefore() && section() !== 'submit') {
         <div class="older">
-          <button
-            type="button"
-            class="secondary"
-            [disabled]="loadingOlder()"
-            (click)="loadOlder()"
-          >
+          <button type="button" class="secondary" [disabled]="loadingOlder()" (click)="loadOlder()">
             {{ loadingOlder() ? 'Loading older days…' : 'Show older days' }}
           </button>
           <span role="status">{{ olderError() }}</span>
@@ -332,187 +377,211 @@
 </div>
 
 <ng-template #dayList let-days let-showReviewer="showReviewer" let-empty="empty">
-@for (day of days; track day.key) {
-  <section class="day" [attr.aria-labelledby]="'day-' + day.key">
-    <h3 class="day-heading" [id]="'day-' + day.key">
-      {{ day.label }}
-      <span class="day-count">{{ day.items.length === 1 ? '1 item' : day.items.length + ' items' }}</span>
-    </h3>
-    <ol class="item-list">
-      @for (summary of day.items; track summary.id) {
-        <li
-          class="item-row"
-          [id]="'review-' + summary.id"
-          [class.open]="openId() === summary.id"
-          [class.targeted]="targetId() === summary.id"
-        >
-          <button
-            type="button"
-            class="item-summary"
-            [attr.aria-expanded]="openId() === summary.id"
-            [attr.aria-controls]="'detail-' + summary.id"
-            (click)="toggle(summary)"
+  @for (day of days; track day.key) {
+    <section class="day" [attr.aria-labelledby]="'day-' + day.key">
+      <h3 class="day-heading" [id]="'day-' + day.key">
+        {{ day.label }}
+        <span class="day-count">{{
+          day.items.length === 1 ? '1 item' : day.items.length + ' items'
+        }}</span>
+      </h3>
+      <ol class="item-list">
+        @for (summary of day.items; track summary.id) {
+          <li
+            class="item-row"
+            [id]="'review-' + summary.id"
+            [class.open]="openId() === summary.id"
+            [class.targeted]="targetId() === summary.id"
           >
-            <span class="chevron" aria-hidden="true"></span>
-            <span class="summary-main">
-              <span class="summary-head">
-                <span class="kind-badge" [class.ticket]="isRequest(summary)">{{ kindBadge(summary) }}</span>
-                <span class="summary-title">{{ summary.title }}</span>
-                @if (summary.ticketId) {
-                  <!-- The row is one button, so the pill is text here; the open item carries the link. -->
-                  <span class="ticket-pill">{{ ticketPill(summary) }}</span>
-                }
+            <button
+              type="button"
+              class="item-summary"
+              [attr.aria-expanded]="openId() === summary.id"
+              [attr.aria-controls]="'detail-' + summary.id"
+              (click)="toggle(summary)"
+            >
+              <span class="chevron" aria-hidden="true"></span>
+              <span class="summary-main">
+                <span class="summary-head">
+                  <span class="kind-badge" [class.ticket]="isRequest(summary)">{{
+                    kindBadge(summary)
+                  }}</span>
+                  <span class="summary-title">{{ summary.title }}</span>
+                  @if (summary.ticketId) {
+                    <!-- The row is one button, so the pill is text here; the open item carries the
+                         link. -->
+                    <span class="ticket-pill">{{ ticketPill(summary) }}</span>
+                  }
+                </span>
+                <span class="summary-meta">
+                  @if (showReviewer) {
+                    <strong>{{ summary.reviewerName }}</strong>
+                    <span>{{
+                      summary.submitterRole === 'legacy' || !summary.submitterRole
+                        ? 'Earlier feedback'
+                        : summary.submitterRole
+                    }}</span>
+                    ·
+                  }
+                  {{ labelOf(categories, summary.category) }} · {{ summary.page }} ·
+                  {{ time(summary.createdAt) }}
+                  @if (summary.attachmentCount) {
+                    · {{ images(summary.attachmentCount) }}
+                  }
+                </span>
               </span>
-              <span class="summary-meta">
-                @if (showReviewer) {
-                  <strong>{{ summary.reviewerName }}</strong>
-                  <span>{{ summary.submitterRole === 'legacy' || !summary.submitterRole ? 'Earlier feedback' : summary.submitterRole }}</span> ·
-                }
-                {{ labelOf(categories, summary.category) }} · {{ summary.page }} ·
-                {{ time(summary.createdAt) }}
-                @if (summary.attachmentCount) {
-                  · {{ images(summary.attachmentCount) }}
-                }
+              <span class="summary-status" [attr.data-status]="summary.status">
+                {{ labelOf(statuses, summary.status) }}
               </span>
-            </span>
-            <span class="summary-status" [attr.data-status]="summary.status">
-              {{ labelOf(statuses, summary.status) }}
-            </span>
-            <span class="visually-hidden">
-              {{ openId() === summary.id ? 'Hide details' : 'Show details' }}
-            </span>
-          </button>
-          @if (openId() === summary.id) {
-            <div class="item-detail" [id]="'detail-' + summary.id">
-              @if (details()[summary.id]; as item) {
-                <ng-container
-                  *ngTemplateOutlet="itemBody; context: { $implicit: item, showReviewer: showReviewer }"
-                />
-              } @else if (detailState()[summary.id] === 'error') {
-                <p role="alert">
-                  The item could not be opened.
-                  <button type="button" class="link-button" (click)="loadDetail(summary.id)">
-                    Try again
-                  </button>
-                </p>
-              } @else {
-                <p class="hint" role="status">Loading the item…</p>
-              }
-            </div>
-          }
-        </li>
-      }
-    </ol>
-  </section>
-} @empty {
-  <p class="empty">{{ empty }}</p>
-}
+              <span class="visually-hidden">
+                {{ openId() === summary.id ? 'Hide details' : 'Show details' }}
+              </span>
+            </button>
+            @if (openId() === summary.id) {
+              <div class="item-detail" [id]="'detail-' + summary.id">
+                @if (details()[summary.id]; as item) {
+                  <ng-container
+                    *ngTemplateOutlet="
+                      itemBody;
+                      context: { $implicit: item, showReviewer: showReviewer }
+                    "
+                  />
+                } @else if (detailState()[summary.id] === 'error') {
+                  <p role="alert">
+                    The item could not be opened.
+                    <button type="button" class="link-button" (click)="loadDetail(summary.id)">
+                      Try again
+                    </button>
+                  </p>
+                } @else {
+                  <p class="hint" role="status">Loading the item…</p>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ol>
+    </section>
+  } @empty {
+    <p class="empty">{{ empty }}</p>
+  }
 </ng-template>
 
 <ng-template #itemBody let-item let-showReviewer="showReviewer">
-<article class="item" [attr.aria-label]="item.title">
-  @if (item.reference) {
-    <p class="item-reference">
-      Reference: <code>{{ item.reference }}</code>
-      <button type="button" class="link-button copy-reference" (click)="copyReference(item)">
-        Copy<span class="visually-hidden"> reference {{ item.reference }}</span>
-      </button>
-      <span role="status" class="copy-status">{{ copyStatus()[item.id] }}</span>
-    </p>
-  }
-  @if (item.pageUrl) {
-    <p class="item-url">Page address: <code>{{ item.pageUrl }}</code></p>
-  }
-  <p class="item-details">{{ item.details }}</p>
-  @if (item.attachments.length) {
-    <ul class="thumbnails" [attr.aria-label]="'Images for ' + item.title">
-      @for (attachment of item.attachments; track attachment.id) {
-        <li>
-          @if (attachmentUrls()[attachment.id]; as url) {
-            <button type="button" class="thumbnail-button" (click)="openImage(attachment)">
-              <img [src]="url" alt="" />
-              <span class="visually-hidden">Open image {{ attachment.name }}</span>
-            </button>
-          } @else {
-            <span class="thumbnail-placeholder" aria-hidden="true"></span>
-          }
-          <span>{{ attachment.name }} · {{ size(attachment.size) }}</span>
-        </li>
-      }
-    </ul>
-  }
-  @if (item.ownerNote) {
-    <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
-  }
-  @if (item.ticketId) {
-    <p class="item-ticket">
-      Ticket:
-      <a class="ticket-pill" routerLink="/delivery-plan" [fragment]="item.ticketId">{{ ticketPill(item) }}</a>
-      <span role="status" class="promote-status">{{ promoteMessage()[item.id] }}</span>
-    </p>
-  } @else if (canPromote(item)) {
-    <div class="promote">
-      <button
-        type="button"
-        class="secondary"
-        [disabled]="promoting() === item.id"
-        (click)="promote(item)"
+  <article class="item" [attr.aria-label]="item.title">
+    @if (item.reference) {
+      <p class="item-reference">
+        Reference: <code>{{ item.reference }}</code>
+        <button type="button" class="link-button copy-reference" (click)="copyReference(item)">
+          Copy<span class="visually-hidden"> reference {{ item.reference }}</span>
+        </button>
+        <span role="status" class="copy-status">{{ copyStatus()[item.id] }}</span>
+      </p>
+    }
+    @if (item.pageUrl) {
+      <p class="item-url"
+        >Page address: <code>{{ item.pageUrl }}</code></p
       >
-        {{ promoting() === item.id ? 'Promoting…' : 'Promote to ticket' }}<span class="visually-hidden"> {{ item.title }}</span>
-      </button>
-      <span role="status" class="promote-status">{{ promoteMessage()[item.id] }}</span>
-    </div>
-  }
-  @if (showReviewer && canTriage(item)) {
-    <form class="triage" (ngSubmit)="saveTriage(item)">
-      <label
-        >Status
-        <select
-          [name]="'status-' + item.id"
-          [ngModel]="triageDrafts()[item.id].status"
-          (ngModelChange)="setTriage(item.id, { status: $event })"
+    }
+    <p class="item-details">{{ item.details }}</p>
+    @if (item.attachments.length) {
+      <ul class="thumbnails" [attr.aria-label]="'Images for ' + item.title">
+        @for (attachment of item.attachments; track attachment.id) {
+          <li>
+            @if (attachmentUrls()[attachment.id]; as url) {
+              <button type="button" class="thumbnail-button" (click)="openImage(attachment)">
+                <img [src]="url" alt="" />
+                <span class="visually-hidden">Open image {{ attachment.name }}</span>
+              </button>
+            } @else {
+              <span class="thumbnail-placeholder" aria-hidden="true"></span>
+            }
+            <span>{{ attachment.name }} · {{ size(attachment.size) }}</span>
+          </li>
+        }
+      </ul>
+    }
+    @if (item.ownerNote) {
+      <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
+    }
+    @if (item.ticketId) {
+      <p class="item-ticket">
+        Ticket:
+        <a class="ticket-pill" routerLink="/delivery-plan" [fragment]="item.ticketId">{{
+          ticketPill(item)
+        }}</a>
+        <span role="status" class="promote-status">{{ promoteMessage()[item.id] }}</span>
+      </p>
+    } @else if (canPromote(item)) {
+      <div class="promote">
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="promoting() === item.id"
+          (click)="promote(item)"
         >
-          @for (status of statuses; track status.id) {
-            <option [value]="status.id">{{ status.label }}</option>
-          }
-        </select>
-      </label>
-      <label class="triage-note"
-        >Note to the reviewer
-        <textarea
-          rows="2"
-          [name]="'note-' + item.id"
-          [maxlength]="limits.noteLength"
-          [ngModel]="triageDrafts()[item.id].note"
-          (ngModelChange)="setTriage(item.id, { note: $event })"
-        ></textarea>
-      </label>
-      <div class="triage-actions">
-        <button type="submit" class="secondary">Save status</button>
-        <span role="status">{{ triageMessage()[item.id] }}</span>
+          {{ promoting() === item.id ? 'Promoting…' : 'Promote to ticket'
+          }}<span class="visually-hidden"> {{ item.title }}</span>
+        </button>
+        <span role="status" class="promote-status">{{ promoteMessage()[item.id] }}</span>
       </div>
-    </form>
-  } @else if (canEdit(item)) {
-    <div class="item-actions">
-      <button type="button" class="secondary" (click)="edit(item)">
-        Edit<span class="visually-hidden"> {{ item.title }}</span>
-      </button>
-      <button type="button" class="secondary danger" (click)="remove(item)">
-        Delete<span class="visually-hidden"> {{ item.title }}</span>
-      </button>
-    </div>
-  } @else if (isOwn(item) && !isRequest(item)) {
-    <p class="hint">The owner has reviewed this item, so it can no longer be changed.</p>
-  }
-</article>
+    }
+    @if (showReviewer && canTriage(item)) {
+      <form class="triage" (ngSubmit)="saveTriage(item)">
+        <label
+          >Status
+          <select
+            [name]="'status-' + item.id"
+            [ngModel]="triageDrafts()[item.id].status"
+            (ngModelChange)="setTriage(item.id, { status: $event })"
+          >
+            @for (status of statuses; track status.id) {
+              <option [value]="status.id">{{ status.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="triage-note"
+          >Note to the reviewer
+          <textarea
+            rows="2"
+            [name]="'note-' + item.id"
+            [maxlength]="limits.noteLength"
+            [ngModel]="triageDrafts()[item.id].note"
+            (ngModelChange)="setTriage(item.id, { note: $event })"
+          ></textarea>
+        </label>
+        <div class="triage-actions">
+          <button type="submit" class="secondary">Save status</button>
+          <span role="status">{{ triageMessage()[item.id] }}</span>
+        </div>
+      </form>
+    } @else if (canEdit(item)) {
+      <div class="item-actions">
+        <button type="button" class="secondary" (click)="edit(item)">
+          Edit<span class="visually-hidden"> {{ item.title }}</span>
+        </button>
+        <button type="button" class="secondary danger" (click)="remove(item)">
+          Delete<span class="visually-hidden"> {{ item.title }}</span>
+        </button>
+      </div>
+    } @else if (isOwn(item) && !isRequest(item)) {
+      <p class="hint">The owner has reviewed this item, so it can no longer be changed.</p>
+    }
+  </article>
 </ng-template>
 
-<dialog appScrollLock #imageDialog class="image-dialog" aria-label="Image" (close)="viewing.set(null)">
-@if (viewing(); as image) {
-  <div class="image-dialog-bar">
-    <p>{{ image.name }}</p>
-    <button type="button" class="secondary" (click)="closeImage()">Close</button>
-  </div>
-  <img [src]="image.url" [alt]="image.name" />
-}
+<dialog
+  appScrollLock
+  #imageDialog
+  class="image-dialog"
+  aria-label="Image"
+  (close)="viewing.set(null)"
+>
+  @if (viewing(); as image) {
+    <div class="image-dialog-bar">
+      <p>{{ image.name }}</p>
+      <button type="button" class="secondary" (click)="closeImage()">Close</button>
+    </div>
+    <img [src]="image.url" [alt]="image.name" />
+  }
 </dialog>

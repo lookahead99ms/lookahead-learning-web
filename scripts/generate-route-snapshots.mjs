@@ -10,8 +10,9 @@
  *   titles and descriptions, and the titles of lessons in public units. No lesson body, answer,
  *   summary or code is read into a page file.
  * - The summary sits inside <app-root>; Angular replaces it when the app starts, so visitors see
- *   the normal page. nginx serves `<route>/index.html` directly (try_files $uri $uri/index.html /index.html).
- *   SNAPSHOT_STYLE keeps the summary hidden while JavaScript starts the app, so visitors see no flash.
+ *   the normal page. nginx serves `<route>/index.html` directly (try_files $uri $uri/index.html
+ *   /index.html). SNAPSHOT_STYLE keeps the summary hidden while JavaScript starts the app, so
+ *   visitors see no flash.
  * - Canonical, og:url and og:image need absolute URLs, so they are written only when
  *   LOOKAHEAD_SITE_ORIGIN is set (the production domain is undecided, DLV-913).
  */
@@ -54,12 +55,16 @@ export async function readPublicPageText(
 
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
 
-/** Plain text: authored HTML removed, whitespace collapsed, cut at a word (same rule as the app). */
+/**
+ * Plain text: authored HTML removed, whitespace collapsed, cut at a word (same rule as the app).
+ */
 export function metaText(value, maxLength = DESCRIPTION_MAX_LENGTH) {
   const text = String(value ?? '')
     .replace(/<[^>]*>/g, ' ')
     .replace(/&(#\d+|[a-z]+);/gi, (match, name) =>
-      name.startsWith('#') ? String.fromCodePoint(Number(name.slice(1))) : (ENTITIES[name.toLowerCase()] ?? match),
+      name.startsWith('#')
+        ? String.fromCodePoint(Number(name.slice(1)))
+        : (ENTITIES[name.toLowerCase()] ?? match),
     )
     .replace(/\s+/g, ' ')
     .trim();
@@ -72,7 +77,8 @@ export function metaText(value, maxLength = DESCRIPTION_MAX_LENGTH) {
 export function escapeHtml(value) {
   return String(value).replace(
     /[&<>"']/g,
-    (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character],
+    (character) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character],
   );
 }
 
@@ -108,14 +114,18 @@ function flattenUnits(units) {
 }
 
 function unitModuleIds(unit) {
-  return [unit.theoryModuleId, unit.questionModuleId, unit.practiceModuleId, ...(unit.moduleIds ?? [])].filter(
-    (id) => typeof id === 'string' && id,
-  );
+  return [
+    unit.theoryModuleId,
+    unit.questionModuleId,
+    unit.practiceModuleId,
+    ...(unit.moduleIds ?? []),
+  ].filter((id) => typeof id === 'string' && id);
 }
 
 /** A shipped scene under public/assets/scenes, or undefined. */
 async function shippedScene(publicDir, scene) {
-  if (typeof scene !== 'string' || !/^\/assets\/scenes\/[a-z0-9/_-]+\.svg$/.test(scene)) return undefined;
+  if (typeof scene !== 'string' || !/^\/assets\/scenes\/[a-z0-9/_-]+\.svg$/.test(scene))
+    return undefined;
   return (await exists(join(publicDir, scene))) ? scene : undefined;
 }
 
@@ -185,7 +195,10 @@ export async function collectSnapshotPages(
         title: text.homeTitle,
         description: text.defaultDescription,
         heading: text.siteName,
-        links: CATALOG_PATHS.map((catalog) => ({ href: `/${catalog}`, label: text.catalogs[catalog].label })),
+        links: CATALOG_PATHS.map((catalog) => ({
+          href: `/${catalog}`,
+          label: text.catalogs[catalog].label,
+        })),
       });
     } else if (CATALOG_PATHS.includes(first) && !second) {
       pages.push({
@@ -217,7 +230,9 @@ export async function collectSnapshotPages(
         title: fixed ? pageTitle(text, ...fixed.titleParts) : pageTitle(text, meta.title, label),
         description: fixed?.description ?? (meta.description || `${label} course: ${meta.title}.`),
         heading: metaText(meta.title, 120),
-        image: fixed?.image ?? (await shippedScene(publicDir, `/assets/scenes/courses/${first}-${second}.svg`)),
+        image:
+          fixed?.image ??
+          (await shippedScene(publicDir, `/assets/scenes/courses/${first}-${second}.svg`)),
         links: meta.units
           .filter((unit) => typeof unit.title === 'string' && unit.title)
           .slice(0, 40)
@@ -228,7 +243,9 @@ export async function collectSnapshotPages(
       if (!found) continue;
       const { course: meta, unit, item } = found;
       const context = unit.description || meta.description;
-      const lead = `${contentKind(item.contentType)} from ${metaText(meta.title, 120)}: ${sentence(metaText(item.title, 160))}`;
+      const lead =
+        `${contentKind(item.contentType)} ` +
+        `from ${metaText(meta.title, 120)}: ${sentence(metaText(item.title, 160))}`;
       pages.push({
         path,
         title: pageTitle(text, item.title, meta.title),
@@ -265,31 +282,47 @@ export function renderSnapshot(shell, page, { origin, siteName }) {
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
     ...(image ? [`<meta name="twitter:image" content="${escapeHtml(image)}" />`] : []),
-    // DLV-969: the summary is for crawlers and link previews. A browser running JavaScript keeps it hidden, so a page
-    // opened by URL boots like every other page instead of flashing plain text until Angular replaces <app-root>;
-    // without JavaScript it shows. Inline because the full stylesheet loads after first paint (media="print").
+    // DLV-969: the summary is for crawlers and link previews. A browser running JavaScript keeps it
+    // hidden, so a page opened by URL boots like every other page instead of flashing plain text
+    // until Angular replaces <app-root>; without JavaScript it shows. Inline because the full
+    // stylesheet loads after first paint (media="print").
     SNAPSHOT_STYLE,
   ];
   let head = shell
     .replace(/<title>[\s\S]*?<\/title>/, '')
-    .replace(/<meta\s+(?:name="(?:description|twitter:[a-z]+)"|property="og:[a-z_]+")[\s\S]*?\/?>\s*/g, '')
+    .replace(
+      /<meta\s+(?:name="(?:description|twitter:[a-z]+)"|property="og:[a-z_]+")[\s\S]*?\/?>\s*/g,
+      '',
+    )
     .replace(/<link\s+rel="canonical"[\s\S]*?\/?>\s*/g, '')
     .replace(/<!-- DLV-941: default for every page[\s\S]*?-->\s*/, '');
-  head = head.replace(/<meta charset="utf-8"\s*\/?>/i, (charset) => `${charset}\n    ${tags.join('\n    ')}`);
+  head = head.replace(
+    /<meta charset="utf-8"\s*\/?>/i,
+    (charset) => `${charset}\n    ${tags.join('\n    ')}`,
+  );
   const links = (page.links ?? [])
-    .map((link) => (link.href ? `<li><a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a></li>` : `<li>${escapeHtml(link.label)}</li>`))
+    .map((link) =>
+      link.href
+        ? `<li><a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a></li>`
+        : `<li>${escapeHtml(link.label)}</li>`,
+    )
     .join('');
   const summary =
-    `<main class="route-snapshot"><h1>${escapeHtml(page.heading)}</h1><p>${escapeHtml(description)}</p>` +
+    `<main class="route-snapshot"><h1>${escapeHtml(page.heading)}</h1><p>` +
+    `${escapeHtml(description)}</p>` +
     (links ? `<ul>${links}</ul>` : '') +
     '</main>';
-  if (!/<app-root([^>]*)><\/app-root>/.test(head)) throw new Error('The built shell has no empty <app-root>');
+  if (!/<app-root([^>]*)><\/app-root>/.test(head))
+    throw new Error('The built shell has no empty <app-root>');
   return head.replace(/<app-root([^>]*)><\/app-root>/, `<app-root$1>${summary}</app-root>`);
 }
 
-/** Hides the crawler summary while the app starts; shows it only when JavaScript is off (DLV-969). */
+/**
+ * Hides the crawler summary while the app starts; shows it only when JavaScript is off (DLV-969).
+ */
 export const SNAPSHOT_STYLE =
-  '<style>.route-snapshot{display:none}</style><noscript><style>.route-snapshot{display:block}</style></noscript>';
+  '<style>.route-snapshot{display:none}</style><noscript><style>.route-' +
+  'snapshot{display:block}</style></noscript>';
 
 /** Writes `<route>/index.html` for every public page into the build output. */
 export async function writeRouteSnapshots({
@@ -301,7 +334,8 @@ export async function writeRouteSnapshots({
   warn = console.warn,
 } = {}) {
   const origin = normalizeOrigin(rawOrigin);
-  const root = contentRoot === undefined ? await resolveContentRoot({ protectedBuild }) : contentRoot;
+  const root =
+    contentRoot === undefined ? await resolveContentRoot({ protectedBuild }) : contentRoot;
   const text = await readPublicPageText();
   const paths = await collectSitemapPaths(root, {
     hiddenCourseIds: await readHiddenCourseIds(),
@@ -324,7 +358,12 @@ export async function writeRouteSnapshots({
     written += 1;
   }
   log(
-    `Route snapshots: ${written} public pages written (${origin ? `canonical and images for ${origin}` : 'no LOOKAHEAD_SITE_ORIGIN, so no canonical or og:image'}).`,
+    `Route snapshots: ${written} public pages written ` +
+      '(' +
+      (origin
+        ? `canonical and images for ${origin}`
+        : 'no LOOKAHEAD_SITE_ORIGIN, so no canonical or og:image') +
+      ').',
   );
   return { pages, written };
 }

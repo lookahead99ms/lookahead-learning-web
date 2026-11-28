@@ -199,8 +199,12 @@ describe('Study Plan reader navigation on another approach', () => {
   }
 
   it('keeps the plan context and remembers the approach opened', async () => {
-    const choose = vi.spyOn(TestBed.inject(StudyPlanApproaches), 'choose').mockImplementation(() => undefined);
-    const { harness, page } = await open('/learn/course/current-approach-2?plan=browser&day=2&activity=current');
+    const choose = vi
+      .spyOn(TestBed.inject(StudyPlanApproaches), 'choose')
+      .mockImplementation(() => undefined);
+    const { harness, page } = await open(
+      '/learn/course/current-approach-2?plan=browser&day=2&activity=current',
+    );
     expect(page.nav().valid()).toBe(true);
     expect(harness.routeNativeElement!.querySelector('a')?.getAttribute('href')).toBe(
       '/study-plan?day=2&plan=browser&activity=current',
@@ -214,8 +218,12 @@ describe('Study Plan reader navigation on another approach', () => {
 
   it('keeps the approach a finished item was completed with', async () => {
     plan.completedIds = ['original', 'current'];
-    const choose = vi.spyOn(TestBed.inject(StudyPlanApproaches), 'choose').mockImplementation(() => undefined);
-    const { page } = await open('/learn/course/current-approach-2?plan=browser&day=2&activity=current');
+    const choose = vi
+      .spyOn(TestBed.inject(StudyPlanApproaches), 'choose')
+      .mockImplementation(() => undefined);
+    const { page } = await open(
+      '/learn/course/current-approach-2?plan=browser&day=2&activity=current',
+    );
     expect(page.nav().valid()).toBe(true);
     expect(choose).not.toHaveBeenCalled();
   });

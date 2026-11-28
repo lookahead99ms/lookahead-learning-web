@@ -15,7 +15,11 @@
       #problemButton
       type="button"
       class="problem-toggle"
-      [attr.title]="problemPinned() ? 'Hide the full problem statement and examples (P)' : 'Keep the full problem statement and examples open beside your work (P)'"
+      [attr.title]="
+        problemPinned()
+          ? 'Hide the full problem statement and examples (P)'
+          : 'Keep the full problem statement and examples open beside your work (P)'
+      "
       [attr.aria-expanded]="problemPinned() || peek()"
       [attr.aria-pressed]="problemPinned()"
       [attr.aria-controls]="problem().id + '-studio-problem'"
@@ -32,8 +36,8 @@
       Problem
     </button>
     <h2 class="visually-hidden">Workspace</h2>
-    <!-- User review 2026-10-05 (option B): one numbered segmented control; the guide line below says what
-         the selected tab is for and holds that tab's one action. -->
+    <!-- User review 2026-10-05 (option B): one numbered segmented control; the guide line below
+         says what the selected tab is for and holds that tab's one action. -->
     <div role="tablist" class="mode-tabs" aria-label="Practice mode">
       @for (item of modes; track item.id; let index = $index) {
         <button
@@ -42,33 +46,49 @@
           [attr.title]="item.description"
           [id]="problem().id + '-studio-tab-' + item.id"
           [attr.data-studio-mode]="item.id"
-          [attr.aria-label]="item.id === 'recall' && solved() ? item.label + ', solved' : item.label"
+          [attr.aria-label]="
+            item.id === 'recall' && solved() ? item.label + ', solved' : item.label
+          "
           [attr.aria-keyshortcuts]="index + 1"
           [attr.aria-selected]="mode() === item.id"
           [attr.tabindex]="mode() === item.id ? 0 : -1"
           [attr.aria-controls]="problem().id + '-studio-panel-' + item.id"
           (click)="selectMode(item.id)"
           (keydown)="modeKeys($event)"
-        ><span class="mode-step" aria-hidden="true" [class.mode-step-done]="item.id === 'recall' && solved()">{{
-            item.id === 'recall' && solved() ? '✓' : index + 1
-          }}</span>{{ item.label }}</button>
+          ><span
+            class="mode-step"
+            aria-hidden="true"
+            [class.mode-step-done]="item.id === 'recall' && solved()"
+            >{{ item.id === 'recall' && solved() ? '✓' : index + 1 }}</span
+          >{{ item.label }}</button
+        >
       }
     </div>
     <!-- Practice tools (user-approved preview, 2026-10-05): a timed attempt, browser-only. -->
     <app-studio-timer [timer]="timer" [available]="mode() === 'practice'" (start)="startTimer()" />
-      <div class="workspace-actions" role="group" aria-label="Solution and visualization">
-        <!-- DLV-965 (user, 2026-10-16): the approach switch moved from the title row to sit beside "Show
-             solution", same look and size; it names no pattern or method (no spoilers). -->
-        @if (hasOtherApproaches()) {
-          <app-optimal-approaches class="workspace-approach-switch" [family]="problem().approachFamily" variant="label" />
-        }
-        @for (action of actions(); track action) {
+    <div class="workspace-actions" role="group" aria-label="Solution and visualization">
+      <!-- DLV-965 (user, 2026-10-16): the approach switch moved from the title row to sit beside
+             "Show solution", same look and size; it names no pattern or method (no spoilers). -->
+      @if (hasOtherApproaches()) {
+        <app-optimal-approaches
+          class="workspace-approach-switch"
+          [family]="problem().approachFamily"
+          variant="label"
+        />
+      }
+      @for (action of actions(); track action) {
         @switch (action) {
           @case ('locked') {
             <p class="timer-lock">Hints and the solution unlock when you stop the timer.</p>
           }
           @case ('close-visualization') {
-            <button type="button" class="primary action-debugger action-close" title="Close the visualization and return to the previous mode (Escape)" aria-keyshortcuts="Escape" (click)="closeReference()">
+            <button
+              type="button"
+              class="primary action-debugger action-close"
+              title="Close the visualization and return to the previous mode (Escape)"
+              aria-keyshortcuts="Escape"
+              (click)="closeReference()"
+            >
               <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <rect x="4" y="4" width="16" height="16" rx="2" />
                 <path d="M9 4v16M12 8h5M12 12h5M12 16h3" />
@@ -80,7 +100,11 @@
             <button
               type="button"
               class="reveal"
-              [attr.title]="current().revealed ? 'Hide the reference solution and return to your draft' : 'Reveal the reference solution and compare it with your draft'"
+              [attr.title]="
+                current().revealed
+                  ? 'Hide the reference solution and return to your draft'
+                  : 'Reveal the reference solution and compare it with your draft'
+              "
               [class.action-close]="current().revealed"
               [attr.aria-expanded]="current().revealed"
               (click)="toggleSolution()"
@@ -93,7 +117,12 @@
             </button>
           }
           @case ('visualize') {
-            <button type="button" class="primary action-visualize" title="Open the solution walkthrough to trace how the algorithm works" (click)="visualize()">
+            <button
+              type="button"
+              class="primary action-visualize"
+              title="Open the solution walkthrough to trace how the algorithm works"
+              (click)="visualize()"
+            >
               <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <rect x="9" y="2" width="6" height="5" rx="1" />
                 <path d="M12 7v5M5 17v-5h14v5" />
@@ -104,25 +133,26 @@
             </button>
           }
         }
-        }
-        <!-- Once the solution or the approach is open: jump to the "Other optimal approaches" card. -->
-        @if (otherApproachesShown()) {
-          <button
-            type="button"
-            class="action-other-approaches"
-            title="Jump to the other approaches with the same optimal bounds"
-            (click)="showOtherApproaches()"
-          >
-            <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M10 6h10M10 12h10M10 18h10" />
-              <circle cx="5" cy="6" r="1.4" />
-              <circle cx="5" cy="12" r="1.4" />
-              <circle cx="5" cy="18" r="1.4" />
-            </svg>
-            Other optimal solutions
-          </button>
-        }
-      </div>
+      }
+      <!-- Once the solution or the approach is open: jump to the "Other optimal approaches" card.
+      -->
+      @if (otherApproachesShown()) {
+        <button
+          type="button"
+          class="action-other-approaches"
+          title="Jump to the other approaches with the same optimal bounds"
+          (click)="showOtherApproaches()"
+        >
+          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M10 6h10M10 12h10M10 18h10" />
+            <circle cx="5" cy="6" r="1.4" />
+            <circle cx="5" cy="12" r="1.4" />
+            <circle cx="5" cy="18" r="1.4" />
+          </svg>
+          Other optimal solutions
+        </button>
+      }
+    </div>
   </header>
   <aside
     #problemRail
@@ -212,8 +242,8 @@
       [attr.aria-labelledby]="problem().id + '-studio-tab-approach'"
       [hidden]="mode() !== 'approach' || gated()"
     >
-      <!-- No spoilers (user, 2026-10-16): the approach names the method, so it is not even in the page
-           until the learner opens this tab. -->
+      <!-- No spoilers (user, 2026-10-16): the approach names the method, so it is not even in the
+           page until the learner opens this tab. -->
       @if (opened().has('approach')) {
         <app-studio-approach [problem]="problem()" />
       }
@@ -295,7 +325,12 @@
               (click)="formatDraft()"
             >
               Format code</button
-            ><button type="button" class="action-reset" title="Replace your draft with the original starter code" (click)="resetDraft()">
+            ><button
+              type="button"
+              class="action-reset"
+              title="Replace your draft with the original starter code"
+              (click)="resetDraft()"
+            >
               Reset starter
             </button>
           </div>
@@ -333,8 +368,8 @@
             [tutorProblem]="tutorProblem()"
             (studioDraftChange)="updateDraft($event)"
           >
-            <!-- Directly under the editor (user-approved preview, 2026-10-05): the prediction box, then
-                 the shortcuts legend. -->
+            <!-- Directly under the editor (user-approved preview, 2026-10-05): the prediction box,
+                 then the shortcuts legend. -->
             <ng-container ngProjectAs="[studioBelowEditor]">
               @if (!current().revealed && !locked()) {
                 <app-studio-prediction [saved]="prediction()" (save)="savePrediction($event)" />
@@ -350,27 +385,29 @@
           [attr.aria-labelledby]="problem().id + '-studio-tab-recall'"
           [hidden]="mode() !== 'recall'"
         >
-          <!-- Recall as a card grid (user-approved preview, option B, 2026-10-06): two columns of cards,
-               then the connected ideas and Finish and review at the full workspace width. -->
+          <!-- Recall as a card grid (user-approved preview, option B, 2026-10-06): two columns of
+               cards, then the connected ideas and Finish and review at the full workspace width.
+          -->
           @if (opened().has('recall')) {
-          <app-studio-recall-grid [problemId]="problem().id" [cards]="recallCards()" />
-          <details class="context-disclosure recall-connected">
-            <summary>Keep these ideas connected</summary>
-            <h4>The invariant</h4>
-            <p>{{ problem().trace.invariant }}</p>
-            <h4>Why this approach fits</h4>
-            <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
-            <h4>Cost and its reason</h4>
-            <p>
-              <strong>Time:</strong> {{ problem().complexity.time }} ·
-              <strong>Extra space:</strong> {{ problem().complexity.space }}
-            </p>
-            <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
-            <h4>When the contract changes</h4>
-            <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
-          </details>
+            <app-studio-recall-grid [problemId]="problem().id" [cards]="recallCards()" />
+            <details class="context-disclosure recall-connected">
+              <summary>Keep these ideas connected</summary>
+              <h4>The invariant</h4>
+              <p>{{ problem().trace.invariant }}</p>
+              <h4>Why this approach fits</h4>
+              <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
+              <h4>Cost and its reason</h4>
+              <p>
+                <strong>Time:</strong> {{ problem().complexity.time }} ·
+                <strong>Extra space:</strong> {{ problem().complexity.space }}
+              </p>
+              <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
+              <h4>When the contract changes</h4>
+              <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
+            </details>
           }
-          <!-- Finish and review (rating, review date, notes, next problems), supplied by the problem page. -->
+          <!-- Finish and review (rating, review date, notes, next problems), supplied by the
+               problem page. -->
           <ng-content select="[studioFinish]" />
         </section>
       </div>
@@ -387,11 +424,7 @@
         (keydown)="resizeKeys($event, 'reference')"
         (pointerdown)="resizePointer($event, 'reference')"
       ></div>
-      <aside
-        class="studio-context"
-        [hidden]="!contextVisible()"
-        aria-label="Help and solution"
-      >
+      <aside class="studio-context" [hidden]="!contextVisible()" aria-label="Help and solution">
         @if (mode() === 'practice' && !current().revealed && hintsVisible() && !locked()) {
           <section class="hints-panel">
             <header>
@@ -444,13 +477,15 @@
         @if (mode() === 'practice' && !current().revealed) {
           <app-studio-examples [fixtures]="problem().fixtures" />
         }
-        <!-- The visual mode's `revealed` is its Every line switch; the walkthrough shows that itself. -->
+        <!-- The visual mode's `revealed` is its Every line switch; the walkthrough shows that
+             itself. -->
         @if (current().revealed && mode() !== 'visual') {
           <section class="reference-panel" (keydown.escape)="closeReference()">
             <header class="reference-header">
               <ng-container [ngTemplateOutlet]="referenceHeader" />
             </header>
-            <!-- One body under the header, so the header can share the editor header's row (review note #23). -->
+            <!-- One body under the header, so the header can share the editor header's row (review
+                 note #23). -->
             <div class="reference-body">
               @defer (on immediate) {
                 <app-guided-algorithm-trace
@@ -464,7 +499,8 @@
               } @placeholder {
                 <p class="reference-loading" role="status">Loading the reference solution…</p>
               }
-              <!-- Compare mode shows this full width under both panels instead (review note #24, round 2). -->
+              <!-- Compare mode shows this full width under both panels instead (review note #24,
+                   round 2). -->
               @if (!(mode() === 'practice' && current().revealed)) {
                 <div class="reference-rationale">
                   <ng-container [ngTemplateOutlet]="rationale" />
@@ -495,27 +531,19 @@
   }
   <details class="rationale-card" open>
     <summary>Why this approach</summary>
-    <p>
-      <b>Why it works</b>{{ problem().practice.canonicalApproach.whyThisApproach }}
-    </p>
-    <p>
-      <b>Why it's optimal</b>{{ problem().practice.canonicalApproach.whyOptimal }}
-    </p>
-    <p>
-      <b>When it changes</b
-      >{{ problem().practice.canonicalApproach.whenAssumptionChanges }}
-    </p>
+    <p> <b>Why it works</b>{{ problem().practice.canonicalApproach.whyThisApproach }} </p>
+    <p> <b>Why it's optimal</b>{{ problem().practice.canonicalApproach.whyOptimal }} </p>
+    <p> <b>When it changes</b>{{ problem().practice.canonicalApproach.whenAssumptionChanges }} </p>
   </details>
   <!-- DLV-965: the other equally optimal approaches, shown only with the approach rationale. -->
-  <app-optimal-approaches [family]="problem().approachFamily" variant="block" idPrefix="rationale-approaches" />
+  <app-optimal-approaches
+    [family]="problem().approachFamily"
+    variant="block"
+    idPrefix="rationale-approaches"
+  />
   <details class="rationale-card mistakes-card" open>
     <summary>
-      <svg
-        class="action-icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        focusable="false"
-      >
+      <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M12 3 2 21h20L12 3Z" />
         <path d="M12 10v5M12 18h.01" />
       </svg>
